@@ -2,16 +2,8 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import (
-    BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
-)
-from frontend.common import (
-    get_pixmap_colored,
-    is_complete_valid_trigger,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
+from frontend.common import get_pixmap_colored, is_complete_valid_trigger, Palette, BrandColors, Size
 
 class CommandView(BaseView):
     add_requested = Signal()

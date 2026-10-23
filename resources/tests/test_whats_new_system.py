@@ -8,12 +8,7 @@ import pytest
 from PySide6.QtWidgets import QApplication
 from backend.services.system.translation_service import TranslationService
 from backend.services.system.updater_service import GithubUpdateProvider
-from backend.services.system.whats_new_service import (
-    WhatsNewService,
-    _resolve_release_notes_path,
-    parse_release_notes,
-    parse_release_notes_content,
-)
+from backend.services.system.whats_new_service import WhatsNewService, _resolve_release_notes_path, parse_release_notes, parse_release_notes_content
 from frontend.dialogs.whats_new_dialog import WhatsNewDialog
 from frontend.navigation.sidebar_component import Sidebar
 

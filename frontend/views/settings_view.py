@@ -4,10 +4,9 @@ import os
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
+from PySide6.QtMultimedia import QMediaDevices
 from frontend.widgets import BaseView, SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -126,7 +125,6 @@ class SettingsView(BaseView):
         self.combo_tts_audio_device.setMinimumWidth(160)
 
         try:
-            from PySide6.QtMultimedia import QMediaDevices
             self._media_devices = QMediaDevices(self)
             self._media_devices.audioOutputsChanged.connect(self.populate_audio_devices)
         except Exception:
@@ -454,7 +452,6 @@ class SettingsView(BaseView):
             self.combo_tts_audio_device.addItem(default_text, "default")
 
             try:
-                from PySide6.QtMultimedia import QMediaDevices
                 for dev in QMediaDevices.audioOutputs():
                     dev_id = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
                     name = dev.description()

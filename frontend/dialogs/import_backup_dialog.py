@@ -1,14 +1,10 @@
 # frontend\dialogs\import_backup_dialog.py
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
 from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard, ModernScrollArea
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 SECTION_ORDER = [
     "settings",

@@ -2,11 +2,7 @@
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, VariableTextEdit
-from frontend.common import (
-    get_assets_path,
-    get_qcolor_with_alpha,
-    BrandColors,
-)
+from frontend.common import get_assets_path, get_qcolor_with_alpha, BrandColors
 
 class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):

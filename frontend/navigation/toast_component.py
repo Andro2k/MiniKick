@@ -2,13 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
-from frontend.common import (
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -54,7 +48,7 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", Palette.NEUTRAL_400, 14)
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")

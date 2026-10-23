@@ -1,20 +1,10 @@
 # frontend\widgets\controls.py
 
 import re
-from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy,
-                               QTextEdit, QListWidget, QSpinBox)
+from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEdit, QListWidget, QSpinBox
 from PySide6.QtCore import QRectF, Qt, QSize
-from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient,
-                           QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
-from frontend.common import (
-    get_icon_colored,
-    get_qcolor_with_alpha,
-    Palette,
-    Semantic,
-    BrandColors,
-    SwitchTheme,
-    Size,
-)
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QLinearGradient, QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon
+from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, Semantic, BrandColors, SwitchTheme, Size
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")

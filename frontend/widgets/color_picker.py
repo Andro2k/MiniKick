@@ -3,12 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import (
-    get_swatch_qss,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_swatch_qss, Palette, BrandColors, Size
 
 DEFAULT_PRESET_COLORS = [BrandColors.KICK_REWARDS, BrandColors.TIKTOK, BrandColors.TWITCH, BrandColors.RED, BrandColors.AMBER, Palette.NEUTRAL_000]
 

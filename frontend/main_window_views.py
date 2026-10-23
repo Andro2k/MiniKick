@@ -3,18 +3,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtWidgets import QWidget
-from frontend.views import (
-    AlertsView,
-    ChatView,
-    CommandView,
-    LogView,
-    MusicView,
-    RewardsView,
-    ScheduleView,
-    SettingsView,
-    TimersView,
-    WidgetsView,
-)
+from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, TimersView, WidgetsView
 
 if TYPE_CHECKING:
     from frontend.main_window import MainWindowCore

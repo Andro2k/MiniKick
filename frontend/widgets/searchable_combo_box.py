@@ -2,15 +2,8 @@
 
 import time
 from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import (
-    QFrame, QVBoxLayout, QHBoxLayout, QLineEdit,
-    QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
-)
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    Size,
-)
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
+from frontend.common import get_pixmap_colored, Palette, Size
 from .no_wheel import NoWheelComboBox
 from .layout_helpers import render_styled_frame_background
 

@@ -4,12 +4,7 @@ import os
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal
-from frontend.common import (
-    resource_path,
-    get_icon_colored,
-    Palette,
-    BrandColors,
-)
+from frontend.common import resource_path, get_icon_colored, Palette, BrandColors
 
 class SystemTrayManager(QSystemTrayIcon):
     restore_requested = Signal()

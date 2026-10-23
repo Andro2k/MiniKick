@@ -26,9 +26,4 @@ def __getattr__(name: str):
 
 if TYPE_CHECKING:
     from .app_container_core import AppContainerCore
-    from .app_logger_core import (
-        AutoFlushTimedRotatingFileHandler,
-        flush_all_logs,
-        get_log_dir,
-        setup_application_logging,
-    )
+    from .app_logger_core import AutoFlushTimedRotatingFileHandler, flush_all_logs, get_log_dir, setup_application_logging

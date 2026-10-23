@@ -1,19 +1,9 @@
 # frontend\components\chat\overlay_settings.py
 
 from PySide6.QtCore import Signal, Slot, QTimer, Qt
-from PySide6.QtWidgets import (
-    QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy
-)
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    Size,
-)
-from frontend.widgets import (
-    ModernCard, SettingRow, ModernSwitch, ModernButton,
-    CompactSpinBox, ModernSegmentedControl, NoWheelComboBox,
-    InspectorPropertyRow
-)
+from PySide6.QtWidgets import QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy
+from frontend.common import get_pixmap_colored, Palette, Size
+from frontend.widgets import ModernCard, SettingRow, ModernSwitch, ModernButton, CompactSpinBox, ModernSegmentedControl, NoWheelComboBox, InspectorPropertyRow
 from .chat_mockup import ChatOverlayMockupWidget
 
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})

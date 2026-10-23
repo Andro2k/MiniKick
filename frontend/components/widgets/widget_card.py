@@ -2,11 +2,8 @@
 
 from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QLineEdit, QSpinBox, QPushButton, QApplication, QCheckBox)
-from frontend.common import (
-    Size,
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QPushButton, QApplication, QCheckBox
+from frontend.common import Size
 
 class WidgetCard(ExpandableCard):
     widget_changed = Signal(str, bool, str, int, str, object)

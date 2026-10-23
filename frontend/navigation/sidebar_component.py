@@ -1,18 +1,9 @@
 # frontend\navigation\sidebar_component.py
 
-from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
-                               QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common import (
-    get_icon,
-    get_icon_colored,
-    create_circular_pixmap,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets.controls_widget import configure_icon_only_button
 
 class Sidebar(QFrame):
@@ -33,8 +24,8 @@ class Sidebar(QFrame):
         self.collapsed_width = 60
         self.setFixedWidth(self.expanded_width)
 
-        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_400, 20)
-        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", Palette.NEUTRAL_400, 20)
+        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24)
+        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", Palette.NEUTRAL_050, 24)
 
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
@@ -68,7 +59,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_400, 24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24))
         self.btn_toggle.setIconSize(QSize(24, 24))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -130,7 +121,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_outlined")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_400, 16))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
         self.btn_collapsed_update.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_collapsed_update)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -177,7 +168,7 @@ class Sidebar(QFrame):
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
-        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_400, 16))
+        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16))
         self.btn_dismiss_update.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_dismiss_update)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -199,7 +190,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_outlined")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_400, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
         self.btn_update_action.setIconSize(QSize(16, 16))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)
@@ -284,7 +275,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", Palette.NEUTRAL_400, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", Palette.NEUTRAL_050, 24, dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)
@@ -349,8 +340,8 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)
 
-        icon_active = get_icon_colored(icon_name, Palette.NEUTRAL_050, 20)
-        icon_inactive = get_icon_colored(icon_name, Palette.NEUTRAL_400, 20)
+        icon_active = get_icon_colored(icon_name, Palette.NEUTRAL_050, 24)
+        icon_inactive = get_icon_colored(icon_name, Palette.NEUTRAL_050, 24)
         btn.setProperty("icon_active", icon_active)
         btn.setProperty("icon_inactive", icon_inactive)
 

@@ -1,22 +1,13 @@
 # frontend\dialogs\timer_dialog.py
 
 import logging
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLineEdit,
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy)
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
 from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
-from frontend.widgets import (
-    ModernButton, ModernSwitch, CategorySearchComboBox,
-    create_card_frame, create_col_layout, create_switch_field,
-    create_text_label, create_labeled_field
-)
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    Size,
-)
+from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox, create_card_frame, create_col_layout, create_switch_field, create_text_label, create_labeled_field
+from frontend.common import get_icon_colored, Palette, Size
 
 logger = logging.getLogger("minikick.dialogs.timer_dialog")
 
@@ -50,8 +41,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
 
-        self._icon_edit = get_icon_colored("edit-filled.svg", Palette.NEUTRAL_050, 14)
-        self._icon_trash = get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, 14)
+        self._icon_edit = get_icon_colored("edit-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_trash = get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, 16)
 
         self._setup_ui()
         if self.existing_config:

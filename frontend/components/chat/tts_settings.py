@@ -1,19 +1,10 @@
 # frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout
-from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
-                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader,
-                              create_col_layout, create_row_layout)
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout, QComboBox
+from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader, create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
-from frontend.common import (
-    validate_trigger_prefix,
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 class PlatformToggleItem(QWidget):
     def __init__(self, icon_name: str, brand_name: str, switch: ModernSwitch,
@@ -74,7 +65,6 @@ class VoiceSettingRow(QWidget):
             self.switch.toggled.connect(self._on_switch_toggled)
 
         combo.setMinimumWidth(0)
-        from PySide6.QtWidgets import QComboBox
         combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         combo.setMinimumContentsLength(1)
         combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -85,7 +75,7 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, size=16))
+            self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, size=16))
             self.btn_test.setIconSize(QSize(16, 16))
             configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)

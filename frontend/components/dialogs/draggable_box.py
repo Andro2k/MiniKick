@@ -6,9 +6,7 @@ from PySide6.QtCore import Qt, Signal, QPoint, QUrl
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 class DraggableBox(QFrame):
     position_updated = Signal(int, int)

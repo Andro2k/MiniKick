@@ -3,16 +3,8 @@
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea
-from frontend.common import (
-    Size,
-)
-from frontend.components.music import (
-    MusicStatsPanel,
-    MusicPlayerSettingsPanel,
-    MusicCommandsPanel,
-    MusicQueuePanel,
-    MusicSettingsPanel
-)
+from frontend.common import Size
+from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicSettingsPanel
 
 class MusicView(BaseView):
     command_toggled = Signal(str, bool)

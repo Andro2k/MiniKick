@@ -2,11 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_icon_colored, Palette, Size
 from .controls_widget import configure_icon_only_button
 
 class ModernSegmentedControl(QFrame):

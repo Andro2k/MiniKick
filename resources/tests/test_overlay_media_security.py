@@ -2,12 +2,7 @@
 
 import os
 from types import SimpleNamespace
-from backend.services.overlay.overlay_routes import (
-    _is_allowed_media_dir,
-    _is_allowed_media_file,
-    _is_within,
-    canonical_media_path,
-)
+from backend.services.overlay.overlay_routes import _is_allowed_media_dir, _is_allowed_media_file, _is_within, canonical_media_path
 
 
 def _manager(files=(), dirs=()):

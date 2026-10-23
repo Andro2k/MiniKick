@@ -1,21 +1,11 @@
 # frontend\dialogs\rewards_dialog.py
 
 import os
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
-    QFileDialog, QRadioButton, QButtonGroup
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog, QRadioButton, QButtonGroup
 from PySide6.QtCore import Qt, QSize
 
-from frontend.widgets import (
-    ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker,
-    create_row_layout, create_labeled_field
-)
-from frontend.common import (
-    get_icon_colored,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker, create_row_layout, create_labeled_field
+from frontend.common import get_icon_colored, BrandColors, Size
 from .base_dialog import ModernWizardPanel
 from .positioner_dialog import VisualPositionerDialog
 

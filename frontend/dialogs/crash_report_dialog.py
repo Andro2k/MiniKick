@@ -1,21 +1,12 @@
 # frontend\dialogs\crash_report_dialog.py
 
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import (
-    QLabel, QLineEdit, QTextEdit, QApplication,
-    QHBoxLayout, QVBoxLayout, QFrame
-)
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QApplication, QHBoxLayout, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt, Slot
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import (
-    get_assets_path,
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_assets_path, get_qcolor_with_alpha, Palette, BrandColors, Size
 
 _ACTIVE_CRASH_WORKERS = set()
 

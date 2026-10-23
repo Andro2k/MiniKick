@@ -2,10 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import (
-    get_icon_colored,
-    Size,
-)
+from frontend.common import get_icon_colored, Size
 from .controls_widget import configure_icon_only_button
 
 class SegmentedPagination(QFrame):

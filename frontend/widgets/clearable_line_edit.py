@@ -2,10 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize, QEvent
-from frontend.common import (
-    get_icon_colored,
-    Size,
-)
+from frontend.common import get_icon_colored, Size
 from .layout_helpers import create_row_layout, create_frameless_input
 from .controls_widget import configure_icon_only_button
 

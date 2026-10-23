@@ -2,16 +2,8 @@
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import (
-    QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
-)
-from frontend.common import (
-    get_qcolor_with_alpha,
-    Palette,
-    Semantic,
-    BrandColors,
-    ChatTheme,
-)
+from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
+from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, ChatTheme
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})

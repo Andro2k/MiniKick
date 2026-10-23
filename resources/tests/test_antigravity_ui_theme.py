@@ -1,11 +1,7 @@
 ﻿# resources\tests\test_antigravity_ui_theme.py
 
 from PySide6.QtWidgets import QLabel, QPushButton
-from frontend.common import (
-    GLOBAL_QSS,
-    get_global_qss,
-    Palette,
-)
+from frontend.common import GLOBAL_QSS, get_global_qss, Palette
 from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernDivider
 from frontend.views.settings_view import SettingsView
 from frontend.navigation import Sidebar
@@ -84,10 +80,7 @@ def test_sidebar_antigravity_nav_tabs(qapp):
 def test_theme_tokens_clean_and_complete():
     import re
     import inspect
-    from frontend.common import (
-        theme,
-        Size,
-    )
+    from frontend.common import theme, Size
     for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.SECTION_SCROLL, Size.Margin.XS, Size.Margin.SECTION_BADGES):
         assert isinstance(m, tuple)
         assert len(m) == 4
@@ -107,9 +100,7 @@ def test_theme_tokens_clean_and_complete():
 
 def test_dashboard_view_profile_cards_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
-    from frontend.common import (
-        Size,
-    )
+    from frontend.common import Size
     for m in (Size.Margin.LG, Size.Margin.LG):
         assert isinstance(m, tuple)
         assert len(m) == 4
@@ -133,9 +124,7 @@ def test_dashboard_view_profile_cards_and_margins(qapp):
 
 def test_chat_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.chat_view import ChatView
-    from frontend.common import (
-        Size,
-    )
+    from frontend.common import Size
 
     i18n = TranslationService(default_lang="es")
     chat_view = ChatView(i18n=i18n)
@@ -165,9 +154,7 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     from frontend.components.widgets import WidgetCard
     from frontend.views.widgets_view import WidgetsView
     from frontend.components.chat.spam_panel import ChatSpamPanel
-    from frontend.common import (
-        Size,
-    )
+    from frontend.common import Size
 
     card = ExpandableCard("Title", "Description", "star-filled.svg")
     assert isinstance(card.divider, ModernDivider)
@@ -210,12 +197,8 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
 
 def test_music_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.music_view import MusicView
-    from frontend.components.music import (
-        MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicSettingsPanel
-    )
-    from frontend.common import (
-        Size,
-    )
+    from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicSettingsPanel
+    from frontend.common import Size
     from frontend.widgets import ModernDivider
 
     i18n = TranslationService(default_lang="es")
@@ -245,9 +228,7 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
     from frontend.views.alerts_view import AlertsView
     from frontend.components.alerts.event_card import AlertEventCard
     from frontend.widgets import ExpandableCard, ModernDivider
-    from frontend.common import (
-        Size,
-    )
+    from frontend.common import Size
 
     i18n = TranslationService(default_lang="es")
     alerts_view = AlertsView(i18n)
@@ -297,9 +278,7 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
 
 def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.schedule_view import ScheduleView
-    from frontend.common import (
-        Size,
-    )
+    from frontend.common import Size
 
     i18n = TranslationService(default_lang="es")
     schedule_view = ScheduleView(i18n)
@@ -366,11 +345,7 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
     assert (m_log.left(), m_log.top(), m_log.right(), m_log.bottom()) == (0, 0, 0, 0)
 
 def test_combobox_and_segmented_action_outlined_style(qapp):
-    from frontend.common.theme import (
-        GLOBAL_QSS,
-        Semantic,
-        Palette,
-    )
+    from frontend.common.theme import GLOBAL_QSS, Semantic, Palette
 
     assert f"QComboBox {{ background-color: {Palette.NEUTRAL_900};" in GLOBAL_QSS
     assert f"border: 1px solid {Palette.NEUTRAL_700};" in GLOBAL_QSS
@@ -385,11 +360,7 @@ def test_combobox_and_segmented_action_outlined_style(qapp):
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette
     from PySide6.QtCore import Qt
-    from frontend.common import (
-        create_dark_palette,
-        GLOBAL_QSS,
-        Palette,
-    )
+    from frontend.common import create_dark_palette, GLOBAL_QSS, Palette
     from frontend.widgets import SearchableComboBox, VariableTextEdit, NoWheelDateEdit
     from frontend.widgets.category_search import CategorySuggestionsPopup
 

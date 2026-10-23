@@ -2,9 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 from frontend.widgets.block_widget import ViewHeader, FadingScrollArea
 
 class BaseView(QWidget):

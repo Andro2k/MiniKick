@@ -1,16 +1,9 @@
 # frontend\widgets\blocks.py
 
-from PySide6.QtWidgets import (QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout,
-                               QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit)
+from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
-from frontend.common import (
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch, configure_icon_only_button
 from .layout_helpers import create_platform_switches, create_row_layout
@@ -302,8 +295,8 @@ class ExpandableCard(QFrame):
         self.main_layout.setContentsMargins(*Size.Margin.NONE)
         self.main_layout.setSpacing(Size.SPACING_NN)
 
-        self._icon_up = get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_400, 20)
-        self._icon_down = get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_400, 20)
+        self._icon_up = get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_down = get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_050, 16)
         self._is_expanded = False
 
         self.header_widget = QWidget(self)
@@ -315,7 +308,7 @@ class ExpandableCard(QFrame):
 
         if icon_name:
             self.lbl_icon = QLabel(self.header_widget)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, 24))
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_050, 16))
             h_layout.addWidget(self.lbl_icon, alignment=Qt.AlignmentFlag.AlignTop)
         else:
             self.lbl_icon = None

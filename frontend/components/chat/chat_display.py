@@ -5,12 +5,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy, QPushButton, QHBoxLayout
 from frontend.widgets import ModernCard
-from frontend.common import (
-    Palette,
-    BrandColors,
-    BadgeTheme,
-    Size,
-)
+from frontend.common import Palette, BrandColors, BadgeTheme, Size
 
 class ChatConsoleEdit(QTextEdit):
     def createMimeDataFromSelection(self):

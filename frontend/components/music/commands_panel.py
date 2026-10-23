@@ -2,9 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal, Qt
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SectionHeader
 
 class MusicCommandsPanel(QWidget):

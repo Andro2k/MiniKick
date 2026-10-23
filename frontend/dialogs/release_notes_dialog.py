@@ -1,21 +1,11 @@
 # frontend\dialogs\release_notes_dialog.py
 
-from PySide6.QtWidgets import (
-    QLabel, QTextBrowser, QPushButton, QHBoxLayout,
-    QWidget, QSizePolicy, QApplication
-)
+from PySide6.QtWidgets import QLabel, QTextBrowser, QPushButton, QHBoxLayout, QWidget, QSizePolicy, QApplication
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
-from frontend.common import (
-    get_assets_path,
-    get_qcolor_with_alpha,
-    markdown_to_github_html,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_assets_path, get_qcolor_with_alpha, markdown_to_github_html, Palette, BrandColors, Size
 
 class ReleaseNotesDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, browser_service=None, parent=None):

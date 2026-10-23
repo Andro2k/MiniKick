@@ -4,24 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel,
-    QFileDialog, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QFileDialog, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
 
-from frontend.widgets import (
-    ModernCard, ModernButton, ModernSwitch, ExpandableCard,
-    NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox,
-    ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker,
-    InspectorPropertyRow
-)
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import ModernCard, ModernButton, ModernSwitch, ExpandableCard, NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox, ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker, InspectorPropertyRow
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from .alert_mockup import AlertOverlayMockupWidget
 
 @dataclass

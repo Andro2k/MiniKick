@@ -17,10 +17,10 @@ class Palette:
     NEUTRAL_600 = "#4B5563"
     NEUTRAL_500 = "#6E7382"
     NEUTRAL_400 = "#9CA3AF"
-    NEUTRAL_200 = "#E4E5E9"
-    NEUTRAL_050 = "#F4F4F6"
+    NEUTRAL_200 = "#E4E5E5"
+    NEUTRAL_050 = "#F4F4F4"
     NEUTRAL_000 = "#FFFFFF"
-    SURFACE_900 = "#1A1B20"
+    SURFACE_900 = "#1A1B1A"
 
 class Semantic:
     SURFACE_BASE          = Palette.NEUTRAL_950

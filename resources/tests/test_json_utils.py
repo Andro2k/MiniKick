@@ -1,9 +1,7 @@
 # resources\tests\test_json_utils.py
 
 import io
-from backend.utils.json_utils import (
-    fast_loads, fast_dumps, fast_load, fast_dump, parse_kick_payload, BACKEND_ENGINE
-)
+from backend.utils.json_utils import fast_loads, fast_dumps, fast_load, fast_dump, parse_kick_payload, BACKEND_ENGINE
 
 
 def test_json_engine_is_optimized():

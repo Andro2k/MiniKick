@@ -1,13 +1,9 @@
 # frontend\dialogs\duplicate_alert_dialog.py
 
-from PySide6.QtWidgets import (
-    QHBoxLayout, QLabel, QCheckBox, QButtonGroup, QRadioButton
-)
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QCheckBox, QButtonGroup, QRadioButton
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernCard
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 class DuplicateAlertModal(ModernModal):
     def __init__(self, source_platform: str, source_event: str, available_events: list[tuple[str, str]], i18n, parent=None):

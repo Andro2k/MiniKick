@@ -1,37 +1,9 @@
 # frontend/common/__init__.py
 
 from .paths import get_assets_path, resolve_icon_path, resource_path
-from .icons import (
-    create_circular_pixmap,
-    get_icon,
-    get_icon_colored,
-    get_pixmap,
-    get_pixmap_colored,
-)
-from .validators import (
-    is_complete_valid_trigger,
-    sanitize_command_trigger,
-    validate_trigger_prefix,
-)
-from .theme import (
-    AlertTheme,
-    BadgeTheme,
-    Borders,
-    BrandColors,
-    ChatTheme,
-    GLOBAL_QSS,
-    Gradients,
-    MusicTheme,
-    PATH_ICON_HELP,
-    Palette,
-    Semantic,
-    Size,
-    SwitchTheme,
-    create_dark_palette,
-    get_global_qss,
-    get_qcolor_with_alpha,
-    get_swatch_qss,
-)
+from .icons import create_circular_pixmap, get_icon, get_icon_colored, get_pixmap, get_pixmap_colored
+from .validators import is_complete_valid_trigger, sanitize_command_trigger, validate_trigger_prefix
+from .theme import AlertTheme, BadgeTheme, Borders, BrandColors, ChatTheme, GLOBAL_QSS, Gradients, MusicTheme, PATH_ICON_HELP, Palette, Semantic, Size, SwitchTheme, create_dark_palette, get_global_qss, get_qcolor_with_alpha, get_swatch_qss
 from .markdown import markdown_to_github_html
 
 __all__ = [

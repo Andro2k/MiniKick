@@ -12,9 +12,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont, QFontDatabase
 
 from backend.config import APP_VERSION
-from backend.services.system import (
-    GithubUpdateProvider, UpdateManager, WindowsInstaller
-)
+from backend.services.system import GithubUpdateProvider, UpdateManager, WindowsInstaller
 from frontend.main_window import MainWindowCore
 from frontend.common import GLOBAL_QSS, create_dark_palette
 

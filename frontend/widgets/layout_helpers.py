@@ -3,13 +3,8 @@
 from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit,
-    QStyleOptionFrame, QStyle
-)
-from frontend.common import (
-    Size,
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit, QStyleOptionFrame, QStyle
+from frontend.common import Size
 
 def create_card_frame(
     role: str = "card",

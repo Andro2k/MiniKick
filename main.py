@@ -171,9 +171,7 @@ def bootstrap():
         (t_splash_visible - t_boot_start) * 1000
     )
 
-    from backend.services.system import (
-        GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
-    )
+    from backend.services.system import GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
 
     logger.debug("[Bootstrap] Checking single-instance socket on port 45678...")
     splash.set_progress(30, safe_i18n.get("splash.check_instance"))

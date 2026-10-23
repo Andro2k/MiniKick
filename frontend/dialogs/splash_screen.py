@@ -2,19 +2,12 @@
 
 import os
 import logging
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar,
-    QFrame, QApplication
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar, QFrame, QApplication
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QIcon
 from PySide6.QtSvg import QSvgRenderer
 
-from frontend.common import (
-    resolve_icon_path,
-    resource_path,
-    Size,
-)
+from frontend.common import resolve_icon_path, resource_path, Size
 
 logger = logging.getLogger("minikick.splash")
 

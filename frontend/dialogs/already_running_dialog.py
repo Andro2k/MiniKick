@@ -3,12 +3,7 @@
 from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt
 from .base_dialog import ModernModal
-from frontend.common import (
-    get_assets_path,
-    get_qcolor_with_alpha,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_assets_path, get_qcolor_with_alpha, BrandColors, Size
 
 class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):

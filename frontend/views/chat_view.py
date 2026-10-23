@@ -1,18 +1,11 @@
 # frontend\views\chat_view.py
 
-from frontend.components.chat import (
-    ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel,
-    ChatTtsSettingsPanel, ChatSpamPanel
-)
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
-)
+from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel, ChatSpamPanel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
 from PySide6.QtCore import QEvent, Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 
 class _FloatingChatWindow(QWidget):

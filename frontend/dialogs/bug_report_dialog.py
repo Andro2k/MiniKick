@@ -5,10 +5,7 @@ from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_row_layout, create_labeled_field, create_error_label
-from frontend.common import (
-    get_assets_path,
-    Size,
-)
+from frontend.common import get_assets_path, Size
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
 _ACTIVE_BUG_WORKERS = set()

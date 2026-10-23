@@ -23,18 +23,9 @@ except ImportError:
 
 logger = logging.getLogger("minikick.core.app_container")
 
-from backend.database import (
-    DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
-    SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
-    SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage,
-    SQLiteAlertStorage, EncryptedTokenStorage
-)
+from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.services.system import create_secret_cipher
-from backend.services import (
-    BackupService, TranslationService, KickAuthManager, TwitchAuthManager, 
-    SettingsService, AvatarService, WidgetService, ScheduleService,
-    TTSManager, OverlayServerManager, AlertService, BrowserService
-)
+from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.utils.paths import resource_path
 
 class AppContainerCore:

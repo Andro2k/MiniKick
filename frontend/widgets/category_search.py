@@ -1,13 +1,8 @@
 # frontend\widgets\category_search.py
 
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton,
-                               QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_icon_colored, Palette, Size
 from .layout_helpers import render_styled_frame_background
 from .controls_widget import configure_icon_only_button
 
@@ -155,8 +150,8 @@ class CategorySearchComboBox(QFrame):
         layout.setContentsMargins(*Size.Margin.NONE)
         layout.setSpacing(Size.SPACING_NN)
 
-        self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_400, 16)
-        self._icon_clear = get_icon_colored("x-filled.svg", Palette.NEUTRAL_400, 16)
+        self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_delete = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)
@@ -185,7 +180,7 @@ class CategorySearchComboBox(QFrame):
 
     def _on_text_changed(self, text: str):
         if text.strip():
-            self.btn_action.setIcon(self._icon_clear)
+            self.btn_action.setIcon(self._icon_delete)
             if len(text.strip()) >= 2:
                 self.search_timer.start()
             else:
@@ -219,7 +214,7 @@ class CategorySearchComboBox(QFrame):
         self.txt_input.blockSignals(True)
         self.txt_input.setText(name)
         self.txt_input.blockSignals(False)
-        self.btn_action.setIcon(self._icon_clear)
+        self.btn_action.setIcon(self._icon_delete)
         self.txt_input.setFocus()
 
         self.category_selected.emit(data)
@@ -240,7 +235,7 @@ class CategorySearchComboBox(QFrame):
         self.txt_input.blockSignals(True)
         self.txt_input.setText(name)
         self.txt_input.blockSignals(False)
-        self.btn_action.setIcon(self._icon_clear if name else self._icon_search)
+        self.btn_action.setIcon(self._icon_delete if name else self._icon_search)
 
     def set_platform(self, platform: str):
         self.default_platform = platform
@@ -250,7 +245,7 @@ class CategorySearchComboBox(QFrame):
 
     def setText(self, text: str):
         self.txt_input.setText(text)
-        self.btn_action.setIcon(self._icon_clear if text else self._icon_search)
+        self.btn_action.setIcon(self._icon_delete if text else self._icon_search)
 
     def setPlaceholderText(self, text: str):
         self.txt_input.setPlaceholderText(text)

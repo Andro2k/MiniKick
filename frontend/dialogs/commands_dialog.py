@@ -2,17 +2,8 @@
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import (
-    VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge,
-    create_row_layout, create_col_layout, create_labeled_field
-)
-from frontend.common import (
-    validate_trigger_prefix,
-    sanitize_command_trigger,
-    is_complete_valid_trigger,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge, create_row_layout, create_col_layout, create_labeled_field
+from frontend.common import validate_trigger_prefix, sanitize_command_trigger, is_complete_valid_trigger, BrandColors, Size
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):

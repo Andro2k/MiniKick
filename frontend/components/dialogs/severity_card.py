@@ -2,9 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 from frontend.widgets import create_row_layout, create_col_layout
 
 class SeverityCard(QFrame):

@@ -3,17 +3,10 @@
 from __future__ import annotations
 from typing import Dict, List, Tuple, Optional
 
-from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernSwitch, ModernCard
 
 class AlertVariantTabPill(QFrame):

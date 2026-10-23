@@ -1,21 +1,11 @@
 # frontend\views\dashboard_view.py
 
 import logging
-from PySide6.QtWidgets import (
-    QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
-    QGridLayout, QSizePolicy, QProgressBar
-)
-from PySide6.QtCore import Qt, Signal
-from frontend.common import (
-    create_circular_pixmap, get_pixmap_colored,
-    Palette, BrandColors, Size,
-)
-from frontend.widgets import (
-    BaseView, StatCard, ModernCard, ModernButton
-)
-from frontend.components.dashboard import (
-    PlatformDistributionRing, PlatformStatusCard, DashboardChattersTable
-)
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy, QProgressBar
+from PySide6.QtCore import Qt, Signal, QUrl
+from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.widgets import BaseView, StatCard, ModernCard, ModernButton
+from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard, DashboardChattersTable
 
 logger = logging.getLogger("minikick.views.dashboard")
 
@@ -586,7 +576,6 @@ class DashboardView(BaseView):
                 self.browser_service.open_url(url)
             else:
                 from PySide6.QtGui import QDesktopServices
-                from PySide6.QtCore import QUrl
                 QDesktopServices.openUrl(QUrl(url))
 
     def show_scope_warning(self, missing_scopes: dict | list):

@@ -1,17 +1,9 @@
 # frontend\components\schedule\schedule_form_panel.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QLineEdit, QPushButton)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from PySide6.QtCore import Qt, Signal, QDate, QTime
-from frontend.widgets import (
-    ModernCard, ModernButton,
-    NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox,
-    create_row_layout, create_labeled_field, create_platform_switches,
-    sync_dual_platform_switches, create_text_label
-)
-from frontend.common import (
-    Size,
-)
+from frontend.widgets import ModernCard, ModernButton, NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox, create_row_layout, create_labeled_field, create_platform_switches, sync_dual_platform_switches, create_text_label
+from frontend.common import Size
 
 class ScheduleFormPanel(QWidget):
     schedule_saved = Signal(object)

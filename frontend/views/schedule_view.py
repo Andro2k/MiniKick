@@ -3,14 +3,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea, create_col_layout, create_box_layout
-from frontend.common import (
-    Size,
-)
-from frontend.components.schedule import (
-    ScheduleQuickChangePanel,
-    ScheduleFormPanel,
-    ScheduleTablePanel
-)
+from frontend.common import Size
+from frontend.components.schedule import ScheduleQuickChangePanel, ScheduleFormPanel, ScheduleTablePanel
 
 class ScheduleView(BaseView):
     refresh_info_requested = Signal()

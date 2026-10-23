@@ -1,14 +1,8 @@
 # frontend\components\dialogs\piper_voice_item.py
 
-from PySide6.QtWidgets import (
-    QWidget, QLabel, QPushButton, QProgressBar
-)
+from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
 from PySide6.QtCore import Qt, QSize, Signal
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_icon_colored, Palette, Size
 from frontend.widgets import create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -149,7 +143,7 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_download.setEnabled(not downloading)
         if downloading:
             self.btn_download.setText(f"{percent}%")
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_400, size=16))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
             self.lbl_status.setText(self.i18n.get("piper_dialog.status_downloading"))
             self.lbl_status.setProperty("state", "info")
             self.lbl_status.style().unpolish(self.lbl_status)

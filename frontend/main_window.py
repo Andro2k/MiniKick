@@ -13,27 +13,14 @@ from PySide6.QtCore import Qt, Slot, Signal, QEvent, QTimer, QByteArray, QThread
 from backend.core.app_container_core import AppContainerCore
 from backend.core.app_logger_core import setup_application_logging
 from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
-from backend.controllers import (
-    RewardsController, ChatController, CommandsController, DashboardController,
-    TimersController, LogsController, MusicController, SettingsController,
-    SpamController, UpdaterController, WidgetsController,
-    ScheduleController, AlertsController
-)
+from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
 from backend.providers import KickAPIClient, TwitchAPIClient
-from backend.workers import (
-    KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker,
-    FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
-)
-from frontend.common import (
-    get_global_qss,
-    BrandColors,
-)
+from backend.workers import KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
+from frontend.common import get_global_qss, BrandColors
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import DashboardView
-from frontend.dialogs import (
-    ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
-)
+from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.worker_shutdown import WorkerShutdownCoordinator

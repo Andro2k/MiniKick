@@ -2,11 +2,7 @@
 
 import re
 from functools import lru_cache
-from frontend.common.theme import (
-    Palette,
-    Semantic,
-    BrandColors,
-)
+from frontend.common.theme import Palette, Semantic, BrandColors
 
 _RE_LATEX_O     = re.compile(r'\$\\mathcal\{O\}\((.*?)\)\$')
 _RE_LATEX_MATH  = re.compile(r'\$(.*?)\$')

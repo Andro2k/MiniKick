@@ -1,21 +1,14 @@
 # frontend\widgets\table.py
 
 import os
-from PySide6.QtWidgets import (
-    QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget,
-    QStackedWidget, QGridLayout, QSizePolicy
-)
+from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy
 from PySide6.QtCore import Qt, QSize, Signal, QEvent
 from .controls_widget import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
-from frontend.common import (
-    get_icon_colored,
-    get_assets_path,
-    Size,
-)
+from frontend.common import get_icon_colored, get_pixmap_colored, get_assets_path, BrandColors, Size
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -488,10 +481,6 @@ class PlatformBadgeCell(QWidget):
             self.layout.addWidget(lbl_empty)
             return
 
-        from frontend.common import (
-            get_pixmap_colored,
-            BrandColors,
-        )
         plat_configs = {
             "kick": ("brand-kick.svg", BrandColors.GREEN, "Kick"),
             "twitch": ("brand-twitch.svg", BrandColors.TWITCH, "Twitch"),

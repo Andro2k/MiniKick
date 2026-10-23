@@ -3,17 +3,8 @@
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
-from frontend.common import (
-    get_icon_colored,
-    get_pixmap,
-    Palette,
-    BrandColors,
-    Size,
-)
-from frontend.widgets import (
-    ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider,
-    create_row_layout, create_col_layout, create_text_label
-)
+from frontend.common import get_icon_colored, get_pixmap, Palette, BrandColors, Size
+from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout, create_text_label
 from .music_mockup import MusicOverlayMockupWidget
 
 _MUSIC_OVERLAY_LAYOUTS = {
@@ -154,12 +145,12 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setSpacing(Size.SPACING_SM)
 
         self.btn_play_pause = ModernButton("", role="action_outlined", parent=self)
-        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, 16))
+        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
         self.btn_play_pause.setIconSize(QSize(16, 16))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
 
         self.btn_skip = ModernButton("", role="action_outlined", parent=self)
-        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_400, 16))
+        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_050, 16))
         self.btn_skip.setIconSize(QSize(16, 16))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
@@ -393,7 +384,7 @@ class MusicPlayerSettingsPanel(QWidget):
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")
-            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, 16))
+            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
             self._is_playing = False
             self._duration_ms = 0
             self._current_progress_ms = 0
@@ -429,7 +420,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_requester.setText(req_text)
 
         icon_name = "pause-filled.svg" if is_playing else "play-filled.svg"
-        self.btn_play_pause.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_400, 16))
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 16))
 
         self._duration_ms = duration
         self._current_progress_ms = progress

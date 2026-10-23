@@ -2,20 +2,9 @@
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtGui import QColor, QIcon
-from PySide6.QtWidgets import (
-    QFileDialog, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QTableWidgetItem,
-    QWidget, QSizePolicy
-)
-from frontend.widgets import (
-    BaseView, ModernTableCard, ModernButton,
-    SegmentedPagination, NoWheelComboBox
-)
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QTableWidgetItem, QWidget, QSizePolicy
+from frontend.widgets import BaseView, ModernTableCard, ModernButton, SegmentedPagination, NoWheelComboBox
+from frontend.common import get_icon_colored, Palette, BrandColors, Size
 
 LOG_ILLUSTRATION_FILE = "illustration-empty-file.svg"
 _LEVEL_COLORS = {

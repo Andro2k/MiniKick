@@ -1,21 +1,12 @@
 # frontend\dialogs\whats_new_dialog.py
 
 from typing import List, Dict
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame
 from PySide6.QtCore import Qt
 
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
-from frontend.common import (
-    get_assets_path,
-    get_pixmap_colored,
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_assets_path, get_pixmap_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 
 class WhatsNewDialog(ModernModal):
     def __init__(

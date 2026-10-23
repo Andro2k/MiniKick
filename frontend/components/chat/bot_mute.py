@@ -1,15 +1,10 @@
 # frontend\components\chat\bot_mute.py
 
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView,
-                               QFrame, QPushButton, QListWidgetItem, QVBoxLayout)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, QFrame, QPushButton, QListWidgetItem, QVBoxLayout
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader
 from frontend.widgets.controls_widget import configure_icon_only_button
-from frontend.common import (
-    get_icon_colored,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_icon_colored, BrandColors, Size
 
 class BotMutePanel(QWidget):
     bot_add_requested = Signal(str)
@@ -179,7 +174,7 @@ class BotMutePanel(QWidget):
 
             fm = lbl_name.fontMetrics()
             font_height = fm.height()
-            icon_size = max(14, int(font_height * 0.75))
+            icon_size = max(16, int(font_height * 0.75))
             btn_size = Size.ICON_SMALL
 
             if icon_size not in self._trash_icon_cache:

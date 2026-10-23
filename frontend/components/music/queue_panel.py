@@ -3,13 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
-from frontend.common import (
-    get_icon_colored,
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 from frontend.widgets import ModernTable, ModernTableCard
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -105,12 +99,12 @@ class MusicQueuePanel(QWidget):
         self.i18n = i18n
         self._current_queue_signature = None
 
-        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED, 14)
-        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_400, 14)
-        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK, 14)
-        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT, 14)
-        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED, 14)
-        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK, 14)
+        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED, 16)
+        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050, 16)
+        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK, 16)
+        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT, 16)
+        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED, 16)
+        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK, 16)
 
         self._setup_ui()
 

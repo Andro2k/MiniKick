@@ -1,18 +1,9 @@
 # frontend\components\dashboard\chatters_table.py
 
 import datetime
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget,
-    QTableWidget, QHeaderView, QProgressBar, QSizePolicy,
-    QBoxLayout
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QTableWidget, QHeaderView, QProgressBar, QSizePolicy, QBoxLayout
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, NoWheelComboBox, create_col_layout
 
 class DashboardChattersTable(ModernCard):
