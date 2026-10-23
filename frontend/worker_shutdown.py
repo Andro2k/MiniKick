@@ -78,12 +78,11 @@ class WorkerShutdownCoordinator(QObject):
                     self._delete_worker(worker)
                     continue
             except RuntimeError:
-                self._logger.warning(
-                    "[Worker] Could not inspect '%s'; treating it as stopped.",
+                self._logger.debug(
+                    "[Worker] '%s' was already deleted; treating it as stopped.",
                     name,
-                    exc_info=True,
                 )
-                self._delete_worker(worker)
+                self._retiring_workers.discard(worker)
                 continue
 
             self._retiring_workers.add(worker)
@@ -151,11 +150,11 @@ class WorkerShutdownCoordinator(QObject):
                 try:
                     is_running = entry.worker.isRunning()
                 except RuntimeError:
-                    self._logger.warning(
-                        "[Worker] Could not inspect '%s' while stopping.",
+                    self._logger.debug(
+                        "[Worker] '%s' was already deleted while stopping.",
                         entry.name,
-                        exc_info=True,
                     )
+                    self._retiring_workers.discard(entry.worker)
                     is_running = False
 
                 if is_running:
@@ -202,7 +201,4 @@ class WorkerShutdownCoordinator(QObject):
         try:
             worker.deleteLater()
         except RuntimeError:
-            self._logger.debug(
-                "[Worker] Worker object was already deleted.",
-                exc_info=True,
-            )
+            self._logger.debug("[Worker] Worker object was already deleted.")

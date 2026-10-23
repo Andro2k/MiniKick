@@ -1,16 +1,12 @@
 # backend\services\system\log_service.py
 
 import os
-import re
 import logging
 from collections import deque
 from backend.database import SQLiteSystemLogStorage
+from backend.core.log_format import log_level_matches, parse_log_line
 
 logger = logging.getLogger("minikick.services.logs")
-
-_LOG_FILE_LINE_RE = re.compile(
-    r"^\[(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{3}\s+[+-]\d{2}:\d{2})?)\]\s+\[(?P<level>[A-Za-z0-9_]+)\]\s+(?P<msg>.*)"
-)
 
 class LogService:
     def __init__(self, log_storage: SQLiteSystemLogStorage = None, db_manager=None):
@@ -25,7 +21,6 @@ class LogService:
         os.makedirs(self.log_dir, exist_ok=True)
         self.max_logs = 1000
         self._live_history: deque[tuple[str, str, str]] = deque(maxlen=self.max_logs)
-        self._last_log_id = None
 
     def _get_date_threshold(self, date_filter: str) -> str:
         if not date_filter:
@@ -39,32 +34,16 @@ class LogService:
         return dt.strftime('%Y-%m-%d %H:%M:%S')
 
     def append_record(self, time_str: str, level: str, message: str) -> bool:
-        is_grouped = False
-        if self._live_history:
-            l_level, l_time, l_text = self._live_history[-1]
-            if l_level == level and l_time == time_str:
-                self._live_history[-1] = (l_level, l_time, f"{l_text}\n{message}")
-                is_grouped = True
-                
-                if self.storage:
-                    try:
-                        self.storage.update_last_log(message, self._last_log_id)
-                    except Exception as e:
-                        logger.debug("[LogService] Error updating last log: %s", e)
-
-        if not is_grouped:
-            self._live_history.append((level, time_str, message))
-            if self.storage:
-                try:
-                    self._last_log_id = self.storage.append_log(level, time_str, message)
-                except Exception as e:
-                    logger.debug("[LogService] Error appending log: %s", e)
-
-        return is_grouped
+        self._live_history.append((level, time_str, message))
+        if self.storage:
+            try:
+                self.storage.append_log(level, time_str, message)
+            except Exception:
+                logger.exception("[LogService] Error appending log.")
+        return False
 
     def clear_history(self):
         self._live_history.clear()
-        self._last_log_id = None
         if self.storage:
             try:
                 self.storage.clear_logs()
@@ -88,22 +67,8 @@ class LogService:
         filtered = []
         threshold = self._get_date_threshold(date_filter) if date_filter else ""
         search_lower = search_term.strip().lower()
-        level_pairs = {
-            "INFO": ("INFO", "INF"),
-            "DEBUG": ("DEBUG", "DBG"),
-            "WARNING": ("WARNING", "WRN"),
-            "ERROR": ("ERROR", "ERR"),
-            "CRITICAL": ("CRITICAL", "CRI"),
-            "INF": ("INFO", "INF"),
-            "DBG": ("DEBUG", "DBG"),
-            "WRN": ("WARNING", "WRN"),
-            "ERR": ("ERROR", "ERR"),
-            "CRI": ("CRITICAL", "CRI"),
-        }
         for lvl, t_str, txt in self._live_history:
-            is_all = (filter_level == all_label)
-            level_matches = is_all or (lvl == filter_level) or (lvl.upper() in level_pairs.get(filter_level, ()))
-            if level_matches:
+            if log_level_matches(lvl, filter_level, all_label):
                 if not threshold or t_str >= threshold:
                     if not search_lower or (search_lower in lvl.lower() or search_lower in t_str.lower() or search_lower in txt.lower()):
                         filtered.append((lvl, t_str, txt))
@@ -121,26 +86,36 @@ class LogService:
     def parse_log_file(self, file_path: str, fallback_level: str) -> list[tuple[str, str, str]]:
         try:
             with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
-                content = f.read()
-            
-            parsed_history = []
-            current_entry = None
-            for line in content.strip().split("\n"):
-                if not line.strip():
-                    continue
-                match = _LOG_FILE_LINE_RE.match(line)
-                if match:
-                    if current_entry:
-                        parsed_history.append(current_entry)
-                    current_entry = (match.group("level"), match.group("time"), match.group("msg"))
-                else:
-                    if current_entry:
-                        current_entry = (current_entry[0], current_entry[1], f"{current_entry[2]}\n{line}")
+                parsed_history: list[tuple[str, str, str]] = []
+                current_entry = None
+                for raw_line in f:
+                    line = raw_line.rstrip("\r\n")
+                    if not line.strip():
+                        continue
+                    parsed = parse_log_line(line)
+                    if parsed is not None:
+                        if current_entry:
+                            parsed_history.append(current_entry)
+                        current_entry = (
+                            parsed.level,
+                            parsed.time,
+                            parsed.message,
+                        )
+                    elif current_entry:
+                        current_entry = (
+                            current_entry[0],
+                            current_entry[1],
+                            f"{current_entry[2]}\n{line}",
+                        )
                     else:
                         current_entry = (fallback_level, "-", line)
-            if current_entry:
-                parsed_history.append(current_entry)
-            return parsed_history
-        except Exception as e:
-            logger.error("[LogService] Error parsing log file '%s': %s", file_path, e)
+
+                if current_entry:
+                    parsed_history.append(current_entry)
+                return parsed_history
+        except OSError:
+            logger.exception("[LogService] Could not read log file '%s'.", file_path)
+            return []
+        except UnicodeError:
+            logger.exception("[LogService] Could not decode log file '%s'.", file_path)
             return []

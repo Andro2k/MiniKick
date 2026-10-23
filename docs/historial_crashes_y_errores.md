@@ -49,6 +49,7 @@
 | **INC-037** | YouTube y TikTok volvían a auto-iniciar cada vez que la app abría aunque el canal se hubiera detectado offline | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `frontend/main_window.py`, `resources/tests/test_live_chat_offline_autostart.py` | v1.6.5 |
 | **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
 | **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
+| **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 
 ---
 
@@ -967,3 +968,26 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Archivos y Módulos Modificados**: `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py`.
 * **Solución Implementada**: Se actualizaron las referencias a `MRG_VXS`, `MRG_HXS` y `SEC_HDR`, y se ajustó la prueba de tokens para comprobar los nombres vigentes.
 * **Pruebas y Verificación**: Búsqueda AST de atributos `Radius`, `Margin` y `Borders` no encontró referencias inválidas; `py_compile` pasó en los archivos afectados. En `test_antigravity_ui_theme.py`, 15 pruebas pasaron y una continúa fallando en una aserción preexistente del selector QSS de `QComboBox`, no relacionada con este incidente.
+
+---
+
+### INC-040: Advertencia al cerrar MiniKick por referencia a `WhatsNewWorker` ya eliminado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (advertencia no fatal durante el cierre ordenado de la aplicación; la descarga e instalación de actualizaciones se completaron).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-10-23.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.4`.
+* **Traza de la Excepción**:
+  ```text
+  RuntimeError: libshiboken: Internal C++ object (WhatsNewWorker) already deleted.
+    File "frontend/worker_shutdown.py", line 77, in stop_workers
+      if not worker.isRunning():
+  ```
+* **Causa Raíz**: `WhatsNewWorker` programa su eliminación al finalizar, pero la ventana puede conservar la referencia Python al wrapper de Qt. En el cierre o en una consulta posterior, llamar `isRunning()` sobre ese wrapper produce `RuntimeError` porque el objeto C++ ya no existe.
+* **Archivos y Módulos Modificados**:
+  - `frontend/main_window.py`
+  - `frontend/worker_shutdown.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: La ventana usa la comprobación segura de workers antes de consultar si la búsqueda remota de novedades sigue activa. El coordinador trata un wrapper de hilo ya eliminado como detenido, lo retira del seguimiento y registra el caso a nivel DEBUG sin intentar borrarlo otra vez ni emitir una advertencia con traceback.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` y `resources/tests/test_auto_update_setting.py`: 10 pruebas aprobadas, incluyendo los casos de un `QThread` eliminado y el reemplazo de la referencia obsoleta. `py_compile` y `git diff --check` correctos. Suite rápida de calidad: 12/12 auditorías aprobadas.

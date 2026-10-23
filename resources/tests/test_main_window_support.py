@@ -4,8 +4,9 @@ import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
+from PySide6.QtCore import QEvent, QEventLoop, QObject, QThread, QTimer
 
+from frontend.main_window import MainWindowCore
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.worker_shutdown import WorkerShutdownCoordinator
@@ -89,3 +90,53 @@ def test_worker_shutdown_does_not_block_the_event_loop(qapp):
     assert completed == [True]
     assert not worker.isRunning()
     assert worker not in retiring_workers
+
+
+def test_worker_shutdown_ignores_already_deleted_qthread(qapp, caplog):
+    parent = QObject()
+    retiring_workers = set()
+    coordinator = WorkerShutdownCoordinator(
+        parent,
+        logging.getLogger("test.worker_shutdown"),
+        retiring_workers,
+    )
+    worker = QThread()
+    worker.deleteLater()
+    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+    with caplog.at_level(logging.WARNING, logger="test.worker_shutdown"):
+        coordinator.stop_workers([("deleted worker", worker)])
+
+    assert not caplog.records
+    assert worker not in retiring_workers
+
+
+def test_whats_new_fetch_replaces_already_deleted_worker(qapp, monkeypatch):
+    import backend.workers
+
+    stale_worker = QThread()
+    stale_worker.deleteLater()
+    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+    replacement = SimpleNamespace(
+        highlights_fetched=MagicMock(),
+        finished=MagicMock(),
+        deleteLater=MagicMock(),
+        start=MagicMock(),
+    )
+    worker_factory = MagicMock(return_value=replacement)
+    monkeypatch.setattr(backend.workers, "WhatsNewWorker", worker_factory)
+    window = SimpleNamespace(
+        _is_shutting_down=False,
+        _is_window_closing=False,
+        _whats_new_worker=stale_worker,
+        _is_worker_running=MainWindowCore._is_worker_running,
+        app_version="1.6.5",
+        _on_remote_whats_new_fetched=MagicMock(),
+    )
+
+    MainWindowCore._fetch_remote_whats_new_if_needed(window)
+
+    worker_factory.assert_called_once_with("1.6.5", parent=window)
+    replacement.start.assert_called_once_with()
+    assert window._whats_new_worker is replacement

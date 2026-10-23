@@ -13,6 +13,7 @@ Este documento detalla la arquitectura de software, los flujos de ejecución, lo
 6. [Diagrama 5: Motor de Síntesis de Voz (TTS)](#6-diagrama-5-motor-de-síntesis-de-voz-tts)
 7. [Matriz de Complejidad Algorítmica (Big-O)](#7-matriz-de-complejidad-algorítmica-big-o)
 8. [Referencias de Código y Módulos](#8-referencias-de-código-y-módulos)
+9. [Registro y visualización de logs](#9-registro-y-visualización-de-logs)
 
 ---
 
@@ -411,3 +412,17 @@ flowchart TD
   * [`TimerWorker`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/timers_worker.py) — Hilo asíncrono para sondeo de estado de stream y disparo de timers.
   * [`KickChatWorker`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/) — Conexión WebSocket Pusher hacia Kick.
   * [`TwitchChatWorker`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/) — Conexión WebSocket IRC hacia Twitch.
+
+---
+
+## 9. Registro y visualización de logs
+
+La aplicación emite los registros con un formato estructurado común:
+
+```text
+[YYYY-MM-DD HH:MM:SS.mmm ±HH:MM] [LVL] [ThreadName] MiniKick.Module: Message
+```
+
+El formato lo comparten el archivo principal, la vista en vivo y los encabezados del registro de fallos. Las trazas multilínea se conservan dentro del mensaje; las salidas directas de `faulthandler` permanecen como texto de diagnóstico.
+
+La vista histórica acepta también líneas con timestamp y nivel sin zona horaria, nombre de hilo o nombre de logger. Esa compatibilidad es solo de lectura: los archivos históricos no se reescriben y las nuevas entradas se guardan en el formato actual. El parseo común identifica cada registro de forma independiente y el archivo se lee línea por línea para evitar una copia adicional completa en memoria.

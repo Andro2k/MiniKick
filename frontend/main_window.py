@@ -551,7 +551,7 @@ class MainWindowCore(QMainWindow):
     def _fetch_remote_whats_new_if_needed(self):
         if self._is_shutting_down or getattr(self, "_is_window_closing", False):
             return
-        if hasattr(self, "_whats_new_worker") and self._whats_new_worker and self._whats_new_worker.isRunning():
+        if self._is_worker_running(getattr(self, "_whats_new_worker", None)):
             return
         from backend.workers import WhatsNewWorker
         self._whats_new_worker = WhatsNewWorker(self.app_version, parent=self)

@@ -7,6 +7,7 @@ _EXPORTS = {
     "setup_application_logging": ".app_logger_core",
     "flush_all_logs": ".app_logger_core",
     "get_log_dir": ".app_logger_core",
+    "write_fault_log_record": ".app_logger_core",
     "AutoFlushTimedRotatingFileHandler": ".app_logger_core",
 }
 
@@ -26,4 +27,10 @@ def __getattr__(name: str):
 
 if TYPE_CHECKING:
     from .app_container_core import AppContainerCore
-    from .app_logger_core import AutoFlushTimedRotatingFileHandler, flush_all_logs, get_log_dir, setup_application_logging
+    from .app_logger_core import (
+        AutoFlushTimedRotatingFileHandler,
+        flush_all_logs,
+        get_log_dir,
+        setup_application_logging,
+        write_fault_log_record,
+    )
