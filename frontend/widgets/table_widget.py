@@ -24,7 +24,8 @@ class ModernTable(QTableWidget):
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setDefaultSectionSize(42)
         self.setShowGrid(False)
-        self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def enable_filter_header(self) -> FilterHeaderView:
@@ -60,7 +61,7 @@ class ModernTableCard(QFrame):
 
         self.card_layout = QVBoxLayout(self)
         self.card_layout.setContentsMargins(*Size.Margin.NONE)
-        self.card_layout.setSpacing(Size.SPACING_NONE)
+        self.card_layout.setSpacing(Size.SPACING_NN)
 
         self.lbl_title = None
         self.txt_search = None
@@ -508,4 +509,3 @@ class PlatformBadgeCell(QWidget):
                 self.layout.addWidget(lbl_icon)
 
         self.layout.addStretch()
-

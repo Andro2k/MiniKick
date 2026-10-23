@@ -37,7 +37,7 @@ class AlertVariantTabPill(QFrame):
         self._is_enabled = True
 
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(44)
+        self.setFixedHeight(36)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._setup_ui()
         self._update_appearance()
@@ -45,7 +45,7 @@ class AlertVariantTabPill(QFrame):
     def _setup_ui(self):
         self.setProperty("role", "banner_scope_card")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.TAB_BAR)
+        layout.setContentsMargins(*Size.Margin.SM)
         layout.setSpacing(Size.SPACING_SM)
 
         self.icon_lbl = QLabel(parent=self)
@@ -131,7 +131,7 @@ class AlertVariantsTabBar(ModernCard):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setFixedHeight(60)
+        scroll.setFixedHeight(48)
 
         container = QWidget()
         container_layout = QHBoxLayout(container)

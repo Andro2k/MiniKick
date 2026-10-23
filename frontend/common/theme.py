@@ -60,7 +60,6 @@ class Semantic:
     BLUE_GLOW             = "rgba(59, 130, 246, 0.10)"
     PURPLE_GLOW           = "rgba(168, 85, 247, 0.10)"
 
-
 class BrandColors:
     INDIGO         = "#818CF8"
     INDIGO_DARK    = "#6366F1"
@@ -110,6 +109,7 @@ class BrandColors:
     GREEN_700      = "#188546"
     GREEN_800      = "#146133"
     GREEN_900      = "#0F4F29"
+
 class MusicTheme:
     MUSIC_VINYL_BG_TOP    = "#3E5238"
     MUSIC_VINYL_BG_BOTTOM = "#243129"
@@ -145,14 +145,12 @@ class ChatTheme:
         (BrandColors.EMERALD, BrandColors.GREEN_600), (BrandColors.CYAN_500, BrandColors.CYAN_600),
     )
 
-
 class BadgeTheme:
-    BADGE_STREAMER  = "#E64747"
-    BADGE_MODERATOR = "#3EC669"
-    BADGE_VIP       = "#E08338"
-    BADGE_OG        = "#8A5BE2"
-    BADGE_SUB       = "#389CE0"
-    BADGE_BG        = "#29315A"
+    BADGE_STR = "#E64747"
+    BADGE_MOD = "#3EC669"
+    BADGE_VIP = "#E08338"
+    BADGE_SUB = "#389CE0"
+    BADGE_BCG = "#29315A"
 
 class SwitchTheme:
     SWITCH_TRACK_ON_0  = "#1E8E4D"
@@ -174,24 +172,23 @@ class Radius:
     PILL = 26
 
 class Margin:
-    NONE           = (0, 0, 0, 0)
-    XS             = (2, 2, 2, 2)
-    SM             = (6, 6, 6, 6)
-    MD             = (8, 8, 8, 8)
-    LG             = (12, 12, 12, 12)
-    XL             = (16, 16, 16, 16)
+    NONE    = (0, 0, 0, 0)
+    XS      = (2, 2, 2, 2)
+    SM      = (6, 6, 6, 6)
+    MD      = (8, 8, 8, 8)
+    LG      = (12, 12, 12, 12)
+    XL      = (16, 16, 16, 16)
 
-    H_XS           = (2, 0, 2, 0)
-    H_SM           = (6, 0, 6, 0)
-    H_MD           = (8, 0, 8, 0)
+    H_XS    = (2, 0, 2, 0)
+    H_SM    = (6, 0, 6, 0)
+    H_MD    = (8, 0, 8, 0)
 
-    V_XS           = (0, 2, 0, 2)
-    V_SM           = (0, 6, 0, 6)
+    V_XS    = (0, 2, 0, 2)
+    V_SM    = (0, 6, 0, 6)
 
     SECTION_HEADER = (2, 12, 2, 4)
-    TAB_BAR        = (12, 4, 12, 4)
-    SCROLL_CONTENT = (2, 2, 8, 2)
-    TAG_BADGE      = (4, 4, 8, 4)
+    SECTION_SCROLL = (2, 2, 8, 2)
+    SECTION_BADGES = (4, 4, 8, 4)
 
 class Padding:
     BADGE     = "2px 8px"
@@ -208,20 +205,20 @@ class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
 
 class Size:
-    Radius              = Radius
-    Margin              = Margin
-    Padding             = Padding
-    Typography          = Typography
-    SPACING_NONE        = 0
-    SPACING_XS          = 2
-    SPACING_SM          = 6
-    SPACING_MD          = 8
-    SPACING_LG          = 12
-    SPACING_XL          = 16
-    ICON_BUTTON_NORMAL  = 32
-    ICON_BUTTON_COMPACT = 24
-    BADGE_MIN_HEIGHT    = 18
-    BADGE_MAX_HEIGHT    = 22
+    Radius     = Radius
+    Margin     = Margin
+    Padding    = Padding
+    Typography = Typography
+    SPACING_NN = 0
+    SPACING_XS = 2
+    SPACING_SM = 6
+    SPACING_MD = 8
+    SPACING_LG = 12
+    SPACING_XL = 16
+    ICON_BASIC = 32
+    ICON_SMALL = 24
+    BADGE_MIN  = 18
+    BADGE_MAX  = 22
 
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
     return f"{width:g}px {style} {color}"
@@ -560,9 +557,9 @@ QFrame[role="dialog"][state="neutral"] {{ border-color: {Semantic.NEUTRAL_700}; 
 QFrame[role="splash_card"] {{ background-color: transparent; border: none; }}
 QWidget[role="splash_window"] {{ background-color: {Semantic.NEUTRAL_900}; }}
 
-QFrame[role="banner_danger"] {{ background-color: {Semantic.RED_GLOW}; border: 1.2px solid {BrandColors.RED_DARK}; border-radius: {Size.Radius.MD}px; }}
-QFrame[role="banner_warning"] {{ background-color: {Semantic.AMBER_GLOW}; border: 1.2px solid {BrandColors.AMBER_DARK}; border-radius: {Size.Radius.MD}px; }}
-QFrame[role="banner_scope_card"] {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.DEFAULT}; border-radius: {Size.Radius.LG}px; }}
+QFrame[role="banner_danger"]        {{ background-color: {Semantic.RED_GLOW}; border: 1.2px solid {BrandColors.RED_DARK}; border-radius: {Size.Radius.MD}px; }}
+QFrame[role="banner_warning"]       {{ background-color: {Semantic.AMBER_GLOW}; border: 1.2px solid {BrandColors.AMBER_DARK}; border-radius: {Size.Radius.MD}px; }}
+QFrame[role="banner_scope_card"]    {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.DEFAULT}; border-radius: {Size.Radius.LG}px; }}
 QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.GREEN_MEDIUM}; }}
 QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.PURPLE_MEDIUM}; }}
 QFrame[role="danger_icon"]  {{ background-color: {BrandColors.RED}; border-radius: {Size.Radius.PILL}px; }}
@@ -585,7 +582,7 @@ QFrame[role="toast"][state="warning"] {{ border-color: {BrandColors.AMBER}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {BrandColors.BLUE}; }}
 
 /* Badges & Tags */
-QFrame[role="badge"] {{ background-color: {Semantic.NEUTRAL_900}; border: {Borders.SUBTLE}; border-radius: {Size.Radius.MD}px; min-height: 20px; max-height: {Size.BADGE_MAX_HEIGHT}px; }}
+QFrame[role="badge"] {{ background-color: {Semantic.NEUTRAL_900}; border: {Borders.SUBTLE}; border-radius: {Size.Radius.MD}px; min-height: 20px; max-height: {Size.BADGE_MAX}px; }}
 QFrame[role="badge"] QLabel {{ font-size: {text2}px; font-weight: 500; color: {Semantic.NEUTRAL_400}; background: transparent; }}
 QFrame[role="badge"][state="everyone"] {{ background-color: {Semantic.GREEN_GLOW}; border-color: {BrandColors.GREEN}; }}
 QFrame[role="badge"][state="everyone"] QLabel {{ color: {BrandColors.GREEN}; }}
@@ -605,10 +602,10 @@ QFrame[role="badge"][state="kick"] {{ background-color: {Semantic.GREEN_GLOW}; b
 QFrame[role="badge"][state="kick"] QLabel {{ color: {BrandColors.GREEN}; }}
 QFrame[role="badge"][state="twitch"] {{ background-color: {Semantic.PURPLE_GLOW}; border-color: {BrandColors.PURPLE}; }}
 QFrame[role="badge"][state="twitch"] QLabel {{ color: {BrandColors.PURPLE}; }}
-QLabel[role="badge"] {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_400}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.SUBTLE}; min-height: {Size.BADGE_MIN_HEIGHT}px; max-height: {Size.BADGE_MAX_HEIGHT}px; }}
-QLabel[role="badge_kick"] {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.GREEN_MEDIUM}; min-height: {Size.BADGE_MIN_HEIGHT}px; max-height: {Size.BADGE_MAX_HEIGHT}px; }}
-QLabel[role="badge_twitch"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.PURPLE_MEDIUM}; min-height: {Size.BADGE_MIN_HEIGHT}px; max-height: {Size.BADGE_MAX_HEIGHT}px; }}
-QLabel[role="tag_badge"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 600; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.PURPLE_MEDIUM}; min-height: {Size.BADGE_MIN_HEIGHT}px; max-height: {Size.BADGE_MAX_HEIGHT}px; }}
+QLabel[role="badge"] {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_400}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.SUBTLE}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
+QLabel[role="badge_kick"] {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.GREEN_MEDIUM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
+QLabel[role="badge_twitch"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 500; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.PURPLE_MEDIUM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
+QLabel[role="tag_badge"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 600; border-radius: {Size.Radius.MD}px; padding: {Size.Padding.BADGE}; font-size: {text2}px; border: {Borders.PURPLE_MEDIUM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
 QLabel[role="rank_number"] {{ color: {BrandColors.GREEN}; font-weight: 500; min-width: 20px; }}
 QLabel[role="rank_number"][state="gold"] {{ color: {BrandColors.AMBER}; font-weight: 700; font-size: 13px; }}
 QLabel[role="rank_number"][state="silver"] {{ color: {Semantic.NEUTRAL_400}; font-weight: 700; font-size: 13px; }}
@@ -618,7 +615,7 @@ QLabel[role="status_pill"] {{ border-radius: 9px; padding: 2px 8px; font-size: 1
 QLabel[role="status_pill"][state="online"] {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; border: {Borders.GREEN_THIN}; font-weight: 600; }}
 QLabel[role="status_pill"][state="connecting"] {{ background-color: {Semantic.AMBER_GLOW}; color: {BrandColors.AMBER}; border: 1px solid {BrandColors.AMBER}; font-weight: 600; }}
 QLabel[role="status_pill"][state="offline"] {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_400}; border: {Borders.SUBTLE}; }}
-QLabel[role="badge_new"] {{ background-color: {BrandColors.ORANGE}; color: {Semantic.NEUTRAL_000}; font-weight: 700; border-radius: 9px; min-width: {Size.BADGE_MIN_HEIGHT}px; max-width: {Size.BADGE_MIN_HEIGHT}px; min-height: {Size.BADGE_MIN_HEIGHT}px; max-height: {Size.BADGE_MIN_HEIGHT}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
+QLabel[role="badge_new"] {{ background-color: {BrandColors.ORANGE}; color: {Semantic.NEUTRAL_000}; font-weight: 700; border-radius: 9px; min-width: {Size.BADGE_MIN}px; max-width: {Size.BADGE_MIN}px; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MIN}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
 QLabel[role="badge_new"][state="collapsed"] {{ border-radius: 6px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
 QFrame[role="whats_new_card"] {{ background-color: {Semantic.NEUTRAL_900}; border: {Borders.SUBTLE}; border-radius: {Size.Radius.LG}px; }}
 QFrame[role="whats_new_card"]:hover {{ background-color: {Semantic.NEUTRAL_750}; border: {Borders.DEFAULT}; }}
@@ -627,8 +624,7 @@ QTextBrowser[role="release_notes_browser"] {{ background-color: {Semantic.NEUTRA
 /* Table Widget */
 QTableWidget {{ background-color: {Semantic.NEUTRAL_900}; border: none; gridline-color: transparent; border-bottom-left-radius: {Size.Radius.LG}px; border-bottom-right-radius: {Size.Radius.LG}px; }}
 QTableWidget::item {{ padding: 2px 8px; border-bottom: {Borders.SUBTLE}; }}
-QTableWidget::item:hover:!selected {{ background-color: {Semantic.NEUTRAL_950}; }}
-QTableWidget::item:selected {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_050}; }}
+QTableWidget::item:selected {{ background-color: {Semantic.NEUTRAL_750}; color: {Semantic.NEUTRAL_050}; }}
 QTableWidget::item:disabled {{ color: {Semantic.NEUTRAL_500}; }}
 QHeaderView, QHeaderView::section {{ background-color: transparent; border: none; }}
 QHeaderView::section {{ color: {Semantic.NEUTRAL_400}; font-weight: 500; padding: {Size.Padding.INPUT}; border-bottom: {Borders.DEFAULT}; text-align: left; }}
@@ -714,7 +710,7 @@ QPushButton[role="segmented_item"]:disabled {{ color: {Semantic.NEUTRAL_500}; op
 
 /* Segmented Pagination */
 QFrame[role="segmented_pagination"] {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700}; border-radius: {Size.Radius.MD}px; }}
-QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: 1px solid {Semantic.NEUTRAL_700}; min-width: {Size.ICON_BUTTON_NORMAL}px; max-width: {Size.ICON_BUTTON_NORMAL}px; min-height: {Size.ICON_BUTTON_NORMAL}px; max-height: {Size.ICON_BUTTON_NORMAL}px; }}
+QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: 1px solid {Semantic.NEUTRAL_700}; min-width: {Size.ICON_BASIC}px; max-width: {Size.ICON_BASIC}px; min-height: {Size.ICON_BASIC}px; max-height: {Size.ICON_BASIC}px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_first {{ border-left: none; border-top-left-radius: {Size.Radius.MD}px; border-bottom-left-radius: {Size.Radius.MD}px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_last {{ border-top-right-radius: {Size.Radius.MD}px; border-bottom-right-radius: {Size.Radius.MD}px; }}
 QFrame[role="segmented_pagination"] QPushButton:hover:enabled {{ background-color: {Semantic.NEUTRAL_750}; }}

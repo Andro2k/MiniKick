@@ -88,7 +88,7 @@ def test_theme_tokens_clean_and_complete():
         theme,
         Size,
     )
-    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.TAB_BAR, Size.Margin.SCROLL_CONTENT, Size.Margin.XS, Size.Margin.TAG_BADGE):
+    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.SECTION_SCROLL, Size.Margin.XS, Size.Margin.SECTION_BADGES):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -324,6 +324,7 @@ def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     assert form.layout().spacing() == Size.SPACING_MD
 
 def test_table_cards_and_edge_to_edge_alignment(qapp):
+    from PySide6.QtWidgets import QTableWidget
     from frontend.widgets import ModernTableCard, ModernDivider
     from frontend.views.commands_view import CommandView
     from frontend.views.rewards_view import RewardsView
@@ -338,6 +339,11 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
         search_placeholder="Search",
         add_button_text="Add"
     )
+    assert card.table.selectionBehavior() == QTableWidget.SelectionBehavior.SelectRows
+    assert card.table.selectionMode() == QTableWidget.SelectionMode.SingleSelection
+    assert "QTableWidget::item:hover:!selected" not in GLOBAL_QSS
+    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in GLOBAL_QSS
+
     m = card.card_layout.contentsMargins()
     assert (m.left(), m.top(), m.right(), m.bottom()) == (0, 0, 0, 0)
     assert card.card_layout.spacing() == 0

@@ -117,7 +117,7 @@ class ChatView(BaseView):
         self.left_container = QWidget()
         left_layout = QVBoxLayout(self.left_container)
         left_layout.setContentsMargins(*Size.Margin.NONE)
-        left_layout.setSpacing(Size.SPACING_NONE)
+        left_layout.setSpacing(Size.SPACING_NN)
         left_layout.addWidget(self.tabs)
         self.left_container.setMinimumWidth(320)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
@@ -386,7 +386,7 @@ class ChatView(BaseView):
     def set_overlay_settings_ui(
         self,
         theme: str = "glass",
-        size: int = 14,
+        size: int = 16,
         fade: int = 15,
         show_bots: bool = False,
         show_time: bool = False,

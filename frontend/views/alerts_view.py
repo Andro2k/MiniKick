@@ -130,7 +130,7 @@ class AlertsView(BaseView):
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
             icon_name="plug-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)

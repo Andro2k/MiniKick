@@ -38,7 +38,7 @@ class MusicSettingsPanel(QWidget):
         header_settings = SectionHeader(self.i18n.get("music.tabs.settings"), first=True, parent=self)
         self.panel_layout.addWidget(header_settings)
 
-        self.card_settings = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        self.card_settings = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="vertical")
 
         self.sw_auto_resume = ModernSwitch(parent=self)
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)

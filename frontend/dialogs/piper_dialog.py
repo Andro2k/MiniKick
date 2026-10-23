@@ -138,7 +138,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), params_container)
         self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=14))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         actions_layout.addWidget(self.btn_import)
@@ -199,7 +199,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)
-        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=14))
+        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
         lbl_search_icon.setFixedSize(14, 14)
         search_layout.addWidget(lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
@@ -217,9 +217,9 @@ class PiperVoicesDialog(ModernFramelessShell):
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
         self.scroll_layout.setContentsMargins(*Size.Margin.NONE)
-        self.scroll_layout.setSpacing(Size.SPACING_NONE)
+        self.scroll_layout.setSpacing(Size.SPACING_NN)
 
-        self.catalog_card = ModernCard(scroll_content, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        self.catalog_card = ModernCard(scroll_content, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
         self.scroll_layout.addWidget(self.catalog_card)
 
         self.lbl_empty_state = QLabel(self.i18n.get("piper_dialog.empty_search"), scroll_content)

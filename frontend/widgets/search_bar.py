@@ -18,7 +18,7 @@ class UnifiedSearchBar(QFrame):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
 
-        layout = create_row_layout(spacing=Size.SPACING_NONE, margins=Size.Margin.NONE, parent=self)
+        layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.NONE, parent=self)
 
         self._icon_search = get_icon_colored("search-filled.svg")
         self._icon_clear = get_icon_colored("x-filled.svg")

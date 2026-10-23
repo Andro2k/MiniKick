@@ -96,7 +96,7 @@ class AlertEventCard(QWidget):
         header_row.setSpacing(Size.SPACING_MD)
 
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=20))
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=24))
 
         platform_name = self.i18n.get(f"alerts.platforms.{self.platform}")
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
@@ -122,7 +122,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -133,7 +133,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -143,7 +143,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
@@ -153,7 +153,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.save_short"),
             role=btn_role,
             icon_name="check-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -567,7 +567,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -596,7 +596,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -639,7 +639,7 @@ class AlertEventCard(QWidget):
         col_right.addWidget(self.card_media)
         col_right.addStretch(1)
 
-        card_preview = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        card_preview = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
         card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         preview_header_w = QWidget(card_preview)
@@ -647,7 +647,7 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*Size.Margin.MD)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=14))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
@@ -660,7 +660,7 @@ class AlertEventCard(QWidget):
         mockup_container = QWidget(card_preview)
         mockup_layout = QVBoxLayout(mockup_container)
         mockup_layout.setContentsMargins(*Size.Margin.MD)
-        mockup_layout.setSpacing(Size.SPACING_NONE)
+        mockup_layout.setSpacing(Size.SPACING_NN)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
         self.mockup_widget.setMinimumSize(300, 300)

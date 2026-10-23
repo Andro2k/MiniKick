@@ -20,7 +20,7 @@ class SegmentedPagination(QFrame):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(*Size.Margin.NONE)
-        layout.setSpacing(Size.SPACING_NONE)
+        layout.setSpacing(Size.SPACING_NN)
 
         self.btn_first = QPushButton(self)
         self.btn_first.setObjectName("btn_first")

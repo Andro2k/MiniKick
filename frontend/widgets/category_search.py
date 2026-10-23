@@ -153,7 +153,7 @@ class CategorySearchComboBox(QFrame):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(*Size.Margin.NONE)
-        layout.setSpacing(Size.SPACING_NONE)
+        layout.setSpacing(Size.SPACING_NN)
 
         self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_400, 16)
         self._icon_clear = get_icon_colored("x-filled.svg", Palette.NEUTRAL_400, 16)

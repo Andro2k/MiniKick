@@ -26,7 +26,7 @@ def _setup_icon_text_row(
     tooltip: str = "",
     margins=Size.Margin.NONE,
     spacing=Size.SPACING_XS,
-    icon_size=14
+    icon_size=16
 ) -> tuple[QHBoxLayout, QLabel]:
     layout = QHBoxLayout(target_widget)
     layout.setContentsMargins(*margins)
@@ -51,7 +51,7 @@ class CompactToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=Size.Margin.XS, spacing=Size.SPACING_SM, icon_size=14)
+        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=Size.Margin.XS, spacing=Size.SPACING_SM, icon_size=16)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
 class ChatOverlaySettingsPanel(ModernCard):
@@ -97,7 +97,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _create_metric_header(self, icon_name: str, text: str, tooltip: str = "") -> QWidget:
         container = QWidget(self)
-        _setup_icon_text_row(container, icon_name, text, tooltip, margins=Size.Margin.NONE, spacing=Size.SPACING_XS, icon_size=14)
+        _setup_icon_text_row(container, icon_name, text, tooltip, margins=Size.Margin.NONE, spacing=Size.SPACING_XS, icon_size=16)
         return container
 
     def _setup_ui(self):

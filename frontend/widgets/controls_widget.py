@@ -19,7 +19,7 @@ from frontend.common import (
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
-def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BUTTON_NORMAL) -> None:
+def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BASIC) -> None:
     button.setProperty("icon_only", True)
     if isinstance(size, QSize):
         button.setFixedSize(size)

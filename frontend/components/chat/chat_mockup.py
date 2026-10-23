@@ -138,7 +138,7 @@ class ChatOverlayMockupWidget(QWidget):
         p.drawText(rect, Qt.AlignmentFlag.AlignCenter, letter)
 
         if self.show_platform and platform:
-            b_size = size * 0.44
+            b_size = size * 0.40
             bx = x + size - b_size + 1.0
             by = y + size - b_size + 1.0
             self._draw_badge(p, bx, by, platform, size=b_size)

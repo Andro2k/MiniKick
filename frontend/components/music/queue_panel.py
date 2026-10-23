@@ -117,7 +117,7 @@ class MusicQueuePanel(QWidget):
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
         panel_layout.setContentsMargins(*Size.Margin.NONE)
-        panel_layout.setSpacing(Size.SPACING_NONE)
+        panel_layout.setSpacing(Size.SPACING_NN)
 
         headers = [
             self.i18n.get("music.queue.col_num"),
@@ -193,7 +193,7 @@ class MusicQueuePanel(QWidget):
         btn_delete.setIconSize(QSize(14, 14))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
-        configure_icon_only_button(btn_delete, size=Size.ICON_BUTTON_COMPACT)
+        configure_icon_only_button(btn_delete, size=Size.ICON_SMALL)
         btn_delete.clicked.connect(lambda *args, idx=index: self.remove_queue_item_requested.emit(idx))
 
         cell_layout.addWidget(btn_delete)

@@ -42,7 +42,7 @@ class BotMutePanel(QWidget):
         header_commands = SectionHeader(self.i18n.get("chat.mod_commands.section_title"), parent=self, first=True)
         self.panel_layout.addWidget(header_commands)
 
-        commands_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        commands_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="vertical")
         self.sw_cmd_mute = ModernSwitch(self)
         self.sw_cmd_mute.setChecked(True)
         self.sw_cmd_block = ModernSwitch(self)
@@ -180,7 +180,7 @@ class BotMutePanel(QWidget):
             fm = lbl_name.fontMetrics()
             font_height = fm.height()
             icon_size = max(14, int(font_height * 0.75))
-            btn_size = Size.ICON_BUTTON_COMPACT
+            btn_size = Size.ICON_SMALL
 
             if icon_size not in self._trash_icon_cache:
                 self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
@@ -215,7 +215,7 @@ class BotMutePanel(QWidget):
         tag_widget = QFrame()
         tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(*Size.Margin.TAG_BADGE)
+        layout.setContentsMargins(*Size.Margin.SECTION_BADGES)
         layout.setSpacing(Size.SPACING_XS)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
 

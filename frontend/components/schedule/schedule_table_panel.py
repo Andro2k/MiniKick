@@ -24,7 +24,7 @@ class ScheduleTablePanel(QWidget):
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(*Size.Margin.NONE)
-        main_layout.setSpacing(Size.SPACING_NONE)
+        main_layout.setSpacing(Size.SPACING_NN)
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("stream_info.schedule_section.title"),

@@ -54,7 +54,7 @@ class ImportBackupModal(ModernModal):
             title=title,
             icon_path="restart-filled.svg",
             icon_role="accent_icon",
-            width=540,
+            width=640,
             resizable=False,
             dialog_key="import_backup_modal",
             parent=parent
@@ -73,7 +73,7 @@ class ImportBackupModal(ModernModal):
             meta_card = ModernCard(parent=self, margin=Size.Margin.SM, spacing=Size.SPACING_XS)
             if version:
                 row_v = QHBoxLayout()
-                row_v.setContentsMargins(*Size.Margin.NONE)
+                row_v.setContentsMargins(*Size.Margin.SM)
                 row_v.setSpacing(Size.SPACING_SM)
                 lbl_v_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_version"), self)
                 lbl_v_tag.setProperty("role", "caption")
@@ -87,7 +87,7 @@ class ImportBackupModal(ModernModal):
 
             if export_date:
                 row_d = QHBoxLayout()
-                row_d.setContentsMargins(*Size.Margin.NONE)
+                row_d.setContentsMargins(*Size.Margin.SM)
                 row_d.setSpacing(Size.SPACING_SM)
                 lbl_d_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_date"), self)
                 lbl_d_tag.setProperty("role", "caption")
@@ -108,14 +108,14 @@ class ImportBackupModal(ModernModal):
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
             role="action_outlined",
             icon_name="check-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_select_all.clicked.connect(self._select_all)
@@ -181,7 +181,7 @@ class ImportBackupModal(ModernModal):
             badge_frame.setProperty("role", "badge")
             badge_layout = QHBoxLayout(badge_frame)
             badge_layout.setContentsMargins(*Size.Margin.H_SM)
-            badge_layout.setSpacing(Size.SPACING_NONE)
+            badge_layout.setSpacing(Size.SPACING_NN)
             badge_lbl = QLabel(count_str, badge_frame)
             badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             badge_layout.addWidget(badge_lbl)

@@ -58,7 +58,7 @@ class MusicView(BaseView):
         col1 = QWidget(self.body_container)
         self.col1_layout = QVBoxLayout(col1)
         self.col1_layout.setContentsMargins(*Size.Margin.NONE)
-        self.col1_layout.setSpacing(Size.SPACING_NONE)
+        self.col1_layout.setSpacing(Size.SPACING_NN)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.tabs = QTabWidget(col1)
@@ -78,7 +78,7 @@ class MusicView(BaseView):
         col2 = QWidget(self.body_container)
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*Size.Margin.NONE)
-        self.col2_layout.setSpacing(Size.SPACING_NONE)
+        self.col2_layout.setSpacing(Size.SPACING_NN)
         self.col2_layout.addWidget(self.queue_panel)
 
         self.columns_layout.addWidget(col1, stretch=3)

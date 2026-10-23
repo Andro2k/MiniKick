@@ -44,7 +44,7 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _setup_status_section(self, parent_layout: QVBoxLayout):
         status_header = QHBoxLayout()
-        status_header.setContentsMargins(*Size.Margin.NONE)
+        status_header.setContentsMargins(*Size.Margin.SM)
         status_header.setSpacing(Size.SPACING_MD)
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
@@ -73,7 +73,7 @@ class ScheduleQuickChangePanel(QWidget):
         kick_header.setSpacing(Size.SPACING_MD)
 
         icon_kick = QLabel()
-        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN, size=18))
+        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN, size=16))
         lbl_kick_badge = QLabel("KICK")
         lbl_kick_badge.setProperty("role", "badge_kick")
         self.lbl_kick_status = QLabel(self.i18n.get("stream_info.status.loading"))
@@ -118,7 +118,7 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_header.setSpacing(Size.SPACING_MD)
 
         icon_twitch = QLabel()
-        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE, size=18))
+        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE, size=16))
         lbl_twitch_badge = QLabel("TWITCH")
         lbl_twitch_badge.setProperty("role", "badge_twitch")
         self.lbl_twitch_status = QLabel(self.i18n.get("stream_info.status.loading"))

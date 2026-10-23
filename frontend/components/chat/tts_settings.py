@@ -85,8 +85,8 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, size=14))
-            self.btn_test.setIconSize(QSize(14, 14))
+            self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, size=16))
+            self.btn_test.setIconSize(QSize(16, 16))
             configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)
             self.btn_test.setProperty("role", "action_outlined")
@@ -145,7 +145,7 @@ class ChatTtsSettingsPanel(QWidget):
         header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
         self.panel_layout.addWidget(header_platforms)
 
-        platforms_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="horizontal")
+        platforms_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="horizontal")
         self.sw_plat_kick = ModernSwitch(self)
         self.sw_plat_kick.setChecked(True)
         self.sw_plat_twitch = ModernSwitch(self)
@@ -191,8 +191,8 @@ class ChatTtsSettingsPanel(QWidget):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=14))
-        self.btn_manage_piper.setIconSize(QSize(14, 14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_manage_piper.setIconSize(QSize(16, 16))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_solid")
         self.btn_manage_piper.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -210,7 +210,7 @@ class ChatTtsSettingsPanel(QWidget):
         self.lbl_speed_perc = QLabel("100%", parent=self)
         self.lbl_speed_perc.setProperty("role", "monospace")
 
-        card_general = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        card_general = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="vertical")
         row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=Size.Margin.LG)
         row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=Size.Margin.LG)
         row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=Size.Margin.LG)
@@ -239,7 +239,7 @@ class ChatTtsSettingsPanel(QWidget):
         header_roles = SectionHeader(self.i18n.get("chat.roles.title"), parent=self)
         self.panel_layout.addWidget(header_roles)
 
-        voices_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="vertical")
 
         row_provider = VoiceSettingRow(
             "globe-filled.svg",
