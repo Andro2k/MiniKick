@@ -156,7 +156,7 @@ class UpdateDialog(ModernModal):
     def show_error(self, message: str):
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED, 36).pixmap(36, 36))
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_error"))
         self.lbl_subtitle.setText(message)

@@ -63,7 +63,7 @@ class PiperVoiceItemWidget(QWidget):
 
         self.btn_test = QPushButton(self)
         self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_test.setIconSize(QSize(14, 14))
+        self.btn_test.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_test)
         self.btn_test.setProperty("role", "action_outlined")
         self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
@@ -74,7 +74,7 @@ class PiperVoiceItemWidget(QWidget):
 
         self.btn_delete = QPushButton(self)
         self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_delete.setIconSize(QSize(13, 13))
+        self.btn_delete.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_delete)
         self.btn_delete.setProperty("role", "action_danger_solid")
         self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))

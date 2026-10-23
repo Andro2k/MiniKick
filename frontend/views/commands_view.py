@@ -224,7 +224,7 @@ class CommandView(BaseView):
 
         if not is_complete_valid_trigger(trigger_val):
             warn_icon = QLabel()
-            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 14))
+            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
             warn_icon.setToolTip(self.i18n.get("command.table.warning_legacy_format"))
             layout.addWidget(warn_icon)
 

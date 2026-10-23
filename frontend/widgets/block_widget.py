@@ -346,7 +346,7 @@ class ExpandableCard(QFrame):
 
         self.btn_expand = QPushButton(self.header_widget)
         self.btn_expand.setIcon(self._icon_down)
-        self.btn_expand.setIconSize(QSize(20, 20))
+        self.btn_expand.setIconSize(QSize(24, 24))
         configure_icon_only_button(self.btn_expand)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.setCursor(Qt.CursorShape.PointingHandCursor)

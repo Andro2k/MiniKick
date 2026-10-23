@@ -49,7 +49,7 @@ class WhatsNewDialog(ModernModal):
             width=540,
             parent=parent
         )
-        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.ORANGE, 50))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.ORANGE, 54))
         self._setup_content()
 
     def _setup_content(self):

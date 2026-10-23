@@ -109,7 +109,7 @@ class ModernFramelessShell(QDialog):
         if ModernFramelessShell._icon_close is None:
             ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg", size=16)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
-        self.btn_close_shell.setIconSize(QSize(14, 14))
+        self.btn_close_shell.setIconSize(QSize(16, 16))
         from frontend.widgets.controls_widget import configure_icon_only_button
         configure_icon_only_button(self.btn_close_shell)
         self.btn_close_shell.clicked.connect(self.reject)

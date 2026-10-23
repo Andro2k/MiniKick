@@ -61,7 +61,7 @@ class SearchableComboPopup(QFrame):
 
         self.lbl_search_icon = QLabel(search_container)
         self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
-        self.lbl_search_icon.setFixedSize(14, 14)
+        self.lbl_search_icon.setFixedSize(16, 16)
         search_layout.addWidget(self.lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = _SearchLineEdit(self, search_container)

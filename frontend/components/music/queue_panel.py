@@ -190,7 +190,7 @@ class MusicQueuePanel(QWidget):
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setIcon(self._icon_delete)
-        btn_delete.setIconSize(QSize(14, 14))
+        btn_delete.setIconSize(QSize(16, 16))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
         configure_icon_only_button(btn_delete, size=Size.ICON_SMALL)

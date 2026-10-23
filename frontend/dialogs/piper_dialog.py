@@ -200,7 +200,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         lbl_search_icon = QLabel(search_container)
         lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
-        lbl_search_icon.setFixedSize(14, 14)
+        lbl_search_icon.setFixedSize(16, 16)
         search_layout.addWidget(lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = QLineEdit(search_container)

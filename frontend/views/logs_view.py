@@ -147,8 +147,8 @@ class LogView(BaseView):
         self._action_buttons: list[ModernButton] = []
         for name, text, role, icon, color, slot, visible in specs:
             btn = ModernButton(text, role=role, parent=self)
-            btn.setIcon(get_icon_colored(icon, color, 14))
-            btn.setIconSize(QSize(14, 14))
+            btn.setIcon(get_icon_colored(icon, color, 16))
+            btn.setIconSize(QSize(16, 16))
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             btn.clicked.connect(slot)
             btn.setVisible(visible)
