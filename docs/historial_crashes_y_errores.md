@@ -46,6 +46,8 @@
 | **INC-034** | Tema QSS sin punto de extensión cacheable para estilos personalizados | Solicitud de mejora del sistema visual | v1.6.5 | `Implementado; validación visual pendiente` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_19`) |
 | **INC-035** | Ventana desacoplada del chat no disponible para Snap Layouts de Windows | Reporte de usuario | v1.6.5 | `✅ Solventado` | `frontend/views/chat_view.py`, `resources/tests/test_chat_detached_window.py` | v1.6.5 |
 | **INC-036** | Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado | Salida de `pytest resources/tests/` | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
+| **INC-037** | YouTube y TikTok volvían a auto-iniciar cada vez que la app abría aunque el canal se hubiera detectado offline | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `frontend/main_window.py`, `resources/tests/test_live_chat_offline_autostart.py` | v1.6.5 |
+| **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
 
 ---
 
@@ -903,3 +905,45 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Archivos y Módulos Modificados**: `frontend/common/theme.py`; `resources/tests/test_antigravity_ui_theme.py`.
 * **Solución Implementada**: Se actualizó la prueba para comprobar el panel de perfil, las tarjetas y márgenes actuales; se corrigió el selector a `QFrame[role="segmented_control"]`.
 * **Pruebas y Verificación**: `python -m py_compile frontend/common/theme.py resources/tests/test_antigravity_ui_theme.py` y `git diff --check` correctos. El usuario reportó 246 pruebas aprobadas antes de la corrección; no fue posible reejecutar pytest en el entorno de trabajo actual porque no está instalado. La auditoría de calidad rápida aprobó 11/12; el único aviso es la clave `dashboard.analytics.title` marcada como sin uso, ajena a esta corrección.
+
+
+---
+
+### INC-037: Auto-inicio repetido de plataformas offline
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (cada inicio de MiniKick intentaba establecer un chat de una transmisión ya detectada como offline; el worker se detenía correctamente después de detectarlo).
+* **Reportes Asociados**: Log de usuario `minikick.log`, MiniKick `v1.6.5`, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [AutoStart] Starting TikTok integration (target='williamjosucor')...
+  [TikTokChatProvider] @williamjosucor no está transmitiendo en vivo actualmente.
+  [TikTok] TikTok Live worker offline status: @williamjosucor no está transmitiendo en vivo actualmente.
+  [TikTokChatWorker] Stopping chat worker for '@williamjosucor'...
+  ```
+  El patrón aparece de nuevo después de un segundo inicio de la aplicación en el mismo log; el worker no estaba reintentando continuamente dentro de una sesión.
+* **Causa Raíz**: El canal guardado activaba el auto-inicio incondicionalmente en cada apertura. Aunque los workers se detenían al detectar el stream offline, el resultado offline no se persistía para decidir futuros auto-inicios.
+* **Archivos y Módulos Modificados**: `frontend/main_window.py`; `resources/tests/test_live_chat_offline_autostart.py`; `docs/historial_crashes_y_errores.md`.
+* **Solución Implementada**: Se persiste por plataforma la detección offline y se omite el auto-inicio de YouTube o TikTok en las siguientes aperturas hasta un intento manual. El estado se limpia al iniciar una conexión manual o al conectar exitosamente. El error offline de YouTube se distingue de errores generales, y el caso TikTok usa la traducción configurada.
+* **Pruebas y Verificación**: `.venv\Scripts\python.exe -m pytest resources/tests/test_live_chat_offline_autostart.py -v`: 3 aprobadas. `python -m py_compile frontend/main_window.py resources/tests/test_live_chat_offline_autostart.py` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.
+
+---
+
+### INC-038: Pausa del Dashboard durante el auto-inicio de servicios
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (el Dashboard quedaba perceptiblemente lento durante las fases iniciales de chat/TTS y las conexiones automáticas).
+* **Reportes Asociados**: Log de usuario `minikick.log`, MiniKick `v1.6.5`, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [Perf/Startup] Hydration phase 'chat and overlay settings' completed in 2352.77 ms
+  [PiperWarmup_es_MX-mario-medium] Loaded Piper voice model: es_MX-mario-medium
+  [AutoStart] Starting Kick integration...
+  [AutoStart] Starting Twitch integration...
+  ```
+* **Causa Raíz**: El controlador de chat inicializaba su backend al construirse y volvía a hacerlo durante la hidratación posterior a mostrar la ventana. En esa ruta se iniciaba además la carga anticipada del modelo Piper; mientras tanto, los temporizadores de auto-inicio podían lanzar varias plataformas con poca separación.
+* **Archivos y Módulos Modificados**: `backend/controllers/chat_controller.py`; `backend/services/chat/chat_service.py`; `frontend/main_window.py`; `resources/tests/test_chat_controller.py`; `docs/historial_crashes_y_errores.md`.
+* **Solución Implementada**: Se evita la segunda inicialización durante el arranque normal, se conserva la recarga explícita del backend al restaurar un backup y se difiere el calentamiento de Piper hasta que haga falta procesar voz. Los auto-inicios se espacian progresivamente para reducir el trabajo concurrente. La primera síntesis Piper en frío puede tardar más, pero se ejecuta fuera del hilo de la interfaz.
+* **Pruebas y Verificación**: Pruebas focales de chat/TTS, splash, estado de ventana y auto-inicio: 43 aprobadas. `py_compile` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.

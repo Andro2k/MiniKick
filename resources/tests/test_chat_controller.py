@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 from PySide6.QtWidgets import QApplication
 from backend.controllers.chat_controller import ChatController, _build_command_response_map, _parse_mute_args, _parse_block_args
+from backend.services.chat.chat_service import ChatService
 from backend.services.chat.chat_pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
 
@@ -121,6 +122,37 @@ def test_chat_controller_init_and_system_command_upsert(qapp, mock_dependencies)
     assert "[PLUGIN_CHAT_TTS_MUTE]" in saved_responses
     assert "[PLUGIN_CHAT_TTS_BLOCK]" in saved_responses
     assert "[PLUGIN_CHAT_GIF]" in saved_responses
+
+def test_load_initial_data_can_skip_backend_refresh(qapp, mock_dependencies):
+    d = mock_dependencies
+    controller = ChatController(
+        view=None,
+        service=d["service"],
+        command_service=d["command_service"],
+        spam_service=d["spam_service"],
+        i18n=d["i18n"],
+        toast_manager=d["toast"],
+        giphy_service=d["giphy_service"],
+    )
+    controller._init_backend_state = MagicMock()
+
+    controller.load_initial_data(refresh_backend=False)
+    controller._init_backend_state.assert_not_called()
+
+    controller.load_initial_data(refresh_backend=True)
+    controller._init_backend_state.assert_called_once()
+
+def test_chat_service_can_defer_provider_warmup():
+    tts = MagicMock()
+    storage = MagicMock()
+    storage.load_string.return_value = "voice-id"
+    service = ChatService(tts, storage)
+
+    service.set_provider("piper", warm_up=False)
+
+    tts.set_provider.assert_called_once_with("piper")
+    tts.set_voice.assert_called_once_with("voice-id")
+    tts.warm_up.assert_not_called()
 
 def test_chat_controller_pipeline_spam_blocking(qapp, mock_dependencies):
     d = mock_dependencies

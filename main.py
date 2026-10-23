@@ -2,6 +2,9 @@
 
 import os
 import sys
+import time
+
+_MODULE_IMPORT_STARTED = time.perf_counter()
 
 try:
     from dotenv import load_dotenv
@@ -40,15 +43,11 @@ if sys.platform == "win32":
         pass
 
 from backend.core import setup_application_logging, flush_all_logs
-from frontend.main_window import MainWindowCore
 setup_application_logging()
 
-from backend.services.system import (
-    GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
-)
 from backend.config import APP_VERSION
 
-from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog, SplashScreen
+from frontend.dialogs import SplashScreen
 from frontend.common import GLOBAL_QSS, resource_path, create_dark_palette
 
 logger = logging.getLogger("minikick.main")
@@ -105,6 +104,7 @@ def global_crash_handler(exctype, value, tb):
             initial_contact = DatabaseManager().get_primary_identity()
         except Exception:
             pass
+        from frontend.dialogs import CrashReportDialog
         dialog = CrashReportDialog(
             traceback_text=tb_text,
             i18n=i18n,
@@ -120,8 +120,11 @@ def global_crash_handler(exctype, value, tb):
     sys.exit(1)
 
 def bootstrap():
-    import time
     t_boot_start = time.perf_counter()
+    logger.info(
+        "[Perf/Bootstrap] Python module imports completed in %.2f ms",
+        (t_boot_start - _MODULE_IMPORT_STARTED) * 1000
+    )
     logger.info("==================================================================")
     logger.info("MiniKick Starting | Version: %s | Platform: %s | Python: %s", APP_VERSION, sys.platform, sys.version.split()[0])
     logger.info("==================================================================")
@@ -162,6 +165,15 @@ def bootstrap():
     splash = SplashScreen(i18n=safe_i18n, app_version=APP_VERSION)
     splash.showMaximized()
     splash.set_progress(15, safe_i18n.get("splash.init_app"))
+    t_splash_visible = time.perf_counter()
+    logger.info(
+        "[Perf/Bootstrap] Splash displayed %.2f ms after bootstrap started",
+        (t_splash_visible - t_boot_start) * 1000
+    )
+
+    from backend.services.system import (
+        GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
+    )
 
     logger.debug("[Bootstrap] Checking single-instance socket on port 45678...")
     splash.set_progress(30, safe_i18n.get("splash.check_instance"))
@@ -169,6 +181,7 @@ def bootstrap():
     if instance_provider.is_already_running():
         logger.warning("[Bootstrap] Duplicate instance detected. Presenting AlreadyRunningDialog.")
         splash.close()
+        from frontend.dialogs import AlreadyRunningDialog
         dialog = AlreadyRunningDialog(i18n=safe_i18n)
         dialog.exec()
         sys.exit(1)
@@ -192,6 +205,7 @@ def bootstrap():
         logger.info("[Bootstrap] Initializing MainWindowCore...")
         splash.set_progress(75, safe_i18n.get("splash.init_ui"))
         t_win_start = time.perf_counter()
+        from frontend.main_window import MainWindowCore
         window = MainWindowCore(updater_manager=updater, app_version=APP_VERSION)
         t_win_ready = time.perf_counter()
         logger.debug("[Perf/Bootstrap] MainWindowCore instantiated in %.2f ms", (t_win_ready - t_win_start) * 1000)

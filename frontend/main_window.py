@@ -55,6 +55,8 @@ class MainWindowCore(QMainWindow):
     SETTING_AUTOSTART = "dashboard_autostart"
     SETTING_WINDOW_MAXIMIZED = "window_is_maximized"
     SETTING_WINDOW_GEOMETRY = "window_geometry"
+    SETTING_YOUTUBE_OFFLINE = "youtube_stream_offline"
+    SETTING_TIKTOK_OFFLINE = "tiktok_stream_offline"
 
     _NAV_CONFIG = (
         ("Dashboard", "element-filled.svg", "top"),
@@ -73,8 +75,11 @@ class MainWindowCore(QMainWindow):
 
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
+        import time
+
         self.setUpdatesEnabled(False)
         self.resize(1200, 800)
+        startup_phase_started = time.perf_counter()
 
         self._is_shutting_down = False
         self._was_maximized_before_tray = True
@@ -82,6 +87,12 @@ class MainWindowCore(QMainWindow):
         self.app_version = app_version
 
         self.container = AppContainerCore()
+        self.logger = logging.getLogger("minikick.core")
+        self.logger.info(
+            "[Perf/Startup] Core services initialized in %.2f ms",
+            (time.perf_counter() - startup_phase_started) * 1000
+        )
+        startup_phase_started = time.perf_counter()
         self.settings_storage = self.container.settings_storage
         self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
@@ -138,6 +149,11 @@ class MainWindowCore(QMainWindow):
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
         self.toast = ToastManager(self)
         self._setup_ui()
+        self.logger.info(
+            "[Perf/Startup] Main UI shell and controllers initialized in %.2f ms",
+            (time.perf_counter() - startup_phase_started) * 1000
+        )
+        startup_phase_started = time.perf_counter()
         self.logger.debug("[MainWindow] Setting up system tray...")
         self._setup_tray()
 
@@ -152,7 +168,10 @@ class MainWindowCore(QMainWindow):
         self._load_settings_into_ui()
         self.setUpdatesEnabled(True)
         self.logger.info("[MainWindow] Main window initialization complete.")
-        self._schedule_view_prewarming()
+        self.logger.info(
+            "[Perf/Startup] Tray and startup wiring initialized in %.2f ms",
+            (time.perf_counter() - startup_phase_started) * 1000
+        )
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -340,26 +359,62 @@ class MainWindowCore(QMainWindow):
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
         self.sidebar.update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
-        self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
+        self.settings_controller.backup_restored.connect(self._on_backup_restored)
         self.q_log_handler.emitter.log_received.connect(self.logs_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
 
-    def _load_settings_into_ui(self):
+    def _load_settings_into_ui(self, *, refresh_chat_backend: bool = False):
         self.logger.debug("[AutoStart] Loading controller initial state (Rewards, Widgets, Chat, Spam, Timers, Music)...")
-        self.rewards_controller.load_initial_data()
-        self.widgets_controller.load_initial_data()
+        self._startup_hydration_steps = deque((
+            ("rewards", self.rewards_controller.load_initial_data),
+            ("widgets", self.widgets_controller.load_initial_data),
+            ("chat settings", self._load_chat_settings),
+            ("command cache", self.command_service.reload_cache),
+            ("spam, timers, and music", self._load_remaining_controller_data),
+            ("chat and overlay settings", lambda: self._load_chat_controller_data(refresh_backend=refresh_chat_backend)),
+            ("integrations and profile", self._finish_settings_hydration),
+        ))
+        QTimer.singleShot(50, self._run_next_startup_hydration_step)
+
+    def _on_backup_restored(self):
+        self._load_settings_into_ui(refresh_chat_backend=True)
+
+    def _run_next_startup_hydration_step(self):
+        import time
+
+        if self._is_shutting_down or not self._startup_hydration_steps:
+            return
+
+        step_name, step = self._startup_hydration_steps.popleft()
+        step_started = time.perf_counter()
+        step()
+        self.logger.info(
+            "[Perf/Startup] Hydration phase '%s' completed in %.2f ms",
+            step_name,
+            (time.perf_counter() - step_started) * 1000
+        )
+        if self._startup_hydration_steps:
+            QTimer.singleShot(16, self._run_next_startup_hydration_step)
+        else:
+            self._schedule_view_prewarming()
+
+    def _load_chat_settings(self):
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
         self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
-        self.command_service.reload_cache()
+
+    def _load_remaining_controller_data(self):
         self.spam_controller.load_initial_data()
         self.timers_controller.load_initial_data()
         self.music_controller.load_initial_data()
-        self.chat_controller.load_initial_data()
-        self.chat_controller.sync_settings_cache()
+
+    def _load_chat_controller_data(self, *, refresh_backend: bool = False):
+        self.chat_controller.load_initial_data(refresh_backend=refresh_backend)
         if hasattr(self, "overlay_server") and self.overlay_server:
             self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
+
+    def _finish_settings_hydration(self):
         self._apply_dynamic_theme(self.settings_service.get_font_size())
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
@@ -374,15 +429,15 @@ class MainWindowCore(QMainWindow):
 
         twitch_tokens = self.container.twitch_token_storage.load()
         if twitch_tokens and twitch_tokens.get("access_token"):
-            QTimer.singleShot(350, lambda: self._autostart_twitch(twitch_tokens))
+            QTimer.singleShot(1200, lambda: self._autostart_twitch(twitch_tokens))
 
         yt_target = self.settings_storage.load_string("youtube_target_channel", "")
         if yt_target:
-            QTimer.singleShot(700, lambda: self._autostart_youtube(yt_target))
+            QTimer.singleShot(2400, lambda: self._autostart_youtube(yt_target))
 
         tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
         if tk_target:
-            QTimer.singleShot(1000, lambda: self._autostart_tiktok(tk_target))
+            QTimer.singleShot(3600, lambda: self._autostart_tiktok(tk_target))
 
     def _autostart_twitch(self, twitch_tokens: dict):
         if getattr(self, "_is_window_closing", False):
@@ -396,18 +451,24 @@ class MainWindowCore(QMainWindow):
     def _autostart_youtube(self, target: str):
         if getattr(self, "_is_window_closing", False):
             return
+        if self.settings_storage.load_bool(self.SETTING_YOUTUBE_OFFLINE, False):
+            self.logger.info("[AutoStart] Skipping YouTube integration because the saved stream is offline; connect manually to retry.")
+            return
         try:
             self.logger.info("[AutoStart] Starting YouTube integration (target='%s')...", target)
-            self._handle_youtube_connect(target)
+            self._handle_youtube_connect(target, manual=False)
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting YouTube integration: %s", e)
 
     def _autostart_tiktok(self, target: str):
         if getattr(self, "_is_window_closing", False):
             return
+        if self.settings_storage.load_bool(self.SETTING_TIKTOK_OFFLINE, False):
+            self.logger.info("[AutoStart] Skipping TikTok integration because the saved stream is offline; connect manually to retry.")
+            return
         try:
             self.logger.info("[AutoStart] Starting TikTok integration (target='%s')...", target)
-            self._handle_tiktok_connect(target)
+            self._handle_tiktok_connect(target, manual=False)
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
 
@@ -1469,7 +1530,9 @@ class MainWindowCore(QMainWindow):
                         self.settings_storage.save_string("youtube_target_channel", "")
                         self._handle_youtube_disconnect()
 
-    def _handle_youtube_connect(self, target: str):
+    def _handle_youtube_connect(self, target: str, *, manual: bool = True):
+        if manual:
+            self.settings_storage.save_bool(self.SETTING_YOUTUBE_OFFLINE, False)
         self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
@@ -1498,6 +1561,12 @@ class MainWindowCore(QMainWindow):
     ):
         setattr(self, f"_{platform_id}_connected", True)
         setattr(self, f"_{platform_id}_channel", display_name)
+        offline_setting = {
+            "youtube": self.SETTING_YOUTUBE_OFFLINE,
+            "tiktok": self.SETTING_TIKTOK_OFFLINE
+        }.get(platform_id)
+        if offline_setting:
+            self.settings_storage.save_bool(offline_setting, False)
         if target_setting:
             self.settings_storage.save_string(setting_key, target_setting)
         self.logger.info(log_msg)
@@ -1519,6 +1588,12 @@ class MainWindowCore(QMainWindow):
         self._safe_stop_worker(worker_name, timeout_ms=1500)
         setattr(self, f"_{platform_id}_connected", False)
         setattr(self, f"_{platform_id}_channel", "")
+        offline_setting = {
+            "youtube": self.SETTING_YOUTUBE_OFFLINE,
+            "tiktok": self.SETTING_TIKTOK_OFFLINE
+        }.get(platform_id)
+        if offline_setting:
+            self.settings_storage.save_bool(offline_setting, False)
         self.settings_storage.save_string(setting_key, "")
         self._update_integrations_status_ui()
         title_disc = self.container.i18n.get(toast_title_key)
@@ -1544,13 +1619,19 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
-        self.logger.error("[YouTube] Error in YouTube Live worker: %s", error_msg)
+        not_found_prefix = self.container.i18n.get("logs.youtube.video_not_found").split("{target}", 1)[0]
+        is_offline = bool(not_found_prefix and error_msg.startswith(not_found_prefix))
+        if is_offline:
+            self.settings_storage.save_bool(self.SETTING_YOUTUBE_OFFLINE, True)
+            self.logger.warning("[YouTube] YouTube Live worker offline status: %s", error_msg)
+        else:
+            self.logger.error("[YouTube] Error in YouTube Live worker: %s", error_msg)
         self._safe_stop_worker("youtube_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
-            title=self.container.i18n.get("common.status.error"),
+            title=self.container.i18n.get("common.status.offline" if is_offline else "common.status.error"),
             message=error_msg,
-            state="danger"
+            state="warning" if is_offline else "danger"
         )
 
     @Slot()
@@ -1591,11 +1672,13 @@ class MainWindowCore(QMainWindow):
                         self.settings_storage.save_string("tiktok_target_channel", "")
                         self._handle_tiktok_disconnect()
 
-    def _handle_tiktok_connect(self, target: str):
+    def _handle_tiktok_connect(self, target: str, *, manual: bool = True):
         clean_target = target.strip().lstrip("@")
         if not clean_target:
             return
 
+        if manual:
+            self.settings_storage.save_bool(self.SETTING_TIKTOK_OFFLINE, False)
         self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
@@ -1632,9 +1715,10 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
-        msg_lower = error_msg.lower()
-        is_offline = "no está transmitiendo" in msg_lower or "offline" in msg_lower or "not live" in msg_lower
+        offline_prefix = self.container.i18n.get("logs.tiktok.stream_offline").split("{unique_id}", 1)[0]
+        is_offline = bool(offline_prefix and error_msg.startswith(offline_prefix))
         if is_offline:
+            self.settings_storage.save_bool(self.SETTING_TIKTOK_OFFLINE, True)
             self.logger.warning("[TikTok] TikTok Live worker offline status: %s", error_msg)
         else:
             self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)

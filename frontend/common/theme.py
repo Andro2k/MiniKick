@@ -555,7 +555,7 @@ QFrame[role="dialog"][state="warning"] {{ border-color: {BrandColors.AMBER}; }}
 QFrame[role="dialog"][state="info"] {{ border-color: {BrandColors.BLUE}; }}
 QFrame[role="dialog"][state="neutral"] {{ border-color: {Semantic.NEUTRAL_700}; }}
 QFrame[role="splash_card"] {{ background-color: transparent; border: none; }}
-QWidget[role="splash_window"] {{ background-color: {Semantic.NEUTRAL_900}; }}
+QWidget[role="splash_window"] {{ background-color: {Semantic.NEUTRAL_950}; }}
 
 QFrame[role="banner_danger"]        {{ background-color: {Semantic.RED_GLOW}; border: 1.2px solid {BrandColors.RED_DARK}; border-radius: {Size.Radius.MD}px; }}
 QFrame[role="banner_warning"]       {{ background-color: {Semantic.AMBER_GLOW}; border: 1.2px solid {BrandColors.AMBER_DARK}; border-radius: {Size.Radius.MD}px; }}
