@@ -50,6 +50,7 @@
 | **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
 | **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+| **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 
 ---
 
@@ -991,3 +992,29 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/historial_crashes_y_errores.md`
 * **Solución Implementada**: La ventana usa la comprobación segura de workers antes de consultar si la búsqueda remota de novedades sigue activa. El coordinador trata un wrapper de hilo ya eliminado como detenido, lo retira del seguimiento y registra el caso a nivel DEBUG sin intentar borrarlo otra vez ni emitir una advertencia con traceback.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` y `resources/tests/test_auto_update_setting.py`: 10 pruebas aprobadas, incluyendo los casos de un `QThread` eliminado y el reemplazo de la referencia obsoleta. `py_compile` y `git diff --check` correctos. Suite rápida de calidad: 12/12 auditorías aprobadas.
+
+---
+
+### INC-041: Avatar y badges desincronizados del tamaño del chat
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (inconsistencia visual en las opciones de tamaño del overlay y su previsualización).
+* **Reportes Asociados**: Reporte del usuario: los badges y el perfil no cambiaban al ajustar el tamaño del chat.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Síntoma**:
+  ```text
+  Al cambiar el tamaño del overlay, el texto se actualizaba, pero el avatar y sus badges conservaban dimensiones fijas.
+  Los mensajes ya renderizados podían conservar el font-size inline anterior y la previsualización Qt no recibía el tamaño seleccionado.
+  ```
+* **Causa Raíz**: Los avatares y badges de perfil tenían dimensiones absolutas en píxeles, independientes de `--font-size`. Además, cada mensaje fijaba su tamaño tipográfico al crearse, impidiendo que los mensajes existentes reflejaran cambios en vivo; `ChatOverlayMockupWidget` tampoco incluía el tamaño en su configuración.
+* **Archivos y Módulos Modificados**:
+  - [`assets/overlays/chat/chat.html`](../assets/overlays/chat/chat.html)
+  - [`assets/overlays/chat/css/dark.css`](../assets/overlays/chat/css/dark.css)
+  - [`assets/overlays/chat/css/light.css`](../assets/overlays/chat/css/light.css)
+  - [`assets/overlays/chat/css/minimal.css`](../assets/overlays/chat/css/minimal.css)
+  - [`assets/overlays/chat/js/chat.js`](../assets/overlays/chat/js/chat.js)
+  - [`frontend/components/chat/chat_mockup.py`](../frontend/components/chat/chat_mockup.py)
+  - [`frontend/components/chat/overlay_settings.py`](../frontend/components/chat/overlay_settings.py)
+  - [`resources/tests/test_chat_overlay_controls.py`](../resources/tests/test_chat_overlay_controls.py)
+* **Solución Implementada**: El overlay usa `em` para escalar el avatar, los badges, los espaciados y las emotes a partir del tamaño tipográfico del mensaje. Se elimina el tamaño inline estático para que los mensajes existentes hereden los cambios de `--font-size`; el valor se normaliza al rango admitido de 10 a 36 px. La previsualización Qt recibe el tamaño y escala conjuntamente el texto, el perfil y los badges.
+* **Pruebas y Verificación**: `resources/tests/test_chat_overlay_controls.py`: 9 pruebas aprobadas. `node --check assets/overlays/chat/js/chat.js` correcto. La suite rápida de calidad aprobó 12/12 auditorías. Verificación visual en navegador confirmó que avatar y badges duplican sus dimensiones al pasar de 14 a 28 px en orientaciones vertical y horizontal.

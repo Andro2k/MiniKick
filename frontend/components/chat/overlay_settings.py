@@ -606,6 +606,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.mockup_widget.set_configuration(
                 theme=theme,
                 orientation=orientation,
+                size=self.spin_overlay_size.value(),
                 show_time=show_time,
                 show_bots=show_bots,
                 show_badges=show_badges,

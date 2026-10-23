@@ -32,6 +32,10 @@ def test_overlay_settings_panel_compact_and_mockup_reactivity(qapp):
     assert mockup.show_badges is True
     assert mockup.show_platform is True
     assert mockup.hide_commands is False
+    assert mockup.font_size == 14
+
+    panel.spin_overlay_size.setValue(20)
+    assert mockup.font_size == 20
 
     panel.sw_show_badges.setChecked(False)
     assert mockup.show_badges is False
