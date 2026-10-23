@@ -1,13 +1,10 @@
-"""Bounded, constant-time deduplication for recent reward events."""
+# frontend/recent_redemptions.py
 
 from __future__ import annotations
-
 from collections import deque
 
 
 class RecentRedemptionCache:
-    """Remember a bounded number of redemption keys with O(1) membership checks."""
-
     def __init__(self, maxlen: int = 100) -> None:
         if maxlen <= 0:
             raise ValueError("maxlen must be greater than zero")
@@ -16,7 +13,6 @@ class RecentRedemptionCache:
         self._maxlen = maxlen
 
     def contains_or_add(self, key: str) -> bool:
-        """Return whether ``key`` was already seen, otherwise remember it."""
         if key in self._key_set:
             return True
 

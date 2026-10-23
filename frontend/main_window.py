@@ -520,7 +520,6 @@ class MainWindowCore(QMainWindow):
                 self._fetch_api_rewards()
 
     def _get_or_create_view(self, view_name: str):
-        """Return an existing view or lazily create and wire it to its controller."""
         return self._view_factory.get_or_create(view_name)
 
     def _schedule_startup_followups(self) -> None:
@@ -843,7 +842,6 @@ class MainWindowCore(QMainWindow):
         *,
         warning_after_ms: int = 10_000,
     ) -> None:
-        """Stop workers as a group without blocking the Qt event loop."""
         self._worker_shutdown_coordinator.stop_workers(
             worker_map,
             on_finished=on_finished,

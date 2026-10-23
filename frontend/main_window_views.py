@@ -1,11 +1,8 @@
-"""Lazy creation and controller attachment for main-window views."""
+# frontend/main_window_views.py
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
-
 from PySide6.QtWidgets import QWidget
-
 from frontend.views import (
     AlertsView,
     ChatView,
@@ -24,8 +21,6 @@ if TYPE_CHECKING:
 
 
 class MainWindowViewFactory:
-    """Create each navigation view once and connect it to its controller."""
-
     def __init__(self, window: MainWindowCore) -> None:
         self._window = window
 

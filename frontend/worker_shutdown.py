@@ -1,12 +1,10 @@
-"""Non-blocking shutdown coordination for Qt worker threads."""
+# frontend/worker_shutdown.py
 
 from __future__ import annotations
-
 import time
 import warnings
 from dataclasses import dataclass
 from typing import Callable, Iterable
-
 from PySide6.QtCore import QObject, QThread, QTimer
 
 
@@ -26,8 +24,6 @@ class _WorkerBatch:
 
 
 class WorkerShutdownCoordinator(QObject):
-    """Request worker termination together and poll without blocking Qt's UI loop."""
-
     _SIGNAL_NAMES = (
         "auth_success",
         "auth_error",
@@ -72,7 +68,6 @@ class WorkerShutdownCoordinator(QObject):
         on_finished: Callable[[], None] | None = None,
         warning_after_seconds: float = _WARNING_AFTER_SECONDS,
     ) -> None:
-        """Request all workers to stop, then invoke the callback once they finish."""
         pending: list[_PendingWorker] = []
         seen_workers: set[int] = set()
 

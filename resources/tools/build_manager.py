@@ -130,7 +130,6 @@ def build_executable():
     return run_cmd(["uv", "run", "python", "-m", "PyInstaller", "--clean", "--noconfirm", "MiniKick.spec"], "Compilando MiniKick con PyInstaller")
 
 def compile_installer():
-    """Compila el instalador Inno Setup disponible en este equipo."""
     print("\n--- Compilación del instalador Inno Setup ---")
     iscc_path = shutil.which("ISCC.exe") or shutil.which("ISCC")
     if not iscc_path:
@@ -167,7 +166,6 @@ def compile_installer():
     return True
 
 def package_installer():
-    """Build the application executable and its distributable installer."""
     if not build_executable():
         return False
     return compile_installer()

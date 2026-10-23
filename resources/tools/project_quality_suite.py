@@ -63,7 +63,6 @@ class SystemHealthAuditor:
         self.python_exec = sys.executable
 
     def _find_tool_path(self, tool_filename: str) -> Optional[Path]:
-        """Resuelve primero la ruta canónica y evita coincidencias ambiguas."""
         direct_path = TOOLS_DIR / tool_filename
         if direct_path.is_file():
             return direct_path
@@ -95,7 +94,6 @@ class SystemHealthAuditor:
             return -1, "", str(ex), time.perf_counter() - t0
 
     def get_specs(self, static_only: bool = False) -> List[AuditSpec]:
-        """Registro declarativo de herramientas y sus criterios estrictos de PASS."""
         specs = [
             AuditSpec(
                 name="Project Icon Integrity",

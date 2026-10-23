@@ -44,7 +44,6 @@ def _parse_data(data) -> dict:
 
 
 def probe_key(cluster: str, key: str, timeout: int = DEFAULT_TIMEOUT) -> Tuple[bool, str]:
-    """Abre una conexión con la clave y lee el primer frame. Devuelve (aceptada, detalle)."""
     try:
         ws = websocket.create_connection(PUSHER_URL.format(cluster=cluster, key=key), timeout=timeout)
     except Exception as exc:
@@ -69,7 +68,6 @@ def probe_key(cluster: str, key: str, timeout: int = DEFAULT_TIMEOUT) -> Tuple[b
 
 
 def listen_idle(cluster: str, key: str, room: str, wait: int) -> Optional[str]:
-    """Suscribe al chat y espera hasta 'wait' segundos un frame. Devuelve el frame o None."""
     ws = websocket.create_connection(PUSHER_URL.format(cluster=cluster, key=key), timeout=DEFAULT_TIMEOUT)
     try:
         print("Established:", ws.recv())
