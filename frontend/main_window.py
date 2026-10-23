@@ -163,6 +163,12 @@ class MainWindowCore(QMainWindow):
         self.logger.debug("[MainWindow] Checking background silent updates...")
         self.updater_controller = UpdaterController(self.updater_manager)
         self.updater_controller.update_found_silent.connect(self._on_silent_update_found)
+        self.updater_controller.download_finished.connect(
+            self._on_auto_update_download_finished
+        )
+        self.updater_controller.error.connect(self._on_auto_update_error)
+        self._auto_update_download_active = False
+        self._auto_update_info: dict = {}
         self.updater_controller.check_updates_silently()
 
         self.logger.debug("[MainWindow] Connecting signal handlers...")
@@ -2032,6 +2038,109 @@ class MainWindowCore(QMainWindow):
         elif isinstance(info, str):
             version = info
         self.sidebar.set_update_available(True, version=version)
+        self._download_update_if_enabled(info)
+
+    def _download_update_if_enabled(self, info: object) -> None:
+        if self._is_shutting_down:
+            return
+        if not self.settings_service.is_auto_update_download_enabled():
+            return
+        if not isinstance(info, dict):
+            self.logger.error(
+                "[Updater] Silent update result has an unsupported format: %s",
+                type(info).__name__,
+            )
+            return
+
+        download_url = info.get("download_url")
+        if not isinstance(download_url, str) or not download_url.strip():
+            self.logger.error(
+                "[Updater] Automatic download skipped because the release has no download URL."
+            )
+            return
+        if self._auto_update_download_active:
+            self.logger.debug("[Updater] Automatic update download is already in progress.")
+            return
+        if self._is_worker_running(self.updater_controller.download_worker):
+            self.logger.info(
+                "[Updater] Automatic download skipped because another update download is active."
+            )
+            return
+
+        self._auto_update_download_active = True
+        self._auto_update_info = info
+        try:
+            started = self.updater_controller.start_download(download_url.strip())
+        except RuntimeError:
+            self._auto_update_download_active = False
+            self.logger.exception("[Updater] Could not start automatic update download.")
+            return
+
+        if not started:
+            self._auto_update_download_active = False
+            return
+
+        self.toast.show_toast(
+            title=self.i18n.get("settings.system.auto_update_download_started_title"),
+            message=self.i18n.get("settings.system.auto_update_download_started_desc"),
+            state="info",
+            tag="auto_update_download",
+        )
+
+    @Slot(bool)
+    def _on_auto_update_download_finished(self, success: bool) -> None:
+        if not self._auto_update_download_active:
+            return
+
+        self._auto_update_download_active = False
+        if self._is_shutting_down:
+            return
+        version = str(self._auto_update_info.get("version", ""))
+        if not success:
+            self.toast.show_toast(
+                title=self.i18n.get("settings.system.auto_update_download_failed_title"),
+                message=self.i18n.get("dialogs.update.msg_unexpected_error"),
+                state="danger",
+                tag="auto_update_download",
+            )
+            return
+
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("settings.system.auto_update_ready_title"),
+            body_text=self.i18n.get(
+                "settings.system.auto_update_ready_desc"
+            ).replace("{version}", version),
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.updater_controller.install_update()
+            self._force_quit()
+            return
+
+        self.toast.show_toast(
+            title=self.i18n.get("settings.system.auto_update_download_complete_title"),
+            message=self.i18n.get(
+                "settings.system.auto_update_download_complete_desc"
+            ).replace("{version}", version),
+            state="success",
+            tag="auto_update_download",
+        )
+
+    @Slot(str)
+    def _on_auto_update_error(self, error_message: str) -> None:
+        if not self._auto_update_download_active:
+            return
+
+        self._auto_update_download_active = False
+        if self._is_shutting_down:
+            return
+        self.toast.show_toast(
+            title=self.i18n.get("settings.system.auto_update_download_failed_title"),
+            message=error_message,
+            state="danger",
+            tag="auto_update_download",
+        )
 
     @Slot()
     def handle_update_check(self):

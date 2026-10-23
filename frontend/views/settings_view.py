@@ -11,6 +11,7 @@ from frontend.common import Size
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
     minimize_tray_toggled = Signal(bool)
+    auto_update_download_toggled = Signal(bool)
     export_clicked = Signal()
     import_clicked = Signal()
     unlink_clicked = Signal()
@@ -249,6 +250,17 @@ class SettingsView(BaseView):
             right_widget=self.btn_update
         )
 
+        self.sw_auto_update_download = ModernSwitch(self)
+        self.sw_auto_update_download.toggled.connect(
+            self.auto_update_download_toggled.emit
+        )
+        row_auto_update_download = SettingRow(
+            icon_name="cloud-download-filled.svg",
+            title_text=self.i18n.get("settings.system.auto_update_download_title"),
+            desc_text=self.i18n.get("settings.system.auto_update_download_desc"),
+            right_widget=self.sw_auto_update_download
+        )
+
         self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined", parent=self)
         self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
 
@@ -271,6 +283,8 @@ class SettingsView(BaseView):
 
         support_card.addWidget(row_update)
         support_card.add_separator()
+        support_card.addWidget(row_auto_update_download)
+        support_card.add_separator()
         support_card.addWidget(row_release_notes)
         support_card.add_separator()
         support_card.addWidget(row_feedback)
@@ -283,6 +297,11 @@ class SettingsView(BaseView):
         self.sw_start_bg.blockSignals(True)
         self.sw_start_bg.setChecked(enabled)
         self.sw_start_bg.blockSignals(False)
+
+    def set_auto_update_download_enabled(self, enabled: bool) -> None:
+        self.sw_auto_update_download.blockSignals(True)
+        self.sw_auto_update_download.setChecked(enabled)
+        self.sw_auto_update_download.blockSignals(False)
 
     def set_current_font_size(self, size: int):
         self.combo_font.blockSignals(True)
@@ -591,4 +610,3 @@ class SettingsView(BaseView):
             else:
                 self.combo_browser.setCurrentIndex(0)
             self.combo_browser.blockSignals(False)
-

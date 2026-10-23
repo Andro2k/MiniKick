@@ -1321,6 +1321,15 @@ DEFAULT_DICTIONARY = {
             "release_notes_title": "Release Notes",
             "tray_desc": "Keep MiniKick running in the system tray when pressing close.",
             "tray_title": "Background Execution",
+            "auto_update_download_desc": "Download new updates in the background when MiniKick starts. You will be asked before installing and restarting.",
+            "auto_update_download_title": "Download updates automatically",
+            "auto_update_download_started_desc": "A new version was found and is downloading in the background.",
+            "auto_update_download_started_title": "Downloading update",
+            "auto_update_download_failed_title": "Update download failed",
+            "auto_update_download_complete_desc": "Version {version} is downloaded. You can install it the next time you check for updates.",
+            "auto_update_download_complete_title": "Update ready",
+            "auto_update_ready_desc": "Version {version} has downloaded. Install it now and restart MiniKick?",
+            "auto_update_ready_title": "Update ready to install",
             "update_desc": "Check for new versions and improvements.",
             "update_title": "Software Updates"
         }
