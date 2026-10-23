@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QByteArray
 from pathlib import Path
 import sys
+from PySide6.QtCore import QEventLoop, QTimer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -37,7 +38,7 @@ class MockSettingsStorage:
         self._data[key] = value
 
 @pytest.fixture
-def managed_window():
+def managed_window(qapp):
     windows = []
 
     def _create():
@@ -49,11 +50,19 @@ def managed_window():
     yield _create
 
     for win in windows:
-        try:
-            win._cleanup()
-            win.deleteLater()
-        except Exception:
-            pass
+        win._cleanup()
+        if not win._cleanup_complete:
+            event_loop = QEventLoop()
+            timeout = QTimer()
+            timeout.setSingleShot(True)
+            timeout.timeout.connect(event_loop.quit)
+            win.shutdown_finished.connect(event_loop.quit)
+            timeout.start(5000)
+            event_loop.exec()
+            timeout.stop()
+            win.shutdown_finished.disconnect(event_loop.quit)
+        assert win._cleanup_complete
+        win.deleteLater()
 
 def test_window_state_default_maximized(qapp, managed_window, monkeypatch):
     window = managed_window()

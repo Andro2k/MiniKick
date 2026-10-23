@@ -812,10 +812,7 @@
             "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
             "reward_file_missing": "El archivo multimedia para la recompensa '{reward_name}' no fue encontrado en: {filepath}",
-            "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
-            "worker_stopped": "{worker} cerrado limpiamente.",
-            "worker_stopping": "Solicitando parada de {worker}...",
-            "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación..."
+            "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada."
         },
         "sidebar": {
             "profile": {

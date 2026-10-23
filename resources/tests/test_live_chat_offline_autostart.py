@@ -32,7 +32,7 @@ class _ChatWorker:
         self.message_received = _Signal()
 
     def start(self):
-        pass
+        self.started = True
 
 
 def _window(settings_storage, i18n):
@@ -47,6 +47,7 @@ def _window(settings_storage, i18n):
         _update_integrations_status_ui=Mock(),
         _route_incoming_message=Mock(),
         _is_window_closing=False,
+        _live_chat_generations={"youtube": 0, "tiktok": 0},
     )
 
 
@@ -106,9 +107,25 @@ def test_manual_connect_clears_offline_suppression(qapp, monkeypatch):
     window._on_tiktok_connected = Mock()
     window._on_tiktok_disconnected = Mock()
     window._on_tiktok_error = Mock()
+    window._advance_live_chat_generation = lambda platform_id: MainWindowCore._advance_live_chat_generation(
+        window, platform_id
+    )
+    window._start_youtube_chat_worker = lambda target, generation: MainWindowCore._start_youtube_chat_worker(
+        window, target, generation
+    )
+    window._start_tiktok_chat_worker = lambda target, generation: MainWindowCore._start_tiktok_chat_worker(
+        window, target, generation
+    )
+    window._safe_stop_worker = Mock(
+        side_effect=lambda _name, timeout_ms=1500, on_finished=None: (
+            on_finished() if on_finished is not None else None
+        )
+    )
 
     MainWindowCore._handle_youtube_connect(window, "youtube-channel")
     MainWindowCore._handle_tiktok_connect(window, "@tiktok-channel")
 
     assert settings.values[MainWindowCore.SETTING_YOUTUBE_OFFLINE] is False
     assert settings.values[MainWindowCore.SETTING_TIKTOK_OFFLINE] is False
+    assert window.youtube_chat_worker.started is True
+    assert window.tiktok_chat_worker.started is True
