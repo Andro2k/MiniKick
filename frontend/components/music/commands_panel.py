@@ -36,7 +36,7 @@ class MusicCommandsPanel(QWidget):
         header_cmds = SectionHeader(self.i18n.get("music.cmds.title"), first=True, parent=self)
         self.panel_layout.addWidget(header_cmds)
 
-        self.card_cmds = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        self.card_cmds = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN, orientation="vertical")
         self.card_cmds.setEnabled(False)
 
         for i, (cmd, icon, lbl_key, desc_key, attr_name) in enumerate(self._COMMANDS_CONFIG):

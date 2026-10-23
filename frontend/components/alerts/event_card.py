@@ -46,7 +46,7 @@ class AlertConfigData:
     animation_in_duration: float = 1.0
     animation_out: str = "fade_out"
     animation_out_duration: float = 1.0
-    bg_color: str = Palette.NEUTRAL_950
+    bg_color: str = Palette.NEUTRAL_900
     bg_opacity: int = 88
     border_radius: int = 20
     padding_px: int = 24
@@ -96,7 +96,7 @@ class AlertEventCard(QWidget):
         header_row.setSpacing(Size.SPACING_MD)
 
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=20))
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=24))
 
         platform_name = self.i18n.get(f"alerts.platforms.{self.platform}")
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
@@ -122,7 +122,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -133,7 +133,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -143,7 +143,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
@@ -153,7 +153,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.save_short"),
             role=btn_role,
             icon_name="check-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -308,7 +308,7 @@ class AlertEventCard(QWidget):
         ))
 
         self.picker_bg_color = ModernColorPicker(
-            initial_color=Palette.NEUTRAL_950,
+            initial_color=Palette.NEUTRAL_900,
             tooltip=self.i18n.get("alerts.fields.bg_color"),
             show_presets=False,
             parent=self
@@ -567,7 +567,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -596,7 +596,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -639,7 +639,7 @@ class AlertEventCard(QWidget):
         col_right.addWidget(self.card_media)
         col_right.addStretch(1)
 
-        card_preview = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        card_preview = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
         card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         preview_header_w = QWidget(card_preview)
@@ -647,7 +647,7 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*Size.Margin.MD)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=14))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
@@ -660,7 +660,7 @@ class AlertEventCard(QWidget):
         mockup_container = QWidget(card_preview)
         mockup_layout = QVBoxLayout(mockup_container)
         mockup_layout.setContentsMargins(*Size.Margin.MD)
-        mockup_layout.setSpacing(Size.SPACING_NONE)
+        mockup_layout.setSpacing(Size.SPACING_NN)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
         self.mockup_widget.setMinimumSize(300, 300)
@@ -764,7 +764,7 @@ class AlertEventCard(QWidget):
         text_align = self.seg_align.current_value() or "center"
         text_color = self.picker_text_color.color() or Palette.NEUTRAL_000
         highlight_color = self.picker_highlight_color.color() or ""
-        bg_color = self.picker_bg_color.color() or Palette.NEUTRAL_950
+        bg_color = self.picker_bg_color.color() or Palette.NEUTRAL_900
         bg_opacity = self.slider_bg_opacity.value()
         border_radius = self.spin_border_radius.value()
         card_width = self.spin_card_width.value()
@@ -830,7 +830,7 @@ class AlertEventCard(QWidget):
             animation_in_duration=float(getattr(cfg, "animation_in_duration", 1.0) or 1.0),
             animation_out=getattr(cfg, "animation_out", "fade_out") or "fade_out",
             animation_out_duration=float(getattr(cfg, "animation_out_duration", 1.0) or 1.0),
-            bg_color=getattr(cfg, "bg_color", Palette.NEUTRAL_950) or Palette.NEUTRAL_950,
+            bg_color=getattr(cfg, "bg_color", Palette.NEUTRAL_900) or Palette.NEUTRAL_900,
             bg_opacity=int(getattr(cfg, "bg_opacity", 88) if getattr(cfg, "bg_opacity", None) is not None else 88),
             border_radius=int(getattr(cfg, "border_radius", 20) if getattr(cfg, "border_radius", None) is not None else 20),
             padding_px=int(getattr(cfg, "padding_px", 24) if getattr(cfg, "padding_px", None) is not None else 24),
@@ -863,7 +863,7 @@ class AlertEventCard(QWidget):
         layout_val = getattr(cfg, "layout", "above") or "above"
         self.seg_layout.set_current_value(layout_val)
 
-        bg_color = getattr(cfg, "bg_color", Palette.NEUTRAL_950) or Palette.NEUTRAL_950
+        bg_color = getattr(cfg, "bg_color", Palette.NEUTRAL_900) or Palette.NEUTRAL_900
         self.picker_bg_color.set_color(bg_color)
 
         bg_opacity = int(getattr(cfg, "bg_opacity", 88) if getattr(cfg, "bg_opacity", None) is not None else 88)
@@ -971,7 +971,7 @@ class AlertEventCard(QWidget):
                 cfg.animation_in_duration != getattr(self._saved_config, "animation_in_duration", 1.0) or
                 cfg.animation_out != getattr(self._saved_config, "animation_out", "fade_out") or
                 cfg.animation_out_duration != getattr(self._saved_config, "animation_out_duration", 1.0) or
-                cfg.bg_color != getattr(self._saved_config, "bg_color", Palette.NEUTRAL_950) or
+                cfg.bg_color != getattr(self._saved_config, "bg_color", Palette.NEUTRAL_900) or
                 cfg.bg_opacity != getattr(self._saved_config, "bg_opacity", 88) or
                 cfg.border_radius != getattr(self._saved_config, "border_radius", 20) or
                 cfg.padding_px != getattr(self._saved_config, "padding_px", 24) or

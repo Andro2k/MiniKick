@@ -18,8 +18,8 @@ def test_global_qss_contains_antigravity_tokens():
     assert 'role="action_danger_solid"' in qss
     assert 'role="card"' in qss
     assert 'role="nav_button"' in qss
-    assert Palette.NEUTRAL_900 in qss
-    assert Palette.NEUTRAL_900 in qss
+    assert Palette.NEUTRAL_950 in qss
+    assert Palette.NEUTRAL_950 in qss
 
 def test_section_header_and_setting_row(qapp):
     header = SectionHeader("Test Section")
@@ -88,7 +88,7 @@ def test_theme_tokens_clean_and_complete():
         theme,
         Size,
     )
-    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.TAB_BAR, Size.Margin.SCROLL_CONTENT, Size.Margin.XS, Size.Margin.TAG_BADGE):
+    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.SECTION_SCROLL, Size.Margin.XS, Size.Margin.SECTION_BADGES):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -324,6 +324,7 @@ def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     assert form.layout().spacing() == Size.SPACING_MD
 
 def test_table_cards_and_edge_to_edge_alignment(qapp):
+    from PySide6.QtWidgets import QTableWidget
     from frontend.widgets import ModernTableCard, ModernDivider
     from frontend.views.commands_view import CommandView
     from frontend.views.rewards_view import RewardsView
@@ -338,6 +339,11 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
         search_placeholder="Search",
         add_button_text="Add"
     )
+    assert card.table.selectionBehavior() == QTableWidget.SelectionBehavior.SelectRows
+    assert card.table.selectionMode() == QTableWidget.SelectionMode.SingleSelection
+    assert "QTableWidget::item:hover:!selected" not in GLOBAL_QSS
+    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in GLOBAL_QSS
+
     m = card.card_layout.contentsMargins()
     assert (m.left(), m.top(), m.right(), m.bottom()) == (0, 0, 0, 0)
     assert card.card_layout.spacing() == 0
@@ -366,14 +372,14 @@ def test_combobox_and_segmented_action_outlined_style(qapp):
         Palette,
     )
 
-    assert f"QComboBox {{ background-color: {Palette.NEUTRAL_950};" in GLOBAL_QSS
+    assert f"QComboBox {{ background-color: {Palette.NEUTRAL_900};" in GLOBAL_QSS
     assert f"border: 1px solid {Palette.NEUTRAL_700};" in GLOBAL_QSS
     assert f"QComboBox:hover {{ background-color: {Palette.NEUTRAL_750}; border: 1px solid {Semantic.BORDER_HOVER};" in GLOBAL_QSS
 
-    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
     assert f'border-left: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
@@ -389,13 +395,15 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
 
     pal = create_dark_palette()
     assert isinstance(pal, QPalette)
-    assert pal.color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_900.lower()
-    assert pal.color(QPalette.ColorRole.Base).name().lower() == Palette.NEUTRAL_950.lower()
+    assert pal.color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_950.lower()
+    assert pal.color(QPalette.ColorRole.Base).name().lower() == Palette.NEUTRAL_900.lower()
     assert pal.color(QPalette.ColorRole.WindowText).name().lower() == Palette.NEUTRAL_050.lower()
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
+    assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_StyledBackground) is True
     assert combo._popup.property("role") == "searchable_combo_popup"
+    assert f'QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900};' in GLOBAL_QSS
 
     text_edit = VariableTextEdit()
     assert text_edit.popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
@@ -412,7 +420,7 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     date_edit = NoWheelDateEdit()
     date_edit.setCalendarPopup(True)
     cal = date_edit.calendarWidget()
-    assert cal.palette().color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_900.lower()
+    assert cal.palette().color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_950.lower()
 
 def test_piper_voices_dialog_modern_structure_and_catalog(qapp):
     from unittest.mock import MagicMock

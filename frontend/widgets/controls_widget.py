@@ -19,7 +19,7 @@ from frontend.common import (
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
-def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BUTTON_NORMAL) -> None:
+def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BASIC) -> None:
     button.setProperty("icon_only", True)
     if isinstance(size, QSize):
         button.setFixedSize(size)
@@ -115,8 +115,8 @@ class ModernSwitch(QAbstractButton):
 
         track_grad = QLinearGradient(0, 0, 0, h)
         if not is_enabled:
-            track_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_950))
-            track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_900))
+            track_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_900))
+            track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
             border_color = QColor(Palette.NEUTRAL_750)
         elif is_checked:
             track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_0))

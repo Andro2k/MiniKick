@@ -46,6 +46,7 @@ class SearchableComboPopup(QFrame):
         self.empty_text = empty_text
         self.setProperty("role", "searchable_combo_popup")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*Size.Margin.XS)

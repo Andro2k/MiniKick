@@ -6,8 +6,12 @@ import time
 import unittest
 import urllib.error
 import urllib.request
+from pathlib import Path
+from urllib.parse import urlencode
 from backend.services.auth.auth_service import OAuthCallbackServer
+
 STATE = "expected-state-123"
+AUTH_HTML_PATH = Path(__file__).resolve().parents[2] / "assets" / "web" / "auth.html"
 
 
 class _FakeBrowser:
@@ -38,14 +42,14 @@ def _get(port: int, query: str) -> int:
     return _get_full(port, query)[0]
 
 class OAuthCallbackStateTest(unittest.TestCase):
-    def _start(self) -> tuple[int, dict, threading.Thread]:
+    def _start(self, provider: str = "kick") -> tuple[int, dict, threading.Thread]:
         port = _free_port()
         result: dict = {}
 
         def run() -> None:
             result["code"] = OAuthCallbackServer.capture_auth_code(
-                "http://auth.example", port, "", timeout_seconds=10,
-                provider="kick", browser_service=_FakeBrowser(), expected_state=STATE,
+                "http://auth.example", port, str(AUTH_HTML_PATH), timeout_seconds=10,
+                provider=provider, browser_service=_FakeBrowser(), expected_state=STATE,
             )
 
         thread = threading.Thread(target=run, daemon=True)
@@ -60,13 +64,37 @@ class OAuthCallbackStateTest(unittest.TestCase):
         self.assertTrue(thread.is_alive(), "el servidor debe seguir esperando")
         status, body = _get_full(port, f"code=good&state={STATE}")
         self.assertEqual(status, 200)
-        self.assertIn("exitosa", body, "la página de éxito debe renderizarse completa")
+        self.assertIn("Conexión establecida", body)
+        self.assertIn('data-provider="kick"', body)
+        self.assertIn('data-status="success"', body)
+        self.assertIn('id="app-logo"', body)
+        self.assertIn('id="app-favicon"', body)
+        self.assertIn('data:image/svg+xml;base64,', body)
+        self.assertIn("ambient-light-one", body)
+        self.assertIn("@keyframes drift-one", body)
+        self.assertIn("prefers-reduced-motion", body)
         thread.join(5)
         self.assertEqual(result["code"], "good")
 
     def test_provider_error_with_valid_state_ends_the_flow(self) -> None:
-        port, result, thread = self._start()
-        self.assertEqual(_get(port, f"error=access_denied&state={STATE}"), 200)
+        port, result, thread = self._start(provider="twitch")
+        query = urlencode(
+            {
+                "error": "access_denied",
+                "error_description": '<script>alert("x")</script>',
+                "state": STATE,
+            }
+        )
+        status, body = _get_full(port, query)
+        self.assertEqual(status, 200)
+        self.assertIn('data-provider="twitch"', body)
+        self.assertIn('data-status="error"', body)
+        self.assertIn(
+            'data-error="&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;"',
+            body,
+        )
+        self.assertIn("errorDetail.textContent =", body)
+        self.assertNotIn('<script>alert("x")</script>', body)
         thread.join(5)
         self.assertEqual(result["code"], "")
 

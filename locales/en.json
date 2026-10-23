@@ -812,10 +812,7 @@
             "api_error_setup": "Error preparing rewards query: {error}",
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
-            "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
-            "worker_stopped": "{worker} stopped cleanly.",
-            "worker_stopping": "Requesting stop for {worker}...",
-            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
+            "reward_no_rewards": "Reward '{reward_name}' has no reward configured."
         },
         "sidebar": {
             "profile": {

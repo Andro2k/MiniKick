@@ -135,7 +135,7 @@ class DashboardView(BaseView):
             "",
             role="action_outlined",
             icon_name="repeat-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self.avatar_container,
         )
         self.btn_switch_channel.setFixedSize(30, 30)
@@ -165,7 +165,7 @@ class DashboardView(BaseView):
             "",
             role="btn_ghost",
             icon_name="link-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self.distribution_panel,
         )
         self.btn_open_channel.setToolTip(self.i18n.get("dashboard.profile.open_channel"))

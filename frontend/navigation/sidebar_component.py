@@ -293,7 +293,7 @@ class Sidebar(QFrame):
         painter = QPainter(circle_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        painter.setBrush(QColor(Palette.NEUTRAL_950))
+        painter.setBrush(QColor(Palette.NEUTRAL_900))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(0, 0, logical_size, logical_size)
 

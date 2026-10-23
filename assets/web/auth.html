@@ -4,283 +4,369 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232ECD70'%3E%3Cpath d='M9 3a1 1 0 0 1 1 1v3h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h6a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-1v1a1 1 0 0 1 -.883 .993l-.117 .007h-1v2h1a1 1 0 0 1 .993 .883l.007 .117v1h1a1 1 0 0 1 .993 .883l.007 .117v4a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-1h-1a1 1 0 0 1 -.993 -.883l-.007 -.117v-1h-1v3a1 1 0 0 1 -.883 .993l-.117 .007h-5a1 1 0 0 1 -1 -1v-16a1 1 0 0 1 1 -1z'/%3E%3C/svg%3E" />
+  <meta name="color-scheme" content="dark" />
+  <link id="app-favicon" rel="icon" type="image/svg+xml" />
   <title>Autenticación - MiniKick</title>
   <style>
-    * {
+    :root {
+      color-scheme: dark;
+      --canvas: #0b0e0d;
+      --surface: #111614;
+      --surface-inset: #0d110f;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.12);
+      --text: #edf3ef;
+      --muted: #a2ada6;
+      --subtle: #76827a;
+      --brand: #15d08b;
+      --brand-wash: rgba(21, 208, 139, 0.1);
+      --danger: #f07878;
+      --danger-wash: rgba(240, 120, 120, 0.1);
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-        Arial, sans-serif;
     }
 
+    html {
+      min-height: 100%;
+    }
+
+    /* Regla BODY unificada para garantizar el centrado perfecto y evitar desbordamientos */
     body {
-      background-color: #09090b;
-      color: #eaecef;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .modal {
-      background-color: #121214;
-      width: 100%;
-      max-width: 420px;
-      border-radius: 12px;
-      border: 1.5px solid #27272a;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: grid;
+      place-items: center;
+      min-width: 280px;
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0;
       padding: 24px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #27272a;
-    }
-
-    .modal-header h2 {
-      font-size: 16px;
-      font-weight: 600;
-      color: #eaecef;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      color: #848e9c;
-      font-size: 20px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .close-btn:hover {
-      color: #eaecef;
-    }
-
-    .connection-visual {
-      background-color: #09090b;
-      border: 1.5px solid #27272a;
-      border-radius: 12px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 24px;
-    }
-
-    .icon-box {
-      width: 56px;
-      height: 56px;
-      background-color: #121214;
-      border: 1.5px solid #27272a;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .icon-box.success {
-      background-color: rgba(100, 235, 95, 0.1);
-      border-color: rgba(100, 235, 95, 0.3);
-    }
-
-    .icon-box.error {
-      background-color: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .connection-line {
-      flex-grow: 1;
-      height: 2px;
-      margin: 0 16px;
-      background: repeating-linear-gradient(to right,
-          #27272a,
-          #27272a 6px,
-          transparent 6px,
-          transparent 12px);
       position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 50% 48%, rgba(23, 34, 29, 0.72), transparent 58%),
+        #101211;
+      color: var(--text);
     }
 
-    .connection-line.success-line::after {
+    body::before {
+      position: fixed;
+      z-index: -1;
+      background-image: radial-gradient(rgba(220, 255, 238, 0.1) 0.7px, transparent 0.7px);
+      background-size: 34px 34px;
       content: "";
-      position: absolute;
-      top: -3px;
-      left: 0;
-      width: 8px;
-      height: 8px;
-      background-color: #64eb5f;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #64eb5f;
-      animation: moveDot 2s ease-in-out infinite;
+      inset: 0;
+      mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+      opacity: 0.2;
+      pointer-events: none;
     }
 
-    @keyframes moveDot {
+    button {
+      font: inherit;
+    }
+
+    .ambient-light {
+      position: fixed;
+      z-index: -1;
+      width: min(62vw, 760px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(21, 208, 139, 0.17), rgba(21, 208, 139, 0.06) 34%, transparent 70%);
+      opacity: 0.62;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .ambient-light-one {
+      top: -38%;
+      left: -20%;
+      animation: drift-one 24s ease-in-out infinite alternate;
+    }
+
+    .ambient-light-two {
+      right: -26%;
+      bottom: -54%;
+      width: min(72vw, 900px);
+      opacity: 0.42;
+      animation: drift-two 30s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift-one {
+      from { transform: translate3d(0, 0, 0) scale(0.94); }
+      to { transform: translate3d(18vw, 12vh, 0) scale(1.08); }
+    }
+
+    @keyframes drift-two {
+      from { transform: translate3d(0, 0, 0) scale(1.06); }
+      to { transform: translate3d(-15vw, -12vh, 0) scale(0.94); }
+    }
+
+    .auth-result {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: min(100%, 560px);
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .brand-mark {
+      width: 128px;
+      height: 128px;
+      margin-bottom: 28px;
+      border-radius: 28px;
+      animation: mark-arrive 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+      filter: drop-shadow(0 0 0 rgba(21, 208, 139, 0));
+    }
+
+    @keyframes mark-arrive {
       0% {
-        left: 0;
         opacity: 0;
+        transform: translateY(12px) scale(0.95);
+        filter: drop-shadow(0 0 0 rgba(21, 208, 139, 0));
       }
-
-      20% {
+      62% {
         opacity: 1;
+        transform: translateY(-2px) scale(1.015);
+        filter: drop-shadow(0 8px 24px rgba(21, 208, 139, 0.24));
       }
-
-      80% {
-        opacity: 1;
-      }
-
       100% {
-        left: 100%;
-        opacity: 0;
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: drop-shadow(0 8px 22px rgba(21, 208, 139, 0.16));
       }
+    }
+
+    .status-pill {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      padding: 0 12px;
+      border: 1px solid rgba(21, 208, 139, 0.2);
+      border-radius: 999px;
+      background: rgba(21, 208, 139, 0.07);
+      color: #73e6b5;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.035em;
+    }
+
+    .status-pill::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 12px currentColor;
+      content: "";
+    }
+
+    .result-heading {
+      max-width: 520px;
+      margin: 0;
+      color: #f2f5f3;
+      font-size: clamp(27px, 6vw, 34px);
+      font-weight: 450;
+      letter-spacing: -0.045em;
+      line-height: 1.2;
+      text-wrap: balance;
     }
 
     .description {
-      text-align: center;
-      color: #a1a1aa;
-      font-size: 14px;
+      max-width: 440px;
+      margin: 14px 0 0;
+      color: #b5bcb8;
+      font-size: 16px;
+      font-weight: 350;
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+
+    .description strong {
+      color: #e5ebe7;
+      font-weight: 550;
+    }
+
+    .result-detail {
+      margin: 10px 0 0;
+      color: #858e89;
+      font-size: 13px;
       line-height: 1.6;
-      margin-bottom: 24px;
     }
 
-    .description span {
-      color: #eaecef;
-      font-weight: 600;
-    }
-
-    .description .error-detail {
-      display: inline-block;
-      margin-top: 10px;
-      color: #ef4444;
-      background-color: rgba(239, 68, 68, 0.08);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      text-align: left;
-      width: 100%;
-      word-break: break-word;
-    }
-
-    .btn-primary {
-      width: 100%;
-      background-color: #64eb5f;
-      color: #09090b;
-      border: none;
+    .error-detail {
+      width: min(100%, 420px);
+      margin-top: 22px;
+      padding: 12px 14px;
+      border: 1px solid rgba(240, 120, 120, 0.2);
       border-radius: 8px;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 700;
+      background: rgba(240, 120, 120, 0.07);
+      color: #f0a0a0;
+      font-size: 13px;
+      line-height: 1.55;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    .error-detail[hidden],
+    .close-fallback[hidden] {
+      display: none;
+    }
+
+    .auth-result[data-status="error"] .status-pill {
+      border-color: rgba(240, 120, 120, 0.2);
+      background: rgba(240, 120, 120, 0.07);
+      color: #f19a9a;
+    }
+
+    .auth-result[data-status="error"] .brand-mark {
+      filter: drop-shadow(0 8px 22px rgba(240, 120, 120, 0.12));
+    }
+
+    .close-button {
+      width: auto;
+      min-width: 144px;
+      min-height: 44px;
+      margin-top: 30px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #e7ece9;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
-      transition:
-        background-color 0.2s,
-        transform 0.1s;
+      transition: background-color 140ms ease-out, border-color 140ms ease-out, transform 140ms ease-out;
     }
 
-    .btn-primary:hover {
-      background-color: #2fbf45;
+    .close-button:hover {
+      border-color: rgba(21, 208, 139, 0.4);
+      background: rgba(21, 208, 139, 0.1);
     }
 
-    .btn-primary:active {
+    .close-button:active {
       transform: scale(0.98);
     }
 
-    .btn-primary.btn-error {
-      background-color: #ef4444;
-      color: #ffffff;
+    .close-button:focus-visible {
+      outline: 2px solid #73e6b5;
+      outline-offset: 3px;
     }
 
-    .btn-primary.btn-error:hover {
-      background-color: #dc2626;
+    .auth-result[data-status="error"] .close-button:hover {
+      border-color: rgba(240, 120, 120, 0.4);
+      background: rgba(240, 120, 120, 0.1);
+    }
+
+    .close-fallback {
+      margin: 14px 0 0;
+      color: #858e89;
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+
+      .auth-result {
+        padding: 24px 12px;
+      }
+
+      .brand-mark {
+        width: 104px;
+        height: 104px;
+        margin-bottom: 24px;
+        border-radius: 24px;
+      }
+
+      .description {
+        font-size: 15px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        will-change: auto !important;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="title-text">Cargando...</h2>
-      <button class="close-btn" onclick="cerrarVentana()">×</button>
-    </div>
-
-    <div class="connection-visual">
-      <div class="icon-box" id="provider-icon"></div>
-
-      <div class="connection-line" id="connect-line"></div>
-      <div class="icon-box" id="status-icon"></div>
-    </div>
-
-    <p class="description" id="desc-text">Procesando autenticación...</p>
-
-    <button class="btn-primary" id="btn-action" onclick="cerrarVentana()">
-      Cerrar
-    </button>
-  </div>
+  <div class="ambient-light ambient-light-one" aria-hidden="true"></div>
+  <div class="ambient-light ambient-light-two" aria-hidden="true"></div>
+  <main class="auth-result" id="auth-result" data-provider="{{PROVIDER}}" data-status="{{STATUS}}"
+    data-error="{{ERROR_MSG}}" aria-labelledby="title-text">
+    <img id="app-logo" class="brand-mark" alt="MiniKick" />
+    <p class="status-pill" id="status-pill" role="status"></p>
+    <h1 class="result-heading" id="title-text"></h1>
+    <p class="description">
+      <span id="description-primary"></span><strong id="description-provider"></strong><span
+        id="description-secondary"></span>
+    </p>
+    <p class="result-detail" id="result-detail"></p>
+    <div class="error-detail" id="error-detail" role="alert" hidden></div>
+    <button class="close-button" id="close-button" type="button">Cerrar ventana</button>
+    <p class="close-fallback" id="close-fallback" hidden>Puedes cerrar esta pestaña manualmente.</p>
+  </main>
 
   <script>
-    const provider = "{{PROVIDER}}";
-    const status = "{{STATUS}}";
-    const errorMsg = "{{ERROR_MSG}}";
+    const appIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjEwODAiPjxwYXRoIGZpbGw9IiMxNWQwOGIiIGQ9Im0xNzIuODAzIDI3Ljg2OSAzLjktLjAwN3E1LjM2LS4wMDcgMTAuNzE3LS4wMDMgNS44My0uMDAxIDExLjY2LS4wMDggMTEuNTY0LS4wMTEgMjMuMTI3LS4wMSAxMy44NS0uMDA0IDI3LjctLjAxNWMyMi4zMTktLjAxNiA0NC42MzctLjAyMiA2Ni45NTUtLjAyN3ExNS44NC0uMDA0IDMxLjY3OS0uMDFhNDE3NzA5IDQxNzcwOSAwIDAgMSAxMzUuNzgtLjAzaDMuNDNjMzYuNjgyLS4wMDMgNzMuMzY0LS4wMiAxMTAuMDQ2LS4wNDJhMTkyODIyIDE5MjgyMiAwIDAgMSAxMjkuMTQ4LS4wNGgzLjE3OXEyNS4zLS4wMDUgNTAuNi0uMDI3IDI1LjQ0LS4wMjIgNTAuODc4LS4wMSAxNS4xMDUuMDA3IDMwLjIxLS4wMTUgMTAuMTAzLS4wMTUgMjAuMjA0LjAwMSA1Ljc0OC4wMSAxMS40OTYtLjAwNmM0Ni4zNTUtLjE0NCA4NC45IDEyLjcxNCAxMTguNDg4IDQ1LjM4IDE2Ljg0MSAxNy4wODUgMjguNTUxIDM5LjY4MyAzNS4yNSA2Mi41bC43NDcgMi41MTRjMy4yODIgMTEuNjk3IDQuMzAzIDIzLjQzOCA0LjI1NyAzNS41NDZsLjAxIDMuOTI3Yy4wMDkgMy41Ny4wMDUgNy4xMzkgMCAxMC43MDgtLjAwNSAzLjg5NC4wMDIgNy43ODguMDA4IDExLjY4MXEuMDEzIDEwLjIyMy4wMDcgMjAuNDQ3Yy0uMDA2IDEwLjEzNSAwIDIwLjI3LjAwOSAzMC40MDUuMDE1IDE5LjE1Ni4wMTcgMzguMzEyLjAxNCA1Ny40NjhhMTA3MTEyIDEwNzExMiAwIDAgMCAuMDEgNjAuMzc0IDIxMTI1OSAyMTEyNTkgMCAwIDEgLjAwMyAxMjAuMTE1cS0uMDA3IDUzLjMzNC4wMjEgMTA2LjY2N2ExOTM2NDEgMTkzNjQxIDAgMCAxIC4wMjcgMTMyLjY3djMuMThxLS4wMDEgMjMuNzQ3LjAxNSA0Ny40OTQuMDE5IDI3LjAxMi4wMDIgNTQuMDIzLS4wMTEgMTUuMTA4LjAwOCAzMC4yMTcuMDEyIDEwLjEwMy0uMDA2IDIwLjIwNWMtLjAwNiAzLjgzMy0uMDA4IDcuNjY1LjAwNCAxMS40OTguMDgzIDI5LjA4NC4wODMgMjkuMDg0LTMuMzg2IDQzLjM2MWwtLjU5OCAyLjYwNGMtOS4yODYgMzcuODUtMzQuMjI1IDcwLjQxNy02Ny4xNiA5MC43NTUtMjIuMjE5IDEzLjI1My00Ny4wOCAyMC44MS03Mi45NTYgMjAuNzcybC0zLjkwOC4wMDdxLTUuMzc2LjAwNy0xMC43NTIuMDAzLTUuODQ3LjAwMS0xMS42OTMuMDA4LTExLjU5OS4wMTEtMjMuMTk4LjAxLTEzLjg5Mi4wMDQtMjcuNzg0LjAxNWMtMjIuMzg2LjAxNi00NC43NzIuMDIyLTY3LjE1OC4wMjdxLTE1Ljg4Ny4wMDMtMzEuNzczLjAxYTQyMDA4MiA0MjAwODIgMCAwIDEtMTM5LjYxNS4wM2MtMzYuNzkzLjAwMy03My41ODUuMDItMTEwLjM3OC4wNDJhMTkzOTY4IDE5Mzk2OCAwIDAgMS0xMjkuNTI0LjA0aC0zLjE4N3EtMjUuMzc4LjAwNS01MC43NTUuMDI3LTI1LjUxNS4wMjItNTEuMDMuMDEtMTUuMTUtLjAwNy0zMC4zMDMuMDE1LTEwLjEzMS4wMTUtMjAuMjY0LS4wMDEtNS43NjUtLjAxLTExLjUzMS4wMDZjLTI5LjEzNy4wOS0yOS4xMzcuMDktNDMuNDMzLTMuMzhsLTIuNTcxLS41ODJDMTA3Ljk3IDEwNDAuODQzIDc4LjU0OSAxMDIxLjY4NSA1OSA5OTZsLTIuMDE2LTIuNTc0Yy0xMS4xODgtMTQuNzM1LTE5LjA2LTMxLjI3OS0yNC4yMzQtNDguOTg5bC0uNzQ3LTIuNTRjLTMuMTc2LTExLjM2Mi00LjMwMS0yMi41NjEtNC4yNTctMzQuMzMxbC0uMDEtMy45MjNjLS4wMDktMy41Ny0uMDA1LTcuMTQgMC0xMC43MS4wMDUtMy44OTItLjAwMi03Ljc4NS0uMDA4LTExLjY3OHEtLjAxMi0xMC4yMjMtLjAwNy0yMC40NDVjLjAwNi0xMC4xMzUgMC0yMC4yNy0uMDA5LTMwLjQwNHEtLjAyLTI4LjczMy0uMDE0LTU3LjQ2N2ExMDcxMTUgMTA3MTE1IDAgMCAwLS4wMS02MC4zNzRxLS4wMTMtNDQuNjg0LS4wMDgtODkuMzY2di0zLjQwM2wuMDAzLTE3LjA3VjU5OS4zbC4wMDItNi44NTZxLjAwNy01My4zMzQtLjAyMS0xMDYuNjY3YTE5MzYxNSAxOTM2MTUgMCAwIDEtLjAyNy0xMzIuNjY2di0zLjE4cS4wMDItMjMuNzQ1LS4wMTUtNDcuNDkyLS4wMTktMjcuMDEzLS4wMDItNTQuMDI2LjAxMS0xNS4xMDgtLjAwOC0zMC4yMTZhNjg4OSA2ODg5IDAgMCAxIC4wMDYtMjAuMjA5IDI0NDggMjQ0OCAwIDAgMC0uMDA0LTExLjQ5N2MtLjA1My0xOC42NDkuNDM5LTM2LjQ4MyA2LjAxMS01NC40M2wuNzU4LTIuNDc2QzM4LjY1MSAxMTYuMjY3IDQ0LjkwMSAxMDMuNDEgNTMgOTJjLjY3NS0uOTYgMS4zNS0xLjkxOCAyLjA0Ny0yLjkwNkM2My40MjMgNzcuNTY5IDcyLjYzNiA2Ny42NDkgODQgNTlsMi41NzQtMi4wMTZjMjQuODQ1LTE4Ljg2NSA1NS4wOTgtMjkuMTYyIDg2LjIzLTI5LjExNSIvPjxwYXRoIGZpbGw9IiNmZWZlZmUiIGQ9Im0yODAuMTI1IDYxMy43NSAzLjAwOC0uMDc4YzExLjA0LjkzNyAyMS4xNCA0LjcxNSAzMS4zNjcgOC43NjUgOC4xNjYgMy4yMDkgMTYuMjk3IDYuMjE3IDI0LjcwOCA4LjcyNSAzLjE3Ni45NTMgNi4yOTMgMi4wNCA5LjQxNyAzLjE1IDExLjU5NiAzLjkwMiAyMy41MTggNi43MDMgMzUuMzc1IDkuNjg4bDQuNTU5IDEuMTZxMy43NzUuOTU1IDcuNTU4IDEuODgzYzIuODA0LjY5MSA1LjU5NyAxLjQwMyA4LjM5IDIuMTMzQzQyMC40NzggNjUzLjI2MiA0MzYuNyA2NTUuNjkgNDUzIDY1OGwyLjA0MS4yOWM0LjYzLjY1MyA5LjI2MiAxLjI4MiAxMy44OTcgMS44OThsMy40NjguNDY4YzMuODYuNDk2IDcuNzI0LjkzNyAxMS41OTQgMS4zNDRsMi41MTQuMjY4YzE3Ljk3NiAxLjg1MSAzNS44NzYgMi4wNDUgNTMuOTI1IDEuOTkzIDMuOTYzLS4wMTIgNy45MjYtLjAwNSAxMS44ODkuMDA3IDE2Ljk5My4wNDEgMzMuNzc0LS4yNyA1MC42NzItMi4yNjhxMi4xNi0uMjMzIDQuMzE4LS40NThjMy45NC0uNDE4IDcuODc0LS44OCAxMS44MDctMS4zNTVsMi4wOS0uMjUyQzYzNS41ODIgNjU4LjE4MiA2NDkuNzkgNjU1Ljc1IDY2NCA2NTNsMy4zMTMtLjYzYzE5Ljg2NS0zLjc4IDM5LjM1Mi04LjQ1IDU4LjY4Ny0xNC4zN2wzLjc3LTEuMTQ1YzE0LjU2OS00LjQ4NiAyOS4wODYtOS4yMjQgNDMuNDA2LTE0LjQ1MiAxNi43MTgtNi4wODQgMzAuNjEyLTcuNTEgNDcuMjk3LS4zNEM4MzEuOTE4IDYyNy44NzYgODQwLjExOSA2MzcuMjI2IDg0NSA2NDljNC41NTUgMTQuMzY5IDQuMjYyIDI4LjA2MS0yLjYyNSA0MS42MjUtMTAuMTggMTcuMzU5LTI1LjI3OCAyMy41NDUtNDMuNDM3IDI5LjgxM2wtNS42NzEgMS45OWMtMTMuMDg4IDQuNTczLTI2LjIzIDguOTEzLTM5LjU0NyAxMi43OGE3MDUgNzA1IDAgMCAwLTcuNzYzIDIuMzJjLTE1LjgyMyA0Ljc0LTMxLjk0IDguMzk4LTQ4LjA0NiAxMi4wMzlxLTIuNjQ3LjYwMS01LjI5IDEuMjE1Yy0xMC43NSAyLjQxMS0yMS42MTMgNC4wNTItMzIuNDk2IDUuNzE4bC0zLjAzNi40NjdDNjMyLjM5MSA3NjAuNzYgNjA3Ljk2NCA3NjMuNjE0IDU4MyA3NjVsLTMuMDI2LjE4Yy02Ljk5LjQwOC0xMy45NzUuNjQ0LTIwLjk3NC44MmwtMy45MzIuMTJjLTIyLjgxLjY0OS00NS40MDMtLjU3NS02OC4xMy0yLjQzM2wtMi4wMDYtLjE2MmMtMjMuMzI0LTEuODkzLTQ2LjQzLTQuNDQyLTY5LjQzMi04Ljc3NWwtMi40Mi0uNDVjLTIxLjQyNi0zLjk5OC00Mi44My04LjQzNC02My43NDctMTQuNjEyLTIuNzI2LS44MDQtNS40NTctMS41OS04LjE4OC0yLjM3NUEyNzYwIDI3NjAgMCAwIDEgMzIzIDczMmwtMi4xMjgtLjYyM2MtNzEuNjk2LTIxLjA2OC03MS42OTYtMjEuMDY4LTgzLjctNDIuNjY2LTYuMDc2LTEyLjgzLTguODUyLTI2LjMwMi00LjU0Ny00MC4xNDkgNi4wMzItMTUuMzUgMTUuNzc3LTI1LjEgMzAuNTQzLTMyLjA2NiA1LjQ2LTIuMzI0IDExLjA3Ni0yLjY1NiAxNi45NTctMi43NDZtNTIxLjMxMy0yODYgMy4wNzMuMDI3YzI3LjQwNi40MjUgNTAuNjcgMTIuMDE2IDcwLjE3MyAzMC44MDkgMTAuNzcgMTEuMTkgMTguNTYgMjQuNjYxIDIzLjMxNiAzOS40MTRsLjYzMyAxLjkyMmM4LjA1NyAyNS40OTggMy4wODMgNTEuNzEtOC4wMDggNzUuMzktMTIuNDQ3IDIzLjU5NS0zMy40MTkgNDAuMDctNTguMzc1IDQ4LjU2My0yNS4zNjcgNy44MjMtNTMuNTY4IDUuNjM1LTc3LjE4Ny02Ljc1QzczMS44OTUgNTAzLjQ4NyA3MTYuMzA3IDQ4NS4wMjEgNzA3IDQ2MGwtLjk3My0yLjU0Yy04LjE4Ny0yMi42MjgtNS4wNi00OS41NTUgNC41NzUtNzEuMTMyIDExLjY0Ny0yNC4zNTkgMzEuODEyLTQzLjk0NiA1Ny4zOTgtNTIuOTg3IDExLjA4Ni0zLjczIDIxLjcwNS01LjcwOCAzMy40MzgtNS41OTFtLTUyNCAwIDMuMDczLjAyN2MyNy40MDYuNDI1IDUwLjY3IDEyLjAxNiA3MC4xNzMgMzAuODA5IDEwLjc3IDExLjE5IDE4LjU2IDI0LjY2MSAyMy4zMTYgMzkuNDE0bC42MzMgMS45MjJjOC4wNTcgMjUuNDk4IDMuMDgzIDUxLjcxLTguMDA4IDc1LjM5LTEyLjQ0NyAyMy41OTUtMzMuNDE5IDQwLjA3LTU4LjM3NSA0OC41NjMtMjUuMzY3IDcuODIzLTUzLjU2OCA1LjYzNS03Ny4xODctNi43NUMyMDcuODk1IDUwMy40ODcgMTkyLjMwNyA0ODUuMDIxIDE4MyA0NjBsLS45NzMtMi41NGMtOC4xODctMjIuNjI4LTUuMDYtNDkuNTU1IDQuNTc1LTcxLjEzMiAxMS42NDctMjQuMzU5IDMxLjgxMi00My45NDYgNTcuMzk4LTUyLjk4NyAxMS4wODYtMy43MyAyMS43MDUtNS43MDggMzMuNDM4LTUuNTkxIi8+PC9zdmc+";
+    const result = document.getElementById("auth-result");
+    const provider = result.dataset.provider === "twitch" ? "Twitch" : "Kick";
+    const status = result.dataset.status;
+    const errorMessage = result.dataset.error;
+    const isSuccess = status === "success";
 
-    const capitalizedProvider =
-      provider.charAt(0).toUpperCase() + provider.slice(1);
-    document.title =
-      status === "success"
-        ? `Conexión Exitosa - ${capitalizedProvider}`
-        : `Conexión Fallida - ${capitalizedProvider}`;
+    document.getElementById("app-logo").src = appIcon;
+    document.getElementById("app-favicon").href = appIcon;
+    document.title = `${isSuccess ? "Conexión establecida" : "Conexión fallida"} - ${provider} - MiniKick`;
 
-    const titleText = document.getElementById("title-text");
-    const providerIcon = document.getElementById("provider-icon");
-    const statusIcon = document.getElementById("status-icon");
-    const descText = document.getElementById("desc-text");
-    const btnAction = document.getElementById("btn-action");
-    const connectLine = document.getElementById("connect-line");
-    const kickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#64eb5f"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 3a1 1 0 0 1 1 1v3h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h6a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-1v1a1 1 0 0 1 -.883 .993l-.117 .007h-1v2h1a1 1 0 0 1 .993 .883l.007 .117v1h1a1 1 0 0 1 .993 .883l.007 .117v4a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-1h-1a1 1 0 0 1 -.993 -.883l-.007 -.117v-1h-1v3a1 1 0 0 1 -.883 .993l-.117 .007h-5a1 1 0 0 1 -1 -1v-16a1 1 0 0 1 1 -1z" /></svg>`;
-    const twitchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 268"><title xmlns="">twitch</title><path fill="#9146FF" d="M17.458 0L0 46.556v186.201h63.983v34.934h34.931l34.898-34.934h52.36L256 162.954V0zm23.259 23.263H232.73v128.029l-40.739 40.741H128L93.113 226.92v-34.886H40.717zm64.008 116.405H128V69.844h-23.275zm63.997 0h23.27V69.844h-23.27z"/></svg>`;
-    const checkSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#64EB5F"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" /></svg>`;
-    const crossSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#EF4444"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-2.293 4.953a1 1 0 0 0 -1.414 0l-1.293 1.293l-1.293 -1.293a1 1 0 0 0 -1.414 1.414l1.293 1.293l-1.293 1.293a1 1 0 0 0 1.414 1.414l1.293 -1.293l1.293 1.293a1 1 0 0 0 1.414 -1.414l-1.293 -1.293l1.293 -1.293a1 1 0 0 0 0 -1.414z" /></svg>`;
+    const statusPill = document.getElementById("status-pill");
+    const title = document.getElementById("title-text");
+    const primaryDescription = document.getElementById("description-primary");
+    const secondaryDescription = document.getElementById("description-secondary");
+    const detail = document.getElementById("result-detail");
+    const errorDetail = document.getElementById("error-detail");
 
-    providerIcon.innerHTML = provider.toLowerCase() === "twitch" ? twitchSvg : kickSvg;
-
-    if (status === "success") {
-      titleText.textContent = "Conexión Establecida";
-      statusIcon.innerHTML = checkSvg;
-      statusIcon.className = "icon-box success";
-      connectLine.className = "connection-line success-line";
-
-      descText.innerHTML = `El bot ha recibido acceso y se ha autenticado correctamente en <span>${capitalizedProvider}</span>.<br><br>Ya puedes regresar a la aplicación para continuar.`;
-      btnAction.className = "btn-primary";
-      btnAction.textContent = "Cerrar ventana";
+    if (isSuccess) {
+      title.textContent = "Conexión establecida";
+      statusPill.textContent = `Cuenta de ${provider} vinculada`;
+      primaryDescription.textContent = "Tu cuenta de ";
+      document.getElementById("description-provider").textContent = provider;
+      secondaryDescription.textContent = " ahora está conectada con MiniKick.";
+      detail.textContent = "Ya puedes cerrar esta ventana y volver a la aplicación.";
     } else {
-      titleText.textContent = "Conexión Fallida";
-      statusIcon.innerHTML = crossSvg;
-      statusIcon.className = "icon-box error";
-      connectLine.className = "connection-line";
-
-      descText.innerHTML = `Ocurrió un error al intentar vincular tu cuenta de <span>${capitalizedProvider}</span>.<br><br><span class="error-detail">${errorMsg || "La autenticación fue cancelada o expiró."}</span>`;
-      btnAction.className = "btn-primary btn-error";
-      btnAction.textContent = "Cerrar ventana";
+      title.textContent = "No se pudo completar la vinculación";
+      statusPill.textContent = "Error de conexión";
+      primaryDescription.textContent = "No se pudo conectar tu cuenta de ";
+      document.getElementById("description-provider").textContent = provider;
+      secondaryDescription.textContent = " con MiniKick.";
+      detail.textContent = "Revisa el mensaje de error e inténtalo de nuevo.";
+      errorDetail.textContent =
+        errorMessage || "La autenticación fue cancelada o expiró.";
+      errorDetail.hidden = false;
     }
 
-    function cerrarVentana() {
+    document.getElementById("close-button").addEventListener("click", () => {
       window.close();
-      const finalTitle =
-        status === "success" ? "¡Todo listo!" : "Proceso Terminado";
-      const finalColor = status === "success" ? "#64eb5f" : "#ef4444";
-      document.body.innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <h2 style="color: ${finalColor}; margin-bottom: 10px;">${finalTitle}</h2>
-                    <p style="color: #848e9c;">Puedes cerrar esta pestaña manualmente.</p>
-                </div>
-            `;
-    }
+      window.setTimeout(() => {
+        document.getElementById("close-fallback").hidden = false;
+      }, 150);
+    });
   </script>
 </body>
 

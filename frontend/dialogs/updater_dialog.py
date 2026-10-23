@@ -84,7 +84,7 @@ class UpdateDialog(ModernModal):
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+            self.header_icon.setPixmap(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_900, 36).pixmap(36, 36))
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
@@ -121,7 +121,7 @@ class UpdateDialog(ModernModal):
     def show_complete(self):
         self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.KICK, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_900, 36).pixmap(36, 36))
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
@@ -143,7 +143,7 @@ class UpdateDialog(ModernModal):
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(Qt.GlobalColor.transparent))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_900, 36).pixmap(36, 36))
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_up_to_date"))

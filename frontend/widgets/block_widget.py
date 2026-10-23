@@ -43,7 +43,7 @@ class SectionHeader(QWidget):
         layout = QVBoxLayout(self)
         margins = Size.Margin.H_XS if first else Size.Margin.SECTION_HEADER
         layout.setContentsMargins(*margins)
-        layout.setSpacing(Size.SPACING_NONE)
+        layout.setSpacing(Size.SPACING_NN)
         self.lbl = QLabel(text, parent=self)
         self.lbl.setProperty("role", "section_header")
         layout.addWidget(self.lbl)
@@ -70,7 +70,7 @@ class SettingRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
             icon_lbl.setFixedWidth(20)
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
@@ -124,7 +124,7 @@ class SliderRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
             icon_lbl.setFixedWidth(20)
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             main_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
@@ -176,7 +176,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=18))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")
@@ -229,7 +229,7 @@ class ModernCard(QFrame):
         self.card_layout.addStretch(stretch)
 
 class FadingScrollArea(QScrollArea):
-    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_950):
+    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(parent)
         self.fade_height = fade_height
         self._fade_color = QColor(fade_color) if isinstance(fade_color, str) else fade_color
@@ -288,7 +288,7 @@ class FadingScrollArea(QScrollArea):
         painter.end()
 
 class ModernScrollArea(FadingScrollArea):
-    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_950):
+    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):
@@ -300,7 +300,7 @@ class ExpandableCard(QFrame):
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(*Size.Margin.NONE)
-        self.main_layout.setSpacing(Size.SPACING_NONE)
+        self.main_layout.setSpacing(Size.SPACING_NN)
 
         self._icon_up = get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_400, 20)
         self._icon_down = get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_400, 20)
@@ -576,14 +576,14 @@ class ExpandableSettingCard(ExpandableCard):
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)
-    layout = create_row_layout(spacing=Size.SPACING_NONE, margins=Size.Margin.H_MD, parent=container)
+    layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.H_MD, parent=container)
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
     tag.setProperty("role", "badge")
     tag.setProperty("state", state)
 
-    tag_layout = create_row_layout(spacing=Size.SPACING_NONE, margins=Size.Margin.H_SM, parent=tag)
+    tag_layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.H_SM, parent=tag)
 
     lbl_txt = QLabel(text, tag)
     lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)

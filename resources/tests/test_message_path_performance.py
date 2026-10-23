@@ -2,14 +2,17 @@
 
 import logging
 import pytest
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 from backend.core.app_logger_core import _resolve_log_level, _DEFAULT_LOG_LEVEL
+from backend.services import ChatMessageDTO
 from backend.services.schedule.schedule_service import ScheduleService
 from backend.services.chat.spam_service import SpamService
 from backend.database.database_manager import DatabaseManager
 from backend.database.widgets_storage import SQLiteWidgetsStorage
 from backend.services.system.widgets_service import WidgetService
 from backend.controllers.widgets_controller import WidgetsController
+from frontend.main_window import MainWindowCore
 
 
 def test_log_level_defaults_to_info(monkeypatch):
@@ -139,3 +142,43 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
     controller.invalidate_ignored_bots_cache()
     controller._get_ignored_bots()
     assert load_calls["n"] == 2
+
+
+def _message_routing_window():
+    return SimpleNamespace(
+        session_metrics={"messages_processed": 0},
+        session_platform_messages={"kick": 0, "twitch": 0, "youtube": 0, "tiktok": 0},
+        _dashboard_metrics_timer=MagicMock(),
+        chat_controller=MagicMock()
+    )
+
+
+def test_message_route_skips_clock_lookup_when_dto_has_timestamp(monkeypatch):
+    import frontend.main_window as main_window_module
+
+    now = MagicMock(side_effect=AssertionError("timestamp should be reused"))
+    monkeypatch.setattr(main_window_module, "datetime", SimpleNamespace(now=now))
+    window = _message_routing_window()
+    dto = ChatMessageDTO("viewer", "hello", [], "", "message-1", 1, timestamp="12:30")
+
+    MainWindowCore._route_incoming_message(window, dto)
+
+    now.assert_not_called()
+    assert dto.timestamp == "12:30"
+    window.chat_controller.process_message.assert_called_once_with(dto)
+
+
+def test_message_route_generates_timestamp_only_when_missing(monkeypatch):
+    import frontend.main_window as main_window_module
+
+    now = MagicMock()
+    now.return_value.strftime.return_value = "12:31"
+    monkeypatch.setattr(main_window_module, "datetime", SimpleNamespace(now=now))
+    window = _message_routing_window()
+    dto = ChatMessageDTO("viewer", "hello", [], "", "message-2", 1)
+
+    MainWindowCore._route_incoming_message(window, dto)
+
+    now.assert_called_once_with()
+    assert dto.timestamp == "12:31"
+    window.chat_controller.process_message.assert_called_once_with(dto)

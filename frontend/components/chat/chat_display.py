@@ -24,16 +24,16 @@ class ChatDisplayPanel(ModernCard):
     detach_requested = Signal()
     reattach_requested = Signal()
     _MAX_CHAT_BLOCKS = 400
-    _PILL_BG = BadgeTheme.BADGE_BG
+    _PILL_BG = BadgeTheme.BADGE_BCG
     _CAP_LEFT = "\ue0b6"
     _CAP_RIGHT = "\ue0b4"
     _FONT_FMT = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
 
     _ROLE_SYMBOLS = {
-        "Streamer": ("\uf130", BadgeTheme.BADGE_STREAMER),
-        "Broadcaster": ("\uf130", BadgeTheme.BADGE_STREAMER),
-        "Moderador": ("\ued25", BadgeTheme.BADGE_MODERATOR),
-        "Moderator": ("\ued25", BadgeTheme.BADGE_MODERATOR),
+        "Streamer": ("\uf130", BadgeTheme.BADGE_STR),
+        "Broadcaster": ("\uf130", BadgeTheme.BADGE_STR),
+        "Moderador": ("\ued25", BadgeTheme.BADGE_MOD),
+        "Moderator": ("\ued25", BadgeTheme.BADGE_MOD),
         "VIP": ("\uedeb", BadgeTheme.BADGE_VIP),
         "Suscriptor": ("\udb83\ude44", BadgeTheme.BADGE_SUB),
         "Subscriber": ("\udb83\ude44", BadgeTheme.BADGE_SUB),
@@ -41,8 +41,8 @@ class ChatDisplayPanel(ModernCard):
         "Member": ("\udb83\ude44", BadgeTheme.BADGE_SUB),
         "Verified": ("\uf00c", Palette.NEUTRAL_400),
         "Bot": ("\uee0d", BrandColors.BLUE),
-        "Sistema": ("\uf113", BadgeTheme.BADGE_MODERATOR),
-        "System": ("\uf113", BadgeTheme.BADGE_MODERATOR),
+        "Sistema": ("\uf113", BadgeTheme.BADGE_MOD),
+        "System": ("\uf113", BadgeTheme.BADGE_MOD),
         "Usuario": ("\ued35", Palette.NEUTRAL_400),
         "User": ("\ued35", Palette.NEUTRAL_400)
     }

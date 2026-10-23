@@ -12,7 +12,7 @@ from .controls_widget import configure_icon_only_button
 class ModernSegmentedControl(QFrame):
     value_changed = Signal(str)
 
-    def __init__(self, parent=None, button_size: QSize = QSize(Size.ICON_BUTTON_NORMAL, Size.ICON_BUTTON_NORMAL), icon_size: QSize = QSize(16, 16)):
+    def __init__(self, parent=None, button_size: QSize = QSize(Size.ICON_BASIC, Size.ICON_BASIC), icon_size: QSize = QSize(16, 16)):
         super().__init__(parent)
         self.setProperty("role", "segmented_control")
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)

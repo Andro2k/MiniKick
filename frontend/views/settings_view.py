@@ -33,7 +33,7 @@ class SettingsView(BaseView):
 
     def _setup_ui(self):
         header_system = SectionHeader(self.i18n.get("settings.sections.system"), parent=self, first=True)
-        card_system = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        card_system = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
 
         self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
@@ -118,7 +118,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_system)
 
         header_audio = SectionHeader(self.i18n.get("settings.sections.audio"), parent=self)
-        card_audio = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        card_audio = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
 
         self.combo_music_audio_device = NoWheelComboBox(self)
         self.combo_music_audio_device.setMinimumWidth(160)
@@ -158,7 +158,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_audio)
 
         header_integrations = SectionHeader(self.i18n.get("settings.sections.integrations"), parent=self)
-        integrations_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        integrations_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
 
         self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_outlined", parent=self)
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
@@ -212,7 +212,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(integrations_card)
 
         header_backup = SectionHeader(self.i18n.get("settings.sections.backup"), parent=self)
-        card_backup = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        card_backup = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
 
         btn_backup_container = QWidget()
         btn_backup_layout = QHBoxLayout(btn_backup_container)
@@ -239,7 +239,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_backup)
 
         header_support = SectionHeader(self.i18n.get("settings.sections.support"), parent=self)
-        support_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+        support_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
 
         self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined", parent=self)
         self.btn_update.clicked.connect(self.update_clicked.emit)
