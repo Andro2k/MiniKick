@@ -33,7 +33,7 @@ class CommandConfigWizard(ModernWizardPanel):
     def _setup_ui(self):
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
-        basic_layout.setContentsMargins(*Size.Margin.NONE)
+        basic_layout.setContentsMargins(*Size.Margin.MRG_NON)
         basic_layout.setSpacing(Size.SPACING_LG)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
@@ -92,10 +92,10 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(self.chk_active)
 
         self.tab_adv = QWidget()
-        adv_main_layout = create_row_layout(spacing=Size.SPACING_LG, margins=Size.Margin.NONE, parent=self.tab_adv)
+        adv_main_layout = create_row_layout(spacing=Size.SPACING_LG, margins=Size.Margin.MRG_NON, parent=self.tab_adv)
 
         left_col = QWidget()
-        adv_layout = create_col_layout(spacing=Size.SPACING_LG, margins=Size.Margin.NONE, parent=left_col)
+        adv_layout = create_col_layout(spacing=Size.SPACING_LG, margins=Size.Margin.MRG_NON, parent=left_col)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")

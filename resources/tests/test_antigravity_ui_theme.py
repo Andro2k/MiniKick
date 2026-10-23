@@ -81,7 +81,7 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import theme, Size
-    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.SECTION_SCROLL, Size.Margin.XS, Size.Margin.SECTION_BADGES):
+    for m in (Size.Margin.SEC_HDR, Size.Margin.MRG_HXS, Size.Margin.MRG_MED, Size.Margin.SEC_SCR, Size.Margin.MRG_XXS, Size.Margin.SEC_BDG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -101,7 +101,7 @@ def test_theme_tokens_clean_and_complete():
 def test_dashboard_view_profile_cards_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
     from frontend.common import Size
-    for m in (Size.Margin.LG, Size.Margin.LG):
+    for m in (Size.Margin.MRG_LRG, Size.Margin.MRG_LRG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -120,7 +120,7 @@ def test_dashboard_view_profile_cards_and_margins(qapp):
     assert hasattr(view, "card_tiktok")
 
     margins = view.distribution_panel.layout().contentsMargins()
-    assert (margins.left(), margins.top(), margins.right(), margins.bottom()) == Size.Margin.MD
+    assert (margins.left(), margins.top(), margins.right(), margins.bottom()) == Size.Margin.MRG_MED
 
 def test_chat_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.chat_view import ChatView
@@ -211,7 +211,7 @@ def test_music_view_and_subpanels_antigravity_standard(qapp):
     for panel in (music_view.player_panel, music_view.commands_panel, music_view.settings_panel):
         assert panel.property("role") == "tab_panel"
         m = panel.panel_layout.contentsMargins()
-        assert (m.left(), m.top(), m.right(), m.bottom()) == Size.Margin.MD
+        assert (m.left(), m.top(), m.right(), m.bottom()) == Size.Margin.MRG_MED
         assert panel.panel_layout.spacing() == Size.SPACING_MD
 
     cmd_dividers = [music_view.commands_panel.card_cmds.card_layout.itemAt(i).widget()
@@ -234,10 +234,10 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
     alerts_view = AlertsView(i18n)
 
     m_overlay = alerts_view.overlay_card.card_layout.contentsMargins()
-    assert (m_overlay.left(), m_overlay.top(), m_overlay.right(), m_overlay.bottom()) == Size.Margin.MD
+    assert (m_overlay.left(), m_overlay.top(), m_overlay.right(), m_overlay.bottom()) == Size.Margin.MRG_MED
 
     m_banner = alerts_view.notice_banner.card_layout.contentsMargins()
-    assert (m_banner.left(), m_banner.top(), m_banner.right(), m_banner.bottom()) == Size.Margin.MD
+    assert (m_banner.left(), m_banner.top(), m_banner.right(), m_banner.bottom()) == Size.Margin.MRG_MED
 
     card = alerts_view._get_or_create_card("twitch", "follow")
     assert isinstance(card, AlertEventCard)
@@ -289,17 +289,17 @@ def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     qc = schedule_view.quick_change_panel
     assert qc.property("role") == "tab_panel"
     m_qc = qc.layout().contentsMargins()
-    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == Size.Margin.MD
+    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == Size.Margin.MRG_MED
     assert qc.layout().spacing() == Size.SPACING_MD
     m_kick = qc.kick_card.card_layout.contentsMargins()
-    assert (m_kick.left(), m_kick.top(), m_kick.right(), m_kick.bottom()) == Size.Margin.MD
+    assert (m_kick.left(), m_kick.top(), m_kick.right(), m_kick.bottom()) == Size.Margin.MRG_MED
     m_twitch = qc.twitch_card.card_layout.contentsMargins()
-    assert (m_twitch.left(), m_twitch.top(), m_twitch.right(), m_twitch.bottom()) == Size.Margin.MD
+    assert (m_twitch.left(), m_twitch.top(), m_twitch.right(), m_twitch.bottom()) == Size.Margin.MRG_MED
 
     form = schedule_view.schedule_form_panel
     assert form.property("role") == "tab_panel"
     m_form = form.layout().contentsMargins()
-    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == Size.Margin.MD
+    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == Size.Margin.MRG_MED
     assert form.layout().spacing() == Size.SPACING_MD
 
 def test_table_cards_and_edge_to_edge_alignment(qapp):

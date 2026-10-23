@@ -37,7 +37,7 @@ class UpdateDialog(ModernModal):
 
         self.progress_container = QWidget()
         progress_layout = QVBoxLayout(self.progress_container)
-        progress_layout.setContentsMargins(*Size.Margin.NONE)
+        progress_layout.setContentsMargins(*Size.Margin.MRG_NON)
         progress_layout.setSpacing(Size.SPACING_MD)
 
         self.progress_bar = QProgressBar()

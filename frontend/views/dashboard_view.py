@@ -47,7 +47,7 @@ class DashboardView(BaseView):
         self.banner_scopes_kick.setProperty("role", "banner_scope_card")
         self.banner_scopes_kick.setProperty("state", "kick")
         self.banner_layout_kick = QHBoxLayout(self.banner_scopes_kick)
-        self.banner_layout_kick.setContentsMargins(*Size.Margin.LG)
+        self.banner_layout_kick.setContentsMargins(*Size.Margin.MRG_LRG)
         self.banner_layout_kick.setSpacing(Size.SPACING_MD)
         self.banner_scopes_kick.setVisible(False)
         self.lbl_warn_text_kick = QLabel(self.banner_scopes_kick)
@@ -66,7 +66,7 @@ class DashboardView(BaseView):
         self.banner_scopes_twitch.setProperty("role", "banner_scope_card")
         self.banner_scopes_twitch.setProperty("state", "twitch")
         self.banner_layout_twitch = QHBoxLayout(self.banner_scopes_twitch)
-        self.banner_layout_twitch.setContentsMargins(*Size.Margin.LG)
+        self.banner_layout_twitch.setContentsMargins(*Size.Margin.MRG_LRG)
         self.banner_layout_twitch.setSpacing(Size.SPACING_MD)
         self.banner_scopes_twitch.setVisible(False)
         self.lbl_warn_text_twitch = QLabel(self.banner_scopes_twitch)
@@ -93,7 +93,7 @@ class DashboardView(BaseView):
         self.welcome_card = QFrame(self)
         self.welcome_card.setProperty("role", "dashboard_welcome")
         welcome_layout = QVBoxLayout(self.welcome_card)
-        welcome_layout.setContentsMargins(*Size.Margin.MD)
+        welcome_layout.setContentsMargins(*Size.Margin.MRG_MED)
         welcome_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_welcome_title = QLabel(self.i18n.get("dashboard.welcome.title"), self.welcome_card)
@@ -106,19 +106,19 @@ class DashboardView(BaseView):
         welcome_layout.addWidget(self.lbl_welcome_subtitle)
 
         self.welcome_content_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.welcome_content_layout.setContentsMargins(*Size.Margin.NONE)
+        self.welcome_content_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.welcome_content_layout.setSpacing(Size.SPACING_SM)
         welcome_layout.addLayout(self.welcome_content_layout)
 
         self.distribution_panel = QFrame(self.welcome_card)
         self.distribution_panel.setProperty("role", "dashboard_distribution_panel")
         profile_layout = QVBoxLayout(self.distribution_panel)
-        profile_layout.setContentsMargins(*Size.Margin.MD)
+        profile_layout.setContentsMargins(*Size.Margin.MRG_MED)
         profile_layout.setSpacing(Size.SPACING_XS)
 
         self.avatar_container = QWidget(self.distribution_panel)
         avatar_layout = QGridLayout(self.avatar_container)
-        avatar_layout.setContentsMargins(*Size.Margin.NONE)
+        avatar_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.platform_distribution_ring = PlatformDistributionRing(self.avatar_container)
         avatar_layout.addWidget(self.platform_distribution_ring, 0, 0)
         self.btn_switch_channel = ModernButton(
@@ -176,7 +176,7 @@ class DashboardView(BaseView):
 
         self.channel_badges_container = QWidget(self)
         self.channel_badges_grid = QGridLayout(self.channel_badges_container)
-        self.channel_badges_grid.setContentsMargins(*Size.Margin.NONE)
+        self.channel_badges_grid.setContentsMargins(*Size.Margin.MRG_NON)
         self.channel_badges_grid.setSpacing(Size.SPACING_MD)
         self.channel_badges = {}
         badge_specs = (
@@ -208,7 +208,7 @@ class DashboardView(BaseView):
     def _setup_platforms_hub(self):
         self.platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(self.platforms_container)
-        self.platforms_grid.setContentsMargins(*Size.Margin.NONE)
+        self.platforms_grid.setContentsMargins(*Size.Margin.MRG_NON)
         self.platforms_grid.setSpacing(Size.SPACING_SM)
 
         self.card_kick = PlatformStatusCard(
@@ -249,12 +249,12 @@ class DashboardView(BaseView):
     def _setup_global_analytics_section(self):
         analytics_container = QWidget(self)
         analytics_layout = QVBoxLayout(analytics_container)
-        analytics_layout.setContentsMargins(*Size.Margin.NONE)
+        analytics_layout.setContentsMargins(*Size.Margin.MRG_NON)
         analytics_layout.setSpacing(Size.SPACING_MD)
 
         session_stats_container = QWidget(self)
         self.session_grid = QGridLayout(session_stats_container)
-        self.session_grid.setContentsMargins(*Size.Margin.NONE)
+        self.session_grid.setContentsMargins(*Size.Margin.MRG_NON)
         self.session_grid.setSpacing(Size.SPACING_MD)
 
         self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-filled.svg", "0")
@@ -281,10 +281,10 @@ class DashboardView(BaseView):
 
         right_col_widget = QWidget(self)
         right_col_layout = QVBoxLayout(right_col_widget)
-        right_col_layout.setContentsMargins(*Size.Margin.NONE)
+        right_col_layout.setContentsMargins(*Size.Margin.MRG_NON)
         right_col_layout.setSpacing(Size.SPACING_MD)
 
-        self.top_commands_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.top_commands_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
         lbl_top_cmds.setProperty("role", "h3")
@@ -298,7 +298,7 @@ class DashboardView(BaseView):
         self.top_commands_card.addLayout(self.top_commands_container)
         right_col_layout.addWidget(self.top_commands_card)
 
-        self.modules_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.modules_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_modules_title = QLabel(self.i18n.get("dashboard.analytics.modules_summary_title"))
         lbl_modules_title.setProperty("role", "h3")

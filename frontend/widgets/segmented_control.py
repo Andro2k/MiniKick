@@ -19,7 +19,7 @@ class ModernSegmentedControl(QFrame):
         self._current_value = ""
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(*Size.Margin.XS)
+        self._layout.setContentsMargins(*Size.Margin.MRG_XXS)
         self._layout.setSpacing(Size.SPACING_XS)
 
         self._btn_group = QButtonGroup(self)

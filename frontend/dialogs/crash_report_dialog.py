@@ -49,7 +49,7 @@ class CrashReportDialog(ModernModal):
         header_card = QFrame()
         header_card.setProperty("role", "banner_danger")
         card_layout = QVBoxLayout(header_card)
-        card_layout.setContentsMargins(*Size.Margin.LG)
+        card_layout.setContentsMargins(*Size.Margin.MRG_LRG)
 
         lbl_subtitle = QLabel(self.subtitle_text)
         lbl_subtitle.setProperty("role", "body")

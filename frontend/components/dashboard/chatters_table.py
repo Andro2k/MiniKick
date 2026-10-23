@@ -11,7 +11,7 @@ class DashboardChattersTable(ModernCard):
     activate_widget_requested = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent=parent, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.i18n = i18n
         self._current_date = datetime.date.today().strftime("%Y-%m-%d")
         self._available_dates: list[str] = []
@@ -32,11 +32,11 @@ class DashboardChattersTable(ModernCard):
 
     def _setup_ui(self):
         self.header_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.header_layout.setContentsMargins(*Size.Margin.NONE)
+        self.header_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.header_layout.setSpacing(Size.SPACING_MD)
 
         title_col = QVBoxLayout()
-        title_col.setContentsMargins(*Size.Margin.NONE)
+        title_col.setContentsMargins(*Size.Margin.MRG_NON)
         title_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_title = QLabel(self.i18n.get("dashboard.chatters.title"), self)
@@ -50,7 +50,7 @@ class DashboardChattersTable(ModernCard):
         self.header_layout.addLayout(title_col, stretch=1)
 
         filters_row = QHBoxLayout()
-        filters_row.setContentsMargins(*Size.Margin.NONE)
+        filters_row.setContentsMargins(*Size.Margin.MRG_NON)
         filters_row.setSpacing(Size.SPACING_XS)
 
         self.btn_today = ModernButton(
@@ -113,7 +113,7 @@ class DashboardChattersTable(ModernCard):
         self.addWidget(self.banner_inactive)
 
         self.stack = QStackedWidget(self)
-        self.stack.setContentsMargins(*Size.Margin.NONE)
+        self.stack.setContentsMargins(*Size.Margin.MRG_NON)
 
         self.table = QTableWidget(self)
         self.table.setColumnCount(5)
@@ -148,7 +148,7 @@ class DashboardChattersTable(ModernCard):
         self.stack.addWidget(self.table)
 
         self.empty_widget = QWidget(self)
-        empty_layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.LG, parent=self.empty_widget)
+        empty_layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_LRG, parent=self.empty_widget)
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_empty_icon = QLabel(self.empty_widget)

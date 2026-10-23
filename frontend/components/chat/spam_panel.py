@@ -27,7 +27,7 @@ class ChatSpamPanel(QWidget):
 
     def _setup_ui(self):
         panel = QVBoxLayout(self)
-        panel.setContentsMargins(*Size.Margin.MD)
+        panel.setContentsMargins(*Size.Margin.MRG_MED)
         panel.setSpacing(Size.SPACING_MD)
         self.panel_layout = panel
 

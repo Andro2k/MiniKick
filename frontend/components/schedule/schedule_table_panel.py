@@ -20,7 +20,7 @@ class ScheduleTablePanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*Size.Margin.NONE)
+        main_layout.setContentsMargins(*Size.Margin.MRG_NON)
         main_layout.setSpacing(Size.SPACING_NN)
 
         self.table_card = ModernTableCard(

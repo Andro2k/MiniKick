@@ -22,11 +22,11 @@ class ScheduleFormPanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*Size.Margin.MD)
+        main_layout.setContentsMargins(*Size.Margin.MRG_MED)
         main_layout.setSpacing(Size.SPACING_MD)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_MD)
+        card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
         card.card_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_layout = QHBoxLayout()

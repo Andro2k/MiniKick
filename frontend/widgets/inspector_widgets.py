@@ -23,7 +23,7 @@ class InspectorPropertyRow(QWidget):
         self.setMinimumHeight(36)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.V_XS)
+        layout.setContentsMargins(*Size.Margin.MRG_VXS)
         layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:

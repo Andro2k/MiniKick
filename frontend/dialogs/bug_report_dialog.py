@@ -74,7 +74,7 @@ class BugReportDialog(ModernModal):
         self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
 
         chk_wrapper = QHBoxLayout()
-        chk_wrapper.setContentsMargins(*Size.Margin.V_XS)
+        chk_wrapper.setContentsMargins(*Size.Margin.MRG_VXS)
         chk_wrapper.addWidget(self.chk_logs)
         chk_wrapper.addStretch()
 

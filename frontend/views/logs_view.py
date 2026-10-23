@@ -200,7 +200,7 @@ class LogView(BaseView):
 
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
-        self.pagination_layout.setContentsMargins(*Size.Margin.MD)
+        self.pagination_layout.setContentsMargins(*Size.Margin.MRG_MED)
         self.pagination_layout.setSpacing(Size.SPACING_SM)
 
         self.segmented_pagination = SegmentedPagination(self)

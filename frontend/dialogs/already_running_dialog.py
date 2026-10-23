@@ -18,7 +18,7 @@ class AlreadyRunningDialog(ModernModal):
             parent=parent
         )
         self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
-        self.content_layout.setContentsMargins(*Size.Margin.XL)
+        self.content_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.content_layout.setSpacing(Size.SPACING_LG)
 
         desc_str = self.i18n.get("dialogs.already_running.desc")

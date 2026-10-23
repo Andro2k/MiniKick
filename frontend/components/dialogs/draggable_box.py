@@ -26,7 +26,7 @@ class DraggableBox(QFrame):
         self._drag_offset = QPoint()
 
         self.media_layout = QVBoxLayout(self)
-        self.media_layout.setContentsMargins(*Size.Margin.XS)
+        self.media_layout.setContentsMargins(*Size.Margin.MRG_XXS)
 
         if filepath and os.path.exists(filepath):
             ext = filepath.lower()

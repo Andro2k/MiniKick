@@ -91,17 +91,17 @@ class AlertsView(BaseView):
         self.main_layout.addWidget(self.overlay_card, 0)
         self.main_layout.addSpacing(Size.SPACING_SM)
 
-        self.notice_banner = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.notice_banner = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.notice_layout.setContentsMargins(*Size.Margin.NONE)
+        self.notice_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.notice_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
         self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, size=24))
 
         notice_text_col = QVBoxLayout()
-        notice_text_col.setContentsMargins(*Size.Margin.NONE)
+        notice_text_col.setContentsMargins(*Size.Margin.MRG_NON)
         notice_text_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
@@ -152,7 +152,7 @@ class AlertsView(BaseView):
     def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertVariantsTabBar, ResponsiveStackedWidget, QVBoxLayout]:
         page = QWidget()
         page_layout = QVBoxLayout(page)
-        page_layout.setContentsMargins(*Size.Margin.NONE)
+        page_layout.setContentsMargins(*Size.Margin.MRG_NON)
         page_layout.setSpacing(Size.SPACING_MD)
 
         self._event_meta[platform] = dict(events)

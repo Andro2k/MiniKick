@@ -21,7 +21,7 @@ class PiperVoiceItemWidget(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        main_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.LG, parent=self)
+        main_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_LRG, parent=self)
         header_layout = create_row_layout(spacing=Size.SPACING_MD)
 
         category = self.voice_meta.get("category", "natural")

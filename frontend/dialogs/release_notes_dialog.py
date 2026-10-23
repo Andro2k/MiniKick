@@ -36,7 +36,7 @@ class ReleaseNotesDialog(ModernModal):
 
         self.meta_container = QWidget(self.container)
         meta_layout = QHBoxLayout(self.meta_container)
-        meta_layout.setContentsMargins(*Size.Margin.V_XS)
+        meta_layout.setContentsMargins(*Size.Margin.MRG_VXS)
         meta_layout.setSpacing(Size.SPACING_MD)
         meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

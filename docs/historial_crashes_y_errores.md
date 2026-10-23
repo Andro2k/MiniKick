@@ -48,6 +48,7 @@
 | **INC-036** | Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado | Salida de `pytest resources/tests/` | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 | **INC-037** | YouTube y TikTok volvían a auto-iniciar cada vez que la app abría aunque el canal se hubiera detectado offline | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `frontend/main_window.py`, `resources/tests/test_live_chat_offline_autostart.py` | v1.6.5 |
 | **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
+| **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 
 ---
 
@@ -947,3 +948,22 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Archivos y Módulos Modificados**: `backend/controllers/chat_controller.py`; `backend/services/chat/chat_service.py`; `frontend/main_window.py`; `resources/tests/test_chat_controller.py`; `docs/historial_crashes_y_errores.md`.
 * **Solución Implementada**: Se evita la segunda inicialización durante el arranque normal, se conserva la recarga explícita del backend al restaurar un backup y se difiere el calentamiento de Piper hasta que haga falta procesar voz. Los auto-inicios se espacian progresivamente para reducir el trabajo concurrente. La primera síntesis Piper en frío puede tardar más, pero se ejecuta fuera del hilo de la interfaz.
 * **Pruebas y Verificación**: Pruebas focales de chat/TTS, splash, estado de ventana y auto-inicio: 43 aprobadas. `py_compile` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.
+
+---
+
+### INC-039: Referencias obsoletas a atributos de `Size.Margin`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (las referencias podían producir `AttributeError` al crear los layouts afectados).
+* **Reportes Asociados**: Reporte del usuario sobre los nombres de `Radius`, `Margin` y `Borders`; revisión estática del frontend.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  AttributeError potencial: Size.Margin.V_XS
+  AttributeError potencial: Size.Margin.H_XS
+  AttributeError potencial: Size.Margin.SECTION_HEADER
+  ```
+* **Causa Raíz**: Se renombraron atributos de las clases de tokens, pero quedaron usos de los nombres antiguos en diálogos y widgets.
+* **Archivos y Módulos Modificados**: `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py`.
+* **Solución Implementada**: Se actualizaron las referencias a `MRG_VXS`, `MRG_HXS` y `SEC_HDR`, y se ajustó la prueba de tokens para comprobar los nombres vigentes.
+* **Pruebas y Verificación**: Búsqueda AST de atributos `Radius`, `Margin` y `Borders` no encontró referencias inválidas; `py_compile` pasó en los archivos afectados. En `test_antigravity_ui_theme.py`, 15 pruebas pasaron y una continúa fallando en una aserción preexistente del selector QSS de `QComboBox`, no relacionada con este incidente.

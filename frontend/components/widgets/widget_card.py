@@ -43,7 +43,7 @@ class WidgetCard(ExpandableCard):
 
         self.specific_container = QWidget()
         self.specific_layout = QVBoxLayout(self.specific_container)
-        self.specific_layout.setContentsMargins(*Size.Margin.NONE)
+        self.specific_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.specific_layout.setSpacing(Size.SPACING_MD)
 
         if self.widget_id == "shoutout":
@@ -55,11 +55,11 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addWidget(self.txt_template)
 
         elif self.widget_id == "death":
-            flow = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
 
             group_count = QWidget()
             g_layout = QHBoxLayout(group_count)
-            g_layout.setContentsMargins(*Size.Margin.NONE)
+            g_layout.setContentsMargins(*Size.Margin.MRG_NON)
             g_layout.setSpacing(Size.SPACING_MD)
             lbl_count = QLabel(self.i18n.get("widgets.death.count_label"))
             lbl_count.setProperty("role", "body")
@@ -79,11 +79,11 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "score":
-            flow = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
 
             group_w = QWidget()
             gw_layout = QHBoxLayout(group_w)
-            gw_layout.setContentsMargins(*Size.Margin.NONE)
+            gw_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gw_layout.setSpacing(Size.SPACING_MD)
             lbl_w = QLabel(self.i18n.get("widgets.score.wins_label"))
             lbl_w.setProperty("role", "body")
@@ -95,7 +95,7 @@ class WidgetCard(ExpandableCard):
 
             group_l = QWidget()
             gl_layout = QHBoxLayout(group_l)
-            gl_layout.setContentsMargins(*Size.Margin.NONE)
+            gl_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gl_layout.setSpacing(Size.SPACING_MD)
             lbl_l = QLabel(self.i18n.get("widgets.score.losses_label"))
             lbl_l.setProperty("role", "body")
@@ -116,11 +116,11 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "explosion":
-            flow = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
 
             group_min = QWidget()
             gm_layout = QHBoxLayout(group_min)
-            gm_layout.setContentsMargins(*Size.Margin.NONE)
+            gm_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gm_layout.setSpacing(Size.SPACING_MD)
             lbl_min = QLabel(self.i18n.get("widgets.explosion.min_emotes_label"))
             lbl_min.setProperty("role", "body")
@@ -132,7 +132,7 @@ class WidgetCard(ExpandableCard):
 
             group_parts = QWidget()
             gp_layout = QHBoxLayout(group_parts)
-            gp_layout.setContentsMargins(*Size.Margin.NONE)
+            gp_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gp_layout.setSpacing(Size.SPACING_MD)
             lbl_parts = QLabel(self.i18n.get("widgets.explosion.particle_count_label"))
             lbl_parts.setProperty("role", "body")
@@ -147,11 +147,11 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "combo":
-            flow = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
 
             group_min_c = QWidget()
             gmc_layout = QHBoxLayout(group_min_c)
-            gmc_layout.setContentsMargins(*Size.Margin.NONE)
+            gmc_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gmc_layout.setSpacing(Size.SPACING_MD)
             lbl_min_c = QLabel(self.i18n.get("widgets.combo.min_combo_label"))
             lbl_min_c.setProperty("role", "body")
@@ -163,7 +163,7 @@ class WidgetCard(ExpandableCard):
 
             group_tout = QWidget()
             gt_layout = QHBoxLayout(group_tout)
-            gt_layout.setContentsMargins(*Size.Margin.NONE)
+            gt_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gt_layout.setSpacing(Size.SPACING_MD)
             lbl_tout = QLabel(self.i18n.get("widgets.combo.timeout_label"))
             lbl_tout.setProperty("role", "body")
@@ -178,7 +178,7 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "chatters":
-            flow = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
             self.chk_include_commands = QCheckBox(self.i18n.get("widgets.chatters.include_commands_label"))
             self.chk_include_commands.toggled.connect(self._on_input_changed)
             flow.addWidget(self.chk_include_commands)
@@ -191,7 +191,7 @@ class WidgetCard(ExpandableCard):
             self.specific_layout.addLayout(flow)
 
         if self.obs_overlay_url:
-            flow_obs = FlowLayout(margin=Size.Margin.NONE, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
+            flow_obs = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))
             lbl_obs.setProperty("role", "body")
 

@@ -109,7 +109,7 @@ class ChatView(BaseView):
 
         self.left_container = QWidget()
         left_layout = QVBoxLayout(self.left_container)
-        left_layout.setContentsMargins(*Size.Margin.NONE)
+        left_layout.setContentsMargins(*Size.Margin.MRG_NON)
         left_layout.setSpacing(Size.SPACING_NN)
         left_layout.addWidget(self.tabs)
         self.left_container.setMinimumWidth(320)

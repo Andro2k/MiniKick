@@ -71,15 +71,15 @@ class AlertEventCard(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*Size.Margin.NONE)
+        main_layout.setContentsMargins(*Size.Margin.MRG_NON)
         main_layout.setSpacing(Size.SPACING_MD)
 
         accent_color = BrandColors.GREEN if self.platform == "kick" else BrandColors.PURPLE
         btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
 
-        header_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        header_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         header_row = QHBoxLayout()
-        header_row.setContentsMargins(*Size.Margin.NONE)
+        header_row.setContentsMargins(*Size.Margin.MRG_NON)
         header_row.setSpacing(Size.SPACING_MD)
 
         self.icon_lbl = QLabel(parent=self)
@@ -157,14 +157,14 @@ class AlertEventCard(QWidget):
         self.w_col_left = QWidget(self)
         self.w_col_left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         col_left = QVBoxLayout(self.w_col_left)
-        col_left.setContentsMargins(*Size.Margin.NONE)
+        col_left.setContentsMargins(*Size.Margin.MRG_NON)
         col_left.setSpacing(Size.SPACING_MD)
         col_left.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.w_col_right = QWidget(self)
         self.w_col_right.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         col_right = QVBoxLayout(self.w_col_right)
-        col_right.setContentsMargins(*Size.Margin.NONE)
+        col_right.setContentsMargins(*Size.Margin.MRG_NON)
         col_right.setSpacing(Size.SPACING_MD)
         col_right.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -312,7 +312,7 @@ class AlertEventCard(QWidget):
 
         box_bg_opacity = QWidget(self)
         layout_bg_op = QHBoxLayout(box_bg_opacity)
-        layout_bg_op.setContentsMargins(*Size.Margin.NONE)
+        layout_bg_op.setContentsMargins(*Size.Margin.MRG_NON)
         layout_bg_op.setSpacing(Size.SPACING_SM)
 
         self.slider_bg_opacity = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
@@ -544,7 +544,7 @@ class AlertEventCard(QWidget):
 
         media_picker_box = QWidget(self)
         l_mp = QHBoxLayout(media_picker_box)
-        l_mp.setContentsMargins(*Size.Margin.NONE)
+        l_mp.setContentsMargins(*Size.Margin.MRG_NON)
         l_mp.setSpacing(Size.SPACING_SM)
 
         self.edit_media = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.media_placeholder"), parent=self)
@@ -573,7 +573,7 @@ class AlertEventCard(QWidget):
 
         sound_picker_box = QWidget(self)
         l_sp = QHBoxLayout(sound_picker_box)
-        l_sp.setContentsMargins(*Size.Margin.NONE)
+        l_sp.setContentsMargins(*Size.Margin.MRG_NON)
         l_sp.setSpacing(Size.SPACING_SM)
 
         self.edit_sound = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.sound_placeholder"), parent=self)
@@ -602,7 +602,7 @@ class AlertEventCard(QWidget):
 
         vol_box = QWidget(self)
         l_vol = QHBoxLayout(vol_box)
-        l_vol.setContentsMargins(*Size.Margin.NONE)
+        l_vol.setContentsMargins(*Size.Margin.MRG_NON)
         l_vol.setSpacing(Size.SPACING_SM)
 
         self.slider_volume = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
@@ -626,12 +626,12 @@ class AlertEventCard(QWidget):
         col_right.addWidget(self.card_media)
         col_right.addStretch(1)
 
-        card_preview = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        card_preview = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
         card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         preview_header_w = QWidget(card_preview)
         sec_prev_header = QHBoxLayout(preview_header_w)
-        sec_prev_header.setContentsMargins(*Size.Margin.MD)
+        sec_prev_header.setContentsMargins(*Size.Margin.MRG_MED)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
         lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
@@ -646,7 +646,7 @@ class AlertEventCard(QWidget):
 
         mockup_container = QWidget(card_preview)
         mockup_layout = QVBoxLayout(mockup_container)
-        mockup_layout.setContentsMargins(*Size.Margin.MD)
+        mockup_layout.setContentsMargins(*Size.Margin.MRG_MED)
         mockup_layout.setSpacing(Size.SPACING_NN)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
@@ -659,7 +659,7 @@ class AlertEventCard(QWidget):
 
         controls_container = QWidget(card_preview)
         controls_layout = QVBoxLayout(controls_container)
-        controls_layout.setContentsMargins(*Size.Margin.MD)
+        controls_layout.setContentsMargins(*Size.Margin.MRG_MED)
         controls_layout.setSpacing(Size.SPACING_SM)
 
         self.spin_card_width = NoWheelSpinBox(parent=self)
@@ -697,7 +697,7 @@ class AlertEventCard(QWidget):
         self.w_preview = card_preview
 
         self.body_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_box.setContentsMargins(*Size.Margin.NONE)
+        self.body_box.setContentsMargins(*Size.Margin.MRG_NON)
         self.body_box.setSpacing(Size.SPACING_MD)
 
         self.body_box.addWidget(self.w_col_left, stretch=4)

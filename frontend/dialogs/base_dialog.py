@@ -43,7 +43,7 @@ class ModernFramelessShell(QDialog):
             self.setMouseTracking(True)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(*Size.Margin.XL)
+        self.main_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame(self)
@@ -381,7 +381,7 @@ class ModernModal(ModernFramelessShell):
         )
 
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(*Size.Margin.XL)
+        self.content_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.content_layout.setSpacing(Size.SPACING_LG)
 
         if icon_path:
@@ -419,7 +419,7 @@ class ModernModal(ModernFramelessShell):
         icon_container.setProperty("role", final_role)
 
         icon_inner_layout = QVBoxLayout(icon_container)
-        icon_inner_layout.setContentsMargins(*Size.Margin.NONE)
+        icon_inner_layout.setContentsMargins(*Size.Margin.MRG_NON)
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         icon_lbl = QLabel()
@@ -515,7 +515,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
 
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(*Size.Margin.XL)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.panel_layout.setSpacing(Size.SPACING_LG)
 
         self.lbl_step_num = QLabel()

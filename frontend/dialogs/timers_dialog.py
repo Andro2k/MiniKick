@@ -88,9 +88,9 @@ class TimerConfigWizard(ModernWizardPanel):
         suffix_lines = f" {self.i18n.get('timer.dialog.suffix_lines')}"
 
         self.tab_basic = QWidget()
-        basic_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.NONE, parent=self.tab_basic)
+        basic_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.tab_basic)
 
-        top_card, top_layout = create_card_frame(role="card", margins=Size.Margin.LG, spacing=Size.SPACING_MD)
+        top_card, top_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
 
         self.txt_name = QLineEdit()
         self.txt_name.setPlaceholderText(self.i18n.get("timer.dialog.name_placeholder"))
@@ -159,7 +159,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
         basic_main_layout.addWidget(top_card)
 
-        bottom_card, bottom_layout = create_card_frame(role="card", margins=Size.Margin.LG, spacing=Size.SPACING_MD)
+        bottom_card, bottom_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
         bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h3", parent=self))
 
         lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="caption", parent=self)
@@ -172,7 +172,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.scroll_msgs.setMinimumHeight(120)
         self.scroll_msgs_widget = QWidget()
         self.msgs_container_layout = QVBoxLayout(self.scroll_msgs_widget)
-        self.msgs_container_layout.setContentsMargins(*Size.Margin.NONE)
+        self.msgs_container_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.msgs_container_layout.setSpacing(Size.SPACING_MD)
         self.msgs_container_layout.addStretch()
         self.scroll_msgs.setWidget(self.scroll_msgs_widget)
@@ -187,9 +187,9 @@ class TimerConfigWizard(ModernWizardPanel):
     def _build_step2_filters(self):
         self.tab_filters = QWidget()
         self.tab_filters.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        filters_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.NONE, parent=self.tab_filters)
+        filters_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.tab_filters)
 
-        help_card, help_layout = create_card_frame(role="card", margins=Size.Margin.LG, spacing=Size.SPACING_MD)
+        help_card, help_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
         lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="body", parent=self)
         lbl_help_desc.setWordWrap(True)
 
@@ -197,7 +197,7 @@ class TimerConfigWizard(ModernWizardPanel):
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
-        filt_card, filt_layout = create_card_frame(role="card", margins=Size.Margin.LG, spacing=Size.SPACING_MD)
+        filt_card, filt_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
 
         self.txt_keywords = QLineEdit()
         self.txt_keywords.setPlaceholderText(self.i18n.get("timer.dialog.keywords_placeholder"))
@@ -261,7 +261,7 @@ class TimerConfigWizard(ModernWizardPanel):
     def _add_message_field(self, text=""):
         row = QWidget()
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(*Size.Margin.NONE)
+        row_layout.setContentsMargins(*Size.Margin.MRG_NON)
         row_layout.setSpacing(Size.SPACING_MD)
 
         txt = QLineEdit()

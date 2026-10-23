@@ -10,7 +10,7 @@ class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.SM)
+        layout.setContentsMargins(*Size.Margin.MRG_XSM)
         layout.setSpacing(Size.SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
@@ -45,7 +45,7 @@ class CategorySuggestionsPopup(QFrame):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.XS)
+        layout.setContentsMargins(*Size.Margin.MRG_XXS)
         layout.setSpacing(Size.SPACING_XS)
 
         self.list_widget = QListWidget(self)
@@ -147,7 +147,7 @@ class CategorySearchComboBox(QFrame):
         self.setProperty("role", "search_bar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.NONE)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_NN)
 
         self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_050, 16)

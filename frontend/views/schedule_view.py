@@ -36,11 +36,11 @@ class ScheduleView(BaseView):
 
     def _setup_ui(self):
         self.body_container = QWidget()
-        self.body_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.NONE, parent=self.body_container)
-        self.columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=Size.SPACING_MD, margins=Size.Margin.NONE)
+        self.body_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.body_container)
+        self.columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON)
 
         col1 = QWidget(self)
-        self.col1_layout = create_col_layout(spacing=Size.SPACING_NN, margins=Size.Margin.NONE, parent=col1)
+        self.col1_layout = create_col_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_NON, parent=col1)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.tabs = QTabWidget(col1)
@@ -56,7 +56,7 @@ class ScheduleView(BaseView):
 
         col2 = QWidget(self)
         self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(*Size.Margin.NONE)
+        self.col2_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.col2_layout.setSpacing(Size.SPACING_NN)
 
         self.table_panel = ScheduleTablePanel(self.i18n, parent=self)

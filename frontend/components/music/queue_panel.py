@@ -110,7 +110,7 @@ class MusicQueuePanel(QWidget):
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(*Size.Margin.NONE)
+        panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
         panel_layout.setSpacing(Size.SPACING_NN)
 
         headers = [
@@ -177,7 +177,7 @@ class MusicQueuePanel(QWidget):
     def _create_action_buttons(self, index: int) -> QWidget:
         cell_widget = QWidget()
         cell_layout = QHBoxLayout(cell_widget)
-        cell_layout.setContentsMargins(*Size.Margin.NONE)
+        cell_layout.setContentsMargins(*Size.Margin.MRG_NON)
         cell_layout.setSpacing(Size.SPACING_XS)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

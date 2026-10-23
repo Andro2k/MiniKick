@@ -23,12 +23,12 @@ class ImageDropzone(QFrame):
 
     def _setup_ui(self):
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(*Size.Margin.MD)
+        self.layout.setContentsMargins(*Size.Margin.MRG_MED)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.empty_container = QWidget()
         empty_layout = QVBoxLayout(self.empty_container)
-        empty_layout.setContentsMargins(*Size.Margin.NONE)
+        empty_layout.setContentsMargins(*Size.Margin.MRG_NON)
         empty_layout.setSpacing(Size.SPACING_XS)
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -52,7 +52,7 @@ class ImageDropzone(QFrame):
 
         self.preview_container = QWidget()
         preview_layout = QHBoxLayout(self.preview_container)
-        preview_layout.setContentsMargins(*Size.Margin.XS)
+        preview_layout.setContentsMargins(*Size.Margin.MRG_XXS)
         preview_layout.setSpacing(Size.SPACING_XS)
 
         self.img_lbl = QLabel()

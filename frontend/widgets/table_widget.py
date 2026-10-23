@@ -53,7 +53,7 @@ class ModernTableCard(QFrame):
         self.setProperty("role", "card")
 
         self.card_layout = QVBoxLayout(self)
-        self.card_layout.setContentsMargins(*Size.Margin.NONE)
+        self.card_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.card_layout.setSpacing(Size.SPACING_NN)
 
         self.lbl_title = None
@@ -115,7 +115,7 @@ class ModernTableCard(QFrame):
         self.no_results_layout = QVBoxLayout(self.no_results_overlay)
         self.no_results_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.no_results_layout.setSpacing(Size.SPACING_MD)
-        self.no_results_layout.setContentsMargins(*Size.Margin.NONE)
+        self.no_results_layout.setContentsMargins(*Size.Margin.MRG_NON)
 
         illustration_path = get_assets_path(os.path.join("icons", "illustration-empty-box.svg"))
         self.lbl_no_results_illustration = ScalableIllustration(
@@ -154,19 +154,19 @@ class ModernTableCard(QFrame):
         self.header_widget = QWidget(self)
         self.header_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         self.header_main_layout = QVBoxLayout(self.header_widget)
-        self.header_main_layout.setContentsMargins(*Size.Margin.MD)
+        self.header_main_layout.setContentsMargins(*Size.Margin.MRG_MED)
         self.header_main_layout.setSpacing(Size.SPACING_SM)
 
         self.header_top_widget = QWidget(self.header_widget)
         self.header_top_layout = QHBoxLayout(self.header_top_widget)
-        self.header_top_layout.setContentsMargins(*Size.Margin.NONE)
+        self.header_top_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.header_top_layout.setSpacing(Size.SPACING_MD)
         self.header_layout = self.header_top_layout
 
         self.header_top_layout.addStretch()
 
         self.header_controls_layout = QHBoxLayout()
-        self.header_controls_layout.setContentsMargins(*Size.Margin.NONE)
+        self.header_controls_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.header_controls_layout.setSpacing(Size.SPACING_SM)
         self.header_top_layout.addLayout(self.header_controls_layout)
 
@@ -175,7 +175,7 @@ class ModernTableCard(QFrame):
         self.header_actions_widget = QWidget(self.header_widget)
         self.header_actions_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.header_actions_layout = QGridLayout(self.header_actions_widget)
-        self.header_actions_layout.setContentsMargins(*Size.Margin.NONE)
+        self.header_actions_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.header_actions_layout.setSpacing(Size.SPACING_SM)
         self.header_actions_widget.hide()
         self.header_main_layout.addWidget(self.header_actions_widget)
@@ -269,7 +269,7 @@ class ModernTableCard(QFrame):
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked, button_icon: str = "plus-filled.svg"):
         self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
-        layout.setContentsMargins(*Size.Margin.XL)
+        layout.setContentsMargins(*Size.Margin.MRG_XLG)
         layout.setSpacing(Size.SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -438,7 +438,7 @@ class TableActionCell(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(*Size.Margin.NONE)
+        self.layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.layout.setSpacing(Size.SPACING_SM)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -463,7 +463,7 @@ class PlatformBadgeCell(QWidget):
     def __init__(self, platforms: list[str] | None = None, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(*Size.Margin.H_SM)
+        self.layout.setContentsMargins(*Size.Margin.MRG_HSM)
         self.layout.setSpacing(Size.SPACING_SM)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         if platforms is not None:

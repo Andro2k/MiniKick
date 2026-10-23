@@ -24,7 +24,7 @@ class ModernToast(QFrame):
         self.setProperty("role", "toast")
         self.setProperty("state", state)
 
-        layout = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.LG, parent=self)
+        layout = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_LRG, parent=self)
 
         self.icon_lbl = QLabel(self)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)

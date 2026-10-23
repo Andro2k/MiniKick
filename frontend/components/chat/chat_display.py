@@ -50,7 +50,7 @@ class ChatDisplayPanel(ModernCard):
     }
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=Size.Margin.SM, spacing=Size.SPACING_SM, orientation="vertical")
+        super().__init__(parent, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
 

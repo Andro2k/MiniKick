@@ -15,7 +15,7 @@ class ClearableLineEdit(QFrame):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
 
-        layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.NONE, parent=self)
+        layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_NON, parent=self)
 
         self._icon_clear = get_icon_colored("x-filled.svg")
         self.txt_input = create_frameless_input(

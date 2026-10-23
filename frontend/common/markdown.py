@@ -21,8 +21,8 @@ _CALLOUT_STYLES = {
     'TIP': (BrandColors.GREEN, Semantic.CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', Semantic.GREEN_GLOW),
     'CAUTION': (BrandColors.RED, Semantic.CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', Semantic.RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: {Padding.PAD_COMPACT}; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: {Padding.PAD_COMPACT}; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 
 def _render_callout(callout_type: str, lines: list[str]) -> str:
@@ -30,7 +30,7 @@ def _render_callout(callout_type: str, lines: list[str]) -> str:
     icon_span = f'<span style="font-family: {_NERD_FONT_FAMILY}; font-size: 13px;">{icon}</span>'
     body = "<br/>".join(lines)
     return (
-        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_CALLOUT}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
+        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_CALL}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
         f'<div style="color: {title_color}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{icon_span} {label}</div>'
         f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; line-height: 1.5;">{body}</div>'
         f'</div>'
@@ -48,7 +48,7 @@ def _render_table(rows: list[list[str]]) -> str:
         output.append(f'<tr style="background-color: {background};">')
         for cell in row:
             output.append(
-                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_900}; padding: {Padding.PAD_MD}; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
+                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_900}; padding: {Padding.PAD_CORE}; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
             )
         output.append('</tr>')
     output.append('</table>')

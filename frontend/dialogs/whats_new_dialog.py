@@ -59,7 +59,7 @@ class WhatsNewDialog(ModernModal):
 
         cards_container = QWidget()
         cards_layout = QVBoxLayout(cards_container)
-        cards_layout.setContentsMargins(*Size.Margin.NONE)
+        cards_layout.setContentsMargins(*Size.Margin.MRG_NON)
         cards_layout.setSpacing(Size.SPACING_SM)
 
         for item in self.highlights:
@@ -81,7 +81,7 @@ class WhatsNewDialog(ModernModal):
         self.content_layout.addWidget(btn_action)
 
     def _create_highlight_card(self, item: Dict[str, str], parent: QWidget) -> ModernCard:
-        card = ModernCard(parent=parent, margin=Size.Margin.MD, spacing=Size.SPACING_SM, orientation="horizontal")
+        card = ModernCard(parent=parent, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="horizontal")
         card.setProperty("role", "whats_new_card")
 
         icon_name = item.get("icon", "star-filled.svg")
@@ -92,7 +92,7 @@ class WhatsNewDialog(ModernModal):
         card.addWidget(lbl_icon)
 
         text_col = QVBoxLayout()
-        text_col.setContentsMargins(*Size.Margin.NONE)
+        text_col.setContentsMargins(*Size.Margin.MRG_NON)
         text_col.setSpacing(Size.SPACING_XS)
 
         title_key = item.get("title_key", "")

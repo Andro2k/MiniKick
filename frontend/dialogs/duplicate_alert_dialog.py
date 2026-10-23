@@ -30,9 +30,9 @@ class DuplicateAlertModal(ModernModal):
         lbl_desc.setWordWrap(True)
         self.content_layout.addWidget(lbl_desc)
 
-        source_card = ModernCard(parent=self, margin=Size.Margin.SM, spacing=Size.SPACING_SM)
+        source_card = ModernCard(parent=self, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM)
         src_row = QHBoxLayout()
-        src_row.setContentsMargins(*Size.Margin.NONE)
+        src_row.setContentsMargins(*Size.Margin.MRG_NON)
         src_row.setSpacing(Size.SPACING_SM)
 
         lbl_src_tag = QLabel(self.i18n.get("alerts.dialogs.duplicate.source_label"), self)
@@ -65,7 +65,7 @@ class DuplicateAlertModal(ModernModal):
             self.radio_buttons[event_key] = rb
             self.content_layout.addWidget(rb)
 
-        options_card = ModernCard(parent=self, margin=Size.Margin.SM, spacing=Size.SPACING_SM)
+        options_card = ModernCard(parent=self, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM)
         self.chk_media = QCheckBox(self.i18n.get("alerts.dialogs.duplicate.include_media"), self)
         self.chk_media.setChecked(True)
         options_card.addWidget(self.chk_media)
