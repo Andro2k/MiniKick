@@ -16,12 +16,10 @@ class _PendingWorker:
     warning_after_seconds: float
     warned: bool = False
 
-
 @dataclass
 class _WorkerBatch:
     workers: list[_PendingWorker]
     on_finished: Callable[[], None] | None
-
 
 class WorkerShutdownCoordinator(QObject):
     _SIGNAL_NAMES = (

@@ -7,18 +7,12 @@ import logging
 from collections import deque
 from datetime import datetime
 from typing import Callable
-from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QStackedWidget,
-    QSystemTrayIcon, QApplication
-)
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QSystemTrayIcon, QApplication
 from PySide6.QtCore import Qt, Slot, Signal, QEvent, QTimer, QByteArray, QThread
 
 from backend.core.app_container_core import AppContainerCore
 from backend.core.app_logger_core import setup_application_logging
-from backend.services import (
-    ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
-    LogService, SettingsService, SpamService, TimerService, WhatsNewService
-)
+from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
 from backend.controllers import (
     RewardsController, ChatController, CommandsController, DashboardController,
     TimersController, LogsController, MusicController, SettingsController,
@@ -449,7 +443,6 @@ class MainWindowCore(QMainWindow):
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
         self._evaluate_all_scopes()
-
         self._autostart_authenticated_platforms()
         self._schedule_live_chat_autostarts()
 
