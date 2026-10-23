@@ -1849,14 +1849,22 @@ class MainWindowCore(QMainWindow):
     def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
         if hasattr(self, 'session_metrics') and "messages_processed" in self.session_metrics:
             self.session_metrics["messages_processed"] += 1
-        current_time = datetime.now().strftime("%H:%M")
         if isinstance(user_or_dto, ChatMessageDTO):
             dto = user_or_dto
             if not dto.timestamp:
-                dto.timestamp = current_time
+                dto.timestamp = datetime.now().strftime("%H:%M")
             platform = getattr(dto, "platform", "kick") or "kick"
         else:
-            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time, avatar_url=avatar_url)
+            dto = ChatMessageDTO(
+                user_or_dto,
+                msg,
+                badges or [],
+                color,
+                msg_id,
+                sender_id,
+                timestamp=datetime.now().strftime("%H:%M"),
+                avatar_url=avatar_url
+            )
             platform = "kick"
 
         if not getattr(dto, "avatar_url", ""):
