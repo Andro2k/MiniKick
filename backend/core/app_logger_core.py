@@ -61,8 +61,8 @@ def _threading_excepthook(args):
     flush_all_logs()
 
 def flush_all_logs():
-    root_logger = logging.getLogger()
-    for handler in root_logger.handlers:
+    # root_logger = logging.getLogger()
+    for handler in logging.getLogger().handlers:
         try:
             handler.flush()
         except Exception:
@@ -108,7 +108,7 @@ def setup_application_logging():
         return logging.getLogger(), _q_log_handler_instance
 
     log_level = _resolve_log_level()
-    logger = logging.getLogger()
+    # logger = logging.getLogger()
     logger.setLevel(log_level)
     
     for handler in list(logger.handlers):
