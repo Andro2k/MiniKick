@@ -7,15 +7,9 @@ from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 
 from .paths import resolve_icon_path
-from .theme import COLOR_NEUTRAL_400
+from .theme import Palette
 
 logger = logging.getLogger("minikick.icons")
-
-ICON_SIZE_XS = 12
-ICON_SIZE_SM = 14
-ICON_SIZE_MD = 16
-ICON_SIZE_LG = 20
-ICON_SIZE_XL = 24
 
 @lru_cache(maxsize=128)
 def _load_svg_raw(full_path: str) -> str:
@@ -40,20 +34,20 @@ def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> 
         raw_xml = _load_svg_raw(full_path)
         colorized_xml = raw_xml.replace("currentColor", color_str)
         renderer = QSvgRenderer(QByteArray(colorized_xml.encode("utf-8")))
-        
+
         colored_pixmap = QPixmap(physical_size, physical_size)
         colored_pixmap.fill(Qt.GlobalColor.transparent)
-        
+
         painter = QPainter(colored_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         renderer.render(painter, QRectF(0, 0, physical_size, physical_size))
         painter.end()
-        
+
         if logical_size > 0:
             colored_pixmap.setDevicePixelRatio(colored_pixmap.width() / logical_size)
         else:
             colored_pixmap.setDevicePixelRatio(dpr)
-            
+
         return QIcon(colored_pixmap)
     except Exception as e:
         logger.exception("Error rendering colored icon '%s': %s", name, e)
@@ -71,12 +65,12 @@ def _get_default_dpr() -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str = COLOR_NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QIcon:
+def get_icon_colored(name: str, color_str: str = Palette.NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QIcon:
     if dpr is None:
         dpr = _get_default_dpr()
     return _get_icon_colored_impl(name, color_str, size, dpr)
 
-def get_pixmap_colored(name: str, color_str: str = COLOR_NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QPixmap:
+def get_pixmap_colored(name: str, color_str: str = Palette.NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QPixmap:
     if dpr is None:
         dpr = _get_default_dpr()
     icon = get_icon_colored(name, color_str, size, dpr)
@@ -89,15 +83,15 @@ def get_pixmap(name: str, size: int = 16, dpr: float | None = None) -> QPixmap:
     return icon.pixmap(QSize(size, size), dpr)
 
 def create_circular_pixmap(img_data: QByteArray, target_size: int | None = None) -> QPixmap:
-    image = QImage.fromData(img_data)   
+    image = QImage.fromData(img_data)
     if image.isNull():
         return QPixmap()
     size = min(image.width(), image.height())
     if target_size and target_size > 0 and size > target_size:
         size = target_size
     image = image.scaled(
-        size, size, 
-        Qt.AspectRatioMode.KeepAspectRatioByExpanding, 
+        size, size,
+        Qt.AspectRatioMode.KeepAspectRatioByExpanding,
         Qt.TransformationMode.SmoothTransformation
     )
     out_img = QImage(size, size, QImage.Format.Format_ARGB32)

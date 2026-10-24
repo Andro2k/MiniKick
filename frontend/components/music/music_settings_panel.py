@@ -2,10 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt, QTimer, Slot
-from frontend.common import (
-    MARGIN_NONE, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
-    SPACING_NONE, SPACING_MD
-)
+from frontend.common import Size
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider, SectionHeader
 
 class MusicSettingsPanel(QWidget):
@@ -29,8 +26,8 @@ class MusicSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
-        self.panel_layout.setSpacing(SPACING_MD)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_settings_card()
@@ -39,7 +36,7 @@ class MusicSettingsPanel(QWidget):
         header_settings = SectionHeader(self.i18n.get("music.tabs.settings"), first=True, parent=self)
         self.panel_layout.addWidget(header_settings)
 
-        self.card_settings = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
+        self.card_settings = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
 
         self.sw_auto_resume = ModernSwitch(parent=self)
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
@@ -48,7 +45,7 @@ class MusicSettingsPanel(QWidget):
             title_text=self.i18n.get("music.youtube.auto_resume_title"),
             desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
             right_widget=self.sw_auto_resume,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.card_settings.addWidget(self.row_auto_resume)
         self.card_settings.add_separator()
@@ -61,7 +58,7 @@ class MusicSettingsPanel(QWidget):
             title_text=self.i18n.get("music.youtube.media_keys_title"),
             desc_text=self.i18n.get("music.youtube.media_keys_desc"),
             right_widget=self.sw_media_keys,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.card_settings.addWidget(self.row_media_keys)
         self.card_settings.add_separator()
@@ -77,7 +74,7 @@ class MusicSettingsPanel(QWidget):
             desc_text=self.i18n.get("music.youtube.max_user_songs_desc"),
             slider_widget=self.slider_max_user_songs,
             value_label=self.lbl_max_user_songs,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.slider_max_user_songs.valueChanged.connect(self._on_max_user_songs_changed)
         self.slider_max_user_songs.sliderReleased.connect(self._on_slider_released)
@@ -95,7 +92,7 @@ class MusicSettingsPanel(QWidget):
             desc_text=self.i18n.get("music.youtube.user_cooldown_desc"),
             slider_widget=self.slider_user_cooldown,
             value_label=self.lbl_user_cooldown,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.slider_user_cooldown.valueChanged.connect(self._on_user_cooldown_changed)
         self.slider_user_cooldown.sliderReleased.connect(self._on_slider_released)
@@ -113,7 +110,7 @@ class MusicSettingsPanel(QWidget):
             desc_text=self.i18n.get("music.youtube.max_queue_size_desc"),
             slider_widget=self.slider_max_queue,
             value_label=self.lbl_max_queue,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.slider_max_queue.valueChanged.connect(self._on_max_queue_changed)
         self.slider_max_queue.sliderReleased.connect(self._on_slider_released)
@@ -131,7 +128,7 @@ class MusicSettingsPanel(QWidget):
             desc_text=self.i18n.get("music.youtube.max_song_duration_desc"),
             slider_widget=self.slider_max_duration,
             value_label=self.lbl_max_duration,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         self.slider_max_duration.valueChanged.connect(self._on_max_duration_changed)
         self.slider_max_duration.sliderReleased.connect(self._on_slider_released)

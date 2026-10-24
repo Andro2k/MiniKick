@@ -3,11 +3,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
-from frontend.common import (
-    COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
-    get_icon_colored, MARGIN_NONE, SPACING_NONE, SPACING_XS,
-)
+from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 from frontend.widgets import ModernTable, ModernTableCard
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class DragDropQueueTable(ModernTable):
     row_moved = Signal(int, int)
@@ -73,18 +71,18 @@ class DragDropQueueTable(ModernTable):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        
+
         if self._drop_target_row != -1 and self.rowCount() > 0 and self.columnCount() > 0:
             row = min(max(0, self._drop_target_row), self.rowCount() - 1)
             rect0 = self.visualRect(self.model().index(row, 0))
             rect_last = self.visualRect(self.model().index(row, self.columnCount() - 1))
             row_rect = rect0.united(rect_last)
-                    
+
             if not row_rect.isEmpty():
                 painter = QPainter(self.viewport())
                 painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-                painter.fillRect(row_rect, QColor(46, 205, 112, 22))
-                pen = QPen(QColor(COLOR_GREEN), 2, Qt.PenStyle.DashLine)
+                painter.fillRect(row_rect, get_qcolor_with_alpha(BrandColors.GREEN, 22))
+                pen = QPen(QColor(BrandColors.GREEN), 2, Qt.PenStyle.DashLine)
                 painter.setPen(pen)
                 painter.setBrush(Qt.BrushStyle.NoBrush)
                 target_draw_rect = QRectF(row_rect).adjusted(1, 1, -1, -1)
@@ -100,20 +98,20 @@ class MusicQueuePanel(QWidget):
         super().__init__(parent)
         self.i18n = i18n
         self._current_queue_signature = None
-        
-        self._icon_delete = get_icon_colored("trash-filled.svg", COLOR_RED, 14)
-        self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
-        self._icon_kick = get_icon_colored("brand-kick.svg", COLOR_KICK, 14)
-        self._icon_twitch = get_icon_colored("brand-twitch.svg", COLOR_TWITCH_LIGHT, 14)
-        self._icon_youtube = get_icon_colored("brand-youtube.svg", COLOR_RED, 14)
-        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", COLOR_TIKTOK, 14)
-        
+
+        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED, 16)
+        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050, 16)
+        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK, 16)
+        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT, 16)
+        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED, 16)
+        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK, 16)
+
         self._setup_ui()
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(*MARGIN_NONE)
-        panel_layout.setSpacing(SPACING_NONE)
+        panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        panel_layout.setSpacing(Size.SPACING_NN)
 
         headers = [
             self.i18n.get("music.queue.col_num"),
@@ -139,7 +137,7 @@ class MusicQueuePanel(QWidget):
         self.queue_table.setShowGrid(False)
         self.queue_table.verticalHeader().setVisible(False)
         self.queue_table.horizontalHeader().setHighlightSections(False)
-        
+
         self.queue_table.row_moved.connect(self.move_queue_item_requested.emit)
 
         column_stretch_modes = {
@@ -152,9 +150,9 @@ class MusicQueuePanel(QWidget):
         }
         for col, mode in column_stretch_modes.items():
             self.queue_table.horizontalHeader().setSectionResizeMode(col, mode)
-        
+
         self.queue_table.setMinimumHeight(200)
-        
+
         self.card_queue.setup_empty_state(
             title=self.i18n.get("music.queue.empty"),
             desc=self.i18n.get("music.queue.empty_desc"),
@@ -164,7 +162,7 @@ class MusicQueuePanel(QWidget):
         )
         if hasattr(self.card_queue, "btn_empty_action") and self.card_queue.btn_empty_action:
             self.card_queue.btn_empty_action.setVisible(False)
-            
+
         panel_layout.addWidget(self.card_queue)
         self.card_queue.setVisible(True)
 
@@ -179,17 +177,17 @@ class MusicQueuePanel(QWidget):
     def _create_action_buttons(self, index: int) -> QWidget:
         cell_widget = QWidget()
         cell_layout = QHBoxLayout(cell_widget)
-        cell_layout.setContentsMargins(*MARGIN_NONE)
-        cell_layout.setSpacing(SPACING_XS)
+        cell_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        cell_layout.setSpacing(Size.SPACING_XS)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setIcon(self._icon_delete)
-        btn_delete.setIconSize(QSize(14, 14))
+        btn_delete.setIconSize(QSize(16, 16))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
-        btn_delete.setFixedSize(QSize(24, 24))
+        configure_icon_only_button(btn_delete, size=Size.ICON_SMALL)
         btn_delete.clicked.connect(lambda *args, idx=index: self.remove_queue_item_requested.emit(idx))
 
         cell_layout.addWidget(btn_delete)
@@ -240,13 +238,13 @@ class MusicQueuePanel(QWidget):
         if hasattr(self.card_queue, "lbl_title") and self.card_queue.lbl_title:
             title_base = self.i18n.get("music.queue.title")
             self.card_queue.lbl_title.setText(f"{title_base} ({total_songs})")
-        
+
         self.card_queue.set_empty(total_songs == 0)
-        
+
         if not queue_items:
             self.queue_table.setRowCount(0)
             return
-            
+
         self.queue_table.setUpdatesEnabled(False)
         try:
             self.queue_table.setRowCount(len(queue_items))
@@ -254,38 +252,38 @@ class MusicQueuePanel(QWidget):
                 item_num = self._create_table_item(f"  {idx + 1}", Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, Qt.GlobalColor.gray)
                 item_num.setIcon(self._icon_grip)
                 self.queue_table.setItem(idx, 0, item_num)
-                
+
                 title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
                 self.queue_table.setItem(idx, 1, self._create_table_item(title_text))
-                
+
                 artist_text = song.get("artist", "-")
                 self.queue_table.setItem(idx, 2, self._create_table_item(artist_text))
-                
+
                 requester = song.get("requester", "")
                 platform = (song.get("platform") or "kick").lower()
                 requester_text = f" {requester}" if requester else "-"
-                
+
                 if platform == "twitch":
-                    req_color = QColor(COLOR_TWITCH_LIGHT)
+                    req_color = QColor(BrandColors.TWITCH_LIGHT)
                     req_icon = self._icon_twitch
                 elif platform == "youtube":
-                    req_color = QColor(COLOR_RED)
+                    req_color = QColor(BrandColors.RED)
                     req_icon = self._icon_youtube
                 elif platform == "tiktok":
-                    req_color = QColor(COLOR_TIKTOK)
+                    req_color = QColor(BrandColors.TIKTOK)
                     req_icon = self._icon_tiktok
                 elif requester:
-                    req_color = QColor(COLOR_KICK)
+                    req_color = QColor(BrandColors.KICK)
                     req_icon = self._icon_kick
                 else:
                     req_color = None
                     req_icon = None
-                    
+
                 item_req = self._create_table_item(requester_text, color=req_color)
                 if req_icon and requester:
                     item_req.setIcon(req_icon)
                 self.queue_table.setItem(idx, 3, item_req)
-                
+
                 duration = song.get("duration", "-")
                 self.queue_table.setItem(idx, 4, self._create_table_item(duration, Qt.AlignmentFlag.AlignCenter))
                 self.queue_table.setCellWidget(idx, 5, self._create_action_buttons(idx))

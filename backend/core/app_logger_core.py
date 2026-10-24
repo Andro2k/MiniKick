@@ -6,7 +6,6 @@ import os
 import sys
 import threading
 import traceback
-from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
 from backend.handlers import QLogHandler, StreamToLogger, StructuredLogFormatter
@@ -31,6 +30,30 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
 
 logger = logging.getLogger("minikick.core.app_logger")
 
+
+def write_fault_log_record(level: int, logger_name: str, message: str, thread_name: str | None = None) -> None:
+    if _fault_file_handle is None:
+        return
+
+    record = logging.LogRecord(
+        name=logger_name,
+        level=level,
+        pathname="",
+        lineno=0,
+        msg=message,
+        args=(),
+        exc_info=None,
+    )
+    if thread_name is not None:
+        record.threadName = thread_name
+
+    try:
+        _fault_file_handle.write(StructuredLogFormatter().format(record) + "\n")
+        _fault_file_handle.flush()
+    except (OSError, ValueError):
+        logger.exception("[CrashLog] Could not write a structured fault record.")
+
+
 def _qt_message_handler(mode: QtMsgType, _context, message: str):
     if not message or not message.strip():
         return
@@ -50,14 +73,13 @@ def _qt_message_handler(mode: QtMsgType, _context, message: str):
 def _threading_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
     thread_name = getattr(args.thread, 'name', 'UnknownThread')
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    logger.critical("[Thread Crash] Unhandled exception in thread '%s':\n%s", thread_name, tb_text)
-    if _fault_file_handle:
-        try:
-            _fault_file_handle.write(f"\n[{now_str}] [THREAD_CRASH] Unhandled exception in thread '{thread_name}':\n{tb_text}\n")
-            _fault_file_handle.flush()
-        except Exception:
-            pass
+    logger.critical("Unhandled exception in thread '%s':\n%s", thread_name, tb_text)
+    write_fault_log_record(
+        logging.CRITICAL,
+        "minikick.threading",
+        f"Unhandled exception in thread '{thread_name}':\n{tb_text}",
+        thread_name=thread_name,
+    )
     flush_all_logs()
 
 def flush_all_logs():
@@ -150,13 +172,11 @@ def setup_application_logging():
     try:
         crash_log_path = os.path.join(log_dir, 'minikick_crash.log')
         _fault_file_handle = open(crash_log_path, 'a', encoding='utf-8', buffering=1)
-        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        _fault_file_handle.write(
-            f"\n================================================================================\n"
-            f"[{now_str}] [BOOTSTRAP] --- MiniKick Session Started (Faulthandler active) ---\n"
-            f"================================================================================\n"
+        write_fault_log_record(
+            logging.INFO,
+            "minikick.bootstrap",
+            "Session started (faulthandler active)",
         )
-        _fault_file_handle.flush()
         faulthandler.enable(file=_fault_file_handle, all_threads=True)
     except Exception as fh_err:
         logger.warning("[Bootstrap] Failed to enable faulthandler: %s", fh_err)

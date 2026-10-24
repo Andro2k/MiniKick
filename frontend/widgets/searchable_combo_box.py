@@ -2,14 +2,8 @@
 
 import time
 from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import (
-    QFrame, QVBoxLayout, QHBoxLayout, QLineEdit,
-    QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
-)
-from frontend.common import (
-    get_pixmap_colored, COLOR_NEUTRAL_400,
-    MARGIN_XS, MARGIN_H_MD, SPACING_XS, SPACING_2XS
-)
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
+from frontend.common import get_pixmap_colored, Palette, Size
 from .no_wheel import NoWheelComboBox
 from .layout_helpers import render_styled_frame_background
 
@@ -45,21 +39,22 @@ class SearchableComboPopup(QFrame):
         self.empty_text = empty_text
         self.setProperty("role", "searchable_combo_popup")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_XS)
-        layout.setSpacing(SPACING_2XS)
+        layout.setContentsMargins(*Size.Margin.MRG_XXS)
+        layout.setSpacing(Size.SPACING_XS)
 
         search_container = QFrame(self)
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedHeight(30)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*MARGIN_H_MD)
-        search_layout.setSpacing(SPACING_XS)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        search_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)
-        self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", COLOR_NEUTRAL_400, size=14))
-        self.lbl_search_icon.setFixedSize(14, 14)
+        self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
+        self.lbl_search_icon.setFixedSize(16, 16)
         search_layout.addWidget(self.lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = _SearchLineEdit(self, search_container)
@@ -75,7 +70,7 @@ class SearchableComboPopup(QFrame):
         self.list_widget.setFrameShape(QFrame.Shape.NoFrame)
         self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.list_widget.setUniformItemSizes(True)
-        self.list_widget.setSpacing(SPACING_2XS)
+        self.list_widget.setSpacing(Size.SPACING_XS)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget)

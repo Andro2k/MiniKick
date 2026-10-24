@@ -15,10 +15,10 @@ class SQLiteWidgetsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT widget_id, is_active, command, cooldown, permission, config_json 
                     FROM widgets_config
-                """)
+                ''')
                 for row in cursor.fetchall():
                     widget_id, is_active, command, cooldown, permission, config_raw = row
                     try:
@@ -41,10 +41,10 @@ class SQLiteWidgetsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT widget_id, is_active, command, cooldown, permission, config_json 
                     FROM widgets_config WHERE widget_id = ?
-                """, (widget_id,))
+                ''', (widget_id,))
                 row = cursor.fetchone()
                 if row:
                     widget_id, is_active, command, cooldown, permission, config_raw = row
@@ -69,7 +69,7 @@ class SQLiteWidgetsStorage:
             config_raw = fast_dumps(config)
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     INSERT INTO widgets_config (widget_id, is_active, command, cooldown, permission, config_json)
                     VALUES (?, ?, ?, ?, ?, ?)
                     ON CONFLICT(widget_id) DO UPDATE SET
@@ -78,7 +78,7 @@ class SQLiteWidgetsStorage:
                         cooldown = excluded.cooldown,
                         permission = excluded.permission,
                         config_json = excluded.config_json
-                """, (widget_id, 1 if is_active else 0, command.strip(), cooldown, permission, config_raw))
+                ''', (widget_id, 1 if is_active else 0, command.strip(), cooldown, permission, config_raw))
                 conn.commit()
         except Exception as e:
             logger.error("[WidgetsStorage] Error saving widget '%s': %s", widget_id, e)
@@ -88,12 +88,12 @@ class SQLiteWidgetsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT username, message_count, color, badges_json, platform
                     FROM daily_top_chatters
                     WHERE chatter_date = ?
                     ORDER BY message_count DESC
-                """, (date_str,))
+                ''', (date_str,))
                 for row in cursor.fetchall():
                     uname, count, color, badges_raw, plat = row
                     try:
@@ -116,11 +116,11 @@ class SQLiteWidgetsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT DISTINCT chatter_date
                     FROM daily_top_chatters
                     ORDER BY chatter_date DESC
-                """)
+                ''')
                 return [row[0] for row in cursor.fetchall() if row[0]]
         except Exception as e:
             logger.error("[WidgetsStorage] Error getting available chatter dates: %s", e)
@@ -149,7 +149,7 @@ class SQLiteWidgetsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.executemany("""
+                cursor.executemany('''
                     INSERT INTO daily_top_chatters (
                         chatter_date, username, message_count, color, badges_json, platform, last_seen
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -159,7 +159,7 @@ class SQLiteWidgetsStorage:
                         badges_json = excluded.badges_json,
                         platform = excluded.platform,
                         last_seen = excluded.last_seen
-                """, records)
+                ''', records)
                 conn.commit()
         except Exception as e:
             logger.error("[WidgetsStorage] Error saving daily chatters batch for %s: %s", date_str, e)

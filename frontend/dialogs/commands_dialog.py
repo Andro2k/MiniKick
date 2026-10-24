@@ -2,21 +2,15 @@
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import (
-    VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge,
-    create_row_layout, create_col_layout, create_labeled_field
-)
-from frontend.common import (
-    validate_trigger_prefix, sanitize_command_trigger, is_complete_valid_trigger,
-    COLOR_AMBER, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
-)
+from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge, create_row_layout, create_col_layout, create_labeled_field
+from frontend.common import validate_trigger_prefix, sanitize_command_trigger, is_complete_valid_trigger, BrandColors, Size
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
         self.i18n = i18n
         self.connected_platforms = connected_platforms if isinstance(connected_platforms, dict) else {"kick": True, "twitch": True, "youtube": True, "tiktok": True}
         title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
-        subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
+        subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]
         super().__init__(
             title_steps=title_steps,
             subtitle_steps=subtitle_steps,
@@ -28,19 +22,19 @@ class CommandConfigWizard(ModernWizardPanel):
             min_height=700,
             dialog_key="command_config_wizard",
             parent=parent
-        )       
+        )
         self.existing_config = existing_config
-        self.original_trigger = existing_config.get("trigger", "") if existing_config else None       
+        self.original_trigger = existing_config.get("trigger", "") if existing_config else None
         self._setup_ui()
         if self.existing_config:
-            self._load_existing()           
+            self._load_existing()
         self.start_wizard()
 
     def _setup_ui(self):
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
-        basic_layout.setContentsMargins(*MARGIN_NONE)
-        basic_layout.setSpacing(SPACING_LG)
+        basic_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        basic_layout.setSpacing(Size.SPACING_LG)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
@@ -56,23 +50,23 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_response_layout = QHBoxLayout()
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
-        
+
         self.badge_plugin = create_badge(self.i18n.get("command.dialog.plugin_tag"), state="plugin")
         self.badge_plugin.setVisible(False)
-        
+
         lbl_response_layout.addWidget(lbl_response)
-        lbl_response_layout.addSpacing(SPACING_SM)
+        lbl_response_layout.addSpacing(Size.SPACING_SM)
         lbl_response_layout.addWidget(self.badge_plugin)
         lbl_response_layout.addStretch()
 
         self.txt_response = VariableTextEdit()
         self.txt_response.textChanged.connect(self._update_btn_next_state)
-        self.txt_response.setMinimumHeight(90) 
+        self.txt_response.setMinimumHeight(90)
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         basic_layout.addLayout(lbl_response_layout)
         basic_layout.addWidget(self.txt_response, stretch=1)
 
-        row_configs = create_row_layout(spacing=SPACING_LG)
+        row_configs = create_row_layout(spacing=Size.SPACING_LG)
 
         self.spin_cooldown = NoWheelSpinBox()
         self.spin_cooldown.setRange(0, 300)
@@ -80,7 +74,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.spin_cooldown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         col_cooldown, _ = create_labeled_field(self.i18n.get("command.dialog.cooldown_label"), self.spin_cooldown, role="h3")
         row_configs.addLayout(col_cooldown, stretch=1)
-        
+
         self.combo_perm = NoWheelComboBox()
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
@@ -90,7 +84,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.combo_perm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         col_perm, _ = create_labeled_field(self.i18n.get("command.dialog.permission_label"), self.combo_perm, role="h3")
         row_configs.addLayout(col_perm, stretch=1)
-        
+
         basic_layout.addLayout(row_configs)
 
         self.chk_active = QCheckBox(self.i18n.get("command.dialog.active_checkbox"))
@@ -98,10 +92,10 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(self.chk_active)
 
         self.tab_adv = QWidget()
-        adv_main_layout = create_row_layout(spacing=SPACING_LG, margins=MARGIN_NONE, parent=self.tab_adv)
+        adv_main_layout = create_row_layout(spacing=Size.SPACING_LG, margins=Size.Margin.MRG_NON, parent=self.tab_adv)
 
         left_col = QWidget()
-        adv_layout = create_col_layout(spacing=SPACING_LG, margins=MARGIN_NONE, parent=left_col)
+        adv_layout = create_col_layout(spacing=Size.SPACING_LG, margins=Size.Margin.MRG_NON, parent=left_col)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")
@@ -110,7 +104,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
 
-        adv_layout.addSpacing(SPACING_SM)
+        adv_layout.addSpacing(Size.SPACING_SM)
 
         lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
         lbl_platforms.setProperty("role", "h3")
@@ -123,7 +117,7 @@ class CommandConfigWizard(ModernWizardPanel):
         off_tip = self.i18n.get("command.dialog.platform_offline")
 
         platforms_row = QHBoxLayout()
-        platforms_row.setSpacing(SPACING_LG)
+        platforms_row.setSpacing(Size.SPACING_LG)
         self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
         self.chk_kick.setChecked(True)
         if not kick_on:
@@ -151,7 +145,7 @@ class CommandConfigWizard(ModernWizardPanel):
         platforms_row.addStretch()
         adv_layout.addLayout(platforms_row)
 
-        adv_layout.addSpacing(SPACING_MD)
+        adv_layout.addSpacing(Size.SPACING_MD)
 
         self.chk_regex = QCheckBox(self.i18n.get("command.dialog.regex_checkbox"))
         self.chk_regex.toggled.connect(self._on_regex_toggled)
@@ -161,27 +155,27 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_regex.setProperty("role", "h3")
         self.txt_regex = VariableTextEdit(
             autocomplete_data={"\\": [
-                "\\w (Letras/Dígitos)", "\\d (Dígitos)", "\\s (Espacios)", "\\b (Límite de palabra)", 
+                "\\w (Letras/Dígitos)", "\\d (Dígitos)", "\\s (Espacios)", "\\b (Límite de palabra)",
                 ".* (Cualquier texto)", ".+ (Texto no vacío)", "^ (Inicio de texto)", "$ (Fin de texto)",
                 "[a-z] (Letras minúsculas)", "[0-9] (Dígitos)", "a|b (Opción A o B)",
                 "(?:...) (Grupo sin captura)", "(?=...) (Lookahead positivo)", "(?!...) (Lookahead negativo)"
             ]},
             highlight_pattern=r"\\.|\[\^?[^\]]+\]|\(\?[^)]+\)|[*+?^$|]|\(|\)",
-            highlight_color=COLOR_AMBER,
+            highlight_color=BrandColors.AMBER,
             highlight_bg=None
         )
         self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))
         self.txt_regex.setMinimumHeight(60)
         self.txt_regex.setEnabled(False)
-        
+
         adv_layout.addWidget(lbl_regex)
         adv_layout.addWidget(self.txt_regex)
-        
+
         lbl_regex_help = QLabel(self.i18n.get("command.dialog.regex_help"))
         lbl_regex_help.setWordWrap(True)
         lbl_regex_help.setProperty("role", "caption")
         adv_layout.addWidget(lbl_regex_help)
-        
+
         adv_layout.addStretch()
 
         adv_main_layout.addWidget(left_col, stretch=1)
@@ -233,20 +227,20 @@ class CommandConfigWizard(ModernWizardPanel):
         is_plugin = "[PLUGIN_" in resp
         self.badge_plugin.setVisible(is_plugin)
         self.txt_response.setReadOnly(is_plugin)
-        
+
         self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
         self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
         self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
         self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True))
-        
+
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)
         if index >= 0:
             self.combo_perm.setCurrentIndex(index)
-        
+
         is_regex = self.existing_config.get("is_regex", False)
         self.chk_regex.setChecked(is_regex)
-        
+
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
 
         if is_regex:
@@ -258,7 +252,7 @@ class CommandConfigWizard(ModernWizardPanel):
         is_regex = self.chk_regex.isChecked()
         aliases_val = self.txt_regex.toPlainText().strip() if is_regex else self.txt_aliases.text().strip()
         clean_trigger = sanitize_command_trigger(self.txt_trigger.text())
-        
+
         return {
             "original_trigger": self.original_trigger,
             "trigger": clean_trigger,
@@ -293,11 +287,11 @@ class CommandConfigWizard(ModernWizardPanel):
             trigger_text = self.txt_trigger.text().strip()
             response_text = self.txt_response.toPlainText().strip()
             is_plugin = "[PLUGIN_" in response_text
-            
+
             if hasattr(self, "badge_plugin"):
                 self.badge_plugin.setVisible(is_plugin)
             self.txt_response.setReadOnly(is_plugin)
-            
+
             is_trigger_valid = is_complete_valid_trigger(trigger_text)
             if is_plugin:
                 self.txt_response.setProperty("state", "plugin")
@@ -306,7 +300,7 @@ class CommandConfigWizard(ModernWizardPanel):
                 is_over_limit = len(response_text) > 492
                 self.txt_response.setProperty("state", "error" if is_over_limit else "normal")
                 is_valid = not is_over_limit and bool(is_trigger_valid and response_text)
-                
+
             self.txt_response.style().unpolish(self.txt_response)
             self.txt_response.style().polish(self.txt_response)
             self.btn_next.setEnabled(is_valid)

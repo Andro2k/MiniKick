@@ -5,17 +5,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePol
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import (
-    get_pixmap_colored, COLOR_AMBER, COLOR_PURE_WHITE, COLOR_NEUTRAL_950,
-    SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
-)
-from frontend.components.alerts import (
-    ResponsiveStackedWidget,
-    AlertVariantsTabBar,
-    AlertVariantTabPill,
-    AlertEventCard,
-    AlertsOverlayCard,
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
+from frontend.components.alerts import ResponsiveStackedWidget, AlertVariantsTabBar, AlertVariantTabPill, AlertEventCard, AlertsOverlayCard
 from frontend.dialogs import DuplicateAlertModal
 
 __all__ = [
@@ -98,20 +89,20 @@ class AlertsView(BaseView):
         self.url_box = self.overlay_card.url_box
 
         self.main_layout.addWidget(self.overlay_card, 0)
-        self.main_layout.addSpacing(SPACING_SM)
+        self.main_layout.addSpacing(Size.SPACING_SM)
 
-        self.notice_banner = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        self.notice_banner = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.notice_layout.setContentsMargins(*MARGIN_NONE)
-        self.notice_layout.setSpacing(SPACING_MD)
+        self.notice_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.notice_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, size=20))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, size=24))
 
         notice_text_col = QVBoxLayout()
-        notice_text_col.setContentsMargins(*MARGIN_NONE)
-        notice_text_col.setSpacing(SPACING_2XS)
+        notice_text_col.setContentsMargins(*Size.Margin.MRG_NON)
+        notice_text_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
         self.lbl_notice_title.setProperty("role", "h3")
@@ -128,7 +119,7 @@ class AlertsView(BaseView):
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
             icon_name="plug-filled.svg",
-            icon_size=15,
+            icon_size=16,
             parent=self
         )
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)
@@ -141,7 +132,7 @@ class AlertsView(BaseView):
         self.notice_banner.setVisible(False)
 
         self.main_layout.addWidget(self.notice_banner, 0)
-        self.main_layout.addSpacing(SPACING_SM)
+        self.main_layout.addSpacing(Size.SPACING_SM)
 
         self.stack = ResponsiveStackedWidget(parent=self)
         self.stack.setMinimumWidth(0)
@@ -161,8 +152,8 @@ class AlertsView(BaseView):
     def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertVariantsTabBar, ResponsiveStackedWidget, QVBoxLayout]:
         page = QWidget()
         page_layout = QVBoxLayout(page)
-        page_layout.setContentsMargins(*MARGIN_NONE)
-        page_layout.setSpacing(SPACING_MD)
+        page_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        page_layout.setSpacing(Size.SPACING_MD)
 
         self._event_meta[platform] = dict(events)
 
@@ -262,7 +253,7 @@ class AlertsView(BaseView):
                 tts_read=source_cfg.tts_read,
                 layout=getattr(source_cfg, "layout", "above"),
                 style=getattr(source_cfg, "style", "compact"),
-                text_color=getattr(source_cfg, "text_color", COLOR_PURE_WHITE),
+                text_color=getattr(source_cfg, "text_color", Palette.NEUTRAL_000),
                 highlight_color=getattr(source_cfg, "highlight_color", ""),
                 font_family=getattr(source_cfg, "font_family", "Outfit"),
                 font_size=getattr(source_cfg, "font_size", 24),
@@ -271,7 +262,7 @@ class AlertsView(BaseView):
                 animation_in_duration=getattr(source_cfg, "animation_in_duration", 1.0),
                 animation_out=getattr(source_cfg, "animation_out", "fade_out"),
                 animation_out_duration=getattr(source_cfg, "animation_out_duration", 1.0),
-                bg_color=getattr(source_cfg, "bg_color", COLOR_NEUTRAL_950),
+                bg_color=getattr(source_cfg, "bg_color", Palette.NEUTRAL_900),
                 bg_opacity=getattr(source_cfg, "bg_opacity", 88),
                 border_radius=getattr(source_cfg, "border_radius", 20),
                 padding_px=getattr(source_cfg, "padding_px", 24),

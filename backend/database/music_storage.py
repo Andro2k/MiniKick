@@ -59,14 +59,14 @@ class SQLiteMusicStorage:
                 try:
                     clean_term = re.sub(r'["\*\^\:\(\)]', '', norm_q).strip()
                     if len(clean_term) >= 3:
-                        cursor.execute("""
+                        cursor.execute('''
                             SELECT c.title, c.artist, c.url, c.duration, c.query_raw, rank
                             FROM youtube_search_cache_fts f
                             JOIN youtube_search_cache c ON c.rowid = f.rowid
                             WHERE youtube_search_cache_fts MATCH ?
                             ORDER BY rank
                             LIMIT 1
-                        """, (f'"{clean_term}"',))
+                        ''', (f'"{clean_term}"',))
                         fts_row = cursor.fetchone()
                         if fts_row:
                             logger.debug("[SQLiteMusicStorage] FTS5 trigram match for '%s' -> '%s'", query, fts_row[4])
@@ -105,13 +105,13 @@ class SQLiteMusicStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     INSERT INTO youtube_search_cache (query_raw, title, artist, url, duration, play_count, last_accessed) 
                     VALUES (?, ?, ?, ?, ?, 1, ?)
                     ON CONFLICT(query_raw) DO UPDATE SET 
                         title=excluded.title, artist=excluded.artist, url=excluded.url, duration=excluded.duration,
                         play_count = COALESCE(play_count, 0) + 1, last_accessed=?
-                """, (
+                ''', (
                     norm_q,
                     song_entry["title"],
                     song_entry["artist"],
@@ -186,14 +186,14 @@ class SQLiteMusicStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT query_raw, title, artist, url, COALESCE(play_count, 1) as pc, last_accessed, COALESCE(file_size_mb, 4.0) as sz,
                            (COALESCE(play_count, 1) / (
                                ((julianday('now') - julianday(COALESCE(last_accessed, datetime('now')))) + 0.5) * COALESCE(file_size_mb, 4.0)
                            )) AS score
                     FROM youtube_search_cache
                     ORDER BY score ASC
-                """)
+                ''')
                 rows = cursor.fetchall()
                 return [
                     {

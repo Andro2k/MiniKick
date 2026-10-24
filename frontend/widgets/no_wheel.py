@@ -1,6 +1,6 @@
 # frontend\widgets\no_wheel.py
 
-from PySide6.QtWidgets import QComboBox, QSlider, QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox
+from PySide6.QtWidgets import QComboBox, QSlider, QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox, QCalendarWidget, QTableView
 from PySide6.QtCore import Qt
 
 class NoWheelSpinBox(QSpinBox):
@@ -75,20 +75,17 @@ class NoWheelDateEdit(QDateEdit):
             return
         cal = super().calendarWidget()
         if cal:
-            from PySide6.QtWidgets import QCalendarWidget
             from PySide6.QtGui import QTextCharFormat, QColor
-            from frontend.common import COLOR_NEUTRAL_400
+            from frontend.common import Palette, create_dark_palette
 
             cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
             cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
             neutral_fmt = QTextCharFormat()
-            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_400))
+            neutral_fmt.setForeground(QColor(Palette.NEUTRAL_400))
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
             cal.setHeaderTextFormat(neutral_fmt)
 
-            from PySide6.QtWidgets import QTableView
-            from frontend.common import create_dark_palette
             dark_pal = create_dark_palette()
             cal.setPalette(dark_pal)
             popup = cal.parent()

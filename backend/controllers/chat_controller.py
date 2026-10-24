@@ -200,7 +200,7 @@ class ChatController(QObject):
         self._build_pipeline()
         self.command_service.response_generated.connect(self._handle_bot_response)
         
-        self._init_backend_state()
+        self._init_backend_state(warm_up_tts=False)
         if self.view is not None:
             self._connect_signals()
             self._populate_view()
@@ -259,19 +259,20 @@ class ChatController(QObject):
         if hasattr(self.view, "view_shown"):
             self.view.view_shown.connect(self._sync_tts_command_from_db)
 
-    def load_initial_data(self) -> None:
-        self._init_backend_state()
+    def load_initial_data(self, *, refresh_backend: bool = True) -> None:
+        if refresh_backend:
+            self._init_backend_state()
         if self.view is not None:
             self._populate_view()
 
     def _load_initial_data(self) -> None:
         self.load_initial_data()
 
-    def _init_backend_state(self) -> None:
+    def _init_backend_state(self, *, warm_up_tts: bool = True) -> None:
         self.sync_settings_cache()
         settings = self._tts_settings_cache
         provider = settings.get("provider", "piper")
-        self.service.set_provider(provider)
+        self.service.set_provider(provider, warm_up=warm_up_tts)
         self.filter_handler.initialize_from_settings(settings, self.view)
         self.service.set_volume(settings.get("volume", 100))
         self.service.set_speed(settings.get("speed", 100))

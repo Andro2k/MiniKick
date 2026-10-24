@@ -1,21 +1,13 @@
 # frontend\dialogs\timer_dialog.py
 
 import logging
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLineEdit,
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy)
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
 from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
-from frontend.widgets import (
-    ModernButton, ModernSwitch, CategorySearchComboBox,
-    create_card_frame, create_col_layout, create_switch_field,
-    create_text_label, create_labeled_field
-)
-from frontend.common import (
-    COLOR_WHITE, get_icon_colored,
-    SPACING_MD, MARGIN_NONE, MARGIN_LG
-)
+from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox, create_card_frame, create_col_layout, create_switch_field, create_text_label, create_labeled_field
+from frontend.common import get_icon_colored, Palette, Size
 
 logger = logging.getLogger("minikick.dialogs.timer_dialog")
 
@@ -49,8 +41,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
 
-        self._icon_edit = get_icon_colored("edit-filled.svg", COLOR_WHITE, 14)
-        self._icon_trash = get_icon_colored("trash-filled.svg", COLOR_WHITE, 14)
+        self._icon_edit = get_icon_colored("edit-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_trash = get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, 16)
 
         self._setup_ui()
         if self.existing_config:
@@ -67,7 +59,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def _build_platform_switches_row(self) -> QHBoxLayout:
         switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_MD)
+        switches_row.setSpacing(Size.SPACING_MD)
 
         kick_on = self.connected_platforms.get("kick", False)
         twitch_on = self.connected_platforms.get("twitch", False)
@@ -78,7 +70,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.switch_kick.setChecked(kick_on)
         if not kick_on:
             self.switch_kick.setToolTip(off_tip)
-        kick_box, _ = create_switch_field(self.switch_kick, "Kick", spacing=SPACING_MD)
+        kick_box, _ = create_switch_field(self.switch_kick, "Kick", spacing=Size.SPACING_MD)
         switches_row.addLayout(kick_box)
 
         self.switch_twitch = ModernSwitch()
@@ -86,7 +78,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.switch_twitch.setChecked(twitch_on)
         if not twitch_on:
             self.switch_twitch.setToolTip(off_tip)
-        twitch_box, _ = create_switch_field(self.switch_twitch, "Twitch", spacing=SPACING_MD)
+        twitch_box, _ = create_switch_field(self.switch_twitch, "Twitch", spacing=Size.SPACING_MD)
         switches_row.addLayout(twitch_box)
         switches_row.addStretch()
         return switches_row
@@ -96,9 +88,9 @@ class TimerConfigWizard(ModernWizardPanel):
         suffix_lines = f" {self.i18n.get('timer.dialog.suffix_lines')}"
 
         self.tab_basic = QWidget()
-        basic_main_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.tab_basic)
+        basic_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.tab_basic)
 
-        top_card, top_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
+        top_card, top_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
 
         self.txt_name = QLineEdit()
         self.txt_name.setPlaceholderText(self.i18n.get("timer.dialog.name_placeholder"))
@@ -167,7 +159,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
         basic_main_layout.addWidget(top_card)
 
-        bottom_card, bottom_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
+        bottom_card, bottom_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
         bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h3", parent=self))
 
         lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="caption", parent=self)
@@ -180,8 +172,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.scroll_msgs.setMinimumHeight(120)
         self.scroll_msgs_widget = QWidget()
         self.msgs_container_layout = QVBoxLayout(self.scroll_msgs_widget)
-        self.msgs_container_layout.setContentsMargins(*MARGIN_NONE)
-        self.msgs_container_layout.setSpacing(SPACING_MD)
+        self.msgs_container_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.msgs_container_layout.setSpacing(Size.SPACING_MD)
         self.msgs_container_layout.addStretch()
         self.scroll_msgs.setWidget(self.scroll_msgs_widget)
         bottom_layout.addWidget(self.scroll_msgs, stretch=1)
@@ -195,9 +187,9 @@ class TimerConfigWizard(ModernWizardPanel):
     def _build_step2_filters(self):
         self.tab_filters = QWidget()
         self.tab_filters.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        filters_main_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.tab_filters)
+        filters_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.tab_filters)
 
-        help_card, help_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
+        help_card, help_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
         lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="body", parent=self)
         lbl_help_desc.setWordWrap(True)
 
@@ -205,7 +197,7 @@ class TimerConfigWizard(ModernWizardPanel):
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
-        filt_card, filt_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
+        filt_card, filt_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
 
         self.txt_keywords = QLineEdit()
         self.txt_keywords.setPlaceholderText(self.i18n.get("timer.dialog.keywords_placeholder"))
@@ -221,7 +213,7 @@ class TimerConfigWizard(ModernWizardPanel):
         lbl_keywords_desc.setWordWrap(True)
         filt_layout.addWidget(lbl_keywords_desc)
 
-        filt_layout.addSpacing(SPACING_MD)
+        filt_layout.addSpacing(Size.SPACING_MD)
 
         filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="h3", parent=self))
 
@@ -269,8 +261,8 @@ class TimerConfigWizard(ModernWizardPanel):
     def _add_message_field(self, text=""):
         row = QWidget()
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(*MARGIN_NONE)
-        row_layout.setSpacing(SPACING_MD)
+        row_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        row_layout.setSpacing(Size.SPACING_MD)
 
         txt = QLineEdit()
         txt.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))

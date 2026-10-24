@@ -346,13 +346,13 @@ class ChatService:
                 for k, v in batch.items():
                     self.storage.save_string(k, v)
 
-    def set_provider(self, provider: str):
+    def set_provider(self, provider: str, *, warm_up: bool = True):
         self.storage.save_string("tts_provider", provider)
         self.tts.set_provider(provider)
         saved_voice = self.get_saved_voice_id(provider)
         if saved_voice:
             self.tts.set_voice(saved_voice)
-            if provider == "piper":
+            if provider == "piper" and warm_up:
                 self.tts.warm_up("piper", saved_voice)
         logger.info("[ChatService] TTS provider set to: %s", provider)
 

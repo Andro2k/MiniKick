@@ -216,7 +216,13 @@ class YouTubeMusicProvider(QObject):
             search_query = query
             immediate_msg = self.i18n.get("music.queue.processing_link")
 
-        worker = YouTubeSearchWorker(search_query, query, self.i18n, max_duration_min=max_duration_min)
+        worker = YouTubeSearchWorker(
+            search_query,
+            query,
+            self.i18n,
+            max_duration_min=max_duration_min,
+            requester=requester or "",
+        )
         
         def on_worker_finished(success, message):
             if success and worker.song_entry:

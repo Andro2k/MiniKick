@@ -1,17 +1,9 @@
 # frontend\components\dashboard\chatters_table.py
 
 import datetime
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget,
-    QTableWidget, QHeaderView, QProgressBar, QSizePolicy,
-    QBoxLayout
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QTableWidget, QHeaderView, QProgressBar, QSizePolicy, QBoxLayout
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import (
-    COLOR_GREEN, COLOR_AMBER, COLOR_NEUTRAL_500,
-    get_pixmap_colored, MARGIN_NONE, MARGIN_MD, MARGIN_LG,
-    SPACING_XS, SPACING_SM, SPACING_MD
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, NoWheelComboBox, create_col_layout
 
 class DashboardChattersTable(ModernCard):
@@ -19,7 +11,7 @@ class DashboardChattersTable(ModernCard):
     activate_widget_requested = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent=parent, margin=MARGIN_MD, spacing=SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.i18n = i18n
         self._current_date = datetime.date.today().strftime("%Y-%m-%d")
         self._available_dates: list[str] = []
@@ -40,12 +32,12 @@ class DashboardChattersTable(ModernCard):
 
     def _setup_ui(self):
         self.header_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.header_layout.setContentsMargins(*MARGIN_NONE)
-        self.header_layout.setSpacing(SPACING_MD)
+        self.header_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.header_layout.setSpacing(Size.SPACING_MD)
 
         title_col = QVBoxLayout()
-        title_col.setContentsMargins(*MARGIN_NONE)
-        title_col.setSpacing(SPACING_XS)
+        title_col.setContentsMargins(*Size.Margin.MRG_NON)
+        title_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_title = QLabel(self.i18n.get("dashboard.chatters.title"), self)
         self.lbl_title.setProperty("role", "h3")
@@ -58,8 +50,8 @@ class DashboardChattersTable(ModernCard):
         self.header_layout.addLayout(title_col, stretch=1)
 
         filters_row = QHBoxLayout()
-        filters_row.setContentsMargins(*MARGIN_NONE)
-        filters_row.setSpacing(SPACING_XS)
+        filters_row.setContentsMargins(*Size.Margin.MRG_NON)
+        filters_row.setSpacing(Size.SPACING_XS)
 
         self.btn_today = ModernButton(
             self.i18n.get("dashboard.chatters.filter_today"),
@@ -95,10 +87,10 @@ class DashboardChattersTable(ModernCard):
         self.banner_inactive.setVisible(False)
         banner_layout = QHBoxLayout(self.banner_inactive)
         banner_layout.setContentsMargins(12, 8, 12, 8)
-        banner_layout.setSpacing(SPACING_SM)
+        banner_layout.setSpacing(Size.SPACING_SM)
 
         lbl_banner_icon = QLabel(self.banner_inactive)
-        lbl_banner_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, 18))
+        lbl_banner_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
         lbl_banner_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_banner_msg = QLabel(self.i18n.get("dashboard.chatters.inactive_suggestion"), self.banner_inactive)
@@ -121,7 +113,7 @@ class DashboardChattersTable(ModernCard):
         self.addWidget(self.banner_inactive)
 
         self.stack = QStackedWidget(self)
-        self.stack.setContentsMargins(*MARGIN_NONE)
+        self.stack.setContentsMargins(*Size.Margin.MRG_NON)
 
         self.table = QTableWidget(self)
         self.table.setColumnCount(5)
@@ -156,11 +148,11 @@ class DashboardChattersTable(ModernCard):
         self.stack.addWidget(self.table)
 
         self.empty_widget = QWidget(self)
-        empty_layout = create_col_layout(spacing=SPACING_SM, margins=MARGIN_LG, parent=self.empty_widget)
+        empty_layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_LRG, parent=self.empty_widget)
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_empty_icon = QLabel(self.empty_widget)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", COLOR_NEUTRAL_500, 36))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", Palette.NEUTRAL_500, 18))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_title = QLabel(self.i18n.get("dashboard.chatters.empty_title"), self.empty_widget)
@@ -265,7 +257,7 @@ class DashboardChattersTable(ModernCard):
         for row_idx, item in enumerate(chatters_list):
             user = item.get("user", "-")
             count = int(item.get("count", 0))
-            color = item.get("color") or COLOR_GREEN
+            color = item.get("color") or BrandColors.GREEN
             platform = (item.get("platform") or "kick").lower()
             rank = row_idx + 1
 
@@ -307,7 +299,7 @@ class DashboardChattersTable(ModernCard):
             share_widget = QWidget()
             share_layout = QHBoxLayout(share_widget)
             share_layout.setContentsMargins(4, 2, 8, 2)
-            share_layout.setSpacing(SPACING_XS)
+            share_layout.setSpacing(Size.SPACING_XS)
 
             pbar = QProgressBar(share_widget)
             pbar.setProperty("role", "top_command_progress")

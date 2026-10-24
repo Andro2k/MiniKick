@@ -3,19 +3,16 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import (
-    RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_SM, SPACING_XS,
-    COLOR_KICK_REWARDS, COLOR_TIKTOK, COLOR_TWITCH, COLOR_RED, COLOR_AMBER, COLOR_PURE_WHITE,
-)
+from frontend.common import get_swatch_qss, Palette, BrandColors, Size
 
-DEFAULT_PRESET_COLORS = [COLOR_KICK_REWARDS, COLOR_TIKTOK, COLOR_TWITCH, COLOR_RED, COLOR_AMBER, COLOR_PURE_WHITE]
+DEFAULT_PRESET_COLORS = [BrandColors.KICK_REWARDS, BrandColors.TIKTOK, BrandColors.TWITCH, BrandColors.RED, BrandColors.AMBER, Palette.NEUTRAL_000]
 
 class ModernColorPicker(QWidget):
     color_changed = Signal(str)
 
     def __init__(
         self,
-        initial_color: str = COLOR_KICK_REWARDS,
+        initial_color: str = BrandColors.KICK_REWARDS,
         tooltip: str = "",
         presets: list[str] | None = None,
         is_vertical: bool = False,
@@ -23,7 +20,7 @@ class ModernColorPicker(QWidget):
         parent: QWidget | None = None
     ):
         super().__init__(parent)
-        self._current_color = initial_color if QColor.isValidColorName(initial_color) else COLOR_KICK_REWARDS
+        self._current_color = initial_color if QColor.isValidColorName(initial_color) else BrandColors.KICK_REWARDS
         self._tooltip = tooltip
         self._presets = presets if (presets is not None and show_presets) else ([] if not show_presets else DEFAULT_PRESET_COLORS)
         self._is_vertical = is_vertical
@@ -46,44 +43,44 @@ class ModernColorPicker(QWidget):
 
         if self._is_vertical:
             layout = QVBoxLayout(self)
-            layout.setContentsMargins(*MARGIN_NONE)
-            layout.setSpacing(SPACING_XS)
+            layout.setContentsMargins(*Size.Margin.MRG_NON)
+            layout.setSpacing(Size.SPACING_XS)
 
             row_top = QHBoxLayout()
-            row_top.setContentsMargins(*MARGIN_NONE)
-            row_top.setSpacing(SPACING_SM)
+            row_top.setContentsMargins(*Size.Margin.MRG_NON)
+            row_top.setSpacing(Size.SPACING_SM)
             row_top.addWidget(self.btn_swatch)
             row_top.addWidget(self.txt_color, stretch=1)
             layout.addLayout(row_top)
 
             if self._show_presets and self._presets:
                 presets_layout = QHBoxLayout()
-                presets_layout.setContentsMargins(*MARGIN_NONE)
-                presets_layout.setSpacing(SPACING_XS)
+                presets_layout.setContentsMargins(*Size.Margin.MRG_NON)
+                presets_layout.setSpacing(Size.SPACING_XS)
                 for hex_code in self._presets:
                     btn_p = QPushButton(self)
                     btn_p.setFixedSize(22, 22)
                     btn_p.setCursor(Qt.CursorShape.PointingHandCursor)
-                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
+                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=Size.Radius.RAD_XSM))
                     btn_p.clicked.connect(lambda _, c=hex_code: self.set_color(c))
                     presets_layout.addWidget(btn_p)
                 presets_layout.addStretch()
                 layout.addLayout(presets_layout)
         else:
             layout = QHBoxLayout(self)
-            layout.setContentsMargins(*MARGIN_NONE)
-            layout.setSpacing(SPACING_SM)
+            layout.setContentsMargins(*Size.Margin.MRG_NON)
+            layout.setSpacing(Size.SPACING_SM)
             layout.addWidget(self.btn_swatch)
             layout.addWidget(self.txt_color, stretch=1)
 
             if self._show_presets and self._presets:
                 presets_layout = QHBoxLayout()
-                presets_layout.setSpacing(SPACING_XS)
+                presets_layout.setSpacing(Size.SPACING_XS)
                 for hex_code in self._presets:
                     btn_p = QPushButton(self)
                     btn_p.setFixedSize(22, 22)
                     btn_p.setCursor(Qt.CursorShape.PointingHandCursor)
-                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
+                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=Size.Radius.RAD_XSM))
                     btn_p.clicked.connect(lambda _, c=hex_code: self.set_color(c))
                     presets_layout.addWidget(btn_p)
                 layout.addLayout(presets_layout)
@@ -103,7 +100,7 @@ class ModernColorPicker(QWidget):
             self.color_changed.emit(text)
 
     def _update_swatch_style(self, hex_code: str):
-        self.btn_swatch.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
+        self.btn_swatch.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=Size.Radius.RAD_XSM))
 
     def set_color(self, hex_code: str):
         if not hex_code or not QColor.isValidColorName(hex_code):

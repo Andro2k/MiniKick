@@ -232,10 +232,6 @@ class DashboardController(QObject):
         if self.view and hasattr(self.view, "update_analytics_summary"):
             self.view.update_analytics_summary(analytics)
 
-    def update_next_schedule(self, schedule_text: str):
-        if self.view and hasattr(self.view, "update_next_schedule"):
-            self.view.update_next_schedule(schedule_text)
-
     def set_channel_profile(self, platform: str, profile_data: dict, save_db: bool = True):
         plat = platform.lower().strip()
         self._profiles[plat] = profile_data

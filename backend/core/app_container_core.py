@@ -23,18 +23,9 @@ except ImportError:
 
 logger = logging.getLogger("minikick.core.app_container")
 
-from backend.database import (
-    DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
-    SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
-    SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage,
-    SQLiteAlertStorage, EncryptedTokenStorage
-)
+from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.services.system import create_secret_cipher
-from backend.services import (
-    BackupService, TranslationService, KickAuthManager, TwitchAuthManager, 
-    SettingsService, AvatarService, WidgetService, ScheduleService,
-    TTSManager, OverlayServerManager, AlertService, BrowserService
-)
+from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.utils.paths import resource_path
 
 class AppContainerCore:
@@ -49,16 +40,16 @@ class AppContainerCore:
         self.twitch_token_storage = EncryptedTokenStorage(
             SQLiteTokenStorage(self.db_manager, provider="twitch"), self.secret_cipher
         )
-        self.settings_storage = SQLiteSettingsStorage(self.db_manager)
-        self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
-        self.spam_storage = SQLiteSpamStorage(self.db_manager)
-        self.timers_storage = SQLiteTimersStorage(self.db_manager)
-        self.widgets_storage = SQLiteWidgetsStorage(self.db_manager)
-        self.avatar_storage = SQLiteAvatarStorage(self.db_manager)
+        self.settings_storage   = SQLiteSettingsStorage(self.db_manager)
+        self.rewards_storage    = SQLiteRewardsStorage(self.db_manager)
+        self.spam_storage       = SQLiteSpamStorage(self.db_manager)
+        self.timers_storage     = SQLiteTimersStorage(self.db_manager)
+        self.widgets_storage    = SQLiteWidgetsStorage(self.db_manager)
+        self.avatar_storage     = SQLiteAvatarStorage(self.db_manager)
         self.system_log_storage = SQLiteSystemLogStorage(self.db_manager)
-        self.music_storage = SQLiteMusicStorage(self.db_manager)
-        self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
-        self.alert_storage = SQLiteAlertStorage(self.db_manager)
+        self.music_storage      = SQLiteMusicStorage(self.db_manager)
+        self.schedule_storage   = SQLiteScheduleStorage(self.db_manager)
+        self.alert_storage      = SQLiteAlertStorage(self.db_manager)
 
         logger.debug("[AppContainer] Initializing core services (Backup, Settings, Browser, Avatar, Widget, Schedule)...")
         self.backup_service = BackupService(

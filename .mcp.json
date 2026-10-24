@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"Kick Dev": {
+			"type": "http",
+			"url": "https://docs.kick.com/~gitbook/mcp"
+		}
+	}
+}

@@ -2,12 +2,9 @@
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
-from frontend.common import (
-    COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_400, COLOR_AMBER,
-    get_icon_colored, get_pixmap_colored,
-    MARGIN_LG, SPACING_MD, SPACING_2XS
-)
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import create_row_layout
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ModernToast(QFrame):
     expired = Signal(object)
@@ -27,15 +24,15 @@ class ModernToast(QFrame):
         self.setProperty("role", "toast")
         self.setProperty("state", state)
 
-        layout = create_row_layout(spacing=SPACING_MD, margins=MARGIN_LG, parent=self)
-        
+        layout = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_LRG, parent=self)
+
         self.icon_lbl = QLabel(self)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._update_icon(state)
         layout.addWidget(self.icon_lbl)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(Size.SPACING_XS)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.lbl_title = QLabel(title, self)
@@ -51,15 +48,16 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 14)
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(ModernToast._pixmap_cache["close"])
-        btn_close.setIconSize(QSize(14, 14))
+        btn_close.setIconSize(QSize(16, 16))
+        configure_icon_only_button(btn_close)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)
-        
+
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignTop)
 
         self._adjust_geometry()
@@ -77,7 +75,7 @@ class ModernToast(QFrame):
     def _adjust_geometry(self):
         self.setFixedWidth(340)
         available_text_w = 250
-        
+
         fm_title = self.lbl_title.fontMetrics()
         title_rect = fm_title.boundingRect(0, 0, available_text_w, 1000, int(Qt.TextFlag.TextWordWrap), self.title_text)
         title_h = max(20, title_rect.height())
@@ -95,12 +93,12 @@ class ModernToast(QFrame):
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:
             icon_map = {
-                "success": ("check-circle-filled.svg", COLOR_GREEN),
-                "danger": ("alert-circle-filled.svg", COLOR_RED),
-                "warning": ("alert-triangle-filled.svg", COLOR_AMBER),
-                "info": ("circle-info-filled.svg", COLOR_BLUE)
+                "success": ("check-circle-filled.svg", BrandColors.GREEN),
+                "danger": ("alert-circle-filled.svg", BrandColors.RED),
+                "warning": ("alert-triangle-filled.svg", BrandColors.AMBER),
+                "info": ("circle-info-filled.svg", BrandColors.BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg", COLOR_NEUTRAL_400))
+            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg", Palette.NEUTRAL_400))
             ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 
@@ -112,7 +110,7 @@ class ModernToast(QFrame):
         self.lbl_msg.setText(message or "")
         self.lbl_msg.setVisible(bool(message))
         self._update_icon(state)
-        
+
         if self.property("state") != state:
             self.setProperty("state", state)
             self.style().unpolish(self)

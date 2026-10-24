@@ -4,10 +4,7 @@ import os
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal
-from frontend.common import (
-    resource_path, get_icon_colored,
-    COLOR_WHITE, COLOR_RED
-)
+from frontend.common import resource_path, get_icon_colored, Palette, BrandColors
 
 class SystemTrayManager(QSystemTrayIcon):
     restore_requested = Signal()
@@ -33,7 +30,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu = QMenu(self.parent())
 
         self.action_restore = self.menu.addAction(
-            get_icon_colored("squares-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("squares-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.open_panel")
         )
         self.action_restore.triggered.connect(self.restore_requested.emit)
@@ -41,13 +38,13 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addSeparator()
 
         self.action_play_pause = self.menu.addAction(
-            get_icon_colored("play-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.play")
         )
         self.action_play_pause.triggered.connect(self.play_pause_requested.emit)
 
         self.action_skip = self.menu.addAction(
-            get_icon_colored("skip-next-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.skip")
         )
         self.action_skip.triggered.connect(self.skip_requested.emit)
@@ -55,7 +52,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addSeparator()
 
         self.action_tts = QAction(
-            get_icon_colored("voice-cricle-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("voice-cricle-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.read_chat"),
             self.menu
         )
@@ -64,7 +61,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addAction(self.action_tts)
 
         self.action_tts_use_command = QAction(
-            get_icon_colored("hashtag-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("hashtag-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.tts_use_command"),
             self.menu
         )
@@ -73,7 +70,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addAction(self.action_tts_use_command)
 
         self.action_tts_voice_type = QAction(
-            get_icon_colored("globe-filled.svg", COLOR_WHITE, 16),
+            get_icon_colored("globe-filled.svg", Palette.NEUTRAL_050, 16),
             self.i18n.get("main.tray.tts_voice_type"),
             self.menu
         )
@@ -84,7 +81,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addSeparator()
 
         self.action_quit = self.menu.addAction(
-            get_icon_colored("x-filled.svg", COLOR_RED, 16),
+            get_icon_colored("x-filled.svg", BrandColors.RED, 16),
             self.i18n.get("main.tray.close_app")
         )
         self.action_quit.triggered.connect(self.quit_requested.emit)
@@ -100,10 +97,10 @@ class SystemTrayManager(QSystemTrayIcon):
         self._is_playing = is_playing
         if is_playing:
             self.action_play_pause.setText(self.i18n.get("main.tray.pause"))
-            self.action_play_pause.setIcon(get_icon_colored("pause-filled.svg", COLOR_WHITE, 16))
+            self.action_play_pause.setIcon(get_icon_colored("pause-filled.svg", Palette.NEUTRAL_050, 16))
         else:
             self.action_play_pause.setText(self.i18n.get("main.tray.play"))
-            self.action_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_WHITE, 16))
+            self.action_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
 
     def set_tts_state(self, enabled: bool):
         self.action_tts.blockSignals(True)

@@ -16,10 +16,4 @@ class TokenProvider(Protocol):
 
 
 class TransientAuthError(Exception):
-    """Raised when a token refresh fails for a transient reason (network/timeout/5xx).
-
-    Callers must keep the current session and retry later, as opposed to an invalid
-    or revoked token, which requires re-authentication.
-    """
-
     pass

@@ -1,18 +1,11 @@
 # frontend\widgets\blocks.py
 
-from PySide6.QtWidgets import (QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, 
-                               QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit)
+from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
-from frontend.common import (
-    get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_950,
-    COLOR_RED, COLOR_RED_HOVER, COLOR_GREEN, COLOR_GREEN_HOVER,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
-    MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
-    MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
-)
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
-from .controls_widget import ModernSwitch
+from .controls_widget import ModernSwitch, configure_icon_only_button
 from .layout_helpers import create_platform_switches, create_row_layout
 
 class ViewHeader(QFrame):
@@ -20,20 +13,20 @@ class ViewHeader(QFrame):
         super().__init__(parent)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_XS)
-        layout.setSpacing(SPACING_XS)
+        layout.setContentsMargins(*Size.Margin.MRG_XXS)
+        layout.setSpacing(Size.SPACING_XS)
 
         title = QLabel(title_text, parent=self)
         title.setProperty("role", "h1")
         if title_color:
-            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
+            color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)
-        
+
         subtitle = QLabel(subtitle_text, parent=self)
         subtitle.setProperty("role", "body")
         subtitle.setWordWrap(True)
         subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        
+
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
@@ -41,9 +34,9 @@ class SectionHeader(QWidget):
     def __init__(self, text: str = "", parent=None, first: bool = False):
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        margins = MARGIN_SECTION_HEADER_FIRST if first else MARGIN_SECTION_HEADER
+        margins = Size.Margin.MRG_HXS if first else Size.Margin.SEC_HDR
         layout.setContentsMargins(*margins)
-        layout.setSpacing(SPACING_NONE)
+        layout.setSpacing(Size.SPACING_NN)
         self.lbl = QLabel(text, parent=self)
         self.lbl.setProperty("role", "section_header")
         layout.addWidget(self.lbl)
@@ -58,40 +51,40 @@ class SettingRow(QWidget):
         title_text: str = "",
         desc_text: str = "",
         right_widget: QWidget = None,
-        icon_color: str = COLOR_NEUTRAL_400,
+        icon_color: str = Palette.NEUTRAL_400,
         title_color: str = None,
-        contents_margins: tuple = MARGIN_SETTING_ROW,
+        contents_margins: tuple = Size.Margin.MRG_LRG,
         parent=None
     ):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(*contents_margins)
-        layout.setSpacing(SPACING_MD)
+        layout.setSpacing(Size.SPACING_MD)
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
             icon_lbl.setFixedWidth(20)
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
-        
+        text_layout.setSpacing(Size.SPACING_XS)
+
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
         lbl_title.setWordWrap(True)
         if title_color:
-            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
+            color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             lbl_title.setProperty("state", color_state)
-        
+
         self.lbl_desc = QLabel(desc_text, parent=self)
         self.lbl_desc.setProperty("role", "body")
         self.lbl_desc.setWordWrap(True)
-        
+
         text_layout.addWidget(lbl_title)
         text_layout.addWidget(self.lbl_desc)
-        
+
         layout.addLayout(text_layout, stretch=1)
         if right_widget:
             layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
@@ -113,30 +106,30 @@ class SliderRow(QWidget):
         desc_text: str,
         slider_widget: QWidget,
         value_label: QLabel,
-        icon_color: str = COLOR_NEUTRAL_400,
+        icon_color: str = Palette.NEUTRAL_400,
         parent=None,
-        contents_margins: tuple = MARGIN_SETTING_ROW
+        contents_margins: tuple = Size.Margin.MRG_LRG
     ):
         super().__init__(parent)
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(*contents_margins)
-        main_layout.setSpacing(SPACING_SM)
+        main_layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
             icon_lbl.setFixedWidth(20)
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             main_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
         content_layout = QVBoxLayout()
-        content_layout.setSpacing(SPACING_SM)
+        content_layout.setSpacing(Size.SPACING_SM)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_SM)
+        header_layout.setSpacing(Size.SPACING_SM)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(Size.SPACING_XS)
 
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
@@ -166,17 +159,17 @@ class StatCard(QFrame):
         super().__init__(parent)
         self.setProperty("role", "card")
         self.setFrameShape(QFrame.Shape.StyledPanel)
-        
+
         self.setMinimumWidth(150)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_MD)
-        layout.setSpacing(SPACING_SM)
+        layout.setContentsMargins(*Size.Margin.MRG_MED)
+        layout.setSpacing(Size.SPACING_SM)
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_SM)
+        header_layout.setSpacing(Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")
@@ -197,24 +190,24 @@ class StatCard(QFrame):
         self.lbl_value.setText(str(value))
 
 class ModernCard(QFrame):
-    def __init__(self, parent=None, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical"):
+    def __init__(self, parent=None, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="vertical"):
         super().__init__(parent)
         self.setProperty("role", "card")
-        
+
         if orientation == "horizontal":
             self.card_layout = QHBoxLayout(self)
         else:
             self.card_layout = QVBoxLayout(self)
-            
+
         if isinstance(margin, (tuple, list)):
             self.card_layout.setContentsMargins(*margin)
         else:
             self.card_layout.setContentsMargins(margin, margin, margin, margin)
         self.card_layout.setSpacing(spacing)
-        
+
     def addWidget(self, widget, *args, **kwargs):
         self.card_layout.addWidget(widget, *args, **kwargs)
-        
+
     def addLayout(self, layout, *args, **kwargs):
         self.card_layout.addLayout(layout, *args, **kwargs)
 
@@ -229,7 +222,7 @@ class ModernCard(QFrame):
         self.card_layout.addStretch(stretch)
 
 class FadingScrollArea(QScrollArea):
-    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
+    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(parent)
         self.fade_height = fade_height
         self._fade_color = QColor(fade_color) if isinstance(fade_color, str) else fade_color
@@ -288,7 +281,7 @@ class FadingScrollArea(QScrollArea):
         painter.end()
 
 class ModernScrollArea(FadingScrollArea):
-    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
+    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):
@@ -299,30 +292,30 @@ class ExpandableCard(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(*MARGIN_NONE)
-        self.main_layout.setSpacing(SPACING_NONE)
+        self.main_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.main_layout.setSpacing(Size.SPACING_NN)
 
-        self._icon_up = get_icon_colored("chevron-up-filled.svg", COLOR_NEUTRAL_400, 20)
-        self._icon_down = get_icon_colored("chevron-down-filled.svg", COLOR_NEUTRAL_400, 20)
+        self._icon_up = get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_down = get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_050, 16)
         self._is_expanded = False
 
         self.header_widget = QWidget(self)
         self.header_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.header_widget.setCursor(Qt.CursorShape.PointingHandCursor)
         h_layout = QHBoxLayout(self.header_widget)
-        h_layout.setContentsMargins(*MARGIN_MD)
-        h_layout.setSpacing(SPACING_SM)
+        h_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        h_layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:
             self.lbl_icon = QLabel(self.header_widget)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, 24))
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_050, 16))
             h_layout.addWidget(self.lbl_icon, alignment=Qt.AlignmentFlag.AlignTop)
         else:
             self.lbl_icon = None
 
         text_layout = QVBoxLayout()
-        text_layout.setContentsMargins(*MARGIN_NONE)
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        text_layout.setSpacing(Size.SPACING_XS)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.lbl_title = QLabel(title, self.header_widget)
@@ -346,8 +339,8 @@ class ExpandableCard(QFrame):
 
         self.btn_expand = QPushButton(self.header_widget)
         self.btn_expand.setIcon(self._icon_down)
-        self.btn_expand.setIconSize(QSize(20, 20))
-        self.btn_expand.setFixedSize(30, 30)
+        self.btn_expand.setIconSize(QSize(24, 24))
+        configure_icon_only_button(self.btn_expand)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_expand.clicked.connect(self.toggle_expand)
@@ -362,8 +355,8 @@ class ExpandableCard(QFrame):
         self.main_layout.addWidget(self.divider)
         self.body_widget = QWidget(self)
         self.body_layout = QVBoxLayout(self.body_widget)
-        self.body_layout.setContentsMargins(*MARGIN_MD)
-        self.body_layout.setSpacing(SPACING_MD)
+        self.body_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        self.body_layout.setSpacing(Size.SPACING_MD)
         self.body_widget.hide()
         self.main_layout.addWidget(self.body_widget)
 
@@ -411,13 +404,13 @@ class ExpandableSettingCard(ExpandableCard):
 
     def _build_body(self):
         b_layout = self.body_layout
-        
+
         lbl_gen = QLabel(self.i18n.get("spam.card.config_title"))
         lbl_gen.setProperty("role", "h3")
         b_layout.addWidget(lbl_gen)
-        
+
         platforms_layout = QHBoxLayout()
-        platforms_layout.setSpacing(SPACING_XL)
+        platforms_layout.setSpacing(Size.SPACING_XL)
         lbl_platforms = QLabel(self.i18n.get("spam.card.platforms"))
         lbl_platforms.setProperty("role", "body")
         platforms_layout.addWidget(lbl_platforms)
@@ -425,8 +418,8 @@ class ExpandableSettingCard(ExpandableCard):
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
             kick_label=self.i18n.get("spam.card.platform_kick"),
             twitch_label=self.i18n.get("spam.card.platform_twitch"),
-            spacing=SPACING_XL,
-            field_spacing=SPACING_SM,
+            spacing=Size.SPACING_XL,
+            field_spacing=Size.SPACING_SM,
             on_kick_toggled=self._emit_update,
             on_twitch_toggled=self._emit_update,
             add_stretch=False,
@@ -435,11 +428,11 @@ class ExpandableSettingCard(ExpandableCard):
         platforms_layout.addLayout(switches_row)
         platforms_layout.addStretch()
         b_layout.addLayout(platforms_layout)
-        
+
         options_layout = QGridLayout()
-        options_layout.setHorizontalSpacing(SPACING_XL)
-        options_layout.setVerticalSpacing(SPACING_XS)
-        
+        options_layout.setHorizontalSpacing(Size.SPACING_XL)
+        options_layout.setVerticalSpacing(Size.SPACING_XS)
+
         lbl_pen = QLabel(self.i18n.get("spam.card.action"), parent=self)
         lbl_pen.setProperty("role", "body")
         self.combo_penalty = NoWheelComboBox(self)
@@ -448,19 +441,19 @@ class ExpandableSettingCard(ExpandableCard):
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban"), "ban")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete"), "warn_delete")
         self.combo_penalty.currentIndexChanged.connect(self._on_penalty_changed)
-        
+
         self.lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
         self.lbl_dur.setProperty("role", "body")
         self.spin_dur = NoWheelSpinBox(self)
         self.spin_dur.setRange(1, 10080)
         self.spin_dur.setValue(5)
         self.spin_dur.valueChanged.connect(self._emit_update)
-        
+
         options_layout.addWidget(lbl_pen, 0, 0)
         options_layout.addWidget(self.lbl_dur, 0, 1)
         options_layout.addWidget(self.combo_penalty, 1, 0)
         options_layout.addWidget(self.spin_dur, 1, 1)
-        
+
         lbl_exc = QLabel(self.i18n.get("spam.card.exclude"), parent=self)
         lbl_exc.setProperty("role", "body")
         self.combo_exclude = NoWheelComboBox(self)
@@ -468,10 +461,10 @@ class ExpandableSettingCard(ExpandableCard):
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")
         self.combo_exclude.currentIndexChanged.connect(self._emit_update)
-        
+
         options_layout.addWidget(lbl_exc, 2, 0)
         options_layout.addWidget(self.combo_exclude, 3, 0)
-        
+
         if self.card_id == "link_protection":
             lbl_allow = QLabel(self.i18n.get("spam.card.allowlist"))
             lbl_allow.setProperty("role", "body")
@@ -498,7 +491,7 @@ class ExpandableSettingCard(ExpandableCard):
             self.spin_amt.valueChanged.connect(self._emit_update)
             options_layout.addWidget(lbl_amt, 2, 1)
             options_layout.addWidget(self.spin_amt, 3, 1)
-            
+
         options_layout.setColumnStretch(0, 1)
         options_layout.setColumnStretch(1, 1)
         b_layout.addLayout(options_layout)
@@ -576,14 +569,14 @@ class ExpandableSettingCard(ExpandableCard):
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)
-    layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_MD, parent=container)
+    layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_HMD, parent=container)
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
     tag.setProperty("role", "badge")
     tag.setProperty("state", state)
 
-    tag_layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_SM, parent=tag)
+    tag_layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_HSM, parent=tag)
 
     lbl_txt = QLabel(text, tag)
     lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -591,4 +584,3 @@ def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
 
     layout.addWidget(tag)
     return container
-

@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal, QPoint, QUrl
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
-from frontend.common import MARGIN_2XS
+from frontend.common import Size
 
 class DraggableBox(QFrame):
     position_updated = Signal(int, int)
@@ -15,19 +15,19 @@ class DraggableBox(QFrame):
         super().__init__(parent)
         self.canvas_w = canvas_w
         self.canvas_h = canvas_h
-        self.scale_factor = scale_factor_obs 
+        self.scale_factor = scale_factor_obs
         self.base_scale_val = scale_val
         self._target_local_pos = QPoint(0, 0)
-        
+
         self.setFixedSize(100, 100)
         self.setCursor(Qt.CursorShape.OpenHandCursor)
-        
+
         self._drag_active = False
         self._drag_offset = QPoint()
 
         self.media_layout = QVBoxLayout(self)
-        self.media_layout.setContentsMargins(*MARGIN_2XS)
-        
+        self.media_layout.setContentsMargins(*Size.Margin.MRG_XXS)
+
         if filepath and os.path.exists(filepath):
             ext = filepath.lower()
             if ext.endswith(('.mp4', '.webm')):
@@ -37,16 +37,16 @@ class DraggableBox(QFrame):
 
                 self.player = QMediaPlayer(self)
                 self.audio = QAudioOutput(self)
-                self.audio.setVolume(0.0) 
-                
+                self.audio.setVolume(0.0)
+
                 self.player.setAudioOutput(self.audio)
                 self.player.setVideoOutput(self.video_widget)
                 self.player.setSource(QUrl.fromLocalFile(filepath))
                 self.player.setLoops(QMediaPlayer.Loops.Infinite)
-                
+
                 self.video_widget.videoSink().videoSizeChanged.connect(self._adjust_to_media_size)
                 self.player.play()
-                
+
             elif ext.endswith(('.png', '.jpg', '.jpeg', '.gif')):
                 self.img_lbl = QLabel()
                 self.img_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -63,14 +63,14 @@ class DraggableBox(QFrame):
         else:
             min_x = self.canvas_w - self.width()
             max_x = 0
-            
+
         if self.height() <= self.canvas_h:
             min_y = 0
             max_y = self.canvas_h - self.height()
         else:
             min_y = self.canvas_h - self.height()
             max_y = 0
-            
+
         return max(min_x, min(x, max_x)), max(min_y, min(y, max_y))
 
     def _adjust_to_media_size(self, size=None):
@@ -88,10 +88,10 @@ class DraggableBox(QFrame):
         local_h = int(obs_h / self.scale_factor)
 
         self.setFixedSize(local_w, local_h)
-        
+
         target_x = self._target_local_pos.x() if hasattr(self, '_target_local_pos') else self.x()
         target_y = self._target_local_pos.y() if hasattr(self, '_target_local_pos') else self.y()
-        
+
         x, y = self._clamp_position(target_x, target_y)
         self.move(x, y)
 

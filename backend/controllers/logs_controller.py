@@ -1,31 +1,13 @@
 # backend\controllers\logs_controller.py
 
 import os
-import re
 import logging
 from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, Slot, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
+from backend.core.log_format import log_level_matches, parse_log_line
 
 logger = logging.getLogger("minikick.controllers.logs")
-
-_LOG_LINE_RE = re.compile(
-    r"^\[(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{3}\s+[+-]\d{2}:\d{2})?)\]\s+\[(?P<level>[A-Za-z0-9_]+)\]\s+(?P<msg>.*)",
-    re.DOTALL
-)
-
-_LEVEL_ALIASES = {
-    "INFO": ("INFO", "INF"),
-    "DEBUG": ("DEBUG", "DBG"),
-    "WARNING": ("WARNING", "WRN"),
-    "ERROR": ("ERROR", "ERR"),
-    "CRITICAL": ("CRITICAL", "CRI"),
-    "INF": ("INFO", "INF"),
-    "DBG": ("DEBUG", "DBG"),
-    "WRN": ("WARNING", "WRN"),
-    "ERR": ("ERROR", "ERR"),
-    "CRI": ("CRITICAL", "CRI"),
-}
 
 class LogsController(QObject):
     log_processed = Signal(bool, str, str, str)
@@ -107,8 +89,7 @@ class LogsController(QObject):
         is_all = (self._current_filter == self.view.str_all)
         threshold = self._date_threshold
         for lvl, t_str, txt in self._historical_logs:
-            level_matches = is_all or (lvl == self._current_filter) or (lvl.upper() in _LEVEL_ALIASES.get(self._current_filter, ()))
-            if not level_matches:
+            if not log_level_matches(lvl, self._current_filter, self.view.str_all):
                 continue
             if threshold and t_str < threshold:
                 continue
@@ -244,11 +225,11 @@ class LogsController(QObject):
 
     @Slot(str, str)
     def process_incoming_log(self, level: str, message: str):
-        match = _LOG_LINE_RE.match(message)
-        if match:
-            time_str = match.group("time")
-            real_level = match.group("level")
-            text_str = match.group("msg")
+        parsed = parse_log_line(message)
+        if parsed is not None:
+            time_str = parsed.time
+            real_level = parsed.level
+            text_str = parsed.message
         else:
             time_str, real_level, text_str = "-", level, message
 
@@ -256,9 +237,14 @@ class LogsController(QObject):
         self.log_processed.emit(is_grouped, real_level, time_str, text_str)
 
         if not self._is_historical and self._logs_streaming_visible:
-            is_all = (self._current_filter == self.view.str_all)
-            level_matches = is_all or (real_level == self._current_filter) or (real_level.upper() in _LEVEL_ALIASES.get(self._current_filter, ()))
-            if level_matches and self._matches_search(real_level, time_str, text_str):
+            if (
+                log_level_matches(
+                    real_level,
+                    self._current_filter,
+                    self.view.str_all,
+                )
+                and self._matches_search(real_level, time_str, text_str)
+            ):
                 threshold = self._date_threshold
                 if not threshold or time_str >= threshold:
                     self.view.append_log(is_grouped, real_level, time_str, text_str)

@@ -3,12 +3,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea, create_col_layout, create_box_layout
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
-from frontend.components.schedule import (
-    ScheduleQuickChangePanel,
-    ScheduleFormPanel,
-    ScheduleTablePanel
-)
+from frontend.common import Size
+from frontend.components.schedule import ScheduleQuickChangePanel, ScheduleFormPanel, ScheduleTablePanel
 
 class ScheduleView(BaseView):
     refresh_info_requested = Signal()
@@ -40,11 +36,11 @@ class ScheduleView(BaseView):
 
     def _setup_ui(self):
         self.body_container = QWidget()
-        self.body_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.body_container)
-        self.columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=SPACING_MD, margins=MARGIN_NONE)
+        self.body_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.body_container)
+        self.columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON)
 
         col1 = QWidget(self)
-        self.col1_layout = create_col_layout(spacing=SPACING_NONE, margins=MARGIN_NONE, parent=col1)
+        self.col1_layout = create_col_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_NON, parent=col1)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.tabs = QTabWidget(col1)
@@ -60,8 +56,8 @@ class ScheduleView(BaseView):
 
         col2 = QWidget(self)
         self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(*MARGIN_NONE)
-        self.col2_layout.setSpacing(SPACING_NONE)
+        self.col2_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.col2_layout.setSpacing(Size.SPACING_NN)
 
         self.table_panel = ScheduleTablePanel(self.i18n, parent=self)
         self.col2_layout.addWidget(self.table_panel)

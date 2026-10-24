@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableW
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common import COLOR_WHITE, COLOR_NEUTRAL_400, MARGIN_H_MD
+from frontend.common import Palette, Size
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -88,7 +88,7 @@ class TimersView(BaseView):
     def _create_table_item(self, text: str, align: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter) -> QTableWidgetItem:
         item = QTableWidgetItem(text)
         item.setTextAlignment(align)
-        item.setForeground(QColor(COLOR_NEUTRAL_400))
+        item.setForeground(QColor(Palette.NEUTRAL_400))
         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         return item
 
@@ -124,7 +124,7 @@ class TimersView(BaseView):
         if not apply_kick and not apply_twitch:
             container = QWidget()
             layout = QHBoxLayout(container)
-            layout.setContentsMargins(*MARGIN_H_MD)
+            layout.setContentsMargins(*Size.Margin.MRG_HMD)
             lbl_none = QLabel("-")
             lbl_none.setProperty("role", "body")
             layout.addWidget(lbl_none)
@@ -163,7 +163,7 @@ class TimersView(BaseView):
 
         cell.add_button(
             icon_name="edit-filled.svg",
-            color=COLOR_WHITE,
+            color=Palette.NEUTRAL_050,
             role="action_accent_solid",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
@@ -172,7 +172,7 @@ class TimersView(BaseView):
         timer_name = timer_data.get("name", "")
         cell.add_button(
             icon_name="trash-filled.svg",
-            color=COLOR_WHITE,
+            color=Palette.NEUTRAL_050,
             role="action_danger_solid",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
             callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
@@ -219,4 +219,3 @@ class TimersView(BaseView):
         finally:
             self._active_timer_dialog = None
         return None
-        

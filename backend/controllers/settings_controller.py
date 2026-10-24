@@ -47,6 +47,10 @@ class SettingsController(QObject):
         self._view_connected = True
         self.view.font_size_changed.connect(self.handle_font_size)
         self.view.minimize_tray_toggled.connect(self.handle_minimize_tray)
+        if hasattr(self.view, "auto_update_download_toggled"):
+            self.view.auto_update_download_toggled.connect(
+                self.handle_auto_update_download
+            )
         self.view.export_clicked.connect(self.handle_export)
         self.view.import_clicked.connect(self.handle_import)
         self.view.unlink_clicked.connect(self.unlink_account_requested.emit)
@@ -68,6 +72,10 @@ class SettingsController(QObject):
 
         if self.view is not None:
             self.view.set_minimize_tray_enabled(enabled)
+            if hasattr(self.view, "set_auto_update_download_enabled"):
+                self.view.set_auto_update_download_enabled(
+                    self.service.is_auto_update_download_enabled()
+                )
             self.view.set_current_language(lang)
             self.view.set_current_font_size(current_font)
             self.view.set_current_music_audio_device(music_device)
@@ -116,6 +124,16 @@ class SettingsController(QObject):
                 state=state_color,
                 tag="minimize_tray"
             )
+
+    @Slot(bool)
+    def handle_auto_update_download(self, enabled: bool) -> None:
+        if self.service.is_auto_update_download_enabled() == enabled:
+            return
+        self.service.set_auto_update_download_enabled(enabled)
+        logger.info(
+            "[User Action] Automatic update download preference changed: enabled=%s",
+            enabled,
+        )
 
     @Slot()
     def handle_export(self):

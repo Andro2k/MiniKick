@@ -2,8 +2,9 @@
 
 from PySide6.QtWidgets import QFrame, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize, QEvent
-from frontend.common import get_icon_colored, MARGIN_NONE, SPACING_NONE
+from frontend.common import get_icon_colored, Size
 from .layout_helpers import create_row_layout, create_frameless_input
+from .controls_widget import configure_icon_only_button
 
 class UnifiedSearchBar(QFrame):
     textChanged = Signal(str)
@@ -13,11 +14,11 @@ class UnifiedSearchBar(QFrame):
     def __init__(self, placeholder: str = "", parent=None):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
-        
-        layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_NONE, parent=self)
+
+        layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_NON, parent=self)
 
         self._icon_search = get_icon_colored("search-filled.svg")
-        self._icon_clear = get_icon_colored("x-filled.svg")
+        self._icon_delete = get_icon_colored("x-filled.svg")
 
         self.txt_input = create_frameless_input(
             self,
@@ -30,6 +31,7 @@ class UnifiedSearchBar(QFrame):
         self.btn_search = QPushButton(self)
         self.btn_search.setIcon(self._icon_search)
         self.btn_search.setIconSize(QSize(16, 16))
+        configure_icon_only_button(self.btn_search)
         self.btn_search.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_search.clicked.connect(self._on_btn_clicked)
 
@@ -38,7 +40,7 @@ class UnifiedSearchBar(QFrame):
 
     def _on_text_changed(self, text: str):
         if text.strip():
-            self.btn_search.setIcon(self._icon_clear)
+            self.btn_search.setIcon(self._icon_delete)
         else:
             self.btn_search.setIcon(self._icon_search)
         self.textChanged.emit(text)

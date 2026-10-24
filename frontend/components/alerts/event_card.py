@@ -4,23 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel,
-    QFileDialog, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QFileDialog, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
 
-from frontend.widgets import (
-    ModernCard, ModernButton, ModernSwitch, ExpandableCard,
-    NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox,
-    ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker,
-    InspectorPropertyRow
-)
-from frontend.common import (
-    get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    COLOR_PURE_WHITE, COLOR_NEUTRAL_950, COLOR_KICK, COLOR_TWITCH,
-    SPACING_NONE, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
-)
+from frontend.widgets import ModernCard, ModernButton, ModernSwitch, ExpandableCard, NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox, ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker, InspectorPropertyRow
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from .alert_mockup import AlertOverlayMockupWidget
 
 @dataclass
@@ -36,7 +24,7 @@ class AlertConfigData:
     tts_read: bool = False
     layout: str = "above"
     style: str = "compact"
-    text_color: str = COLOR_PURE_WHITE
+    text_color: str = Palette.NEUTRAL_000
     highlight_color: str = ""
     font_family: str = "Outfit"
     font_size: int = 24
@@ -45,7 +33,7 @@ class AlertConfigData:
     animation_in_duration: float = 1.0
     animation_out: str = "fade_out"
     animation_out_duration: float = 1.0
-    bg_color: str = COLOR_NEUTRAL_950
+    bg_color: str = Palette.NEUTRAL_900
     bg_opacity: int = 88
     border_radius: int = 20
     padding_px: int = 24
@@ -83,19 +71,19 @@ class AlertEventCard(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_NONE)
-        main_layout.setSpacing(SPACING_MD)
+        main_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        main_layout.setSpacing(Size.SPACING_MD)
 
-        accent_color = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
+        accent_color = BrandColors.GREEN if self.platform == "kick" else BrandColors.PURPLE
         btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
 
-        header_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        header_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         header_row = QHBoxLayout()
-        header_row.setContentsMargins(*MARGIN_NONE)
-        header_row.setSpacing(SPACING_MD)
+        header_row.setContentsMargins(*Size.Margin.MRG_NON)
+        header_row.setSpacing(Size.SPACING_MD)
 
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=20))
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=24))
 
         platform_name = self.i18n.get(f"alerts.platforms.{self.platform}")
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
@@ -121,7 +109,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=13,
+            icon_size=16,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -132,7 +120,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=13,
+            icon_size=16,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -142,7 +130,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
@@ -152,7 +140,7 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.save_short"),
             role=btn_role,
             icon_name="check-filled.svg",
-            icon_size=14,
+            icon_size=16,
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -169,15 +157,15 @@ class AlertEventCard(QWidget):
         self.w_col_left = QWidget(self)
         self.w_col_left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         col_left = QVBoxLayout(self.w_col_left)
-        col_left.setContentsMargins(*MARGIN_NONE)
-        col_left.setSpacing(SPACING_MD)
+        col_left.setContentsMargins(*Size.Margin.MRG_NON)
+        col_left.setSpacing(Size.SPACING_MD)
         col_left.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.w_col_right = QWidget(self)
         self.w_col_right.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         col_right = QVBoxLayout(self.w_col_right)
-        col_right.setContentsMargins(*MARGIN_NONE)
-        col_right.setSpacing(SPACING_MD)
+        col_right.setContentsMargins(*Size.Margin.MRG_NON)
+        col_right.setSpacing(Size.SPACING_MD)
         col_right.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.card_general = ExpandableCard(
@@ -307,7 +295,7 @@ class AlertEventCard(QWidget):
         ))
 
         self.picker_bg_color = ModernColorPicker(
-            initial_color=COLOR_NEUTRAL_950,
+            initial_color=Palette.NEUTRAL_900,
             tooltip=self.i18n.get("alerts.fields.bg_color"),
             show_presets=False,
             parent=self
@@ -324,8 +312,8 @@ class AlertEventCard(QWidget):
 
         box_bg_opacity = QWidget(self)
         layout_bg_op = QHBoxLayout(box_bg_opacity)
-        layout_bg_op.setContentsMargins(*MARGIN_NONE)
-        layout_bg_op.setSpacing(SPACING_SM)
+        layout_bg_op.setContentsMargins(*Size.Margin.MRG_NON)
+        layout_bg_op.setSpacing(Size.SPACING_SM)
 
         self.slider_bg_opacity = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_bg_opacity.setRange(0, 100)
@@ -489,7 +477,7 @@ class AlertEventCard(QWidget):
         ))
 
         self.picker_text_color = ModernColorPicker(
-            initial_color=COLOR_PURE_WHITE,
+            initial_color=Palette.NEUTRAL_000,
             tooltip=self.i18n.get("alerts.fields.text_color"),
             show_presets=False,
             parent=self
@@ -504,7 +492,7 @@ class AlertEventCard(QWidget):
             parent=self
         ))
 
-        default_highlight = COLOR_KICK if self.platform == "kick" else COLOR_TWITCH
+        default_highlight = BrandColors.KICK if self.platform == "kick" else BrandColors.TWITCH
         self.picker_highlight_color = ModernColorPicker(
             initial_color=default_highlight,
             tooltip=self.i18n.get("alerts.fields.highlight_color"),
@@ -556,8 +544,8 @@ class AlertEventCard(QWidget):
 
         media_picker_box = QWidget(self)
         l_mp = QHBoxLayout(media_picker_box)
-        l_mp.setContentsMargins(*MARGIN_NONE)
-        l_mp.setSpacing(SPACING_SM)
+        l_mp.setContentsMargins(*Size.Margin.MRG_NON)
+        l_mp.setSpacing(Size.SPACING_SM)
 
         self.edit_media = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.media_placeholder"), parent=self)
         self.edit_media.textChanged.connect(self._on_field_changed)
@@ -566,11 +554,10 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=13,
+            icon_size=16,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
-        btn_browse_media.setFixedSize(30, 30)
         btn_browse_media.clicked.connect(self._browse_media)
 
         l_mp.addWidget(self.edit_media, 1)
@@ -586,8 +573,8 @@ class AlertEventCard(QWidget):
 
         sound_picker_box = QWidget(self)
         l_sp = QHBoxLayout(sound_picker_box)
-        l_sp.setContentsMargins(*MARGIN_NONE)
-        l_sp.setSpacing(SPACING_SM)
+        l_sp.setContentsMargins(*Size.Margin.MRG_NON)
+        l_sp.setSpacing(Size.SPACING_SM)
 
         self.edit_sound = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.sound_placeholder"), parent=self)
         self.edit_sound.textChanged.connect(self._on_field_changed)
@@ -596,11 +583,10 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=13,
+            icon_size=16,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
-        btn_browse_sound.setFixedSize(30, 30)
         btn_browse_sound.clicked.connect(self._browse_sound)
 
         l_sp.addWidget(self.edit_sound, 1)
@@ -616,8 +602,8 @@ class AlertEventCard(QWidget):
 
         vol_box = QWidget(self)
         l_vol = QHBoxLayout(vol_box)
-        l_vol.setContentsMargins(*MARGIN_NONE)
-        l_vol.setSpacing(SPACING_SM)
+        l_vol.setContentsMargins(*Size.Margin.MRG_NON)
+        l_vol.setSpacing(Size.SPACING_SM)
 
         self.slider_volume = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_volume.setRange(0, 100)
@@ -640,15 +626,15 @@ class AlertEventCard(QWidget):
         col_right.addWidget(self.card_media)
         col_right.addStretch(1)
 
-        card_preview = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
+        card_preview = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
         card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         preview_header_w = QWidget(card_preview)
         sec_prev_header = QHBoxLayout(preview_header_w)
-        sec_prev_header.setContentsMargins(*MARGIN_MD)
-        sec_prev_header.setSpacing(SPACING_SM)
+        sec_prev_header.setContentsMargins(*Size.Margin.MRG_MED)
+        sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
@@ -660,8 +646,8 @@ class AlertEventCard(QWidget):
 
         mockup_container = QWidget(card_preview)
         mockup_layout = QVBoxLayout(mockup_container)
-        mockup_layout.setContentsMargins(*MARGIN_MD)
-        mockup_layout.setSpacing(SPACING_NONE)
+        mockup_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        mockup_layout.setSpacing(Size.SPACING_NN)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
         self.mockup_widget.setMinimumSize(300, 300)
@@ -673,8 +659,8 @@ class AlertEventCard(QWidget):
 
         controls_container = QWidget(card_preview)
         controls_layout = QVBoxLayout(controls_container)
-        controls_layout.setContentsMargins(*MARGIN_MD)
-        controls_layout.setSpacing(SPACING_SM)
+        controls_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        controls_layout.setSpacing(Size.SPACING_SM)
 
         self.spin_card_width = NoWheelSpinBox(parent=self)
         self.spin_card_width.setRange(200, 1920)
@@ -711,8 +697,8 @@ class AlertEventCard(QWidget):
         self.w_preview = card_preview
 
         self.body_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_box.setContentsMargins(*MARGIN_NONE)
-        self.body_box.setSpacing(SPACING_MD)
+        self.body_box.setContentsMargins(*Size.Margin.MRG_NON)
+        self.body_box.setSpacing(Size.SPACING_MD)
 
         self.body_box.addWidget(self.w_col_left, stretch=4)
         self.body_box.addWidget(self.w_preview, stretch=5)
@@ -763,9 +749,9 @@ class AlertEventCard(QWidget):
         font_weight = self.combo_font_weight.currentData() or "bold"
         font_size = self.spin_font_size.value()
         text_align = self.seg_align.current_value() or "center"
-        text_color = self.picker_text_color.color() or COLOR_PURE_WHITE
+        text_color = self.picker_text_color.color() or Palette.NEUTRAL_000
         highlight_color = self.picker_highlight_color.color() or ""
-        bg_color = self.picker_bg_color.color() or COLOR_NEUTRAL_950
+        bg_color = self.picker_bg_color.color() or Palette.NEUTRAL_900
         bg_opacity = self.slider_bg_opacity.value()
         border_radius = self.spin_border_radius.value()
         card_width = self.spin_card_width.value()
@@ -822,7 +808,7 @@ class AlertEventCard(QWidget):
             tts_read=cfg.tts_read,
             layout=getattr(cfg, "layout", "above") or "above",
             style=getattr(cfg, "style", "compact") or "compact",
-            text_color=getattr(cfg, "text_color", COLOR_PURE_WHITE) or COLOR_PURE_WHITE,
+            text_color=getattr(cfg, "text_color", Palette.NEUTRAL_000) or Palette.NEUTRAL_000,
             highlight_color=getattr(cfg, "highlight_color", "") or "",
             font_family=getattr(cfg, "font_family", "Outfit") or "Outfit",
             font_size=int(getattr(cfg, "font_size", 24) or 24),
@@ -831,7 +817,7 @@ class AlertEventCard(QWidget):
             animation_in_duration=float(getattr(cfg, "animation_in_duration", 1.0) or 1.0),
             animation_out=getattr(cfg, "animation_out", "fade_out") or "fade_out",
             animation_out_duration=float(getattr(cfg, "animation_out_duration", 1.0) or 1.0),
-            bg_color=getattr(cfg, "bg_color", COLOR_NEUTRAL_950) or COLOR_NEUTRAL_950,
+            bg_color=getattr(cfg, "bg_color", Palette.NEUTRAL_900) or Palette.NEUTRAL_900,
             bg_opacity=int(getattr(cfg, "bg_opacity", 88) if getattr(cfg, "bg_opacity", None) is not None else 88),
             border_radius=int(getattr(cfg, "border_radius", 20) if getattr(cfg, "border_radius", None) is not None else 20),
             padding_px=int(getattr(cfg, "padding_px", 24) if getattr(cfg, "padding_px", None) is not None else 24),
@@ -864,7 +850,7 @@ class AlertEventCard(QWidget):
         layout_val = getattr(cfg, "layout", "above") or "above"
         self.seg_layout.set_current_value(layout_val)
 
-        bg_color = getattr(cfg, "bg_color", COLOR_NEUTRAL_950) or COLOR_NEUTRAL_950
+        bg_color = getattr(cfg, "bg_color", Palette.NEUTRAL_900) or Palette.NEUTRAL_900
         self.picker_bg_color.set_color(bg_color)
 
         bg_opacity = int(getattr(cfg, "bg_opacity", 88) if getattr(cfg, "bg_opacity", None) is not None else 88)
@@ -893,9 +879,9 @@ class AlertEventCard(QWidget):
         align_val = getattr(cfg, "text_align", "center") or "center"
         self.seg_align.set_current_value(align_val)
 
-        self.picker_text_color.set_color(getattr(cfg, "text_color", COLOR_PURE_WHITE) or COLOR_PURE_WHITE)
+        self.picker_text_color.set_color(getattr(cfg, "text_color", Palette.NEUTRAL_000) or Palette.NEUTRAL_000)
 
-        default_hl = COLOR_KICK if self.platform == "kick" else COLOR_TWITCH
+        default_hl = BrandColors.KICK if self.platform == "kick" else BrandColors.TWITCH
         self.picker_highlight_color.set_color(getattr(cfg, "highlight_color", "") or default_hl)
 
         self.sw_text_shadow.setChecked(bool(getattr(cfg, "text_shadow", True)))
@@ -963,7 +949,7 @@ class AlertEventCard(QWidget):
                 cfg.sound_volume != self._saved_config.sound_volume or
                 cfg.tts_read != self._saved_config.tts_read or
                 cfg.layout != getattr(self._saved_config, "layout", "above") or
-                cfg.text_color != getattr(self._saved_config, "text_color", COLOR_PURE_WHITE) or
+                cfg.text_color != getattr(self._saved_config, "text_color", Palette.NEUTRAL_000) or
                 cfg.highlight_color != getattr(self._saved_config, "highlight_color", "") or
                 cfg.font_family != getattr(self._saved_config, "font_family", "Outfit") or
                 cfg.font_size != getattr(self._saved_config, "font_size", 24) or
@@ -972,7 +958,7 @@ class AlertEventCard(QWidget):
                 cfg.animation_in_duration != getattr(self._saved_config, "animation_in_duration", 1.0) or
                 cfg.animation_out != getattr(self._saved_config, "animation_out", "fade_out") or
                 cfg.animation_out_duration != getattr(self._saved_config, "animation_out_duration", 1.0) or
-                cfg.bg_color != getattr(self._saved_config, "bg_color", COLOR_NEUTRAL_950) or
+                cfg.bg_color != getattr(self._saved_config, "bg_color", Palette.NEUTRAL_900) or
                 cfg.bg_opacity != getattr(self._saved_config, "bg_opacity", 88) or
                 cfg.border_radius != getattr(self._saved_config, "border_radius", 20) or
                 cfg.padding_px != getattr(self._saved_config, "padding_px", 24) or

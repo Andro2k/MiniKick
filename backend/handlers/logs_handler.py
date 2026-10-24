@@ -6,6 +6,7 @@ import threading
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
 
+
 _SHORT_LEVELS: dict[str, str] = {
     "DEBUG": "DBG",
     "INFO": "INF",

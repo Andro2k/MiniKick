@@ -1,14 +1,53 @@
 # frontend\views\chat_view.py
 
-from frontend.components.chat import (
-    ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel,
-    ChatTtsSettingsPanel, ChatSpamPanel
-)
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
-from PySide6.QtCore import Signal
+from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel, ChatSpamPanel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
+from PySide6.QtCore import QEvent, Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
+from frontend.common import Size
+
+
+class _FloatingChatWindow(QWidget):
+    def __init__(self, title: str, on_close, parent=None):
+        window_flags = (
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowTitleHint
+            | Qt.WindowType.WindowSystemMenuHint
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        super().__init__(parent, window_flags)
+        self._on_close = on_close
+        self._return_requested = False
+        self.setWindowTitle(title)
+        self.setMinimumSize(305, 420)
+        self.resize(640, 720)
+        self._layout = QVBoxLayout(self)
+        self._resize_grip = QSizeGrip(self)
+        resize_layout = QHBoxLayout()
+        resize_layout.addStretch(1)
+        resize_layout.addWidget(self._resize_grip)
+        self._layout.addLayout(resize_layout)
+
+    def add_chat_display(self, chat_display: QWidget) -> None:
+        self._layout.insertWidget(0, chat_display, stretch=1)
+
+    def _return_to_chat(self) -> None:
+        if self._return_requested:
+            return
+        self._return_requested = True
+        self._on_close()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange and self.isMinimized():
+            self._return_to_chat()
+
+    def closeEvent(self, event):
+        self._return_to_chat()
+        event.accept()
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -27,6 +66,9 @@ class ChatView(BaseView):
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
         self._last_body_dir = None
+        self._floating_chat_dialog = None
+        self._chat_layout_index = None
+        self._chat_layout_stretch = None
         self._setup_ui()
         self._connect_internal_signals()
 
@@ -43,9 +85,9 @@ class ChatView(BaseView):
             self.spam_panel.set_connected_platforms(connected_platforms)
 
     def _setup_ui(self):
-        self.main_layout.setSpacing(SPACING_MD)
+        self.main_layout.setSpacing(Size.SPACING_MD)
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(SPACING_MD)
+        self.body_layout.setSpacing(Size.SPACING_MD)
 
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(320)
@@ -67,8 +109,8 @@ class ChatView(BaseView):
 
         self.left_container = QWidget()
         left_layout = QVBoxLayout(self.left_container)
-        left_layout.setContentsMargins(*MARGIN_NONE)
-        left_layout.setSpacing(SPACING_NONE)
+        left_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        left_layout.setSpacing(Size.SPACING_NN)
         left_layout.addWidget(self.tabs)
         self.left_container.setMinimumWidth(320)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
@@ -77,7 +119,9 @@ class ChatView(BaseView):
 
         self.body_layout.addWidget(self.left_container, stretch=4)
         self.body_layout.addWidget(self.chat_display_panel, stretch=5)
-        
+        self.chat_display_panel.detach_requested.connect(self._detach_chat_display)
+        self.chat_display_panel.reattach_requested.connect(self._reattach_chat_display)
+
         self.main_layout.addLayout(self.body_layout, stretch=1)
 
     def resizeEvent(self, event):
@@ -89,6 +133,47 @@ class ChatView(BaseView):
             self.body_layout.setDirection(direction)
             self.body_layout.setStretch(0, 1)
             self.body_layout.setStretch(1, 1)
+
+    def _detach_chat_display(self) -> None:
+        if self._floating_chat_dialog is not None:
+            self._floating_chat_dialog.raise_()
+            self._floating_chat_dialog.activateWindow()
+            return
+
+        self._chat_layout_index = self.body_layout.indexOf(self.chat_display_panel)
+        self._chat_layout_stretch = self.body_layout.stretch(self._chat_layout_index)
+        self.body_layout.removeWidget(self.chat_display_panel)
+        self._floating_chat_dialog = _FloatingChatWindow(
+            self.i18n.get("chat.display.window_title"),
+            self._reattach_chat_display,
+            parent=self.window(),
+        )
+        self._floating_chat_dialog.add_chat_display(self.chat_display_panel)
+        self.chat_display_panel.set_detached(True)
+        self._floating_chat_dialog.show()
+
+    def _reattach_chat_display(self) -> None:
+        floating_dialog = self._floating_chat_dialog
+        if floating_dialog is None:
+            return
+
+        floating_layout = floating_dialog.layout()
+        if floating_layout is not None:
+            floating_layout.removeWidget(self.chat_display_panel)
+        layout_index = self._chat_layout_index
+        if layout_index is None or layout_index < 0:
+            layout_index = self.body_layout.count()
+        layout_index = min(layout_index, self.body_layout.count())
+        self.body_layout.insertWidget(
+            layout_index,
+            self.chat_display_panel,
+            stretch=self._chat_layout_stretch or 0,
+        )
+        self.chat_display_panel.set_detached(False)
+        self._floating_chat_dialog = None
+        self._chat_layout_index = None
+        self._chat_layout_stretch = None
+        floating_dialog.deleteLater()
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_changed.connect(self.provider_changed.emit)
@@ -294,7 +379,7 @@ class ChatView(BaseView):
     def set_overlay_settings_ui(
         self,
         theme: str = "glass",
-        size: int = 14,
+        size: int = 16,
         fade: int = 15,
         show_bots: bool = False,
         show_time: bool = False,
@@ -375,9 +460,9 @@ class ChatView(BaseView):
     def set_tts_command_configuration(self, use_command: bool, command_trigger: str):
         self.blockSignals(True)
         self.chk_command.blockSignals(True)
-        self.txt_command.blockSignals(True)           
+        self.txt_command.blockSignals(True)
         self.chk_command.setChecked(use_command)
-        self.txt_command.setText(command_trigger)            
+        self.txt_command.setText(command_trigger)
         self.txt_command.setEnabled(use_command)
         self.chk_command.blockSignals(False)
         self.txt_command.blockSignals(False)

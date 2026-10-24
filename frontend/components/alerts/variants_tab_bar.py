@@ -3,15 +3,10 @@
 from __future__ import annotations
 from typing import Dict, List, Tuple, Optional
 
-from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
-from frontend.common import (
-    get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    SPACING_XS, SPACING_SM, MARGIN_NONE, MARGIN_TAB_BAR
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernSwitch, ModernCard
 
 class AlertVariantTabPill(QFrame):
@@ -35,7 +30,7 @@ class AlertVariantTabPill(QFrame):
         self._is_enabled = True
 
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(44)
+        self.setFixedHeight(36)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._setup_ui()
         self._update_appearance()
@@ -43,8 +38,8 @@ class AlertVariantTabPill(QFrame):
     def _setup_ui(self):
         self.setProperty("role", "banner_scope_card")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_TAB_BAR)
-        layout.setSpacing(SPACING_SM)
+        layout.setContentsMargins(*Size.Margin.MRG_XSM)
+        layout.setSpacing(Size.SPACING_SM)
 
         self.icon_lbl = QLabel(parent=self)
         self.icon_lbl.setFixedSize(16, 16)
@@ -62,7 +57,7 @@ class AlertVariantTabPill(QFrame):
 
         layout.addWidget(self.icon_lbl)
         layout.addWidget(self.lbl_title)
-        layout.addSpacing(SPACING_XS)
+        layout.addSpacing(Size.SPACING_XS)
         layout.addWidget(self.sw_enabled)
 
     def _on_toggled(self, checked: bool):
@@ -81,7 +76,7 @@ class AlertVariantTabPill(QFrame):
         self._update_appearance()
 
     def _update_appearance(self):
-        accent = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
+        accent = BrandColors.GREEN if self.platform == "kick" else BrandColors.PURPLE
 
         if self._is_selected:
             self.setProperty("state", self.platform)
@@ -90,7 +85,7 @@ class AlertVariantTabPill(QFrame):
         else:
             self.setProperty("state", "normal")
             self.lbl_title.setProperty("state", "normal")
-            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, COLOR_NEUTRAL_400, size=16))
+            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, Palette.NEUTRAL_400, size=16))
 
         if self.style():
             self.style().unpolish(self)
@@ -114,7 +109,7 @@ class AlertVariantsTabBar(ModernCard):
         i18n,
         parent: Optional[QWidget] = None
     ):
-        super().__init__(parent=parent, margin=SPACING_SM, spacing=SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM)
         self.platform = platform
         self.events = events
         self.i18n = i18n
@@ -129,12 +124,12 @@ class AlertVariantsTabBar(ModernCard):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setFixedHeight(60)
+        scroll.setFixedHeight(48)
 
         container = QWidget()
         container_layout = QHBoxLayout(container)
-        container_layout.setContentsMargins(*MARGIN_NONE)
-        container_layout.setSpacing(SPACING_SM)
+        container_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        container_layout.setSpacing(Size.SPACING_SM)
 
         for alert_type, icon_name in self.events:
             tab = AlertVariantTabPill(

@@ -1,28 +1,26 @@
 # frontend\widgets\controls.py
 
 import re
-from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, 
-                               QTextEdit, QListWidget, QSpinBox)
+from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEdit, QListWidget, QSpinBox
 from PySide6.QtCore import QRectF, Qt, QSize
-from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient, 
-                           QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
-from frontend.common import (
-    get_icon_colored, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK,
-    COLOR_GREEN, COLOR_KICK_BORDER, COLOR_BORDER_MUTED_FOCUS, COLOR_BORDER_TOP_SHINE,
-    COLOR_SWITCH_TRACK_OFF_0, COLOR_SWITCH_TRACK_OFF_1, COLOR_SWITCH_BORDER_OFF,
-    COLOR_SWITCH_TRACK_ON_0, COLOR_SWITCH_TRACK_ON_1,
-    COLOR_SWITCH_TRACK_DIS_0, COLOR_SWITCH_TRACK_DIS_1,
-    COLOR_SWITCH_THUMB_OFF_0, COLOR_SWITCH_THUMB_OFF_1,
-    COLOR_SWITCH_THUMB_ON_0, COLOR_SWITCH_THUMB_ON_1,
-    COLOR_SWITCH_THUMB_DIS_0, COLOR_SWITCH_THUMB_DIS_1,
-    COLOR_SYNTAX_VARIABLE
-)
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QLinearGradient, QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon
+from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, Semantic, BrandColors, SwitchTheme, Size
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
+def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BASIC) -> None:
+    button.setProperty("icon_only", True)
+    if isinstance(size, QSize):
+        button.setFixedSize(size)
+    else:
+        button.setFixedSize(size, size)
+    button.style().unpolish(button)
+    button.style().polish(button)
+
+
 class ModernButton(QPushButton):
-    def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "", 
+    def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "",
                  icon_color: str | None = None, icon_size: int = 16, parent=None):
         super().__init__(text, parent)
         self._role = role
@@ -31,20 +29,27 @@ class ModernButton(QPushButton):
         if icon_name:
             self.set_icon(icon_name, color=icon_color, size=icon_size)
 
+    def setIcon(self, icon: QIcon):
+        super().setIcon(icon)
+        if icon.isNull() or self.text():
+            self.setProperty("icon_only", False)
+            return
+        configure_icon_only_button(self)
+
     @staticmethod
     def _resolve_role_color(role: str) -> str:
         role_map = {
-            "action_outlined": COLOR_WHITE,
-            "action_kick": COLOR_WHITE,
-            "action_twitch": COLOR_WHITE,
-            "action_youtube": COLOR_WHITE,
-            "action_tiktok": COLOR_BLACK,
-            "action_danger_solid": COLOR_WHITE,
-            "action_accent_solid": COLOR_WHITE,
-            "btn_ghost": COLOR_NEUTRAL_400,
-            "nav_button": COLOR_NEUTRAL_400,
+            "action_outlined": Palette.NEUTRAL_050,
+            "action_kick": Palette.NEUTRAL_050,
+            "action_twitch": Palette.NEUTRAL_050,
+            "action_youtube": Palette.NEUTRAL_050,
+            "action_tiktok": Palette.NEUTRAL_999,
+            "action_danger_solid": Palette.NEUTRAL_050,
+            "action_accent_solid": Palette.NEUTRAL_050,
+            "btn_ghost": Palette.NEUTRAL_400,
+            "nav_button": Palette.NEUTRAL_400,
         }
-        return role_map.get(role, COLOR_WHITE)
+        return role_map.get(role, Palette.NEUTRAL_050)
 
     def set_icon(self, icon_name: str, color: str | None = None, size: int = 16):
         if not icon_name:
@@ -87,11 +92,11 @@ class ModernSwitch(QAbstractButton):
     def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         has_focus = self.hasFocus()
         is_checked = self.isChecked()
         is_enabled = self.isEnabled()
-        
+
         w = float(self.width())
         h = float(self.height())
         pen_width = 1.2
@@ -100,17 +105,17 @@ class ModernSwitch(QAbstractButton):
 
         track_grad = QLinearGradient(0, 0, 0, h)
         if not is_enabled:
-            track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_OFF_0))
-            track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_OFF_1))
-            border_color = QColor(COLOR_SWITCH_BORDER_OFF)
+            track_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_900))
+            track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
+            border_color = QColor(Palette.NEUTRAL_750)
         elif is_checked:
-            track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_ON_0))
-            track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_ON_1))
-            border_color = QColor(COLOR_GREEN) if has_focus else QColor(COLOR_KICK_BORDER)
+            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_0))
+            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_ON_1))
+            border_color = QColor(BrandColors.GREEN) if has_focus else QColor(BrandColors.KICK_BORDER)
         else:
-            track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_DIS_0))
-            track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_DIS_1))
-            border_color = QColor(COLOR_BORDER_MUTED_FOCUS) if has_focus else QColor(COLOR_BORDER_TOP_SHINE)
+            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_DIS_0))
+            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_DIS_1))
+            border_color = QColor(BrandColors.GREEN) if has_focus else QColor(Semantic.BORDER_TOP_SHINE)
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -128,29 +133,29 @@ class ModernSwitch(QAbstractButton):
         if is_enabled:
             shadow_rect = QRectF(handle_x, handle_y + 1.0, handle_size, handle_size)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor(0, 0, 0, 60))
+            painter.setBrush(get_qcolor_with_alpha(Palette.NEUTRAL_999, 60))
             painter.drawEllipse(shadow_rect)
 
         thumb_grad = QLinearGradient(handle_x, handle_y, handle_x, handle_y + handle_size)
         if not is_enabled:
-            thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_OFF_0))
-            thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_OFF_1))
+            thumb_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_THUMB_OFF_0))
+            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_OFF_1))
         elif is_checked:
-            thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_ON_0))
-            thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_ON_1))
+            thumb_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_000))
+            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_ON_1))
         else:
-            thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_DIS_0))
-            thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_DIS_1))
+            thumb_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_0))
+            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_1))
 
         painter.setBrush(thumb_grad)
-        painter.setPen(QPen(QColor(0, 0, 0, 30), 0.8))
+        painter.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_999, 30), 0.8))
         painter.drawEllipse(handle_rect)
 
         painter.end()
 
 class CompactSpinBox(QSpinBox):
-    def __init__(self, min_val: int = 0, max_val: int = 100, init_val: int = 0, 
-                 step: int = 1, suffix: str = "", prefix: str = "", 
+    def __init__(self, min_val: int = 0, max_val: int = 100, init_val: int = 0,
+                 step: int = 1, suffix: str = "", prefix: str = "",
                  special_value_text: str = "", fixed_width: int = 145, parent=None):
         super().__init__(parent)
         self.setRange(min_val, max_val)
@@ -179,37 +184,37 @@ class VariableHighlighter(QSyntaxHighlighter):
         super().__init__(parent)
         self.pattern = pattern
         self._regex = re.compile(pattern)
-        self.color = color if color is not None else QColor(COLOR_SYNTAX_VARIABLE)
+        self.color = color if color is not None else QColor(BrandColors.PURPLE_LIGHT)
         self.bg_color = bg_color
-        
+
     def highlightBlock(self, text):
         fmt = QTextCharFormat()
         fmt.setForeground(self.color)
         fmt.setFontWeight(QFont.Weight.Bold)
         if self.bg_color:
             fmt.setBackground(self.bg_color)
-            
+
         for match in self._regex.finditer(text):
             start, end = match.span()
             self.setFormat(start, end - start, fmt)
 
 class VariableTextEdit(QTextEdit):
-    def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color=COLOR_SYNTAX_VARIABLE, highlight_bg=None, parent=None):
+    def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color=BrandColors.PURPLE_LIGHT, highlight_bg=None, parent=None):
         super().__init__(parent)
-        
+
         if autocomplete_data is None:
             self.autocomplete_data = {
                 "{": ["{user}", "{touser}", "{random}"]
             }
         else:
             self.autocomplete_data = autocomplete_data
-            
+
         self.trigger_chars = list(self.autocomplete_data.keys())
         self.current_trigger = None
-        
+
         bg_qcolor = QColor(highlight_bg) if highlight_bg else None
         self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
-        
+
         self.popup = QListWidget(self)
         self.popup.setProperty("role", "variable_autocomplete_popup")
         self.popup.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
@@ -219,7 +224,7 @@ class VariableTextEdit(QTextEdit):
         self.popup.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.popup.itemActivated.connect(self._insert_selected)
         self.popup.itemClicked.connect(self._insert_selected)
-        
+
     def keyPressEvent(self, event: QKeyEvent):
         if self.popup.isVisible():
             if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
@@ -236,37 +241,37 @@ class VariableTextEdit(QTextEdit):
                 row = (self.popup.currentRow() + 1) % self.popup.count()
                 self.popup.setCurrentRow(row)
                 return
-                
+
         if event.key() == Qt.Key.Key_Backspace:
             if self._handle_backspace():
                 return
         elif event.key() == Qt.Key.Key_Delete:
             if self._handle_delete():
                 return
-                
+
         super().keyPressEvent(event)
-        
+
         if event.text() in self.trigger_chars:
             self._show_popup(event.text())
-            
+
     def _show_popup(self, trigger: str):
         self.current_trigger = trigger
         items = self.autocomplete_data.get(trigger, [])
         if not items:
             return
-            
+
         self.popup.clear()
         self.popup.addItems(items)
         self.popup.setCurrentRow(0)
-        
+
         cursor_rect = self.cursorRect()
         global_pos = self.mapToGlobal(cursor_rect.bottomLeft())
         max_len = max(len(item) for item in items)
         popup_width = max(130, max_len * 8 + 32)
-        
+
         self.popup.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(160, len(items) * 30 + 12))
         self.popup.show()
-        
+
     def _insert_selected(self):
         selected_item = self.popup.currentItem()
         if selected_item:

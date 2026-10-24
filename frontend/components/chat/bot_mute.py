@@ -1,14 +1,10 @@
 # frontend\components\chat\bot_mute.py
 
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
-                               QFrame, QPushButton, QListWidgetItem, QVBoxLayout)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, QFrame, QPushButton, QListWidgetItem, QVBoxLayout
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader
-from frontend.common import (
-    COLOR_RED, get_icon_colored,
-    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE, MARGIN_TAB_PANEL,
-    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
-)
+from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.common import get_icon_colored, BrandColors, Size
 
 class BotMutePanel(QWidget):
     bot_add_requested = Signal(str)
@@ -35,13 +31,13 @@ class BotMutePanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
-        self.panel_layout.setSpacing(SPACING_MD)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
 
         header_commands = SectionHeader(self.i18n.get("chat.mod_commands.section_title"), parent=self, first=True)
         self.panel_layout.addWidget(header_commands)
 
-        commands_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
+        commands_card = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
         self.sw_cmd_mute = ModernSwitch(self)
         self.sw_cmd_mute.setChecked(True)
         self.sw_cmd_block = ModernSwitch(self)
@@ -52,14 +48,14 @@ class BotMutePanel(QWidget):
             self.i18n.get("chat.mod_commands.mute_cmd_title"),
             self.i18n.get("chat.mod_commands.mute_cmd_desc"),
             self.sw_cmd_mute,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         row_cmd_block = SettingRow(
             "shield-filled.svg",
             self.i18n.get("chat.mod_commands.block_cmd_title"),
             self.i18n.get("chat.mod_commands.block_cmd_desc"),
             self.sw_cmd_block,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=Size.Margin.MRG_LRG
         )
         commands_card.addWidget(row_cmd_mute)
         commands_card.add_separator()
@@ -72,28 +68,28 @@ class BotMutePanel(QWidget):
         header_bots = SectionHeader(self.i18n.get("chat.bots.title"), parent=self)
         self.panel_layout.addWidget(header_bots)
 
-        bots_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
+        bots_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="vertical")
         input_row = QHBoxLayout()
-        input_row.setContentsMargins(*MARGIN_NONE)
-        input_row.setSpacing(SPACING_SM)
-        
+        input_row.setContentsMargins(*Size.Margin.MRG_NON)
+        input_row.setSpacing(Size.SPACING_SM)
+
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
-        
+
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
         self.btn_add_bot.set_icon("plus-filled.svg", size=16)
-            
+
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
         bots_card.addLayout(input_row)
 
         self.list_bots = QListWidget()
-        self.list_bots.setFlow(QListView.Flow.LeftToRight) 
-        self.list_bots.setWrapping(True) 
+        self.list_bots.setFlow(QListView.Flow.LeftToRight)
+        self.list_bots.setWrapping(True)
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_bots.setProperty("role", "transparent_list")
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_bots.setSpacing(SPACING_2XS)
+        self.list_bots.setSpacing(Size.SPACING_XS)
         bots_card.addWidget(self.list_bots)
         self.panel_layout.addWidget(bots_card)
 
@@ -103,28 +99,28 @@ class BotMutePanel(QWidget):
         header_words = SectionHeader(self.i18n.get("chat.banned_words.title"), parent=self)
         self.panel_layout.addWidget(header_words)
 
-        words_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
+        words_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="vertical")
         input_row_words = QHBoxLayout()
-        input_row_words.setContentsMargins(*MARGIN_NONE)
-        input_row_words.setSpacing(SPACING_SM)
-        
+        input_row_words.setContentsMargins(*Size.Margin.MRG_NON)
+        input_row_words.setSpacing(Size.SPACING_SM)
+
         self.txt_word_input = QLineEdit()
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
-        
+
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
         self.btn_add_word.set_icon("plus-filled.svg", size=16)
-            
+
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
         words_card.addLayout(input_row_words)
 
         self.list_words = QListWidget()
-        self.list_words.setFlow(QListView.Flow.LeftToRight) 
-        self.list_words.setWrapping(True) 
+        self.list_words.setFlow(QListView.Flow.LeftToRight)
+        self.list_words.setWrapping(True)
         self.list_words.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_words.setProperty("role", "transparent_list")
         self.list_words.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_words.setSpacing(SPACING_2XS)
+        self.list_words.setSpacing(Size.SPACING_XS)
         words_card.addWidget(self.list_words)
         self.panel_layout.addWidget(words_card)
 
@@ -175,23 +171,23 @@ class BotMutePanel(QWidget):
         if lbl_name and btn_delete:
             lbl_name.ensurePolished()
             btn_delete.ensurePolished()
-            
+
             fm = lbl_name.fontMetrics()
             font_height = fm.height()
-            icon_size = max(14, int(font_height * 0.75))
-            btn_size = max(22, font_height + 4)
-            
+            icon_size = max(16, int(font_height * 0.75))
+            btn_size = Size.ICON_SMALL
+
             if icon_size not in self._trash_icon_cache:
-                self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", COLOR_RED, size=icon_size)
-            
+                self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
+
             btn_delete.setIcon(self._trash_icon_cache[icon_size])
             btn_delete.setIconSize(QSize(icon_size, icon_size))
-            btn_delete.setFixedSize(btn_size, btn_size)
-            
+            configure_icon_only_button(btn_delete, size=btn_size)
+
             text_width = fm.horizontalAdvance(lbl_name.text())
             total_width = btn_size + text_width + 20
             total_height = max(btn_size, font_height) + 14
-            
+
             item.setSizeHint(QSize(total_width, total_height))
 
     def recalculate_item_sizes(self):
@@ -210,24 +206,24 @@ class BotMutePanel(QWidget):
     def _add_tag_item(self, list_widget: QListWidget, text: str, remove_callback):
         item = QListWidgetItem(text)
         list_widget.addItem(item)
-        
+
         tag_widget = QFrame()
         tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(*MARGIN_TAG_BADGE)
-        layout.setSpacing(SPACING_2XS)
+        layout.setContentsMargins(*Size.Margin.SEC_BDG)
+        layout.setSpacing(Size.SPACING_XS)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
-        
+
         lbl_name = QLabel(text)
-        
+
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.clicked.connect(lambda checked=False, i=item: remove_callback(i))
-        
+
         layout.addWidget(btn_delete)
         layout.addWidget(lbl_name)
-        
+
         list_widget.setItemWidget(item, tag_widget)
         self._configure_tag_item(item, tag_widget)
 

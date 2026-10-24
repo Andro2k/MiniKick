@@ -12,6 +12,7 @@ class SettingsService:
         self.SETTING_LANGUAGE = "app_language"
         self.SETTING_FONT_SIZE = "app_font_size"
         self.SETTING_BROWSER_PATH = "app_browser_path"
+        self.SETTING_AUTO_UPDATE_DOWNLOAD = "auto_download_updates"
 
     def is_minimize_tray_enabled(self) -> bool:
         return self.storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
@@ -19,6 +20,13 @@ class SettingsService:
     def set_minimize_tray_enabled(self, enabled: bool):
         self.storage.save_bool(self.SETTING_MINIMIZE_TRAY, enabled)
         logger.debug("[SettingsService] Minimize to tray set to: %s", enabled)
+
+    def is_auto_update_download_enabled(self) -> bool:
+        return self.storage.load_bool(self.SETTING_AUTO_UPDATE_DOWNLOAD, False)
+
+    def set_auto_update_download_enabled(self, enabled: bool) -> None:
+        self.storage.save_bool(self.SETTING_AUTO_UPDATE_DOWNLOAD, enabled)
+        logger.info("[SettingsService] Automatic update download set to: %s", enabled)
 
     def export_settings(self, filepath: str) -> bool:
         logger.info("[SettingsService] Exporting settings backup to: %s", filepath)

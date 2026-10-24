@@ -1,20 +1,11 @@
 # frontend\dialogs\rewards_dialog.py
 
 import os
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
-    QFileDialog, QRadioButton, QButtonGroup
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog, QRadioButton, QButtonGroup
 from PySide6.QtCore import Qt, QSize
 
-from frontend.widgets import (
-    ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker,
-    create_row_layout, create_labeled_field
-)
-from frontend.common import (
-    get_icon_colored, SPACING_XS, SPACING_MD, MARGIN_NONE, MARGIN_LG,
-    COLOR_TWITCH, COLOR_KICK_REWARDS
-)
+from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker, create_row_layout, create_labeled_field
+from frontend.common import get_icon_colored, BrandColors, Size
 from .base_dialog import ModernWizardPanel
 from .positioner_dialog import VisualPositionerDialog
 
@@ -29,13 +20,13 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.rewards_details_map = rewards_details_map or {}
         self.kick_authenticated = bool(kick_authenticated)
         self.twitch_authenticated = bool(twitch_authenticated)
-        
+
         title_steps = [
-            self.i18n.get("rewards.dialogs.wizard.step1.title"), 
+            self.i18n.get("rewards.dialogs.wizard.step1.title"),
             self.i18n.get("rewards.dialogs.wizard.step2.title")
         ]
         subtitle_steps = [
-            self.i18n.get("rewards.dialogs.wizard.step1.desc"), 
+            self.i18n.get("rewards.dialogs.wizard.step1.desc"),
             self.i18n.get("rewards.dialogs.wizard.step2.desc")
         ]
         super().__init__(
@@ -51,10 +42,10 @@ class RewardsConfigWizard(ModernWizardPanel):
             parent=parent
         )
         self._is_video = False
-        
+
         self._icon_refresh = get_icon_colored("refresh-filled.svg")
         self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
-        
+
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
         if self.is_duplicate_mode:
@@ -75,17 +66,17 @@ class RewardsConfigWizard(ModernWizardPanel):
         self._build_step2()
         self.add_page(self.step1_widget)
         self.add_page(self.step2_widget)
-        
+
         if self.is_edit_mode:
             self._load_existing_data(self.existing_config)
         elif self.is_duplicate_mode:
             self._load_duplicate_data(duplicate_from[0], duplicate_from[1])
-            
+
         self.start_wizard()
 
     def _build_color_picker(self) -> QWidget:
         self.color_picker = ModernColorPicker(
-            initial_color=COLOR_KICK_REWARDS,
+            initial_color=BrandColors.KICK_REWARDS,
             tooltip=self.i18n.get("rewards.dialogs.wizard.step1.color_pick_tooltip"),
             parent=self
         )
@@ -101,13 +92,13 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_user_input_row(self) -> QWidget:
         container = QWidget()
-        row = create_row_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=container)
-        
+        row = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=container)
+
         lbl_sw = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_user_input_label"))
         lbl_sw.setProperty("role", "h3")
-        
+
         self.chk_user_input = ModernSwitch()
-        
+
         row.addWidget(lbl_sw)
         row.addStretch()
         row.addWidget(self.chk_user_input)
@@ -162,18 +153,18 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_MD)
-        
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
+        layout.setSpacing(Size.SPACING_MD)
+
         if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
             no_plat_box = QFrame()
             no_plat_box.setProperty("role", "card")
             np_layout = QHBoxLayout(no_plat_box)
-            np_layout.setContentsMargins(*MARGIN_LG)
+            np_layout.setContentsMargins(*Size.Margin.MRG_LRG)
             lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
             lbl_no_p.setWordWrap(True)
             lbl_no_p.setProperty("role", "caption")
-            lbl_no_p.setProperty("state", "danger")
+            lbl_no_p.setProperty("state", "error")
             np_layout.addWidget(lbl_no_p)
             layout.addWidget(no_plat_box)
 
@@ -191,7 +182,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         self.rb_plat_kick.toggled.connect(self._on_platform_changed)
         self.rb_plat_twitch.toggled.connect(self._on_platform_changed)
-        
+
         if not self.is_edit_mode:
             self.rb_plat_kick.setEnabled(self.kick_authenticated)
             self.rb_plat_twitch.setEnabled(self.twitch_authenticated)
@@ -220,7 +211,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         plat_row.addWidget(self.rb_plat_twitch)
         plat_row.addStretch()
         layout.addLayout(plat_row)
-        layout.addSpacing(SPACING_XS)
+        layout.addSpacing(Size.SPACING_XS)
 
         if self.is_edit_mode:
             is_platform_offline = (self.selected_platform == "kick" and not self.kick_authenticated) or (self.selected_platform == "twitch" and not self.twitch_authenticated)
@@ -228,7 +219,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 off_box = QFrame()
                 off_box.setProperty("role", "card")
                 off_layout = QHBoxLayout(off_box)
-                off_layout.setContentsMargins(*MARGIN_LG)
+                off_layout.setContentsMargins(*Size.Margin.MRG_LRG)
                 lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
                 lbl_off.setWordWrap(True)
                 lbl_off.setProperty("role", "caption")
@@ -244,41 +235,41 @@ class RewardsConfigWizard(ModernWizardPanel):
             lbl_mode = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.mode_select"))
             lbl_mode.setProperty("role", "h3")
             layout.addWidget(lbl_mode)
-            
+
             mode_row = QHBoxLayout()
             self.rb_existing = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.mode_existing"))
             self.rb_create = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.mode_create"))
             self.rb_existing.setChecked(True)
-            
+
             self.btn_group_mode = QButtonGroup(self)
             self.btn_group_mode.addButton(self.rb_existing, 0)
             self.btn_group_mode.addButton(self.rb_create, 1)
-            
+
             mode_row.addWidget(self.rb_existing)
             mode_row.addWidget(self.rb_create)
             mode_row.addStretch()
             layout.addLayout(mode_row)
-            layout.addSpacing(SPACING_XS)
-        
+            layout.addSpacing(Size.SPACING_XS)
+
             self.container_existing = QWidget()
             v_existing = QVBoxLayout(self.container_existing)
-            v_existing.setContentsMargins(*MARGIN_NONE)
-            v_existing.setSpacing(SPACING_MD)
-            
+            v_existing.setContentsMargins(*Size.Margin.MRG_NON)
+            v_existing.setSpacing(Size.SPACING_MD)
+
             lbl_ex = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
             lbl_ex.setProperty("role", "h3")
             v_existing.addWidget(lbl_ex)
-            
+
             row1 = QHBoxLayout()
             self.combo_rewards = NoWheelComboBox()
             self.rewards_list_raw = rewards_list
             self._filter_rewards_by_platform()
-                
+
             if existing_reward:
                 self.combo_rewards.setCurrentText(existing_reward)
-                
+
             row1.addWidget(self.combo_rewards, stretch=1)
-            
+
             self.btn_refresh = ModernButton("", role="action_outlined")
             self.btn_refresh.setIcon(self._icon_refresh)
             self.btn_refresh.setIconSize(QSize(16, 16))
@@ -286,41 +277,41 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.btn_refresh.clicked.connect(self._request_refresh)
             row1.addWidget(self.btn_refresh)
             v_existing.addLayout(row1)
-            
+
             layout.addWidget(self.container_existing)
-            
+
             self.container_create = QWidget()
             v_create = QVBoxLayout(self.container_create)
-            v_create.setContentsMargins(*MARGIN_NONE)
-            v_create.setSpacing(SPACING_MD)
-            
+            v_create.setContentsMargins(*Size.Margin.MRG_NON)
+            v_create.setSpacing(Size.SPACING_MD)
+
             self._setup_reward_form_rows(v_create, is_edit=False)
-            
+
             layout.addWidget(self.container_create)
             self.container_create.setVisible(False)
-            
+
             self.rb_existing.toggled.connect(self._on_mode_changed)
             self.rb_create.toggled.connect(self._on_mode_changed)
             self.combo_rewards.currentTextChanged.connect(self._on_combo_reward_changed)
 
-        layout.addSpacing(SPACING_XS)
+        layout.addSpacing(Size.SPACING_XS)
         lbl2 = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.file_label"))
         lbl2.setProperty("role", "h3")
         layout.addWidget(lbl2)
-        
+
         row2 = QHBoxLayout()
         self.txt_file_path = QLineEdit()
         self.txt_file_path.setReadOnly(True)
         self.txt_file_path.setPlaceholderText(self.i18n.get("rewards.dialogs.wizard.step1.file_placeholder"))
-        
+
         self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_outlined")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)
         layout.addLayout(row2)
-        
+
         self.txt_file_path.textChanged.connect(self._update_btn_next_state)
-        
+
         layout.addStretch()
 
     def _on_combo_reward_changed(self, text: str):
@@ -335,7 +326,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 if "description" in details and hasattr(self, "txt_new_desc"):
                     self.txt_new_desc.setText(str(details.get("description") or ""))
                 if "background_color" in details and hasattr(self, "txt_new_color"):
-                    default_color = COLOR_TWITCH if plat == "twitch" else COLOR_KICK_REWARDS
+                    default_color = BrandColors.TWITCH if plat == "twitch" else BrandColors.KICK_REWARDS
                     self._set_color(str(details.get("background_color") or default_color))
                 if "is_user_input_required" in details and hasattr(self, "chk_user_input"):
                     self.chk_user_input.setChecked(bool(details.get("is_user_input_required", False)))
@@ -350,17 +341,17 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step2(self):
         layout = QVBoxLayout(self.step2_widget)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_MD)
-        
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
+        layout.setSpacing(Size.SPACING_MD)
+
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        
+
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "monospace")
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
-        
+
         vol_row = SliderRow(
             icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
@@ -369,12 +360,12 @@ class RewardsConfigWizard(ModernWizardPanel):
             value_label=self.lbl_vol_perc
         )
         layout.addWidget(vol_row)
-        
+
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)
-        v_layout.setContentsMargins(*MARGIN_NONE)
-        v_layout.setSpacing(SPACING_MD)
-        
+        v_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        v_layout.setSpacing(Size.SPACING_MD)
+
         row_rnd = QHBoxLayout()
         lbl_rnd = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.random_pos"))
         lbl_rnd.setProperty("role", "h3")
@@ -384,14 +375,14 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_rnd.addStretch()
         row_rnd.addWidget(self.chk_random_pos)
         v_layout.addLayout(row_rnd)
-        
+
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
         self.btn_visual.setIcon(self._icon_map_pin)
         self.btn_visual.setIconSize(QSize(16, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         v_layout.addWidget(self.btn_visual)
-        
-        row_xy = create_row_layout(spacing=SPACING_MD)
+
+        row_xy = create_row_layout(spacing=Size.SPACING_MD)
 
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
@@ -404,7 +395,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_xy.addLayout(col_y, stretch=1)
 
         v_layout.addLayout(row_xy)
-        
+
         lbl_scale = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.scale"))
         lbl_scale.setProperty("role", "h3")
         v_layout.addWidget(lbl_scale)
@@ -413,7 +404,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.spin_scale.setSingleStep(0.1)
         self.spin_scale.setValue(1.0)
         v_layout.addWidget(self.spin_scale)
-        
+
         layout.addWidget(self.video_container)
         layout.addStretch()
 
@@ -421,7 +412,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.selected_platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
         self._filter_rewards_by_platform()
         if hasattr(self, 'rb_create') and self.rb_create.isChecked():
-            default_color = COLOR_TWITCH if self.selected_platform == "twitch" else COLOR_KICK_REWARDS
+            default_color = BrandColors.TWITCH if self.selected_platform == "twitch" else BrandColors.KICK_REWARDS
             self._set_color(default_color)
 
     def _filter_rewards_by_platform(self):
@@ -536,18 +527,18 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.spin_x.setValue(config.get("pos_x", 0))
             self.spin_y.setValue(config.get("pos_y", 0))
             self.spin_scale.setValue(config.get("scale", 1.0))
-            
+
             vol_val = int(config.get("volume", 1.0) * 100)
             self.slider_vol.setValue(vol_val)
             self.lbl_vol_perc.setText(f"{vol_val}%")
-            
+
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
-            
+
             details = self.rewards_details_map.get(f"{plat}:{self.existing_reward}") or self.rewards_details_map.get(self.existing_reward, {})
-            default_color = COLOR_TWITCH if plat == "twitch" else COLOR_KICK_REWARDS
+            default_color = BrandColors.TWITCH if plat == "twitch" else BrandColors.KICK_REWARDS
             color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", default_color)
             self._set_color(color_val)
-            
+
             user_in = config.get("is_user_input_required")
             if user_in is None:
                 user_in = config.get("new_reward_data", {}).get("is_user_input_required")
@@ -596,7 +587,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.chk_random_pos.setChecked(source_config.get("is_random_pos", False))
 
         target_plat = self.selected_platform
-        default_color = COLOR_TWITCH if target_plat == "twitch" else COLOR_KICK_REWARDS
+        default_color = BrandColors.TWITCH if target_plat == "twitch" else BrandColors.KICK_REWARDS
         color_val = source_config.get("background_color") or default_color
         self._set_color(color_val)
 
@@ -619,7 +610,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             platform = self.existing_config.get("platform") or self.selected_platform or "kick"
         else:
             platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
-        default_color = COLOR_TWITCH if platform == "twitch" else COLOR_KICK_REWARDS
+        default_color = BrandColors.TWITCH if platform == "twitch" else BrandColors.KICK_REWARDS
 
         if self.is_edit_mode:
             reward_title = self.txt_edit_title.text().strip()
@@ -692,14 +683,14 @@ class RewardsConfigWizard(ModernWizardPanel):
         reward = self.combo_rewards.currentText().strip() if hasattr(self, 'combo_rewards') else ""
         if not reward:
             return False
-            
+
         loading_str = self.i18n.get("rewards.dialogs.wizard.step1.loading")
         no_rewards_str = self.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
         no_avail_str = self.i18n.get("rewards.dialogs.wizard.step1.no_available")
-        
+
         if reward in (loading_str, no_rewards_str, no_avail_str):
             return False
-            
+
         return True
 
     def _update_step_ui(self):

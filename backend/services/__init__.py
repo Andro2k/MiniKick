@@ -2,33 +2,11 @@
 
 from .alerts import AlertService, AlertQueue
 from .auth import BaseOAuthManager, KickAuthManager, TwitchAuthManager, OAuthCallbackServer
-from .chat import (
-    ChatService,
-    CommandService,
-    ChatMessageDTO,
-    MessagePipeline,
-    PiperVoiceManager,
-    SpamService,
-    TimerService,
-    TTSManager,
-)
+from .chat import ChatService, CommandService, ChatMessageDTO, MessagePipeline, PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_PIPER_VOICE_ID, SpamService, TimerService, TTSManager, GiphyService
 from .overlay import OverlayServerManager, WebSocketClient
 from .rewards import RewardsService, generate_media_thumbnail
 from .schedule import ScheduleService
-from .system import (
-    AvatarService,
-    BackupService,
-    BrowserService,
-    GithubUpdateProvider,
-    LogService,
-    SettingsService,
-    SocketInstanceProvider,
-    TranslationService,
-    UpdateManager,
-    WhatsNewService,
-    WidgetService,
-    WindowsInstaller,
-)
+from .system import AvatarService, BackupService, BrowserService, GithubUpdateProvider, LogService, SettingsService, SocketInstanceProvider, TranslationService, UpdateManager, WhatsNewService, WidgetService, WindowsInstaller
 
 __all__ = [
     "AlertService",
@@ -42,9 +20,12 @@ __all__ = [
     "ChatMessageDTO",
     "MessagePipeline",
     "PiperVoiceManager",
+    "PiperVoiceDownloadWorker",
+    "DEFAULT_PIPER_VOICE_ID",
     "SpamService",
     "TimerService",
     "TTSManager",
+    "GiphyService",
     "OverlayServerManager",
     "WebSocketClient",
     "RewardsService",

@@ -213,6 +213,9 @@ DEFAULT_DICTIONARY = {
             "status_header": "📋 Commands status:"
         },
         "display": {
+            "detach": "Detach",
+            "reattach": "Return to chat view",
+            "window_title": "Live Chat",
             "title": "Chat History"
         },
         "header": {
@@ -498,14 +501,20 @@ DEFAULT_DICTIONARY = {
         "version_label": "**MiniKick Version:**"
     },
     "dashboard": {
+        "welcome": {
+            "title": "Welcome to MiniKick",
+            "subtitle": "Manage your connections and review activity across your platforms in one place.",
+            "unlinked_channel": "Connect your channel",
+            "unlinked_description": "Your channel profile will appear here after you sign in.",
+            "channel_description_unavailable": "No description available.",
+            "switch_account": "Switch between Kick and Twitch accounts"
+        },
         "analytics": {
             "active_commands": "Active Commands",
             "active_rewards": "Linked Rewards",
             "active_timers": "Running Timers",
-            "distribution_title": "Multi-Platform Distribution",
             "modules_summary_title": "Active Modules & Services",
             "no_commands_used": "No commands have been executed yet.",
-            "title": "Activity & Interactions",
             "top_commands_title": "Top 5 Most Used Commands",
             "usages": "uses"
         },
@@ -527,6 +536,8 @@ DEFAULT_DICTIONARY = {
                 "twitch_channel_manage_redemptions": "Create and manage rewards on Twitch",
                 "twitch_channel_moderate": "Channel moderation actions on Twitch",
                 "twitch_channel_read_redemptions": "Read channel point redemptions on Twitch",
+                "twitch_channel_read_subscriptions": "Read subscriptions on Twitch",
+                "twitch_bits_read": "Read Bits cheers on Twitch",
                 "twitch_chat_edit": "Send messages to Twitch chat",
                 "twitch_chat_read": "Read Twitch chat messages",
                 "twitch_moderation_ban": "Ban/Timeout violating users on Twitch",
@@ -569,8 +580,7 @@ DEFAULT_DICTIONARY = {
             "btn_connecting_kick": "Connecting Kick...",
             "btn_connecting_tiktok": "Connecting TikTok...",
             "btn_connecting_twitch": "Connecting Twitch...",
-            "btn_connecting_youtube": "Connecting YouTube...",
-            "status_waiting": "Status: Waiting for connection..."
+            "btn_connecting_youtube": "Connecting YouTube..."
         },
         "header": {
             "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
@@ -581,7 +591,7 @@ DEFAULT_DICTIONARY = {
             "connecting": "Connecting...",
             "disconnected": "Disconnected",
             "kick_title": "Kick",
-            "messages_session": "{count} msgs",
+            "messages_share": "{count} msgs \u00b7 {percentage}%",
             "status_connecting": "Connecting...",
             "status_offline": "Offline",
             "status_online": "Online",
@@ -591,12 +601,7 @@ DEFAULT_DICTIONARY = {
         },
         "profile": {
             "followers_count": "{count} followers",
-            "no_channel_desc": "Connect your Kick or Twitch account in the top panel to view your channel details.",
-            "no_channel_title": "No streaming channels linked",
-            "open_channel": "Open Channel",
-            "streaming_channel": "Streaming Channel",
-            "tab_kick": "Kick Channel",
-            "tab_twitch": "Twitch Channel"
+            "open_channel": "Open Channel"
         },
         "session": {
             "commands": "Executed Commands",
@@ -608,7 +613,7 @@ DEFAULT_DICTIONARY = {
             "broadcaster_id": "Broadcaster ID",
             "category": "Last Category",
             "created_at": "Creation Date",
-            "next_schedule": "Next Schedule",
+            "followers": "Followers",
             "room_id": "ChatRoom ID"
         }
     },
@@ -798,12 +803,7 @@ DEFAULT_DICTIONARY = {
             "points_tag": "POINTS",
             "reward_redeemed": "redeemed {reward_name}"
         },
-        "controllers": {
-            "dashboard": {
-                "affiliate": "Affiliate",
-                "not_affiliate": "Not Affiliate"
-            },
-            "log": {
+        "controllers": {            "log": {
                 "error_title": "Log Recording Error",
                 "folder_error": "Could not open folder: {error}",
                 "read_error": "Could not read file: {error}"
@@ -814,10 +814,7 @@ DEFAULT_DICTIONARY = {
             "api_error_setup": "Error preparing rewards query: {error}",
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
-            "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
-            "worker_stopped": "{worker} stopped cleanly.",
-            "worker_stopping": "Requesting stop for {worker}...",
-            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
+            "reward_no_rewards": "Reward '{reward_name}' has no reward configured."
         },
         "sidebar": {
             "profile": {
@@ -934,6 +931,7 @@ DEFAULT_DICTIONARY = {
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
             "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (maximum allowed: {max}).",
+            "vol_current": "🔊 @{user}, the current music volume is {volume}%.",
             "vol_success": "🔊 @{user}, music volume changed to {volume}%.",
             "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)"
         },
@@ -959,19 +957,13 @@ DEFAULT_DICTIONARY = {
             "title": "Music Player"
         },
         "overlay": {
-            "layout_floating": "Vinyl Record Spin",
+            "layout_classic": "Classic Player",
             "layout_label": "Overlay Layout:",
-            "layout_pill": "Minimal Pill Bar",
-            "layout_standard": "Standard Card",
+            "layout_vinyl": "Vinyl Record",
             "preview_sample_artist": "Tame Impala",
             "preview_sample_title": "Tame Impala - The Less I Know The Better",
             "preview_title": "Overlay Live Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
-            "theme_card": "Satin Card",
-            "theme_dynamic": "Dynamic (Album Auto-Color)",
-            "theme_glass": "Glassmorphism (Frosted Glass)",
-            "theme_label": "Visual Theme:",
-            "theme_neon": "Neon Glow",
             "url_desc": "Copy this URL and add it as a browser source in OBS to show cover art and track details on stream.",
             "url_title": "Music Overlay (OBS)"
         },
@@ -1329,6 +1321,15 @@ DEFAULT_DICTIONARY = {
             "release_notes_title": "Release Notes",
             "tray_desc": "Keep MiniKick running in the system tray when pressing close.",
             "tray_title": "Background Execution",
+            "auto_update_download_desc": "Download new updates in the background when MiniKick starts. You will be asked before installing and restarting.",
+            "auto_update_download_title": "Download updates automatically",
+            "auto_update_download_started_desc": "A new version was found and is downloading in the background.",
+            "auto_update_download_started_title": "Downloading update",
+            "auto_update_download_failed_title": "Update download failed",
+            "auto_update_download_complete_desc": "Version {version} is downloaded. You can install it the next time you check for updates.",
+            "auto_update_download_complete_title": "Update ready",
+            "auto_update_ready_desc": "Version {version} has downloaded. Install it now and restart MiniKick?",
+            "auto_update_ready_title": "Update ready to install",
             "update_desc": "Check for new versions and improvements.",
             "update_title": "Software Updates"
         }

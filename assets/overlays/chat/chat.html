@@ -35,9 +35,10 @@
 
         #chat-container {
             display: flex;
-            gap: 12px;
+            gap: 0.86em;
             height: 100%;
             width: 100%;
+            font-size: var(--font-size);
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -90,10 +91,10 @@
             display: inline-flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 8px !important;
-            padding: 6px 16px !important;
+            gap: 0.57em !important;
+            padding: 0.43em 1.14em !important;
             width: auto !important;
-            min-width: 100px !important;
+            min-width: 7.14em !important;
             max-width: none !important;
             flex-shrink: 0 !important;
             white-space: nowrap !important;
@@ -108,7 +109,7 @@
             display: inline-flex !important;
             align-items: center !important;
             flex-shrink: 0 !important;
-            gap: 6px !important;
+            gap: 0.43em !important;
             position: static !important;
             width: auto !important;
             background: transparent !important;
@@ -120,7 +121,7 @@
 
         #chat-container.orientation-horizontal .username::after {
             content: ":";
-            margin-left: 1px;
+            margin-left: 0.07em;
             opacity: 0.85;
         }
 
@@ -161,15 +162,14 @@
             display: flex;
             flex-direction: row;
             align-items: flex-start;
-            gap: 12px;
-            padding: 10px 14px;
+            gap: 0.86em;
+            padding: 0.72em 1em;
             width: 100%;
             max-width: 500px;
             position: relative;
+            font-size: var(--font-size);
             transform-origin: center;
             transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-            will-change: transform, opacity;
-            transform: translate3d(0, 0, 0);
         }
 
         .message-box.fade-out {
@@ -280,7 +280,7 @@
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 0.43em;
         }
 
         .badge {
@@ -433,6 +433,11 @@
         }
 
         .username {
+            display: inline-block;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
             font-size: calc(var(--font-size) + 1px);
@@ -447,24 +452,24 @@
         }
 
         .chat-emote {
-            height: 32px;
+            height: 2.29em;
             vertical-align: middle;
-            margin: -2px 2px;
+            margin: -0.14em 0.14em;
             display: inline-block;
         }
 
         .message-box.only-emotes .message-content {
-            padding: 4px 0 2px 0;
+            padding: 0.29em 0 0.14em;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 4px;
+            gap: 0.29em;
         }
 
         .message-box.only-emotes .chat-emote {
-            height: 56px;
+            height: 4em;
             width: auto;
-            margin: 2px 4px;
+            margin: 0.14em 0.29em;
             vertical-align: middle;
             filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -476,9 +481,9 @@
         }
 
         .timestamp {
-            font-size: calc(var(--font-size) - 3px);
+            font-size: 0.72em;
             color: #FFFFFF;
-            margin-right: 4px;
+            margin-right: 0.29em;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
         }
@@ -528,26 +533,26 @@
         .avatar-wrap {
             position: relative;
             flex-shrink: 0;
-            width: 44px;
-            height: 44px;
+            width: 3.14em;
+            height: 3.14em;
         }
 
         .avatar-img {
-            width: 44px;
-            height: 44px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             object-fit: cover;
             display: block;
         }
 
         .avatar-fallback {
-            width: 44px;
-            height: 44px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 17px;
+            font-size: 1.21em;
             font-weight: 800;
             color: #ffffff;
             text-transform: uppercase;
@@ -555,20 +560,21 @@
 
         .avatar-badge {
             position: absolute;
-            bottom: -3px;
-            right: -3px;
-            width: 20px;
-            height: 20px;
+            bottom: -0.21em;
+            right: -0.21em;
+            width: 1.43em;
+            height: 1.43em;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            border: 0.14em solid currentColor;
         }
 
         .avatar-badge svg {
-            width: 12px;
-            height: 12px;
+            width: 0.86em;
+            height: 0.86em;
             fill: currentColor;
             display: block;
         }

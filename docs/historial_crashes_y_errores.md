@@ -33,6 +33,25 @@
 | **INC-021** | `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running` — Crash de sesión por destrucción prematura de `KickPollSyncWorker` vía GC de Python al usar `wait(1000)` bloqueante | `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log` | v1.6.2 | `✅ Solventado` | `backend/workers/kick_chat_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-022** | Señales stale (`resolved`/`error`) emitidas por `YouTubeResolveWorker` tras cancelación, causando reproducción fantasma o errores de estado | Análisis de código durante diagnóstico v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/workers/music_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-023** | Saturación del hilo GUI y sobrecarga de I/O en la ruta de recepción de mensajes (consulta SQLite por mensaje, repintado de dashboard por mensaje, ordenamiento de horarios por mensaje, cálculo de latencia incondicional y logging fijo en DEBUG) | Auditoría de rendimiento del backend v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py` | v1.6.3 (`WT-1.6.3_02`) |
+| **INC-024** | Pyrefly `unknown-name`: `logger` no definido en `resolve_icon_path` | Diagnóstico estático de Pyrefly en `frontend/common/paths.py:24` | v1.6.4 | `✅ Solventado` | `frontend/common/paths.py` | v1.6.4 (`WT-1.6.4_04`) |
+| **INC-025** | Respuesta de `!sr` sin nombre cuando la búsqueda asíncrona rechaza una canción por duración | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py` | v1.6.4 (`WT-1.6.4_06`) |
+| **INC-026** | `!vol` sin argumento muestra instrucciones en vez del volumen actual | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py` | v1.6.4 (`WT-1.6.4_06`) |
+| **INC-027** | Dos pruebas de `ParameterUsageVisitor` fallaban al pasar una ruta de tipo `str` | Reporte de pruebas del proyecto (`resources/tests/test_unused_parameter_manager.py`) | v1.6.5 | `✅ Solventado` | `resources/tools/unused_parameter_manager.py` | v1.6.5 (`WT-1.6.5_06`) |
+| **INC-028** | ImportError por token de color no exportado desde `frontend.common` | Reporte de usuario al iniciar la aplicacion | v1.6.5 | `✅ Solventado` | `frontend/common/__init__.py` | v1.6.5 (`WT-1.6.5_08`) |
+| **INC-029** | `role_manager.py` calculaba mal la raiz del proyecto al ejecutarse desde `resources/tools/frontend` | Reporte de usuario al ejecutar la auditoria de roles | v1.6.5 | `✅ Solventado` | `resources/tools/frontend/role_manager.py` | v1.6.5 (`WT-1.6.5_09`) |
+| **INC-030** | Pruebas de tema conservaban colores literales anteriores a la paleta actual | Salida compartida de `pytest resources/tests -q` | v1.6.5 | `✅ Solventado` | `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 (`WT-1.6.5_11`) |
+| **INC-031** | Pyrefly `unknown-name` para gradientes de acento no definidos en `theme.py` | Diagnosticos Pyrefly compartidos desde VS Code | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_16`) |
+| **INC-032** | `AttributeError: type object 'Typography' has no attribute 'FAMILY'` al importar el tema | Traza de usuario al iniciar MiniKick | v1.6.5 | `? Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_17`) |
+| **INC-033** | Pausa visible al cambiar el tamaño de texto por reinstalación global del QSS | Reporte de usuario en Ajustes | v1.6.5 | `Mitigado; validación visual pendiente` | `frontend/main_window.py` | v1.6.5 (`WT-1.6.5_18`) |
+| **INC-034** | Tema QSS sin punto de extensión cacheable para estilos personalizados | Solicitud de mejora del sistema visual | v1.6.5 | `Implementado; validación visual pendiente` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_19`) |
+| **INC-035** | Ventana desacoplada del chat no disponible para Snap Layouts de Windows | Reporte de usuario | v1.6.5 | `✅ Solventado` | `frontend/views/chat_view.py`, `resources/tests/test_chat_detached_window.py` | v1.6.5 |
+| **INC-036** | Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado | Salida de `pytest resources/tests/` | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
+| **INC-037** | YouTube y TikTok volvían a auto-iniciar cada vez que la app abría aunque el canal se hubiera detectado offline | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `frontend/main_window.py`, `resources/tests/test_live_chat_offline_autostart.py` | v1.6.5 |
+| **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
+| **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
+| **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+| **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
+| **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 
 ---
 
@@ -657,6 +676,67 @@
 
 ---
 
+### INC-024: Pyrefly `unknown-name` por `logger` no definido en `paths.py`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Diagnóstico estático de Pyrefly, `frontend/common/paths.py:24`
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: `resolve_icon_path` registraba una advertencia cuando no encontraba un icono, pero el módulo no importaba `logging` ni declaraba `logger`. Pyrefly detectó el nombre no definido y esa ruta también podía lanzar `NameError` al ejecutarse.
+* **Archivos Afectados**: `frontend/common/paths.py`
+* **Solución**: Se importó `logging` y se declaró el logger del módulo (`minikick.paths`) siguiendo el patrón utilizado en `frontend/common/icons.py`.
+* **Verificación**: Revisión estática del módulo; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_04.md`
+
+---
+
+### INC-025: Respuesta de `!sr` sin nombre ante rechazo por duración
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Chat del módulo Music; al pedir una canción que excede el límite, el bot respondía `@, esa canción supera...`
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: La búsqueda de canciones se ejecuta en `YouTubeSearchWorker`. Al detectar una duración superior al límite, el worker formateaba el texto reemplazando `{user}` por una cadena vacía porque no recibía el solicitante.
+* **Archivos Afectados**: `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py`
+* **Solución**: El proveedor pasa el nombre del solicitante al worker y este lo inserta en la respuesta localizada de rechazo por duración.
+* **Verificación**: Revisión estática del paso del solicitante desde el manejador hasta el mensaje del worker; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_06.md`
+
+---
+
+### INC-026: `!vol` no permite consultar el volumen actual
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Chat del módulo Music; `!vol` sin argumento solo mostraba el formato de uso.
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: El manejador trataba una consulta sin valor como entrada inválida. El controlador no exponía explícitamente el volumen actual al manejador.
+* **Archivos Afectados**: `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py`, `backend/config/locale_defaults.py`, `locales/en.json`, `locales/es.json`
+* **Solución**: El controlador mantiene el valor actual de volumen, sincronizado al inicializar y al cambiar el volumen. `!vol` sin argumento responde con ese valor; la forma `!vol 0-100` conserva la función de ajuste.
+* **Verificación**: Revisión estática de los caminos de inicialización, cambio y consulta; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_06.md`
+
+---
+
+### INC-027: Pruebas de `ParameterUsageVisitor` fallan con rutas de tipo `str`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA**
+* **Reportes Asociados**: Salida de `pytest resources/tests -q` compartida por el usuario; dos casos fallaban en `resources/tests/test_unused_parameter_manager.py`.
+* **Fecha y Versión del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  AttributeError: 'str' object has no attribute 'relative_to'
+  resources/tools/unused_parameter_manager.py, ParameterUsageVisitor.__init__
+  ```
+* **Causa Raíz**: El visitante esperaba un objeto `Path` y llamaba `relative_to` directamente. Las pruebas le pasan una cadena de ruta, que no implementa ese método.
+* **Archivos y Módulos Modificados**: `resources/tools/unused_parameter_manager.py`.
+* **Solución Implementada**: Convertir la entrada a `Path` al inicializar el visitante y, si la ruta no está dentro de la raíz del proyecto, conservarla en formato POSIX en vez de propagar `ValueError`.
+* **Pruebas y Verificación**: Las dos pruebas de `resources/tests/test_unused_parameter_manager.py` pasan. La suite completa obtuvo 241 aprobadas y 2 fallidas por bloqueo de red (`WinError 10013`) en pruebas de búsqueda de GIF no relacionadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_06.md`.
+
+---
+
 ## 📌 Guía de Actualización para Desarrolladores y Agentes de IA
 
 Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de usuario:
@@ -665,3 +745,299 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 3. Si es un fallo no registrado o nuevo:
    - Diagnosticar y resolver bajo el flujo estricto (Plan de Implementación $\to$ Pruebas $\to$ Walkthrough).
    - **Agregar obligatoriamente una nueva entrada `INC-XXX` en este archivo** detallando la causa raíz, archivos modificados y pruebas asociadas.
+
+
+---
+
+### INC-028: Tokens de tema no exportados por `frontend.common`
+
+* **Estado**: Solventado
+* **Severidad**: BAJA (bloqueaba el arranque de la aplicacion).
+* **Reporte Asociado**: Traza de usuario al ejecutar `uv run .\main.py`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  ImportError: cannot import name 'COLOR_CALLOUT_WARNING_LIGHT' from 'frontend.common'
+  ```
+* **Causa Raiz**: Los tokens estaban definidos en `frontend/common/theme.py`, pero no reexportados por `frontend/common/__init__.py`, aunque `chat_mockup.py` los importaba desde la fachada `frontend.common`. La comprobacion posterior encontro tambien ausentes `COLOR_CODE_LINK` y `COLOR_LATEX_MATH`.
+* **Archivos Afectados**: `frontend/common/__init__.py`.
+* **Solucion**: Se reexportaron los cinco tokens `COLOR_CALLOUT_*` y los tokens `COLOR_CODE_LINK` y `COLOR_LATEX_MATH`, manteniendo sus definiciones centralizadas en `theme.py`.
+* **Verificacion**: `import frontend.main_window` correcto. `resources/tools/system_health_audit.py --quick --verbose`: 12/12 PASS. No se ejecuto la suite de pruebas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_08.md`.
+
+
+---
+
+### INC-029: Ruta incorrecta de `theme.py` en el auditor de roles
+
+* **Estado**: `\u2705 Solventado`
+* **Severidad**: **MEDIA** (la herramienta daba un falso aprobado con cero roles analizados).
+* **Reporte Asociado**: Salida de `uv run .\\role_manager.py` desde `resources/tools/frontend`; intentaba abrir `resources/frontend/common/theme.py`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [ERROR] theme.py no fue encontrado en: ...\resources\frontend\common\theme.py
+  ```
+* **Causa Raiz**: La raiz se calculaba subiendo dos directorios desde un script ubicado bajo `resources/tools/frontend`, por lo que apuntaba a `resources` en lugar de a la raiz del repositorio. Ademas, el parser devolvia colecciones vacias ante la ruta inexistente y podia informar un aprobado falso.
+* **Archivos y Modulos Modificados**: `resources/tools/frontend/role_manager.py`.
+* **Solucion Implementada**: Se localiza la raiz buscando `frontend/common/theme.py` entre los directorios ascendentes. Las rutas faltantes ahora generan un error no cero y un mensaje claro.
+* **Pruebas y Verificacion**: Ejecutado desde la carpeta del auditor con `--strict`: 74 roles y 27 estados definidos/en uso, sin faltantes ni elementos sin uso. La auditoria rapida de salud aprobo 12/12 herramientas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_09.md`.
+
+
+---
+
+### INC-030: Pruebas de tema con colores anteriores a la paleta actual
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (fallaban dos aserciones, sin afectar la ejecucion de la aplicacion).
+* **Reportes Asociados**: Salida compartida de `pytest resources/tests -q`; fallaron `test_global_qss_contains_antigravity_tokens` y `test_combobox_and_segmented_action_outlined_style`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  AssertionError: '#111215' in qss
+  AssertionError: ... background-color: #141519 ... in GLOBAL_QSS
+  ```
+* **Causa Raiz**: Las pruebas mantenian colores hexadecimales literales de una paleta anterior. Los tokens actuales de `theme.py` ya contienen los valores esperados, pero las aserciones no se habian actualizado.
+* **Archivos y Modulos Modificados**: `resources/tests/test_antigravity_ui_theme.py`, `.vscode/tasks.json`.
+* **Solucion Implementada**: Las aserciones comparan ahora contra los tokens `COLOR_WINDOW_BG`, `COLOR_CARD_BG` y `COLOR_NEUTRAL_900`. Se agregaron tareas de VS Code para ejecutar pytest y el preflight y compilacion del build manager.
+* **Pruebas y Verificacion**: `resources/tests/test_antigravity_ui_theme.py`: 16 aprobadas. `resources/tools/system_health_audit.py --quick --verbose`: 12/12 aprobadas. `build_manager.py --check`: preflight aprobado.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_11.md`.
+
+
+---
+
+### INC-031: Tokens de gradiente de acento no definidos en `theme.py`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (los nombres invalidos imped?an importar el modulo y generar el QSS global).
+* **Reportes Asociados**: Diagnosticos Pyrefly compartidos desde VS Code para `GRADIENT_ACCENT_FILL`, `GRADIENT_ACCENT_HOVER` y `GRADIENT_ACCENT_PRESSED`.
+* **Fecha y Version del Fallo**: 2026-10-20 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  Pyrefly: Could not find name `GRADIENT_ACCENT_FILL`
+  Pyrefly: Could not find name `GRADIENT_ACCENT_HOVER`
+  Pyrefly: Could not find name `GRADIENT_ACCENT_PRESSED`
+  AttributeError: type object 'Typography' has no attribute 'FAMILY'
+  AttributeError: type object 'Semantic' has no attribute 'Borders'
+  AttributeError: type object 'Size' has no attribute 'MAX_HEIGHT'
+  ```
+* **Causa Raiz**: La refactorizacion de tokens omitio el namespace de gradientes y genero referencias a atributos con nombres que no existen en `Typography`, `Semantic` y `Size`.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`.
+* **Solucion Implementada**: Se agruparon los tres degradados en `Gradients`, usando colores de `Palette`; se conservaron alias globales. Se corrigieron los accesos de tipografia, borde y dimensiones para usar los nombres declarados por sus clases.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; importacion del modulo con dobles de PySide6 y generacion completa de `GLOBAL_QSS`; auditoria rapida de salud del proyecto: 12/12. No se ejecuto la suite de pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_16.md`.
+
+
+---
+
+### INC-032: Alias de familia tipografica ausente en `Typography`
+
+* **Estado**: `? Solventado`
+* **Severidad**: **MEDIA** (impedia importar el tema durante el arranque).
+* **Reportes Asociados**: Traza de usuario al iniciar MiniKick.
+* **Fecha y Version del Fallo**: 2026-10-20 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  AttributeError: type object 'Typography' has no attribute 'FAMILY'
+  ```
+* **Causa Raiz**: La refactorizacion expuso el token tipografico como `FONT_FAMILY`, pero una referencia existente accedia al nombre anterior `FAMILY`.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`.
+* **Solucion Implementada**: Se agrego `Typography.FAMILY` como alias de `Typography.FONT_FAMILY`, manteniendo una unica fuente del valor. Tambien se retiro texto accidental insertado en el QSS del tema.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; comprobacion de los alias y del texto QSS.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_17.md`.
+
+
+---
+
+### INC-033: Pausa visible al cambiar el tamaño de texto en Ajustes
+
+* **Estado**: Mitigado; validacion visual y de rendimiento pendiente.
+* **Severidad**: BAJA (el cambio se aplicaba, pero podia bloquear brevemente la interfaz).
+* **Reportes Asociados**: Reporte de usuario en Ajustes, 2026-10-21.
+* **Fecha y Version del Fallo**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raiz**: El controlador emite el nuevo tamaño y la ventana reinstalaba la hoja QSS en `QApplication`. Esto solicita a Qt reevaluar el estilo en el ámbito de toda la aplicación desde el hilo de interfaz. La generación del QSS ya está memoizada, por lo que esa generación no era la operación que se repetía en cada selección.
+* **Archivos y Modulos Modificados**: `frontend/main_window.py`; `docs/walkthroughs/v1.6.5/WT-1.6.5_18.md`.
+* **Solucion Implementada**: La hoja QSS dinámica ahora se asigna a la ventana principal y se propaga a su árbol de widgets, acotando el ámbito de actualización. No se cambió la hoja QSS compartida ni sus roles.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/main_window.py` y `git diff --check` correctos. La suite de calidad rápida detectó un rol QSS existente sin uso (`action_danger_outlined`); los otros 11 controles aprobaron. No se ejecutaron pruebas automatizadas ni una comprobación visual o medición de tiempo en ejecución.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_18.md`.
+
+
+---
+
+### INC-034: Extensión cacheable para estilos QSS personalizados
+
+* **Estado**: Implementado; validacion visual pendiente.
+* **Severidad**: BAJA (mejora de mantenibilidad y composición del tema).
+* **Reportes Asociados**: Solicitud de usuario para optimizar y facilitar los estilos personalizados, 2026-10-21.
+* **Fecha y Version del Cambio**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raiz**: `get_global_qss()` componía los bloques internos del tema y guardaba el resultado, pero no permitía añadir reglas personalizadas conservando el mismo punto de composición y caché. Además, había reglas de un rol destructivo que no se asignaba en el frontend.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`; `docs/walkthroughs/v1.6.5/WT-1.6.5_19.md`.
+* **Solucion Implementada**: `get_global_qss()` acepta una tupla ordenada de reglas QSS, que se añaden al final del tema y forman parte de su clave de caché. Se cachean también estilos de swatches repetidos y se elimina el rol QSS sin consumidores.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; `git diff --check`; comprobación aislada con dobles para generar el QSS base y personalizado, verificar el orden y confirmar reutilización de caché. La suite `project_quality_suite.py --quick --verbose` aprobó 12/12. PySide6 no está instalado, así que no se pudo comprobar el renderizado real.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_19.md`.
+
+
+---
+
+### INC-035: Ventana desacoplada del chat no disponible para Snap Layouts de Windows
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (limitación de organización de ventanas; el chat seguía siendo redimensionable).
+* **Reportes Asociados**: Reporte de usuario sobre no poder acomodar individualmente la ventana usando Snap de Windows, 2026-10-21.
+* **Fecha y Versión del Fallo**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raíz**: La ventana flotante no declaraba explícitamente todos los hints del marco de ventana estándar de Windows, incluyendo maximizar y el menú del sistema, necesarios para exponer los controles de Snap de forma consistente.
+* **Archivos y Módulos Modificados**: `frontend/views/chat_view.py`; `resources/tests/test_chat_detached_window.py`.
+* **Solución Implementada**: Se habilitaron explícitamente las decoraciones estándar de título, menú del sistema, minimizar, maximizar y cerrar en la ventana desacoplada.
+* **Pruebas y Verificación**: Se agregó una prueba para los hints de ventana y se mantiene la prueba del tirador de redimensionado. `python -m py_compile frontend/views/chat_view.py resources/tests/test_chat_detached_window.py` y la suite de calidad rápida aprobaron; las pruebas de Qt no pudieron ejecutarse en el entorno actual porque PySide6 y pytest no están instalados.
+
+
+---
+
+### INC-036: Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (una regla visual no aplicaba y dos pruebas fallaban).
+* **Reportes Asociados**: Salida de `pytest resources/tests/` del usuario: 2 fallidas y 246 aprobadas, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  AssertionError: assert hasattr(view, "card_channel_profile")
+  AssertionError: QFrame[role="segmented_control"] ... no aparece en GLOBAL_QSS
+  ```
+* **Causa Raíz**: La prueba del dashboard aún requería atributos de una estructura anterior (`card_channel_profile`, `disconnected_container`) que fue sustituida por el panel de perfil y tarjetas actuales. En el QSS, espacios entre `QFrame` y el selector de propiedad convertían la regla en un selector descendiente, por lo que no aplicaba al propio frame.
+* **Archivos y Módulos Modificados**: `frontend/common/theme.py`; `resources/tests/test_antigravity_ui_theme.py`.
+* **Solución Implementada**: Se actualizó la prueba para comprobar el panel de perfil, las tarjetas y márgenes actuales; se corrigió el selector a `QFrame[role="segmented_control"]`.
+* **Pruebas y Verificación**: `python -m py_compile frontend/common/theme.py resources/tests/test_antigravity_ui_theme.py` y `git diff --check` correctos. El usuario reportó 246 pruebas aprobadas antes de la corrección; no fue posible reejecutar pytest en el entorno de trabajo actual porque no está instalado. La auditoría de calidad rápida aprobó 11/12; el único aviso es la clave `dashboard.analytics.title` marcada como sin uso, ajena a esta corrección.
+
+
+---
+
+### INC-037: Auto-inicio repetido de plataformas offline
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (cada inicio de MiniKick intentaba establecer un chat de una transmisión ya detectada como offline; el worker se detenía correctamente después de detectarlo).
+* **Reportes Asociados**: Log de usuario `minikick.log`, MiniKick `v1.6.5`, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [AutoStart] Starting TikTok integration (target='williamjosucor')...
+  [TikTokChatProvider] @williamjosucor no está transmitiendo en vivo actualmente.
+  [TikTok] TikTok Live worker offline status: @williamjosucor no está transmitiendo en vivo actualmente.
+  [TikTokChatWorker] Stopping chat worker for '@williamjosucor'...
+  ```
+  El patrón aparece de nuevo después de un segundo inicio de la aplicación en el mismo log; el worker no estaba reintentando continuamente dentro de una sesión.
+* **Causa Raíz**: El canal guardado activaba el auto-inicio incondicionalmente en cada apertura. Aunque los workers se detenían al detectar el stream offline, el resultado offline no se persistía para decidir futuros auto-inicios.
+* **Archivos y Módulos Modificados**: `frontend/main_window.py`; `resources/tests/test_live_chat_offline_autostart.py`; `docs/historial_crashes_y_errores.md`.
+* **Solución Implementada**: Se persiste por plataforma la detección offline y se omite el auto-inicio de YouTube o TikTok en las siguientes aperturas hasta un intento manual. El estado se limpia al iniciar una conexión manual o al conectar exitosamente. El error offline de YouTube se distingue de errores generales, y el caso TikTok usa la traducción configurada.
+* **Pruebas y Verificación**: `.venv\Scripts\python.exe -m pytest resources/tests/test_live_chat_offline_autostart.py -v`: 3 aprobadas. `python -m py_compile frontend/main_window.py resources/tests/test_live_chat_offline_autostart.py` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.
+
+---
+
+### INC-038: Pausa del Dashboard durante el auto-inicio de servicios
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (el Dashboard quedaba perceptiblemente lento durante las fases iniciales de chat/TTS y las conexiones automáticas).
+* **Reportes Asociados**: Log de usuario `minikick.log`, MiniKick `v1.6.5`, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [Perf/Startup] Hydration phase 'chat and overlay settings' completed in 2352.77 ms
+  [PiperWarmup_es_MX-mario-medium] Loaded Piper voice model: es_MX-mario-medium
+  [AutoStart] Starting Kick integration...
+  [AutoStart] Starting Twitch integration...
+  ```
+* **Causa Raíz**: El controlador de chat inicializaba su backend al construirse y volvía a hacerlo durante la hidratación posterior a mostrar la ventana. En esa ruta se iniciaba además la carga anticipada del modelo Piper; mientras tanto, los temporizadores de auto-inicio podían lanzar varias plataformas con poca separación.
+* **Archivos y Módulos Modificados**: `backend/controllers/chat_controller.py`; `backend/services/chat/chat_service.py`; `frontend/main_window.py`; `resources/tests/test_chat_controller.py`; `docs/historial_crashes_y_errores.md`.
+* **Solución Implementada**: Se evita la segunda inicialización durante el arranque normal, se conserva la recarga explícita del backend al restaurar un backup y se difiere el calentamiento de Piper hasta que haga falta procesar voz. Los auto-inicios se espacian progresivamente para reducir el trabajo concurrente. La primera síntesis Piper en frío puede tardar más, pero se ejecuta fuera del hilo de la interfaz.
+* **Pruebas y Verificación**: Pruebas focales de chat/TTS, splash, estado de ventana y auto-inicio: 43 aprobadas. `py_compile` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.
+
+---
+
+### INC-039: Referencias obsoletas a atributos de `Size.Margin`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (las referencias podían producir `AttributeError` al crear los layouts afectados).
+* **Reportes Asociados**: Reporte del usuario sobre los nombres de `Radius`, `Margin` y `Borders`; revisión estática del frontend.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  AttributeError potencial: Size.Margin.V_XS
+  AttributeError potencial: Size.Margin.H_XS
+  AttributeError potencial: Size.Margin.SECTION_HEADER
+  ```
+* **Causa Raíz**: Se renombraron atributos de las clases de tokens, pero quedaron usos de los nombres antiguos en diálogos y widgets.
+* **Archivos y Módulos Modificados**: `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py`.
+* **Solución Implementada**: Se actualizaron las referencias a `MRG_VXS`, `MRG_HXS` y `SEC_HDR`, y se ajustó la prueba de tokens para comprobar los nombres vigentes.
+* **Pruebas y Verificación**: Búsqueda AST de atributos `Radius`, `Margin` y `Borders` no encontró referencias inválidas; `py_compile` pasó en los archivos afectados. En `test_antigravity_ui_theme.py`, 15 pruebas pasaron y una continúa fallando en una aserción preexistente del selector QSS de `QComboBox`, no relacionada con este incidente.
+
+---
+
+### INC-040: Advertencia al cerrar MiniKick por referencia a `WhatsNewWorker` ya eliminado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (advertencia no fatal durante el cierre ordenado de la aplicación; la descarga e instalación de actualizaciones se completaron).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-10-23.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.4`.
+* **Traza de la Excepción**:
+  ```text
+  RuntimeError: libshiboken: Internal C++ object (WhatsNewWorker) already deleted.
+    File "frontend/worker_shutdown.py", line 77, in stop_workers
+      if not worker.isRunning():
+  ```
+* **Causa Raíz**: `WhatsNewWorker` programa su eliminación al finalizar, pero la ventana puede conservar la referencia Python al wrapper de Qt. En el cierre o en una consulta posterior, llamar `isRunning()` sobre ese wrapper produce `RuntimeError` porque el objeto C++ ya no existe.
+* **Archivos y Módulos Modificados**:
+  - `frontend/main_window.py`
+  - `frontend/worker_shutdown.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: La ventana usa la comprobación segura de workers antes de consultar si la búsqueda remota de novedades sigue activa. El coordinador trata un wrapper de hilo ya eliminado como detenido, lo retira del seguimiento y registra el caso a nivel DEBUG sin intentar borrarlo otra vez ni emitir una advertencia con traceback.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` y `resources/tests/test_auto_update_setting.py`: 10 pruebas aprobadas, incluyendo los casos de un `QThread` eliminado y el reemplazo de la referencia obsoleta. `py_compile` y `git diff --check` correctos. Suite rápida de calidad: 12/12 auditorías aprobadas.
+
+---
+
+### INC-041: Avatar y badges desincronizados del tamaño del chat
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (inconsistencia visual en las opciones de tamaño del overlay y su previsualización).
+* **Reportes Asociados**: Reporte del usuario: los badges y el perfil no cambiaban al ajustar el tamaño del chat.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Síntoma**:
+  ```text
+  Al cambiar el tamaño del overlay, el texto se actualizaba, pero el avatar y sus badges conservaban dimensiones fijas.
+  Los mensajes ya renderizados podían conservar el font-size inline anterior y la previsualización Qt no recibía el tamaño seleccionado.
+  ```
+* **Causa Raíz**: Los avatares y badges de perfil tenían dimensiones absolutas en píxeles, independientes de `--font-size`. Además, cada mensaje fijaba su tamaño tipográfico al crearse, impidiendo que los mensajes existentes reflejaran cambios en vivo; `ChatOverlayMockupWidget` tampoco incluía el tamaño en su configuración.
+* **Archivos y Módulos Modificados**:
+  - [`assets/overlays/chat/chat.html`](../assets/overlays/chat/chat.html)
+  - [`assets/overlays/chat/css/dark.css`](../assets/overlays/chat/css/dark.css)
+  - [`assets/overlays/chat/css/light.css`](../assets/overlays/chat/css/light.css)
+  - [`assets/overlays/chat/css/minimal.css`](../assets/overlays/chat/css/minimal.css)
+  - [`assets/overlays/chat/js/chat.js`](../assets/overlays/chat/js/chat.js)
+  - [`frontend/components/chat/chat_mockup.py`](../frontend/components/chat/chat_mockup.py)
+  - [`frontend/components/chat/overlay_settings.py`](../frontend/components/chat/overlay_settings.py)
+  - [`resources/tests/test_chat_overlay_controls.py`](../resources/tests/test_chat_overlay_controls.py)
+* **Solución Implementada**: El overlay usa `em` para escalar el avatar, los badges, los espaciados y las emotes a partir del tamaño tipográfico del mensaje. Se elimina el tamaño inline estático para que los mensajes existentes hereden los cambios de `--font-size`; el valor se normaliza al rango admitido de 10 a 36 px. La previsualización Qt recibe el tamaño y escala conjuntamente el texto, el perfil y los badges.
+* **Pruebas y Verificación**: `resources/tests/test_chat_overlay_controls.py`: 9 pruebas aprobadas. `node --check assets/overlays/chat/js/chat.js` correcto. La suite rápida de calidad aprobó 12/12 auditorías. Verificación visual en navegador confirmó que avatar y badges duplican sus dimensiones al pasar de 14 a 28 px en orientaciones vertical y horizontal.
+
+---
+
+### INC-042: `NameError` al abrir Chat después de diferir la carga de vistas
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la navegación a Chat activaba el manejador global de excepciones y podía terminar abruptamente la aplicación).
+* **Reportes Asociados**: Log del usuario `minikick.log`, líneas 1396-1408.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  File "frontend\main_window_views.py", line 57, in get_or_create
+    window.view_chat = ChatView(window.i18n, parent=window.content_stack)
+  NameError: name 'ChatView' is not defined
+  [CRI] QThread: Destroyed while thread '' is still running
+  ```
+* **Causa Raíz**: La carga perezosa implementada mediante `__getattr__` resolvía atributos solicitados externamente al módulo, pero los nombres globales usados directamente dentro de `MainWindowViewFactory.get_or_create` no pasan por `__getattr__`. Por ello, al navegar a una vista no importada previamente, como Chat, su clase no existía en el espacio global de la función.
+* **Archivos y Módulos Modificados**:
+  - [`frontend/main_window_views.py`](../frontend/main_window_views.py)
+  - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
+* **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.

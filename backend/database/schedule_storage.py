@@ -11,14 +11,14 @@ class SQLiteScheduleStorage:
     def load_all(self) -> list[dict]:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute('''
                 SELECT id, name, date_str, time_str, target_platform, title,
                        kick_category_id, kick_category_name,
                        twitch_category_id, twitch_category_name,
                        is_active, last_executed_date
                 FROM stream_schedules
                 ORDER BY id ASC
-            """)
+            ''')
             rows = cursor.fetchall()
             return [
                 {
@@ -41,14 +41,14 @@ class SQLiteScheduleStorage:
     def get_by_id(self, schedule_id: int) -> dict | None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute('''
                 SELECT id, name, date_str, time_str, target_platform, title,
                        kick_category_id, kick_category_name,
                        twitch_category_id, twitch_category_name,
                        is_active, last_executed_date
                 FROM stream_schedules
                 WHERE id = ?
-            """, (schedule_id,))
+            ''', (schedule_id,))
             r = cursor.fetchone()
             if not r:
                 return None
@@ -74,14 +74,14 @@ class SQLiteScheduleStorage:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             if schedule_id is not None and schedule_id > 0:
-                cursor.execute("""
+                cursor.execute('''
                     UPDATE stream_schedules
                     SET name = ?, date_str = ?, time_str = ?, target_platform = ?,
                         title = ?, kick_category_id = ?, kick_category_name = ?,
                         twitch_category_id = ?, twitch_category_name = ?,
                         is_active = ?, last_executed_date = ''
                     WHERE id = ?
-                """, (
+                ''', (
                     name, date_str, time_str, target_platform,
                     title, kick_category_id, kick_category_name,
                     str(twitch_category_id or ""), twitch_category_name,
@@ -89,14 +89,14 @@ class SQLiteScheduleStorage:
                 ))
                 return schedule_id
             else:
-                cursor.execute("""
+                cursor.execute('''
                     INSERT INTO stream_schedules (
                         name, date_str, time_str, target_platform, title,
                         kick_category_id, kick_category_name,
                         twitch_category_id, twitch_category_name,
                         is_active, last_executed_date
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')
-                """, (
+                ''', (
                     name, date_str, time_str, target_platform,
                     title, kick_category_id, kick_category_name,
                     str(twitch_category_id or ""), twitch_category_name,
