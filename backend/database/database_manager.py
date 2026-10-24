@@ -149,7 +149,7 @@ class DatabaseManager:
     def _create_tables(self) -> None:
         with self.get_connection() as conn:
             cursor = conn.cursor()            
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tokens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     provider TEXT DEFAULT 'kick',
@@ -159,14 +159,14 @@ class DatabaseManager:
                     scope TEXT,
                     token_type TEXT
                 )
-            """)        
-            cursor.execute("""
+            ''')        
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
                     value TEXT
                 )
-            """)           
-            cursor.execute("""
+            ''')           
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS obs_rewards (
                     reward_name TEXT NOT NULL,
                     filepath TEXT NOT NULL,
@@ -184,8 +184,8 @@ class DatabaseManager:
                     platform TEXT DEFAULT 'kick',
                     PRIMARY KEY (reward_name, platform)
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS chat_commands (
                     trigger TEXT PRIMARY KEY,
                     response TEXT NOT NULL,
@@ -199,8 +199,8 @@ class DatabaseManager:
                     apply_youtube INTEGER DEFAULT 1,
                     apply_tiktok INTEGER DEFAULT 1
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS spam_filters (
                     filter_id TEXT PRIMARY KEY,
                     is_active INTEGER DEFAULT 0,
@@ -213,8 +213,8 @@ class DatabaseManager:
                     apply_twitch INTEGER DEFAULT 1,
                     apply_youtube INTEGER DEFAULT 1
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS chat_timers (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT UNIQUE NOT NULL,
@@ -229,8 +229,8 @@ class DatabaseManager:
                     apply_twitch INTEGER DEFAULT 1,
                     apply_youtube INTEGER DEFAULT 1
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS command_execution_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     command_trigger TEXT NOT NULL,
@@ -239,8 +239,8 @@ class DatabaseManager:
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (command_trigger) REFERENCES chat_commands(trigger) ON DELETE CASCADE
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS youtube_search_cache (
                     query_raw TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
@@ -253,23 +253,23 @@ class DatabaseManager:
                     loudness_db REAL DEFAULT NULL,
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS avatar_cache (
                     url TEXT PRIMARY KEY,
                     image_bytes BLOB NOT NULL,
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS system_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     level TEXT NOT NULL,
                     timestamp TEXT NOT NULL,
                     message TEXT NOT NULL
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS widgets_config (
                     widget_id TEXT PRIMARY KEY,
                     is_active INTEGER DEFAULT 1,
@@ -278,8 +278,8 @@ class DatabaseManager:
                     permission TEXT DEFAULT 'everyone',
                     config_json TEXT DEFAULT '{}'
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS daily_top_chatters (
                     chatter_date TEXT NOT NULL,
                     username TEXT NOT NULL,
@@ -290,8 +290,8 @@ class DatabaseManager:
                     last_seen TEXT NOT NULL,
                     PRIMARY KEY (chatter_date, username)
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
@@ -303,8 +303,8 @@ class DatabaseManager:
                     platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS timer_execution_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timer_id INTEGER NOT NULL,
@@ -313,8 +313,8 @@ class DatabaseManager:
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(timer_id) REFERENCES chat_timers(id) ON DELETE CASCADE
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS stream_schedules (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
@@ -329,8 +329,8 @@ class DatabaseManager:
                     is_active INTEGER DEFAULT 1,
                     last_executed_date TEXT DEFAULT ''
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS music_queue (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
@@ -343,8 +343,8 @@ class DatabaseManager:
                     duration TEXT DEFAULT '-',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS reward_redemptions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reward_name TEXT NOT NULL,
@@ -352,8 +352,8 @@ class DatabaseManager:
                     platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS channel_profiles (
                     platform TEXT PRIMARY KEY,
                     username TEXT,
@@ -368,8 +368,8 @@ class DatabaseManager:
                     raw_json TEXT,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE TABLE IF NOT EXISTS alert_configs (
                     platform TEXT NOT NULL,
                     alert_type TEXT NOT NULL,
@@ -403,7 +403,7 @@ class DatabaseManager:
                     card_height INTEGER DEFAULT 0,
                     PRIMARY KEY (platform, alert_type)
                 )
-            """)
+            ''')
             conn.commit()
 
     def _create_indexes_and_views(self) -> None:
@@ -429,45 +429,45 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_daily_chatters_date_count ON daily_top_chatters(chatter_date, message_count DESC)")
 
             try:
-                cursor.execute("""
+                cursor.execute('''
                     CREATE VIRTUAL TABLE IF NOT EXISTS youtube_search_cache_fts USING fts5(
                         query_raw,
                         title,
                         artist,
                         tokenize='trigram'
                     )
-                """)
+                ''')
                 cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_delete")
                 cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_update")
                 cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_insert")
 
-                cursor.execute("""
+                cursor.execute('''
                     CREATE TRIGGER IF NOT EXISTS trg_yt_cache_insert AFTER INSERT ON youtube_search_cache BEGIN
                         INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
                         VALUES (new.rowid, new.query_raw, new.title, new.artist);
                     END;
-                """)
-                cursor.execute("""
+                ''')
+                cursor.execute('''
                     CREATE TRIGGER IF NOT EXISTS trg_yt_cache_delete AFTER DELETE ON youtube_search_cache BEGIN
                         DELETE FROM youtube_search_cache_fts WHERE rowid = old.rowid;
                     END;
-                """)
-                cursor.execute("""
+                ''')
+                cursor.execute('''
                     CREATE TRIGGER IF NOT EXISTS trg_yt_cache_update AFTER UPDATE OF query_raw, title, artist ON youtube_search_cache BEGIN
                         DELETE FROM youtube_search_cache_fts WHERE rowid = old.rowid;
                         INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
                         VALUES (new.rowid, new.query_raw, new.title, new.artist);
                     END;
-                """)
-                cursor.execute("""
+                ''')
+                cursor.execute('''
                     INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
                     SELECT rowid, query_raw, title, artist FROM youtube_search_cache
                     WHERE rowid NOT IN (SELECT rowid FROM youtube_search_cache_fts)
-                """)
+                ''')
             except Exception as fts_init_err:
                 logger.debug("[DatabaseManager] FTS5 trigram initialization note: %s", fts_init_err)
 
-            cursor.execute("""
+            cursor.execute('''
                 CREATE VIEW IF NOT EXISTS command_analytics AS
                 SELECT 
                     c.trigger,
@@ -478,8 +478,8 @@ class DatabaseManager:
                 FROM chat_commands c
                 LEFT JOIN command_execution_logs l ON c.trigger = l.command_trigger
                 GROUP BY c.trigger
-            """)
-            cursor.execute("""
+            ''')
+            cursor.execute('''
                 CREATE VIEW IF NOT EXISTS active_features_summary AS
                 SELECT 
                     (SELECT COUNT(*) FROM chat_commands) AS total_commands,
@@ -487,62 +487,62 @@ class DatabaseManager:
                     (SELECT COUNT(*) FROM chat_timers) AS total_timers,
                     (SELECT COUNT(*) FROM chat_timers WHERE is_active = 1) AS active_timers,
                     (SELECT COUNT(*) FROM command_execution_logs) AS total_command_usages
-            """)
+            ''')
 
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_command_logs AFTER INSERT ON command_execution_logs
                 BEGIN
                     DELETE FROM command_execution_logs WHERE timestamp < datetime('now', '-30 days');
                 END;
-            """)
+            ''')
             cursor.execute("DROP TRIGGER IF EXISTS prune_youtube_cache")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_avatar_cache AFTER INSERT ON avatar_cache
                 BEGIN
                     DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
                 END;
-            """)
+            ''')
             
             cursor.execute("DROP TRIGGER IF EXISTS prune_system_logs")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_system_logs AFTER INSERT ON system_logs
                 BEGIN
                     DELETE FROM system_logs WHERE id <= (NEW.id - 2000);
                 END;
-            """)
+            ''')
             
             cursor.execute("DROP TRIGGER IF EXISTS prune_spam_violations")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_spam_violations AFTER INSERT ON spam_violations
                 BEGIN
                     DELETE FROM spam_violations WHERE id <= (NEW.id - 1000);
                 END;
-            """)
+            ''')
             
             cursor.execute("DROP TRIGGER IF EXISTS prune_timer_logs")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_timer_logs AFTER INSERT ON timer_execution_logs
                 BEGIN
                     DELETE FROM timer_execution_logs WHERE id <= (NEW.id - 1000);
                 END;
-            """)
+            ''')
             
             cursor.execute("DROP TRIGGER IF EXISTS prune_music_queue")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_music_queue AFTER INSERT ON music_queue
                 WHEN NEW.is_played = 2
                 BEGIN
                     DELETE FROM music_queue WHERE is_played = 2 AND id <= (NEW.id - 100);
                 END;
-            """)
+            ''')
             
             cursor.execute("DROP TRIGGER IF EXISTS prune_reward_redemptions")
-            cursor.execute("""
+            cursor.execute('''
                 CREATE TRIGGER IF NOT EXISTS prune_reward_redemptions AFTER INSERT ON reward_redemptions
                 BEGIN
                     DELETE FROM reward_redemptions WHERE id <= (NEW.id - 1000);
                 END;
-            """)
+            ''')
             conn.commit()
 
     def _apply_migrations(self) -> None:
@@ -672,35 +672,35 @@ class DatabaseManager:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 
-                cursor.execute("""
+                cursor.execute('''
                     SELECT command_trigger, COUNT(id) as cnt
                     FROM command_execution_logs
                     GROUP BY command_trigger
                     ORDER BY cnt DESC
                     LIMIT 5
-                """)
+                ''')
                 top_commands = [{"trigger": r[0], "count": r[1]} for r in cursor.fetchall()]
                 
-                cursor.execute("""
+                cursor.execute('''
                     SELECT platform, COUNT(id) as cnt
                     FROM command_execution_logs
                     GROUP BY platform
-                """)
+                ''')
                 platform_cmds = {r[0]: r[1] for r in cursor.fetchall()}
                 
-                cursor.execute("""
+                cursor.execute('''
                     SELECT platform, COUNT(id) as cnt
                     FROM reward_redemptions
                     GROUP BY platform
-                """)
+                ''')
                 platform_redemptions = {r[0]: r[1] for r in cursor.fetchall()}
                 total_redemptions = sum(platform_redemptions.values())
                 
-                cursor.execute("""
+                cursor.execute('''
                     SELECT platform, COUNT(id) as cnt
                     FROM spam_violations
                     GROUP BY platform
-                """)
+                ''')
                 platform_spam = {r[0]: r[1] for r in cursor.fetchall()}
                 total_spam = sum(platform_spam.values())
                 
@@ -749,7 +749,7 @@ class DatabaseManager:
         try:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     INSERT INTO channel_profiles (
                         platform, username, bio, avatar_url, followers,
                         room_id, category, affiliate_status, vods_enabled,
@@ -767,7 +767,7 @@ class DatabaseManager:
                         created_at=excluded.created_at,
                         raw_json=excluded.raw_json,
                         updated_at=CURRENT_TIMESTAMP
-                """, (
+                ''', (
                     platform.lower().strip(),
                     profile_data.get("username", ""),
                     profile_data.get("bio", ""),

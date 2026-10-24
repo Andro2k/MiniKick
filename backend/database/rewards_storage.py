@@ -13,11 +13,11 @@ class SQLiteRewardsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes,
                            reward_id, cost, description, background_color, is_user_input_required, platform
                     FROM obs_rewards
-                """)
+                ''')
                 result = {}
                 for r in cursor.fetchall():
                     reward_name = r[0]
@@ -94,9 +94,9 @@ class SQLiteRewardsStorage:
                         platform
                     ))
                 cursor.executemany(
-                    """INSERT INTO obs_rewards 
+                    '''INSERT INTO obs_rewards 
                        (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes, reward_id, cost, description, background_color, is_user_input_required, platform) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                     data
                 )
                 conn.commit()

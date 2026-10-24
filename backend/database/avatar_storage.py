@@ -29,10 +29,10 @@ class SQLiteAvatarStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute('''
                     INSERT INTO avatar_cache (url, image_bytes) VALUES (?, ?)
                     ON CONFLICT(url) DO UPDATE SET image_bytes=excluded.image_bytes, cached_at=CURRENT_TIMESTAMP
-                """, (url.strip(), data))
+                ''', (url.strip(), data))
                 conn.commit()
         except Exception as e:
             logger.error("[SQLiteAvatarStorage] Error saving to cache: %s", e)
