@@ -31,12 +31,7 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
 logger = logging.getLogger("minikick.core.app_logger")
 
 
-def write_fault_log_record(
-    level: int,
-    logger_name: str,
-    message: str,
-    thread_name: str | None = None,
-) -> None:
+def write_fault_log_record(level: int, logger_name: str, message: str, thread_name: str | None = None) -> None:
     if _fault_file_handle is None:
         return
 
