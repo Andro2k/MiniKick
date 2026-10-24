@@ -494,6 +494,7 @@ class MainWindowCore(QMainWindow):
             self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
 
     def _handle_navigation(self, view_name: str):
+        navigation_started = time.perf_counter()
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
         target_view = self._get_or_create_view(view_name)
         if target_view:
@@ -504,6 +505,11 @@ class MainWindowCore(QMainWindow):
                 self._update_integrations_status_ui()
             elif view_name == "Triggers":
                 self._fetch_api_rewards()
+            self.logger.info(
+                "[Perf/Navigation] Navigation to '%s' completed in %.2f ms",
+                view_name,
+                (time.perf_counter() - navigation_started) * 1000,
+            )
 
     def _get_or_create_view(self, view_name: str):
         return self._view_factory.get_or_create(view_name)

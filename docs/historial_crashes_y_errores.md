@@ -51,6 +51,7 @@
 | **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
+| **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 
 ---
 
@@ -1018,3 +1019,25 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - [`resources/tests/test_chat_overlay_controls.py`](../resources/tests/test_chat_overlay_controls.py)
 * **Solución Implementada**: El overlay usa `em` para escalar el avatar, los badges, los espaciados y las emotes a partir del tamaño tipográfico del mensaje. Se elimina el tamaño inline estático para que los mensajes existentes hereden los cambios de `--font-size`; el valor se normaliza al rango admitido de 10 a 36 px. La previsualización Qt recibe el tamaño y escala conjuntamente el texto, el perfil y los badges.
 * **Pruebas y Verificación**: `resources/tests/test_chat_overlay_controls.py`: 9 pruebas aprobadas. `node --check assets/overlays/chat/js/chat.js` correcto. La suite rápida de calidad aprobó 12/12 auditorías. Verificación visual en navegador confirmó que avatar y badges duplican sus dimensiones al pasar de 14 a 28 px en orientaciones vertical y horizontal.
+
+---
+
+### INC-042: `NameError` al abrir Chat después de diferir la carga de vistas
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la navegación a Chat activaba el manejador global de excepciones y podía terminar abruptamente la aplicación).
+* **Reportes Asociados**: Log del usuario `minikick.log`, líneas 1396-1408.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  File "frontend\main_window_views.py", line 57, in get_or_create
+    window.view_chat = ChatView(window.i18n, parent=window.content_stack)
+  NameError: name 'ChatView' is not defined
+  [CRI] QThread: Destroyed while thread '' is still running
+  ```
+* **Causa Raíz**: La carga perezosa implementada mediante `__getattr__` resolvía atributos solicitados externamente al módulo, pero los nombres globales usados directamente dentro de `MainWindowViewFactory.get_or_create` no pasan por `__getattr__`. Por ello, al navegar a una vista no importada previamente, como Chat, su clase no existía en el espacio global de la función.
+* **Archivos y Módulos Modificados**:
+  - [`frontend/main_window_views.py`](../frontend/main_window_views.py)
+  - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
+* **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.

@@ -5,12 +5,7 @@ import sys
 import threading
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
-from backend.core.log_format import (
-    LEVEL_ALIASES,
-    ParsedLogLine,
-    log_level_matches,
-    parse_log_line,
-)
+
 
 _SHORT_LEVELS: dict[str, str] = {
     "DEBUG": "DBG",
