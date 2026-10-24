@@ -2,11 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_icon_colored, Palette, Size
 from .controls_widget import configure_icon_only_button
 
 class ModernSegmentedControl(QFrame):
@@ -23,7 +19,7 @@ class ModernSegmentedControl(QFrame):
         self._current_value = ""
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(*Size.Margin.XS)
+        self._layout.setContentsMargins(*Size.Margin.MRG_XXS)
         self._layout.setSpacing(Size.SPACING_XS)
 
         self._btn_group = QButtonGroup(self)

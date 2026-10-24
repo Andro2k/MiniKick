@@ -1,11 +1,15 @@
 import logging
+import subprocess
+import sys
 import threading
 import time
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
+from PySide6.QtCore import QEvent, QEventLoop, QObject, QThread, QTimer
 
+from frontend.main_window import MainWindowCore
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.worker_shutdown import WorkerShutdownCoordinator
@@ -39,7 +43,9 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     import frontend.main_window_views as views_module
 
     view = MagicMock()
-    monkeypatch.setattr(views_module, "ChatView", MagicMock(return_value=view))
+    chat_view_class = MagicMock(return_value=view)
+    import_module = MagicMock(return_value=SimpleNamespace(ChatView=chat_view_class))
+    monkeypatch.setattr(views_module.importlib, "import_module", import_module)
     content_stack = MagicMock()
     content_stack.indexOf.return_value = 0
     window = SimpleNamespace(
@@ -54,8 +60,29 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
 
     assert factory.get_or_create("Chat") is view
     assert factory.get_or_create("Chat") is view
+    import_module.assert_called_once_with(".views.chat_view", package="frontend")
+    chat_view_class.assert_called_once_with(window.i18n, parent=content_stack)
     content_stack.addWidget.assert_called_once_with(view)
     window.chat_controller.attach_view.assert_called_once_with(view)
+
+
+def test_views_package_defers_importing_unselected_views():
+    project_root = Path(__file__).resolve().parents[2]
+    code = (
+        "import sys; import frontend.views; "
+        "assert 'frontend.views.chat_view' not in sys.modules; "
+        "from frontend.views import DashboardView; "
+        "assert 'frontend.views.dashboard_view' in sys.modules; "
+        "assert 'frontend.views.chat_view' not in sys.modules"
+    )
+
+    subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=project_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_worker_shutdown_does_not_block_the_event_loop(qapp):
@@ -89,3 +116,53 @@ def test_worker_shutdown_does_not_block_the_event_loop(qapp):
     assert completed == [True]
     assert not worker.isRunning()
     assert worker not in retiring_workers
+
+
+def test_worker_shutdown_ignores_already_deleted_qthread(qapp, caplog):
+    parent = QObject()
+    retiring_workers = set()
+    coordinator = WorkerShutdownCoordinator(
+        parent,
+        logging.getLogger("test.worker_shutdown"),
+        retiring_workers,
+    )
+    worker = QThread()
+    worker.deleteLater()
+    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+    with caplog.at_level(logging.WARNING, logger="test.worker_shutdown"):
+        coordinator.stop_workers([("deleted worker", worker)])
+
+    assert not caplog.records
+    assert worker not in retiring_workers
+
+
+def test_whats_new_fetch_replaces_already_deleted_worker(qapp, monkeypatch):
+    import backend.workers
+
+    stale_worker = QThread()
+    stale_worker.deleteLater()
+    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+    replacement = SimpleNamespace(
+        highlights_fetched=MagicMock(),
+        finished=MagicMock(),
+        deleteLater=MagicMock(),
+        start=MagicMock(),
+    )
+    worker_factory = MagicMock(return_value=replacement)
+    monkeypatch.setattr(backend.workers, "WhatsNewWorker", worker_factory)
+    window = SimpleNamespace(
+        _is_shutting_down=False,
+        _is_window_closing=False,
+        _whats_new_worker=stale_worker,
+        _is_worker_running=MainWindowCore._is_worker_running,
+        app_version="1.6.5",
+        _on_remote_whats_new_fetched=MagicMock(),
+    )
+
+    MainWindowCore._fetch_remote_whats_new_if_needed(window)
+
+    worker_factory.assert_called_once_with("1.6.5", parent=window)
+    replacement.start.assert_called_once_with()
+    assert window._whats_new_worker is replacement

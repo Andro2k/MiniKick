@@ -4,11 +4,7 @@ from PySide6.QtGui import QRegion
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernButton
-from frontend.common import (
-    PATH_ICON_HELP,
-    BrandColors,
-    Size,
-)
+from frontend.common import PATH_ICON_HELP, BrandColors, Size
 from .base_dialog import ModernModal
 from frontend.components.dialogs import DraggableBox
 

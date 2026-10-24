@@ -3,11 +3,7 @@
 from PySide6.QtWidgets import QHeaderView, QMenu, QStyleOptionHeader, QStyle
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
 from PySide6.QtGui import QPainter, QAction, QColor, QFont
-from frontend.common import (
-    get_icon_colored,
-    Palette,
-    BrandColors,
-)
+from frontend.common import get_icon_colored, Palette, BrandColors
 
 class FilterHeaderView(QHeaderView):
     filter_changed = Signal(object)
@@ -143,9 +139,9 @@ class FilterHeaderView(QHeaderView):
         has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
         if config.get("sort_asc_label"):
-            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_400, 14), config["sort_asc_label"])
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_050, 16), config["sort_asc_label"])
         if config.get("sort_desc_label"):
-            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_400, 14), config["sort_desc_label"])
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_050, 16), config["sort_desc_label"])
 
         action_all = None
         action_map: dict[QAction, str] = {}

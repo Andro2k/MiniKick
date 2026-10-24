@@ -1,10 +1,7 @@
 # frontend\dialogs\tiktok_connect_dialog.py
 
 from .platform_dialog import PlatformConnectDialog
-from frontend.common import (
-    get_assets_path,
-    BrandColors,
-)
+from frontend.common import get_assets_path, BrandColors
 
 class TikTokConnectDialog(PlatformConnectDialog):
     def __init__(self, i18n, initial_target: str = "", parent=None):

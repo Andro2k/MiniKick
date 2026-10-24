@@ -10,7 +10,7 @@ class AlertsOverlayCard(ModernCard):
     open_browser_requested = Signal()
 
     def __init__(self, alerts_overlay_url: str, i18n, parent=None):
-        super().__init__(parent=parent, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.alerts_overlay_url = alerts_overlay_url
         self.i18n = i18n
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
@@ -29,7 +29,7 @@ class AlertsOverlayCard(ModernCard):
             title_text=self.i18n.get("alerts.overlay_card.title"),
             desc_text=self.i18n.get("alerts.overlay_card.desc"),
             right_widget=self.btn_copy_url,
-            contents_margins=Size.Margin.NONE
+            contents_margins=Size.Margin.MRG_NON
         )
         
         self.addWidget(overlay_row)

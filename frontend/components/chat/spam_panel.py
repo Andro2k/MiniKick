@@ -3,9 +3,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from frontend.widgets import ExpandableSettingCard, SectionHeader
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 _SPAM_FILTER_SPECS: tuple[tuple[str, str, str, str, bool], ...] = (
     ("caps_protection", "spam.filters.caps.title", "spam.filters.caps.desc", "text-filled.svg", True),
@@ -29,7 +27,7 @@ class ChatSpamPanel(QWidget):
 
     def _setup_ui(self):
         panel = QVBoxLayout(self)
-        panel.setContentsMargins(*Size.Margin.MD)
+        panel.setContentsMargins(*Size.Margin.MRG_MED)
         panel.setSpacing(Size.SPACING_MD)
         self.panel_layout = panel
 

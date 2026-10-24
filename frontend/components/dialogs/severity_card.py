@@ -2,9 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 from frontend.widgets import create_row_layout, create_col_layout
 
 class SeverityCard(QFrame):
@@ -16,8 +14,8 @@ class SeverityCard(QFrame):
         self.setProperty("role", "card")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        layout = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MD, parent=self)
-        text_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.NONE)
+        layout = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_MED, parent=self)
+        text_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_NON)
 
         self.lbl_title = QLabel(title)
         self.lbl_title.setProperty("role", "body")

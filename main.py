@@ -66,15 +66,15 @@ def _get_safe_i18n():
 
 def global_crash_handler(exctype, value, tb):
     tb_text = "".join(traceback.format_exception(exctype, value, tb))
-    from datetime import datetime
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     try:
-        logger.critical("[FATAL CRASH] Unhandled exception caught by global excepthook:\n%s", tb_text)
-        from backend.core import app_logger_core
-        if getattr(app_logger_core, "_fault_file_handle", None):
-            app_logger_core._fault_file_handle.write(f"\n[{now_str}] [FATAL_CRASH] Unhandled exception caught by global excepthook:\n{tb_text}\n")
-            app_logger_core._fault_file_handle.flush()
+        logger.critical("Unhandled exception caught by global excepthook:\n%s", tb_text)
+        from backend.core import write_fault_log_record
+        write_fault_log_record(
+            logging.CRITICAL,
+            "minikick.main",
+            f"Unhandled exception caught by global excepthook:\n{tb_text}",
+        )
         flush_all_logs()
     except Exception:
         pass
@@ -171,9 +171,7 @@ def bootstrap():
         (t_splash_visible - t_boot_start) * 1000
     )
 
-    from backend.services.system import (
-        GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
-    )
+    from backend.services.system import GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
 
     logger.debug("[Bootstrap] Checking single-instance socket on port 45678...")
     splash.set_progress(30, safe_i18n.get("splash.check_instance"))

@@ -2,16 +2,8 @@
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import (
-    QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
-)
-from frontend.common import (
-    get_qcolor_with_alpha,
-    Palette,
-    Semantic,
-    BrandColors,
-    ChatTheme,
-)
+from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
+from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, ChatTheme
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
@@ -45,6 +37,7 @@ class ChatOverlayMockupWidget(QWidget):
         self.hide_commands = False
         self.big_emotes = True
         self.show_gifs = True
+        self.font_size = 14
         self.setFixedHeight(180)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
@@ -58,10 +51,12 @@ class ChatOverlayMockupWidget(QWidget):
         show_platform: bool = True,
         hide_commands: bool = False,
         big_emotes: bool = True,
-        show_gifs: bool = True
+        show_gifs: bool = True,
+        size: int = 14
     ):
         new_theme = theme if theme in VALID_CHAT_THEMES else DEFAULT_CHAT_THEME
         new_orientation = orientation or "vertical"
+        new_font_size = max(10, min(36, int(size)))
         changed = (
             self.theme_mode != new_theme
             or self.orientation != new_orientation
@@ -72,6 +67,7 @@ class ChatOverlayMockupWidget(QWidget):
             or self.hide_commands != hide_commands
             or self.big_emotes != big_emotes
             or self.show_gifs != show_gifs
+            or self.font_size != new_font_size
         )
         if changed:
             self.theme_mode = new_theme
@@ -83,12 +79,18 @@ class ChatOverlayMockupWidget(QWidget):
             self.hide_commands = hide_commands
             self.big_emotes = big_emotes
             self.show_gifs = show_gifs
+            self.font_size = new_font_size
             self.setFixedHeight(105 if self.orientation == "horizontal" else 180)
             self.update()
 
     def paintEvent(self, _event):
         p, w, h = init_mockup_painter(self)
-        canvas_rect = draw_mockup_canvas(p, w, h)
+        draw_mockup_canvas(p, w, h)
+        scale = self.font_size / 14.0
+        p.save()
+        p.scale(scale, scale)
+        w = int(w / scale)
+        h = int(h / scale)
 
         sample_user = self.i18n.get("chat.overlay.preview_sample_user") if self.i18n else "TheAndro2K"
         sample_msg_1 = self.i18n.get("chat.overlay.preview_sample_msg_1") if self.i18n else "hola xd"
@@ -111,6 +113,7 @@ class ChatOverlayMockupWidget(QWidget):
             self._draw_horizontal(p, w, h, sample_user, sample_msg_1, msg2_data)
         else:
             self._draw_vertical(p, w, h, sample_user, sample_msg_1, msg2_data)
+        p.restore()
 
     def _get_avatar_gradient(self, user: str) -> tuple[str, str]:
         if not user:

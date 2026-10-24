@@ -7,9 +7,7 @@ from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 
 from .paths import resolve_icon_path
-from .theme import (
-    Palette,
-)
+from .theme import Palette
 
 logger = logging.getLogger("minikick.icons")
 

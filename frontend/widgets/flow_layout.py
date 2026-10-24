@@ -2,12 +2,10 @@
 
 from PySide6.QtWidgets import QLayout
 from PySide6.QtCore import Qt, QSize, QRect
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 class FlowLayout(QLayout):
-    def __init__(self, parent=None, margin=Size.Margin.NONE, hspacing=Size.SPACING_MD, vspacing=Size.SPACING_MD):
+    def __init__(self, parent=None, margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_MD, vspacing=Size.SPACING_MD):
         super().__init__(parent)
         self._item_list = []
         self._hspacing = hspacing

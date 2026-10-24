@@ -305,12 +305,8 @@ class TikTokChatProvider:
 
         try:
             from TikTokLive import TikTokLiveClient
-            from TikTokLive.events import (
-                CommentEvent, ConnectEvent, DisconnectEvent
-            )
-            from TikTokLive.client.errors import (
-                UserNotFoundError, UserOfflineError, AgeRestrictedError, TikTokLiveError
-            )
+            from TikTokLive.events import CommentEvent, ConnectEvent, DisconnectEvent
+            from TikTokLive.client.errors import UserNotFoundError, UserOfflineError, AgeRestrictedError, TikTokLiveError
         except ImportError as e:
             err_msg = f"Dependencia TikTokLive no disponible: {e}"
             logger.error("[TikTokChatProvider] %s", err_msg)

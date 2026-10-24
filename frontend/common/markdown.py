@@ -2,11 +2,7 @@
 
 import re
 from functools import lru_cache
-from frontend.common.theme import (
-    Palette,
-    Semantic,
-    BrandColors,
-)
+from frontend.common.theme import Palette, Semantic, BrandColors, Padding, Size
 
 _RE_LATEX_O     = re.compile(r'\$\\mathcal\{O\}\((.*?)\)\$')
 _RE_LATEX_MATH  = re.compile(r'\$(.*?)\$')
@@ -25,8 +21,8 @@ _CALLOUT_STYLES = {
     'TIP': (BrandColors.GREEN, Semantic.CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', Semantic.GREEN_GLOW),
     'CAUTION': (BrandColors.RED, Semantic.CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', Semantic.RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 
 def _render_callout(callout_type: str, lines: list[str]) -> str:
@@ -34,7 +30,7 @@ def _render_callout(callout_type: str, lines: list[str]) -> str:
     icon_span = f'<span style="font-family: {_NERD_FONT_FAMILY}; font-size: 13px;">{icon}</span>'
     body = "<br/>".join(lines)
     return (
-        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0;">'
+        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_CALL}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
         f'<div style="color: {title_color}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{icon_span} {label}</div>'
         f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; line-height: 1.5;">{body}</div>'
         f'</div>'
@@ -52,7 +48,7 @@ def _render_table(rows: list[list[str]]) -> str:
         output.append(f'<tr style="background-color: {background};">')
         for cell in row:
             output.append(
-                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_900}; padding: 7px 10px; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
+                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_900}; padding: {Padding.PAD_CORE}; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
             )
         output.append('</tr>')
     output.append('</table>')
@@ -61,9 +57,9 @@ def _render_table(rows: list[list[str]]) -> str:
 
 def _render_block(line: str) -> str:
     if line.startswith('# '):
-        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: 6px; margin: 16px 0 10px 0;">{line[2:]}</h1>'
+        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_SM}px; margin: 16px 0 10px 0;">{line[2:]}</h1>'
     if line.startswith('## '):
-        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: 4px; margin: 14px 0 8px 0;">{line[3:]}</h2>'
+        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_XXS}px; margin: 14px 0 8px 0;">{line[3:]}</h2>'
     if line.startswith('### '):
         return f'<h3 style="color: {Palette.NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0 6px 0;">{line[4:]}</h3>'
     if line in ('---', '***'):

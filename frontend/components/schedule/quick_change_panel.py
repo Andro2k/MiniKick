@@ -1,20 +1,9 @@
 # frontend\components\schedule\quick_change_panel.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,
-                               QLineEdit, QPushButton, QFrame)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import (
-    ModernCard, ModernButton, CategorySearchComboBox,
-    create_platform_switches, create_row_layout, create_col_layout, create_text_label,
-    sync_dual_platform_switches
-)
-from frontend.common import (
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ScheduleQuickChangePanel(QWidget):
@@ -30,12 +19,12 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh-filled.svg", Palette.NEUTRAL_400, 16)
+        self._icon_refresh = get_icon_colored("refresh-filled.svg", Palette.NEUTRAL_050, 16)
         self._setup_ui()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MD)
+        layout.setContentsMargins(*Size.Margin.MRG_MED)
         layout.setSpacing(Size.SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -44,7 +33,7 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _setup_status_section(self, parent_layout: QVBoxLayout):
         status_header = QHBoxLayout()
-        status_header.setContentsMargins(*Size.Margin.SM)
+        status_header.setContentsMargins(*Size.Margin.MRG_XSM)
         status_header.setSpacing(Size.SPACING_MD)
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
@@ -65,10 +54,10 @@ class ScheduleQuickChangePanel(QWidget):
         parent_layout.addLayout(status_header)
 
         self.cards_grid = QGridLayout()
-        self.cards_grid.setContentsMargins(*Size.Margin.NONE)
+        self.cards_grid.setContentsMargins(*Size.Margin.MRG_NON)
         self.cards_grid.setSpacing(Size.SPACING_MD)
 
-        self.kick_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.kick_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         kick_header = QHBoxLayout()
         kick_header.setSpacing(Size.SPACING_MD)
 
@@ -88,7 +77,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.kick_title_box = QFrame()
         self.kick_title_box.setProperty("role", "card")
         kick_title_layout = QVBoxLayout(self.kick_title_box)
-        kick_title_layout.setContentsMargins(*Size.Margin.MD)
+        kick_title_layout.setContentsMargins(*Size.Margin.MRG_MED)
         kick_title_layout.setSpacing(Size.SPACING_XS)
         lbl_kick_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_kick_t_header.setProperty("role", "caption")
@@ -102,7 +91,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.kick_cat_box = QFrame()
         self.kick_cat_box.setProperty("role", "card")
         kick_cat_layout = QVBoxLayout(self.kick_cat_box)
-        kick_cat_layout.setContentsMargins(*Size.Margin.MD)
+        kick_cat_layout.setContentsMargins(*Size.Margin.MRG_MED)
         kick_cat_layout.setSpacing(Size.SPACING_XS)
         lbl_kick_c_header = QLabel(self.i18n.get("stream_info.quick_change.category"))
         lbl_kick_c_header.setProperty("role", "caption")
@@ -113,7 +102,7 @@ class ScheduleQuickChangePanel(QWidget):
         kick_cat_layout.addWidget(self.lbl_kick_cat)
         self.kick_card.addWidget(self.kick_cat_box)
 
-        self.twitch_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.twitch_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         twitch_header = QHBoxLayout()
         twitch_header.setSpacing(Size.SPACING_MD)
 
@@ -133,7 +122,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_title_box = QFrame()
         self.twitch_title_box.setProperty("role", "card")
         twitch_title_layout = QVBoxLayout(self.twitch_title_box)
-        twitch_title_layout.setContentsMargins(*Size.Margin.MD)
+        twitch_title_layout.setContentsMargins(*Size.Margin.MRG_MED)
         twitch_title_layout.setSpacing(Size.SPACING_XS)
         lbl_twitch_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_twitch_t_header.setProperty("role", "caption")
@@ -147,7 +136,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_cat_box = QFrame()
         self.twitch_cat_box.setProperty("role", "card")
         twitch_cat_layout = QVBoxLayout(self.twitch_cat_box)
-        twitch_cat_layout.setContentsMargins(*Size.Margin.MD)
+        twitch_cat_layout.setContentsMargins(*Size.Margin.MRG_MED)
         twitch_cat_layout.setSpacing(Size.SPACING_XS)
         lbl_twitch_c_header = QLabel(self.i18n.get("stream_info.quick_change.category"))
         lbl_twitch_c_header.setProperty("role", "caption")
@@ -189,7 +178,7 @@ class ScheduleQuickChangePanel(QWidget):
             self.cards_grid.addWidget(self.twitch_card, 0, 1)
 
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
-        change_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_MD)
+        change_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
         header_layout = create_row_layout(spacing=Size.SPACING_MD)
         lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h3", word_wrap=False)
         header_layout.addWidget(lbl_title)

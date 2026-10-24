@@ -1319,6 +1319,15 @@
             "release_notes_title": "Novedades de la Versión",
             "tray_desc": "Mantiene MiniKick activo en la bandeja del sistema al presionar el botón de cerrar.",
             "tray_title": "Ejecución en Segundo Plano",
+            "auto_update_download_desc": "Descarga actualizaciones en segundo plano al iniciar MiniKick. Se pedirá confirmación antes de instalar y reiniciar.",
+            "auto_update_download_title": "Descargar actualizaciones automáticamente",
+            "auto_update_download_started_desc": "Se encontró una nueva versión y se está descargando en segundo plano.",
+            "auto_update_download_started_title": "Descargando actualización",
+            "auto_update_download_failed_title": "Error al descargar la actualización",
+            "auto_update_download_complete_desc": "La versión {version} se descargó. Puedes instalarla la próxima vez que busques actualizaciones.",
+            "auto_update_download_complete_title": "Actualización lista",
+            "auto_update_ready_desc": "Se descargó la versión {version}. ¿Quieres instalarla ahora y reiniciar MiniKick?",
+            "auto_update_ready_title": "Actualización lista para instalar",
             "update_desc": "Comprueba si hay nuevas versiones y mejoras disponibles.",
             "update_title": "Actualizaciones de Software"
         }

@@ -64,9 +64,12 @@ class UpdaterController(QObject):
         self.error.emit(err_msg)
 
     @Slot(str)
-    def start_download(self, url: str):
+    def start_download(self, url: str) -> bool:
         if self.download_worker and self.download_worker.isRunning():
-            return
+            return False
+        if not url:
+            logger.error("[UpdaterController] Cannot start update download without a URL.")
+            return False
         logger.info("[UpdaterController] Starting download from URL: %s", url)
         self.download_started.emit()
         self.download_worker = UpdateDownloadWorker(self.updater_manager, url)
@@ -74,6 +77,7 @@ class UpdaterController(QObject):
         self.download_worker.finished.connect(self._on_download_finished)
         self.download_worker.error.connect(self._on_download_error)
         self.download_worker.start()
+        return True
 
     def _on_download_finished(self, success: bool):
         if success:

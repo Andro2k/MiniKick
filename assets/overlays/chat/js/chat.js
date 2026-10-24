@@ -11,10 +11,12 @@ const urlOrientation = urlParams.get('orientation');
 
 const MAX_SAFE_DOM_NODES = 50;
 const VALID_THEMES = new Set(['dark', 'light', 'minimal']);
+const MIN_FONT_SIZE = 10;
+const MAX_FONT_SIZE = 36;
 let rawTheme = urlParams.get('theme') || 'dark';
 let theme = VALID_THEMES.has(rawTheme) ? rawTheme : 'dark';
 let fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade'), 10) : 15;
-let fontSize = urlParams.get('size') || '14px';
+let fontSize = normalizeFontSize(urlParams.get('size'));
 let showBots = urlParams.get('show_bots') !== 'false';
 let showTime = urlParams.get('show_time') === 'true';
 let orientation = urlOrientation || 'vertical';
@@ -33,6 +35,12 @@ if (themeStyle) {
     themeStyle.href = `/css/${theme}.css`;
 }
 document.documentElement.style.setProperty('--font-size', fontSize);
+
+function normalizeFontSize(value) {
+    const parsedSize = Number.parseFloat(String(value ?? '14'));
+    const safeSize = Number.isFinite(parsedSize) ? parsedSize : 14;
+    return `${Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, safeSize))}px`;
+}
 
 const container = document.getElementById('chat-container');
 if (container) {
@@ -67,9 +75,8 @@ function applyLiveConfig(cfg) {
         if (themeStyle) themeStyle.href = `/css/${theme}.css`;
     }
 
-    if (modeConfig.size && !urlParams.has('size')) {
-        const rawSize = String(modeConfig.size).trim();
-        fontSize = rawSize.endsWith('px') ? rawSize : `${rawSize}px`;
+    if (modeConfig.size !== undefined && !urlParams.has('size')) {
+        fontSize = normalizeFontSize(modeConfig.size);
         document.documentElement.style.setProperty('--font-size', fontSize);
     }
 
@@ -466,7 +473,6 @@ function addMessage(data) {
     const roleClass = getRoleClass(data.badges);
     const msgBox = document.createElement('div');
     msgBox.className = `message-box theme-${theme} role-${roleClass} ${animClass}`;
-    msgBox.style.fontSize = fontSize;
 
     if (data.is_highlighted || data.highlighted) {
         msgBox.classList.add('highlighted');

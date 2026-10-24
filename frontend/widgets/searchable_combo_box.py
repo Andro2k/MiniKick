@@ -2,15 +2,8 @@
 
 import time
 from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import (
-    QFrame, QVBoxLayout, QHBoxLayout, QLineEdit,
-    QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
-)
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    Size,
-)
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
+from frontend.common import get_pixmap_colored, Palette, Size
 from .no_wheel import NoWheelComboBox
 from .layout_helpers import render_styled_frame_background
 
@@ -49,14 +42,14 @@ class SearchableComboPopup(QFrame):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.XS)
+        layout.setContentsMargins(*Size.Margin.MRG_XXS)
         layout.setSpacing(Size.SPACING_XS)
 
         search_container = QFrame(self)
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedHeight(30)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*Size.Margin.H_MD)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
         search_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)

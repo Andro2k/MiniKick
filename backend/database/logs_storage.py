@@ -3,6 +3,7 @@
 import logging
 import sys
 from .database_manager import DatabaseManager
+from backend.core.log_format import LEVEL_ALIASES
 
 logger = logging.getLogger("minikick.database.system_logs")
 
@@ -29,30 +30,6 @@ class SQLiteSystemLogStorage:
                 except Exception:
                     pass
         return None
-
-    def update_last_log(self, message: str, log_id: int | None = None) -> None:
-        if not self.db_manager:
-            return
-        try:
-            with self.db_manager.get_connection() as conn:
-                cursor = conn.cursor()
-                if log_id is not None:
-                    cursor.execute(
-                        "UPDATE system_logs SET message = message || '\n' || ? WHERE id = ?",
-                        (message, log_id)
-                    )
-                else:
-                    cursor.execute(
-                        "UPDATE system_logs SET message = message || '\n' || ? WHERE id = (SELECT max(id) FROM system_logs)",
-                        (message,)
-                    )
-                conn.commit()
-        except Exception as e:
-            if sys.__stderr__ is not None:
-                try:
-                    sys.__stderr__.write(f"Error updating log in DB: {e}\n")
-                except Exception:
-                    pass
 
     def clear_logs(self) -> None:
         if not self.db_manager:
@@ -89,22 +66,11 @@ class SQLiteSystemLogStorage:
                 params = []
                 
                 if filter_level != all_label:
-                    level_pairs = {
-                        "INFO": ("INFO", "INF"),
-                        "DEBUG": ("DEBUG", "DBG"),
-                        "WARNING": ("WARNING", "WRN"),
-                        "ERROR": ("ERROR", "ERR"),
-                        "CRITICAL": ("CRITICAL", "CRI"),
-                        "INF": ("INFO", "INF"),
-                        "DBG": ("DEBUG", "DBG"),
-                        "WRN": ("WARNING", "WRN"),
-                        "ERR": ("ERROR", "ERR"),
-                        "CRI": ("CRITICAL", "CRI"),
-                    }
-                    if filter_level in level_pairs:
-                        p1, p2 = level_pairs[filter_level]
-                        query += " AND (level = ? OR level = ?)"
-                        params.extend([p1, p2])
+                    level_aliases = LEVEL_ALIASES.get(filter_level.upper())
+                    if level_aliases:
+                        placeholders = ", ".join("?" for _ in level_aliases)
+                        query += f" AND level IN ({placeholders})"
+                        params.extend(level_aliases)
                     else:
                         query += " AND level = ?"
                         params.append(filter_level)

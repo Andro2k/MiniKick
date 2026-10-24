@@ -3,16 +3,10 @@
 from __future__ import annotations
 from typing import Optional
 
-from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QLabel, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
 
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_pixmap_colored, Palette, Size
 
 class InspectorPropertyRow(QWidget):
     def __init__(
@@ -29,7 +23,7 @@ class InspectorPropertyRow(QWidget):
         self.setMinimumHeight(36)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.V_XS)
+        layout.setContentsMargins(*Size.Margin.MRG_VXS)
         layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:

@@ -2,15 +2,8 @@
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import (
-    QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont
-)
-from frontend.common import (
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    MusicTheme,
-)
+from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
+from frontend.common import get_qcolor_with_alpha, Palette, BrandColors, MusicTheme
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 class MusicOverlayMockupWidget(QWidget):
@@ -197,6 +190,5 @@ class MusicOverlayMockupWidget(QWidget):
         p.drawText(QRectF(text_x + prog_w - 40 * scale, time_y, 40 * scale, 12 * scale), Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, "3:43")
 
     def _elide(self, text: str, font: QFont, max_w: float) -> str:
-        from PySide6.QtGui import QFontMetrics
         fm = QFontMetrics(font)
         return fm.elidedText(text, Qt.TextElideMode.ElideRight, int(max_w))

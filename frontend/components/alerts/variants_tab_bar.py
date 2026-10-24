@@ -3,17 +3,10 @@
 from __future__ import annotations
 from typing import Dict, List, Tuple, Optional
 
-from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
-)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernSwitch, ModernCard
 
 class AlertVariantTabPill(QFrame):
@@ -45,7 +38,7 @@ class AlertVariantTabPill(QFrame):
     def _setup_ui(self):
         self.setProperty("role", "banner_scope_card")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.SM)
+        layout.setContentsMargins(*Size.Margin.MRG_XSM)
         layout.setSpacing(Size.SPACING_SM)
 
         self.icon_lbl = QLabel(parent=self)
@@ -116,7 +109,7 @@ class AlertVariantsTabBar(ModernCard):
         i18n,
         parent: Optional[QWidget] = None
     ):
-        super().__init__(parent=parent, margin=Size.Margin.SM, spacing=Size.SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM)
         self.platform = platform
         self.events = events
         self.i18n = i18n
@@ -135,7 +128,7 @@ class AlertVariantsTabBar(ModernCard):
 
         container = QWidget()
         container_layout = QHBoxLayout(container)
-        container_layout.setContentsMargins(*Size.Margin.NONE)
+        container_layout.setContentsMargins(*Size.Margin.MRG_NON)
         container_layout.setSpacing(Size.SPACING_SM)
 
         for alert_type, icon_name in self.events:

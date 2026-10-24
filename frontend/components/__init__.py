@@ -5,28 +5,11 @@ from . import music
 from . import schedule
 from . import widgets
 
-from .chat import (BotMutePanel, ChatDisplayPanel,
-    ChatOverlaySettingsPanel, ChatOverlayMockupWidget,
-    ChatTtsSettingsPanel, VoiceSettingRow, ChatSpamPanel,
-    PlatformToggleItem,
-)
-from .music import (MusicStatsPanel,MusicPlayerSettingsPanel,
-    MusicSettingsPanel,MusicCommandsPanel,
-    MusicQueuePanel,DragDropQueueTable,
-    MusicOverlayMockupWidget,
-)
-from .schedule import (
-    ScheduleQuickChangePanel,
-    ScheduleFormPanel,
-    ScheduleTablePanel,
-)
-from .widgets import (
-    WidgetCard,
-)
-from .mockup_helpers import (
-    init_mockup_painter,
-    draw_mockup_canvas,
-)
+from .chat import BotMutePanel, ChatDisplayPanel, ChatOverlaySettingsPanel, ChatOverlayMockupWidget, ChatTtsSettingsPanel, VoiceSettingRow, ChatSpamPanel, PlatformToggleItem
+from .music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicSettingsPanel, MusicCommandsPanel, MusicQueuePanel, DragDropQueueTable, MusicOverlayMockupWidget
+from .schedule import ScheduleQuickChangePanel, ScheduleFormPanel, ScheduleTablePanel
+from .widgets import WidgetCard
+from .mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 __all__ = [
     "chat",

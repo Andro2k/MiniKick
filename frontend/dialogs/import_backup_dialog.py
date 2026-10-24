@@ -1,14 +1,10 @@
 # frontend\dialogs\import_backup_dialog.py
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
 from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard, ModernScrollArea
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 SECTION_ORDER = [
     "settings",
@@ -70,10 +66,10 @@ class ImportBackupModal(ModernModal):
         version = self.backup_info.get("version")
         export_date = self.backup_info.get("export_date")
         if version or export_date:
-            meta_card = ModernCard(parent=self, margin=Size.Margin.SM, spacing=Size.SPACING_XS)
+            meta_card = ModernCard(parent=self, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_XS)
             if version:
                 row_v = QHBoxLayout()
-                row_v.setContentsMargins(*Size.Margin.SM)
+                row_v.setContentsMargins(*Size.Margin.MRG_XSM)
                 row_v.setSpacing(Size.SPACING_SM)
                 lbl_v_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_version"), self)
                 lbl_v_tag.setProperty("role", "caption")
@@ -87,7 +83,7 @@ class ImportBackupModal(ModernModal):
 
             if export_date:
                 row_d = QHBoxLayout()
-                row_d.setContentsMargins(*Size.Margin.SM)
+                row_d.setContentsMargins(*Size.Margin.MRG_XSM)
                 row_d.setSpacing(Size.SPACING_SM)
                 lbl_d_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_date"), self)
                 lbl_d_tag.setProperty("role", "caption")
@@ -101,7 +97,7 @@ class ImportBackupModal(ModernModal):
             self.content_layout.addWidget(meta_card)
 
         actions_bar = QHBoxLayout()
-        actions_bar.setContentsMargins(*Size.Margin.NONE)
+        actions_bar.setContentsMargins(*Size.Margin.MRG_NON)
         actions_bar.setSpacing(Size.SPACING_SM)
 
         self.btn_select_all = ModernButton(
@@ -133,15 +129,15 @@ class ImportBackupModal(ModernModal):
 
         sections_container = QWidget()
         sections_layout = QVBoxLayout(sections_container)
-        sections_layout.setContentsMargins(*Size.Margin.NONE)
+        sections_layout.setContentsMargins(*Size.Margin.MRG_NON)
         sections_layout.setSpacing(Size.SPACING_SM)
 
-        card_sections = ModernCard(parent=sections_container, margin=Size.Margin.SM, spacing=Size.SPACING_SM)
+        card_sections = ModernCard(parent=sections_container, margin=Size.Margin.MRG_XSM, spacing=Size.SPACING_SM)
 
         for sec_key in ordered_keys:
             sec_data = raw_sections[sec_key]
             row = QHBoxLayout()
-            row.setContentsMargins(*Size.Margin.NONE)
+            row.setContentsMargins(*Size.Margin.MRG_NON)
             row.setSpacing(Size.SPACING_MD)
 
             chk = QCheckBox(card_sections)
@@ -151,7 +147,7 @@ class ImportBackupModal(ModernModal):
             chk.stateChanged.connect(self._on_checkbox_changed)
 
             info_col = QVBoxLayout()
-            info_col.setContentsMargins(*Size.Margin.NONE)
+            info_col.setContentsMargins(*Size.Margin.MRG_NON)
             info_col.setSpacing(Size.SPACING_XS)
 
             title_key = SECTION_TITLES.get(sec_key, f"settings.dialogs.import_modal.section_{sec_key}")
@@ -180,7 +176,7 @@ class ImportBackupModal(ModernModal):
             badge_frame = QFrame(card_sections)
             badge_frame.setProperty("role", "badge")
             badge_layout = QHBoxLayout(badge_frame)
-            badge_layout.setContentsMargins(*Size.Margin.H_SM)
+            badge_layout.setContentsMargins(*Size.Margin.MRG_HSM)
             badge_layout.setSpacing(Size.SPACING_NN)
             badge_lbl = QLabel(count_str, badge_frame)
             badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)

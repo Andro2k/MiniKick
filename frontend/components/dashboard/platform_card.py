@@ -36,7 +36,7 @@ class PlatformStatusCard(QFrame):
         self._setup_ui(brand_name, icon_file)
 
     def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.SM, parent=self)
+        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_XSM, parent=self)
         top_row = create_row_layout(spacing=Size.SPACING_XS)
 
         self.lbl_brand = QLabel(brand_name, self)

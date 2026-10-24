@@ -5,10 +5,7 @@ from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_row_layout, create_labeled_field, create_error_label
-from frontend.common import (
-    get_assets_path,
-    Size,
-)
+from frontend.common import get_assets_path, Size
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
 _ACTIVE_BUG_WORKERS = set()
@@ -77,7 +74,7 @@ class BugReportDialog(ModernModal):
         self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
 
         chk_wrapper = QHBoxLayout()
-        chk_wrapper.setContentsMargins(*Size.Margin.V_XS)
+        chk_wrapper.setContentsMargins(*Size.Margin.MRG_VXS)
         chk_wrapper.addWidget(self.chk_logs)
         chk_wrapper.addStretch()
 

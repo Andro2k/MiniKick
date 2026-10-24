@@ -1,25 +1,12 @@
 # frontend\dialogs\piper_voices_dialog.py
 
 import os
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QFrame, QFileDialog, QMessageBox, QLineEdit,
-    QButtonGroup
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt, Signal, Slot
 from .base_dialog import ModernFramelessShell
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
-from frontend.widgets import (
-    ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox,
-    create_col_layout, create_row_layout, ModernScrollArea
-)
-from frontend.common import (
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
+from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
@@ -51,7 +38,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self.container)
-        layout.setContentsMargins(*Size.Margin.XL)
+        layout.setContentsMargins(*Size.Margin.MRG_XLG)
         layout.setSpacing(Size.SPACING_MD)
 
         header_layout = QHBoxLayout()
@@ -86,7 +73,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         )
 
         params_container = QWidget(self.synthesis_card)
-        params_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.SM, parent=params_container)
+        params_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_XSM, parent=params_container)
 
         params_grid = create_row_layout(spacing=Size.SPACING_LG)
 
@@ -162,7 +149,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         cat_frame = QFrame(self)
         cat_frame.setProperty("role", "segmented_control")
         cat_layout = QHBoxLayout(cat_frame)
-        cat_layout.setContentsMargins(*Size.Margin.XS)
+        cat_layout.setContentsMargins(*Size.Margin.MRG_XXS)
         cat_layout.setSpacing(Size.SPACING_XS)
 
         self.cat_group = QButtonGroup(self)
@@ -195,7 +182,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedSize(220, 32)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*Size.Margin.H_MD)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)
@@ -216,16 +203,16 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(*Size.Margin.NONE)
+        self.scroll_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.scroll_layout.setSpacing(Size.SPACING_NN)
 
-        self.catalog_card = ModernCard(scroll_content, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        self.catalog_card = ModernCard(scroll_content, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
         self.scroll_layout.addWidget(self.catalog_card)
 
         self.lbl_empty_state = QLabel(self.i18n.get("piper_dialog.empty_search"), scroll_content)
         self.lbl_empty_state.setProperty("role", "caption")
         self.lbl_empty_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_empty_state.setContentsMargins(*Size.Margin.LG)
+        self.lbl_empty_state.setContentsMargins(*Size.Margin.MRG_LRG)
         self.lbl_empty_state.hide()
         self.scroll_layout.addWidget(self.lbl_empty_state)
 

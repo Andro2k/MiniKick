@@ -2,16 +2,8 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import (
-    BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
-)
-from frontend.common import (
-    get_pixmap_colored,
-    is_complete_valid_trigger,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
+from frontend.common import get_pixmap_colored, is_complete_valid_trigger, Palette, BrandColors, Size
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -210,7 +202,7 @@ class CommandView(BaseView):
     def _create_cell_container(spacing=Size.SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(*Size.Margin.H_MD)
+        layout.setContentsMargins(*Size.Margin.MRG_HMD)
         layout.setSpacing(spacing)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         return container, layout

@@ -4,14 +4,14 @@ import os
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
+from PySide6.QtMultimedia import QMediaDevices
 from frontend.widgets import BaseView, SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-from frontend.common import (
-    Size,
-)
+from frontend.common import Size
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
     minimize_tray_toggled = Signal(bool)
+    auto_update_download_toggled = Signal(bool)
     export_clicked = Signal()
     import_clicked = Signal()
     unlink_clicked = Signal()
@@ -33,7 +33,7 @@ class SettingsView(BaseView):
 
     def _setup_ui(self):
         header_system = SectionHeader(self.i18n.get("settings.sections.system"), parent=self, first=True)
-        card_system = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        card_system = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
 
         self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
@@ -70,7 +70,7 @@ class SettingsView(BaseView):
 
         browser_container = QWidget(parent=self)
         browser_layout = QHBoxLayout(browser_container)
-        browser_layout.setContentsMargins(*Size.Margin.NONE)
+        browser_layout.setContentsMargins(*Size.Margin.MRG_NON)
         browser_layout.setSpacing(Size.SPACING_SM)
 
         self.combo_browser = NoWheelComboBox(parent=browser_container)
@@ -118,7 +118,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_system)
 
         header_audio = SectionHeader(self.i18n.get("settings.sections.audio"), parent=self)
-        card_audio = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        card_audio = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
 
         self.combo_music_audio_device = NoWheelComboBox(self)
         self.combo_music_audio_device.setMinimumWidth(160)
@@ -126,7 +126,6 @@ class SettingsView(BaseView):
         self.combo_tts_audio_device.setMinimumWidth(160)
 
         try:
-            from PySide6.QtMultimedia import QMediaDevices
             self._media_devices = QMediaDevices(self)
             self._media_devices.audioOutputsChanged.connect(self.populate_audio_devices)
         except Exception:
@@ -158,7 +157,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_audio)
 
         header_integrations = SectionHeader(self.i18n.get("settings.sections.integrations"), parent=self)
-        integrations_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        integrations_card = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
 
         self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_outlined", parent=self)
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
@@ -212,11 +211,11 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(integrations_card)
 
         header_backup = SectionHeader(self.i18n.get("settings.sections.backup"), parent=self)
-        card_backup = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        card_backup = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
 
         btn_backup_container = QWidget()
         btn_backup_layout = QHBoxLayout(btn_backup_container)
-        btn_backup_layout.setContentsMargins(*Size.Margin.NONE)
+        btn_backup_layout.setContentsMargins(*Size.Margin.MRG_NON)
         btn_backup_layout.setSpacing(Size.SPACING_MD)
 
         self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined", parent=self)
@@ -239,7 +238,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_backup)
 
         header_support = SectionHeader(self.i18n.get("settings.sections.support"), parent=self)
-        support_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NN)
+        support_card = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN)
 
         self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined", parent=self)
         self.btn_update.clicked.connect(self.update_clicked.emit)
@@ -249,6 +248,17 @@ class SettingsView(BaseView):
             title_text=self.i18n.get("settings.system.update_title"),
             desc_text=self.i18n.get("settings.system.update_desc"),
             right_widget=self.btn_update
+        )
+
+        self.sw_auto_update_download = ModernSwitch(self)
+        self.sw_auto_update_download.toggled.connect(
+            self.auto_update_download_toggled.emit
+        )
+        row_auto_update_download = SettingRow(
+            icon_name="cloud-download-filled.svg",
+            title_text=self.i18n.get("settings.system.auto_update_download_title"),
+            desc_text=self.i18n.get("settings.system.auto_update_download_desc"),
+            right_widget=self.sw_auto_update_download
         )
 
         self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined", parent=self)
@@ -273,6 +283,8 @@ class SettingsView(BaseView):
 
         support_card.addWidget(row_update)
         support_card.add_separator()
+        support_card.addWidget(row_auto_update_download)
+        support_card.add_separator()
         support_card.addWidget(row_release_notes)
         support_card.add_separator()
         support_card.addWidget(row_feedback)
@@ -285,6 +297,11 @@ class SettingsView(BaseView):
         self.sw_start_bg.blockSignals(True)
         self.sw_start_bg.setChecked(enabled)
         self.sw_start_bg.blockSignals(False)
+
+    def set_auto_update_download_enabled(self, enabled: bool) -> None:
+        self.sw_auto_update_download.blockSignals(True)
+        self.sw_auto_update_download.setChecked(enabled)
+        self.sw_auto_update_download.blockSignals(False)
 
     def set_current_font_size(self, size: int):
         self.combo_font.blockSignals(True)
@@ -454,7 +471,6 @@ class SettingsView(BaseView):
             self.combo_tts_audio_device.addItem(default_text, "default")
 
             try:
-                from PySide6.QtMultimedia import QMediaDevices
                 for dev in QMediaDevices.audioOutputs():
                     dev_id = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
                     name = dev.description()
@@ -594,4 +610,3 @@ class SettingsView(BaseView):
             else:
                 self.combo_browser.setCurrentIndex(0)
             self.combo_browser.blockSignals(False)
-

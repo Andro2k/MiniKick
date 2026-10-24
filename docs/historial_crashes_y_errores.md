@@ -48,6 +48,10 @@
 | **INC-036** | Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado | Salida de `pytest resources/tests/` | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 | **INC-037** | YouTube y TikTok volvían a auto-iniciar cada vez que la app abría aunque el canal se hubiera detectado offline | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `frontend/main_window.py`, `resources/tests/test_live_chat_offline_autostart.py` | v1.6.5 |
 | **INC-038** | Pausa perceptible del Dashboard mientras se inicializaban los ajustes de chat y se auto-conectaban varias plataformas | Log de usuario `minikick.log` (2026-10-22) | v1.6.5 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/chat_service.py`, `frontend/main_window.py` | v1.6.5 |
+| **INC-039** | Referencias a nombres anteriores en tokens `Size.Margin` tras renombrar sus atributos | Reporte del usuario / búsqueda de atributos no definidos | v1.6.5 | `✅ Solventado` | `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
+| **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+| **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
+| **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 
 ---
 
@@ -947,3 +951,93 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Archivos y Módulos Modificados**: `backend/controllers/chat_controller.py`; `backend/services/chat/chat_service.py`; `frontend/main_window.py`; `resources/tests/test_chat_controller.py`; `docs/historial_crashes_y_errores.md`.
 * **Solución Implementada**: Se evita la segunda inicialización durante el arranque normal, se conserva la recarga explícita del backend al restaurar un backup y se difiere el calentamiento de Piper hasta que haga falta procesar voz. Los auto-inicios se espacian progresivamente para reducir el trabajo concurrente. La primera síntesis Piper en frío puede tardar más, pero se ejecuta fuera del hilo de la interfaz.
 * **Pruebas y Verificación**: Pruebas focales de chat/TTS, splash, estado de ventana y auto-inicio: 43 aprobadas. `py_compile` y `git diff --check` correctos. `project_quality_suite.py --quick --verbose`: 12/12 aprobadas.
+
+---
+
+### INC-039: Referencias obsoletas a atributos de `Size.Margin`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (las referencias podían producir `AttributeError` al crear los layouts afectados).
+* **Reportes Asociados**: Reporte del usuario sobre los nombres de `Radius`, `Margin` y `Borders`; revisión estática del frontend.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  AttributeError potencial: Size.Margin.V_XS
+  AttributeError potencial: Size.Margin.H_XS
+  AttributeError potencial: Size.Margin.SECTION_HEADER
+  ```
+* **Causa Raíz**: Se renombraron atributos de las clases de tokens, pero quedaron usos de los nombres antiguos en diálogos y widgets.
+* **Archivos y Módulos Modificados**: `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/widgets/block_widget.py`, `frontend/widgets/inspector_widgets.py`, `resources/tests/test_antigravity_ui_theme.py`.
+* **Solución Implementada**: Se actualizaron las referencias a `MRG_VXS`, `MRG_HXS` y `SEC_HDR`, y se ajustó la prueba de tokens para comprobar los nombres vigentes.
+* **Pruebas y Verificación**: Búsqueda AST de atributos `Radius`, `Margin` y `Borders` no encontró referencias inválidas; `py_compile` pasó en los archivos afectados. En `test_antigravity_ui_theme.py`, 15 pruebas pasaron y una continúa fallando en una aserción preexistente del selector QSS de `QComboBox`, no relacionada con este incidente.
+
+---
+
+### INC-040: Advertencia al cerrar MiniKick por referencia a `WhatsNewWorker` ya eliminado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (advertencia no fatal durante el cierre ordenado de la aplicación; la descarga e instalación de actualizaciones se completaron).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-10-23.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.4`.
+* **Traza de la Excepción**:
+  ```text
+  RuntimeError: libshiboken: Internal C++ object (WhatsNewWorker) already deleted.
+    File "frontend/worker_shutdown.py", line 77, in stop_workers
+      if not worker.isRunning():
+  ```
+* **Causa Raíz**: `WhatsNewWorker` programa su eliminación al finalizar, pero la ventana puede conservar la referencia Python al wrapper de Qt. En el cierre o en una consulta posterior, llamar `isRunning()` sobre ese wrapper produce `RuntimeError` porque el objeto C++ ya no existe.
+* **Archivos y Módulos Modificados**:
+  - `frontend/main_window.py`
+  - `frontend/worker_shutdown.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: La ventana usa la comprobación segura de workers antes de consultar si la búsqueda remota de novedades sigue activa. El coordinador trata un wrapper de hilo ya eliminado como detenido, lo retira del seguimiento y registra el caso a nivel DEBUG sin intentar borrarlo otra vez ni emitir una advertencia con traceback.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` y `resources/tests/test_auto_update_setting.py`: 10 pruebas aprobadas, incluyendo los casos de un `QThread` eliminado y el reemplazo de la referencia obsoleta. `py_compile` y `git diff --check` correctos. Suite rápida de calidad: 12/12 auditorías aprobadas.
+
+---
+
+### INC-041: Avatar y badges desincronizados del tamaño del chat
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (inconsistencia visual en las opciones de tamaño del overlay y su previsualización).
+* **Reportes Asociados**: Reporte del usuario: los badges y el perfil no cambiaban al ajustar el tamaño del chat.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza / Síntoma**:
+  ```text
+  Al cambiar el tamaño del overlay, el texto se actualizaba, pero el avatar y sus badges conservaban dimensiones fijas.
+  Los mensajes ya renderizados podían conservar el font-size inline anterior y la previsualización Qt no recibía el tamaño seleccionado.
+  ```
+* **Causa Raíz**: Los avatares y badges de perfil tenían dimensiones absolutas en píxeles, independientes de `--font-size`. Además, cada mensaje fijaba su tamaño tipográfico al crearse, impidiendo que los mensajes existentes reflejaran cambios en vivo; `ChatOverlayMockupWidget` tampoco incluía el tamaño en su configuración.
+* **Archivos y Módulos Modificados**:
+  - [`assets/overlays/chat/chat.html`](../assets/overlays/chat/chat.html)
+  - [`assets/overlays/chat/css/dark.css`](../assets/overlays/chat/css/dark.css)
+  - [`assets/overlays/chat/css/light.css`](../assets/overlays/chat/css/light.css)
+  - [`assets/overlays/chat/css/minimal.css`](../assets/overlays/chat/css/minimal.css)
+  - [`assets/overlays/chat/js/chat.js`](../assets/overlays/chat/js/chat.js)
+  - [`frontend/components/chat/chat_mockup.py`](../frontend/components/chat/chat_mockup.py)
+  - [`frontend/components/chat/overlay_settings.py`](../frontend/components/chat/overlay_settings.py)
+  - [`resources/tests/test_chat_overlay_controls.py`](../resources/tests/test_chat_overlay_controls.py)
+* **Solución Implementada**: El overlay usa `em` para escalar el avatar, los badges, los espaciados y las emotes a partir del tamaño tipográfico del mensaje. Se elimina el tamaño inline estático para que los mensajes existentes hereden los cambios de `--font-size`; el valor se normaliza al rango admitido de 10 a 36 px. La previsualización Qt recibe el tamaño y escala conjuntamente el texto, el perfil y los badges.
+* **Pruebas y Verificación**: `resources/tests/test_chat_overlay_controls.py`: 9 pruebas aprobadas. `node --check assets/overlays/chat/js/chat.js` correcto. La suite rápida de calidad aprobó 12/12 auditorías. Verificación visual en navegador confirmó que avatar y badges duplican sus dimensiones al pasar de 14 a 28 px en orientaciones vertical y horizontal.
+
+---
+
+### INC-042: `NameError` al abrir Chat después de diferir la carga de vistas
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la navegación a Chat activaba el manejador global de excepciones y podía terminar abruptamente la aplicación).
+* **Reportes Asociados**: Log del usuario `minikick.log`, líneas 1396-1408.
+* **Fecha y Versión del Fallo**: 2026-10-23 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  File "frontend\main_window_views.py", line 57, in get_or_create
+    window.view_chat = ChatView(window.i18n, parent=window.content_stack)
+  NameError: name 'ChatView' is not defined
+  [CRI] QThread: Destroyed while thread '' is still running
+  ```
+* **Causa Raíz**: La carga perezosa implementada mediante `__getattr__` resolvía atributos solicitados externamente al módulo, pero los nombres globales usados directamente dentro de `MainWindowViewFactory.get_or_create` no pasan por `__getattr__`. Por ello, al navegar a una vista no importada previamente, como Chat, su clase no existía en el espacio global de la función.
+* **Archivos y Módulos Modificados**:
+  - [`frontend/main_window_views.py`](../frontend/main_window_views.py)
+  - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
+* **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.

@@ -3,9 +3,7 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor
 from PySide6.QtWidgets import QWidget
-from frontend.common import (
-    Palette,
-)
+from frontend.common import Palette
 
 def init_mockup_painter(widget: QWidget) -> tuple[QPainter, float, float]:
     painter = QPainter(widget)

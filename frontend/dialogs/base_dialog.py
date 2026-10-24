@@ -1,17 +1,10 @@
 # frontend\dialogs\base_dialog.py
 
 import logging
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
-                               QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication)
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
 from PySide6.QtCore import Qt, QSize, QSettings, QEvent
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
-from frontend.common import (
-    PATH_ICON_HELP,
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
@@ -50,7 +43,7 @@ class ModernFramelessShell(QDialog):
             self.setMouseTracking(True)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(*Size.Margin.XL)
+        self.main_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame(self)
@@ -98,8 +91,6 @@ class ModernFramelessShell(QDialog):
         self.container.setGraphicsEffect(self.glow)
 
         self.main_layout.addWidget(self.container)
-
-        from frontend.common import get_icon_colored
 
         self.btn_close_shell = QPushButton(self.container)
         self.btn_close_shell.setProperty("role", "btn_ghost")
@@ -390,7 +381,7 @@ class ModernModal(ModernFramelessShell):
         )
 
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(*Size.Margin.XL)
+        self.content_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.content_layout.setSpacing(Size.SPACING_LG)
 
         if icon_path:
@@ -428,11 +419,10 @@ class ModernModal(ModernFramelessShell):
         icon_container.setProperty("role", final_role)
 
         icon_inner_layout = QVBoxLayout(icon_container)
-        icon_inner_layout.setContentsMargins(*Size.Margin.NONE)
+        icon_inner_layout.setContentsMargins(*Size.Margin.MRG_NON)
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         icon_lbl = QLabel()
-        from frontend.common import get_pixmap_colored
         dpr = self.devicePixelRatio()
         pixmap = get_pixmap_colored(icon_path, color_str=final_fg, size=36, dpr=dpr)
         if pixmap.isNull():
@@ -525,7 +515,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
 
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(*Size.Margin.XL)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.panel_layout.setSpacing(Size.SPACING_LG)
 
         self.lbl_step_num = QLabel()

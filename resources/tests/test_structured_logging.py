@@ -1,13 +1,17 @@
 # resources\tests\test_structured_logging.py
 
+import io
+import logging
 import os
 import re
 import tempfile
-import logging
 import pytest
-from backend.handlers.logs_handler import StructuredLogFormatter
-from backend.services.system.logs_service import _LOG_FILE_LINE_RE
-from backend.controllers.logs_controller import _LOG_LINE_RE
+from backend.handlers.logs_handler import (
+    StructuredLogFormatter,
+    log_level_matches,
+    parse_log_line,
+)
+from backend.services.system.logs_service import LogService
 from backend.database.database_manager import DatabaseManager
 from backend.database.logs_storage import SQLiteSystemLogStorage
 
@@ -94,40 +98,105 @@ def test_structured_log_formatter_exception():
 
 def test_log_file_line_re_retrocompatibility():
     new_log = "[2026-09-25 17:36:03.942 -05:00] [INF] [MainThread] MiniKick.Workers.KickChat: Connection established"
-    match_new = _LOG_FILE_LINE_RE.match(new_log)
+    match_new = parse_log_line(new_log)
     assert match_new is not None
-    assert match_new.group("time") == "2026-09-25 17:36:03.942 -05:00"
-    assert match_new.group("level") == "INF"
-    assert match_new.group("msg") == "[MainThread] MiniKick.Workers.KickChat: Connection established"
+    assert match_new.time == "2026-09-25 17:36:03.942 -05:00"
+    assert match_new.level == "INF"
+    assert match_new.message == "[MainThread] MiniKick.Workers.KickChat: Connection established"
 
     legacy_log = "[2026-09-25 15:30:00] [INFO] Connected to channel"
-    match_legacy = _LOG_FILE_LINE_RE.match(legacy_log)
+    match_legacy = parse_log_line(legacy_log)
     assert match_legacy is not None
-    assert match_legacy.group("time") == "2026-09-25 15:30:00"
-    assert match_legacy.group("level") == "INFO"
-    assert match_legacy.group("msg") == "Connected to channel"
+    assert match_legacy.time == "2026-09-25 15:30:00"
+    assert match_legacy.level == "INFO"
+    assert match_legacy.message == "Connected to channel"
 
     crash_log = "[2026-09-25 15:30:00] [CRASH] Fatal exception in worker thread"
-    match_crash = _LOG_FILE_LINE_RE.match(crash_log)
+    match_crash = parse_log_line(crash_log)
     assert match_crash is not None
-    assert match_crash.group("time") == "2026-09-25 15:30:00"
-    assert match_crash.group("level") == "CRASH"
-    assert match_crash.group("msg") == "Fatal exception in worker thread"
+    assert match_crash.time == "2026-09-25 15:30:00"
+    assert match_crash.level == "CRASH"
+    assert match_crash.message == "Fatal exception in worker thread"
 
 def test_log_line_re_controller():
     new_log = "[2026-09-25 17:36:03.942 -05:00] [DBG] [Worker-1] MiniKick.Services.Audio: Playing sound"
-    match_new = _LOG_LINE_RE.match(new_log)
+    match_new = parse_log_line(new_log)
     assert match_new is not None
-    assert match_new.group("time") == "2026-09-25 17:36:03.942 -05:00"
-    assert match_new.group("level") == "DBG"
-    assert match_new.group("msg") == "[Worker-1] MiniKick.Services.Audio: Playing sound"
+    assert match_new.time == "2026-09-25 17:36:03.942 -05:00"
+    assert match_new.level == "DBG"
+    assert match_new.message == "[Worker-1] MiniKick.Services.Audio: Playing sound"
 
     legacy_log = "[2026-09-25 15:30:00] [WARNING] Low memory condition"
-    match_legacy = _LOG_LINE_RE.match(legacy_log)
+    match_legacy = parse_log_line(legacy_log)
     assert match_legacy is not None
-    assert match_legacy.group("time") == "2026-09-25 15:30:00"
-    assert match_legacy.group("level") == "WARNING"
-    assert match_legacy.group("msg") == "Low memory condition"
+    assert match_legacy.time == "2026-09-25 15:30:00"
+    assert match_legacy.level == "WARNING"
+    assert match_legacy.message == "Low memory condition"
+
+    multiline_log = f"{new_log}\nTraceback (most recent call last):\nValueError: failure"
+    match_multiline = parse_log_line(multiline_log)
+    assert match_multiline is not None
+    assert match_multiline.message.endswith(
+        "Traceback (most recent call last):\nValueError: failure"
+    )
+
+
+def test_log_level_matches_short_and_full_names():
+    assert log_level_matches("INF", "INFO", "ALL")
+    assert log_level_matches("WARNING", "WRN", "ALL")
+    assert not log_level_matches("ERR", "INFO", "ALL")
+    assert log_level_matches("CRASH", "ALL", "ALL")
+
+
+def test_fault_log_writer_uses_structured_format(monkeypatch):
+    import backend.core.app_logger_core as app_logger_core
+
+    output = io.StringIO()
+    monkeypatch.setattr(app_logger_core, "_fault_file_handle", output)
+
+    app_logger_core.write_fault_log_record(
+        logging.CRITICAL,
+        "minikick.threading",
+        "Unhandled exception in worker",
+        thread_name="Worker-Test",
+    )
+
+    record = parse_log_line(output.getvalue().strip())
+    assert record is not None
+    assert record.level == "CRI"
+    assert "[Worker-Test] MiniKick.Threading: Unhandled exception in worker" == record.message
+
+
+def test_log_service_keeps_same_millisecond_records_separate():
+    service = LogService()
+    timestamp = "2026-09-25 17:36:03.942 -05:00"
+
+    assert service.append_record(timestamp, "INF", "first event") is False
+    assert service.append_record(timestamp, "INF", "second event") is False
+
+    assert service.get_history() == [
+        ("INF", timestamp, "first event"),
+        ("INF", timestamp, "second event"),
+    ]
+
+
+def test_log_service_parses_current_and_legacy_file_formats(tmp_path):
+    log_file = tmp_path / "mixed.log"
+    log_file.write_text(
+        "[2026-09-25 17:36:03.942 -05:00] [INF] [MainThread] MiniKick.Main: current\n"
+        "continued current message\n"
+        "[2026-09-25 15:30:00] [WARNING] legacy warning\n",
+        encoding="utf-8",
+    )
+
+    assert LogService().parse_log_file(str(log_file), "HISTORICAL") == [
+        (
+            "INF",
+            "2026-09-25 17:36:03.942 -05:00",
+            "[MainThread] MiniKick.Main: current\ncontinued current message",
+        ),
+        ("WARNING", "2026-09-25 15:30:00", "legacy warning"),
+    ]
 
 def test_sqlite_logs_storage_level_aliases(temp_db):
     storage = SQLiteSystemLogStorage(temp_db)

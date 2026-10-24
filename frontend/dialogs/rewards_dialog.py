@@ -1,21 +1,11 @@
 # frontend\dialogs\rewards_dialog.py
 
 import os
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
-    QFileDialog, QRadioButton, QButtonGroup
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog, QRadioButton, QButtonGroup
 from PySide6.QtCore import Qt, QSize
 
-from frontend.widgets import (
-    ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker,
-    create_row_layout, create_labeled_field
-)
-from frontend.common import (
-    get_icon_colored,
-    BrandColors,
-    Size,
-)
+from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker, create_row_layout, create_labeled_field
+from frontend.common import get_icon_colored, BrandColors, Size
 from .base_dialog import ModernWizardPanel
 from .positioner_dialog import VisualPositionerDialog
 
@@ -102,7 +92,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_user_input_row(self) -> QWidget:
         container = QWidget()
-        row = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.NONE, parent=container)
+        row = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=container)
 
         lbl_sw = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_user_input_label"))
         lbl_sw.setProperty("role", "h3")
@@ -163,14 +153,14 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
-        layout.setContentsMargins(*Size.Margin.NONE)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_MD)
 
         if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
             no_plat_box = QFrame()
             no_plat_box.setProperty("role", "card")
             np_layout = QHBoxLayout(no_plat_box)
-            np_layout.setContentsMargins(*Size.Margin.LG)
+            np_layout.setContentsMargins(*Size.Margin.MRG_LRG)
             lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
             lbl_no_p.setWordWrap(True)
             lbl_no_p.setProperty("role", "caption")
@@ -229,7 +219,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 off_box = QFrame()
                 off_box.setProperty("role", "card")
                 off_layout = QHBoxLayout(off_box)
-                off_layout.setContentsMargins(*Size.Margin.LG)
+                off_layout.setContentsMargins(*Size.Margin.MRG_LRG)
                 lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
                 lbl_off.setWordWrap(True)
                 lbl_off.setProperty("role", "caption")
@@ -263,7 +253,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
             self.container_existing = QWidget()
             v_existing = QVBoxLayout(self.container_existing)
-            v_existing.setContentsMargins(*Size.Margin.NONE)
+            v_existing.setContentsMargins(*Size.Margin.MRG_NON)
             v_existing.setSpacing(Size.SPACING_MD)
 
             lbl_ex = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
@@ -292,7 +282,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
             self.container_create = QWidget()
             v_create = QVBoxLayout(self.container_create)
-            v_create.setContentsMargins(*Size.Margin.NONE)
+            v_create.setContentsMargins(*Size.Margin.MRG_NON)
             v_create.setSpacing(Size.SPACING_MD)
 
             self._setup_reward_form_rows(v_create, is_edit=False)
@@ -351,7 +341,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step2(self):
         layout = QVBoxLayout(self.step2_widget)
-        layout.setContentsMargins(*Size.Margin.NONE)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_MD)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
@@ -373,7 +363,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)
-        v_layout.setContentsMargins(*Size.Margin.NONE)
+        v_layout.setContentsMargins(*Size.Margin.MRG_NON)
         v_layout.setSpacing(Size.SPACING_MD)
 
         row_rnd = QHBoxLayout()

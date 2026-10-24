@@ -5,14 +5,7 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common import (
-    get_pixmap_colored,
-    get_icon_colored,
-    Palette,
-    Semantic,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_pixmap_colored, get_icon_colored, Palette, Semantic, BrandColors, Size
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 
@@ -146,7 +139,7 @@ class RewardsView(BaseView):
         self._build_table_card()
 
     def _build_obs_card(self):
-        obs_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        obs_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
 
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
@@ -156,7 +149,7 @@ class RewardsView(BaseView):
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url,
-            contents_margins=Size.Margin.NONE
+            contents_margins=Size.Margin.MRG_NON
         )
 
         obs_card.addWidget(obs_row)
@@ -384,8 +377,8 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_500, 16))
-                item_plat.setForeground(QColor(Palette.NEUTRAL_500))
+                item_plat.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 16))
+                item_plat.setForeground(QColor(Palette.NEUTRAL_050))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")

@@ -2,11 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
-from frontend.common import (
-    get_pixmap_colored,
-    Palette,
-    Size,
-)
+from frontend.common import get_pixmap_colored, Palette, Size
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -23,10 +19,10 @@ class MusicStatsPanel(QWidget):
 
     def _setup_ui(self):
         self.stats_grid = QGridLayout(self)
-        self.stats_grid.setContentsMargins(*Size.Margin.NONE)
+        self.stats_grid.setContentsMargins(*Size.Margin.MRG_NON)
         self.stats_grid.setSpacing(Size.SPACING_MD)
 
-        self.card_stat_queue = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.card_stat_queue = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
 
         queue_header = QHBoxLayout()
         queue_header.setSpacing(Size.SPACING_MD)
@@ -49,7 +45,7 @@ class MusicStatsPanel(QWidget):
         self.card_stat_queue.addWidget(self.lbl_stat_queue_count)
         self.card_stat_queue.addWidget(lbl_queue_desc)
 
-        self.card_stat_duration = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.card_stat_duration = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
 
         dur_header = QHBoxLayout()
         dur_header.setSpacing(Size.SPACING_MD)
@@ -72,7 +68,7 @@ class MusicStatsPanel(QWidget):
         self.card_stat_duration.addWidget(self.lbl_stat_duration_sum)
         self.card_stat_duration.addWidget(lbl_dur_desc)
 
-        self.card_stat_service = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+        self.card_stat_service = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
 
         service_header = QHBoxLayout()
         service_header.setSpacing(Size.SPACING_MD)

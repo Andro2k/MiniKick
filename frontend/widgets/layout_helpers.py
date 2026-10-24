@@ -3,17 +3,12 @@
 from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import (
-    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit,
-    QStyleOptionFrame, QStyle
-)
-from frontend.common import (
-    Size,
-)
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit, QStyleOptionFrame, QStyle
+from frontend.common import Size
 
 def create_card_frame(
     role: str = "card",
-    margins: tuple[int, int, int, int] = Size.Margin.LG,
+    margins: tuple[int, int, int, int] = Size.Margin.MRG_LRG,
     spacing: int = Size.SPACING_MD,
     parent: QWidget | None = None
 ) -> tuple[QFrame, QVBoxLayout]:
@@ -28,7 +23,7 @@ def create_card_frame(
 
 def create_row_layout(
     spacing: int = Size.SPACING_MD,
-    margins: tuple[int, int, int, int] = Size.Margin.NONE,
+    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON,
     parent: QWidget | None = None
 ) -> QHBoxLayout:
     layout = QHBoxLayout(parent) if parent else QHBoxLayout()
@@ -39,7 +34,7 @@ def create_row_layout(
 
 def create_col_layout(
     spacing: int = Size.SPACING_SM,
-    margins: tuple[int, int, int, int] = Size.Margin.NONE,
+    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON,
     parent: QWidget | None = None
 ) -> QVBoxLayout:
     layout = QVBoxLayout(parent) if parent else QVBoxLayout()
@@ -94,7 +89,7 @@ def create_switch_field(
 def create_box_layout(
     direction: QBoxLayout.Direction = QBoxLayout.Direction.LeftToRight,
     spacing: int = Size.SPACING_MD,
-    margins: tuple[int, int, int, int] = Size.Margin.NONE,
+    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON,
     parent: QWidget | None = None
 ) -> QBoxLayout:
     layout = QBoxLayout(direction, parent) if parent else QBoxLayout(direction)
@@ -106,7 +101,7 @@ def create_box_layout(
 def create_two_column_container(
     parent: QWidget | None = None,
     spacing: int = Size.SPACING_MD,
-    margins: tuple[int, int, int, int] = Size.Margin.NONE
+    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON
 ) -> tuple[QWidget, QVBoxLayout, QBoxLayout, QVBoxLayout, QVBoxLayout]:
     body_container = QWidget(parent) if parent else QWidget()
     body_layout = create_col_layout(spacing=spacing, margins=margins, parent=body_container)

@@ -1,21 +1,12 @@
 # frontend\dialogs\crash_report_dialog.py
 
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import (
-    QLabel, QLineEdit, QTextEdit, QApplication,
-    QHBoxLayout, QVBoxLayout, QFrame
-)
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QApplication, QHBoxLayout, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt, Slot
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import (
-    get_assets_path,
-    get_qcolor_with_alpha,
-    Palette,
-    BrandColors,
-    Size,
-)
+from frontend.common import get_assets_path, get_qcolor_with_alpha, Palette, BrandColors, Size
 
 _ACTIVE_CRASH_WORKERS = set()
 
@@ -58,7 +49,7 @@ class CrashReportDialog(ModernModal):
         header_card = QFrame()
         header_card.setProperty("role", "banner_danger")
         card_layout = QVBoxLayout(header_card)
-        card_layout.setContentsMargins(*Size.Margin.LG)
+        card_layout.setContentsMargins(*Size.Margin.MRG_LRG)
 
         lbl_subtitle = QLabel(self.subtitle_text)
         lbl_subtitle.setProperty("role", "body")
