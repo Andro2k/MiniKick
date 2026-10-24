@@ -6,7 +6,6 @@ from backend.utils.paths import resource_path
 
 logger = logging.getLogger("minikick.paths")
 
-
 def get_assets_path(subfolder: str = "") -> str:
     path = resource_path("assets")
     if subfolder:
