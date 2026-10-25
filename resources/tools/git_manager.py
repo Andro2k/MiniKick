@@ -415,7 +415,13 @@ class DoctorService:
         if behind == 0:
             checks.append(Check("Rama vs main", "OK", f"'{branch}' contiene todo {REMOTE_MAIN} (+{ahead} propios)."))
         else:
-            checks.append(Check("Rama vs main", "WARN", f"'{branch}' va {behind} por detrás de {REMOTE_MAIN}.", "git_manager.py update"))
+            summary = GitAuditService.get_main_only_changes()
+            parts = [f"{summary.counts.get(k, 0)} {label}" for k, label in (("A", "nuevos"), ("M", "modificados"), ("D", "eliminados")) if summary.counts.get(k)]
+            extra = f" Trae: {', '.join(parts)}." if parts else ""
+            if summary.deleted_dirs:
+                extra += " Elimina: " + ", ".join(f"{n} de {d}" for d, n in summary.deleted_dirs) + "."
+                
+            checks.append(Check("Rama vs main", "WARN", f"'{branch}' va {behind} por detrás de {REMOTE_MAIN}.{extra}", "git_manager.py update"))
 
         upstream = GitAuditService.get_upstream()
         if not upstream:
@@ -621,11 +627,34 @@ class GitReleaseWorkflow:
 
         code, _, err = GitRunner.run(["merge", "--ff-only" if curr_branch == MAIN_BRANCH else "--no-edit", REMOTE_MAIN])
         if code == 0:
-            CLI.ok(f"Merge completado. Te faltan {GitAuditService.get_branch_vs_main()[1]} commit(s) de {REMOTE_MAIN}."); return True
+            CLI.ok(f"Merge completado. Te faltan {GitAuditService.get_branch_vs_main()[1]} commit(s) de {REMOTE_MAIN}.")
+            return True
 
-        if conflicts := GitAuditService.unmerged_files():
-            CLI.err(f"Conflictos en {len(conflicts)} archivo(s). Resuélvelos manualmente."); return False
-            
+        return GitReleaseWorkflow._recover_merge(curr_branch, err)
+
+    @staticmethod
+    def _recover_merge(branch: str, err: str) -> bool:
+        conflicts = GitAuditService.unmerged_files()
+        if conflicts:
+            CLI.err(f"Conflictos en {len(conflicts)} archivo(s):")
+            for f in conflicts:
+                CLI.list_item(f)
+            CLI.info("Resuélvelos, luego: git add <archivos> && git commit")
+            return False
+
+        if GitAuditService.in_progress_operation() == "merge":
+            msg = f"Merge remote-tracking branch '{REMOTE_MAIN}' into {branch}"
+            code, _, commit_err = GitRunner.run(["commit", "-m", msg])
+            if code == 0:
+                CLI.ok("El merge estaba preparado; se confirmó con un mensaje explícito.")
+                return True
+            CLI.err(f"No se pudo confirmar el merge: {commit_err}")
+            return False
+
+        if GitAuditService.get_branch_vs_main()[1] == 0:
+            CLI.warn(f"Git reportó un error, pero el merge ya se había completado: HEAD contiene {REMOTE_MAIN}.")
+            return True
+
         CLI.err(f"El merge falló: {err}")
         return False
 
