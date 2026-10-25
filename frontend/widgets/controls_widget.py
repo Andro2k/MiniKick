@@ -72,7 +72,7 @@ class ModernSwitch(QAbstractButton):
         self._padding = 3.0
 
     def sizeHint(self) -> QSize:
-        return QSize(44, 22)
+        return QSize(48, 24)
 
     def focusInEvent(self, event):
         super().focusInEvent(event)

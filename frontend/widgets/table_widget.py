@@ -439,7 +439,7 @@ class TableActionCell(QWidget):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.layout.setSpacing(Size.SPACING_SM)
+        self.layout.setSpacing(Size.SPACING_XS)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def add_switch(self, checked: bool, callback) -> ModernSwitch:
@@ -447,7 +447,7 @@ class TableActionCell(QWidget):
         sw.setChecked(checked)
         sw.toggled.connect(callback)
         self.layout.addWidget(sw)
-        self.layout.addSpacing(Size.SPACING_XS)
+        self.layout.addSpacing(Size.SPACING_NN)
         return sw
 
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:

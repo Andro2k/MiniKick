@@ -124,7 +124,7 @@ class TimersView(BaseView):
         if not apply_kick and not apply_twitch:
             container = QWidget()
             layout = QHBoxLayout(container)
-            layout.setContentsMargins(*Size.Margin.MRG_HMD)
+            layout.setContentsMargins(*Size.Margin.MRG_HSM)
             lbl_none = QLabel("-")
             lbl_none.setProperty("role", "body")
             layout.addWidget(lbl_none)

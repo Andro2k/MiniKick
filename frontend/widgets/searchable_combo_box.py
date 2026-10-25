@@ -49,7 +49,7 @@ class SearchableComboPopup(QFrame):
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedHeight(30)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HSM)
         search_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)

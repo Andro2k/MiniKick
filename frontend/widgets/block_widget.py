@@ -569,7 +569,7 @@ class ExpandableSettingCard(ExpandableCard):
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)
-    layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_HMD, parent=container)
+    layout = create_row_layout(spacing=Size.SPACING_NN, margins=Size.Margin.MRG_HSM, parent=container)
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
