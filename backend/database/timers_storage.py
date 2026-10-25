@@ -49,10 +49,10 @@ class SQLiteTimersStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute('''
+                cursor.execute("""
                     SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube 
                     FROM chat_timers WHERE id = ?
-                ''', (timer_id,))
+                """, (timer_id,))
                 r = cursor.fetchone()
                 if not r:
                     return None
@@ -85,7 +85,7 @@ class SQLiteTimersStorage:
                 at = int(bool(apply_twitch if apply_twitch is not None else True))
                 ay = int(bool(apply_youtube if apply_youtube is not None else True))
                 if timer_id is not None:
-                    cursor.execute('''
+                    cursor.execute("""
                         INSERT INTO chat_timers (id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(id) DO UPDATE SET
@@ -93,9 +93,9 @@ class SQLiteTimersStorage:
                             interval_online=excluded.interval_online, interval_offline=excluded.interval_offline,
                             chat_lines=excluded.chat_lines, keywords=excluded.keywords, categories=excluded.categories,
                             apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
-                    ''', (timer_id, name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
+                    """, (timer_id, name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
                 else:
-                    cursor.execute('''
+                    cursor.execute("""
                         INSERT INTO chat_timers (name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(name) DO UPDATE SET
@@ -103,7 +103,7 @@ class SQLiteTimersStorage:
                             interval_online=excluded.interval_online, interval_offline=excluded.interval_offline,
                             chat_lines=excluded.chat_lines, keywords=excluded.keywords, categories=excluded.categories,
                             apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
-                    ''', (name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
+                    """, (name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
                 conn.commit()
             logger.debug("[TimersStorage] Saved timer name='%s', active=%s, id=%s", name, is_active, timer_id)
         except Exception as e:
@@ -124,11 +124,11 @@ class SQLiteTimersStorage:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 pattern = f"%{query.strip().lower()}%"
-                cursor.execute('''
+                cursor.execute("""
                     SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube 
                     FROM chat_timers 
                     WHERE LOWER(name) LIKE ? OR LOWER(messages) LIKE ?
-                ''', (pattern, pattern))
+                """, (pattern, pattern))
                 return [
                     {
                         "id": r[0],

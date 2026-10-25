@@ -31,7 +31,12 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
 logger = logging.getLogger("minikick.core.app_logger")
 
 
-def write_fault_log_record(level: int, logger_name: str, message: str, thread_name: str | None = None) -> None:
+def write_fault_log_record(
+    level: int,
+    logger_name: str,
+    message: str,
+    thread_name: str | None = None,
+) -> None:
     if _fault_file_handle is None:
         return
 
@@ -83,7 +88,8 @@ def _threading_excepthook(args):
     flush_all_logs()
 
 def flush_all_logs():
-    for handler in logging.getLogger().handlers:
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
         try:
             handler.flush()
         except Exception:
@@ -129,6 +135,7 @@ def setup_application_logging():
         return logging.getLogger(), _q_log_handler_instance
 
     log_level = _resolve_log_level()
+    logger = logging.getLogger()
     logger.setLevel(log_level)
     
     for handler in list(logger.handlers):

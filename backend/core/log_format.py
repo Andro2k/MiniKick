@@ -12,6 +12,11 @@ _LOG_LINE_RE = re.compile(
 )
 
 LEVEL_ALIASES: dict[str, tuple[str, ...]] = {
+    "INFO": ("INFO", "INF"),
+    "DEBUG": ("DEBUG", "DBG"),
+    "WARNING": ("WARNING", "WRN"),
+    "ERROR": ("ERROR", "ERR"),
+    "CRITICAL": ("CRITICAL", "CRI"),
     "INF": ("INFO", "INF"),
     "DBG": ("DEBUG", "DBG"),
     "WRN": ("WARNING", "WRN"),

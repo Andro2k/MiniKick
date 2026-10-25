@@ -16,8 +16,6 @@ from backend.services import ChatMessageDTO, RewardsService, ChatService, Comman
 from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
-from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
-
 from frontend.common import get_global_qss, BrandColors
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
@@ -26,6 +24,8 @@ from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokCo
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.worker_shutdown import WorkerShutdownCoordinator
+
+from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
 
 logger = logging.getLogger("minikick.core")
 
@@ -50,6 +50,7 @@ class MainWindowCore(QMainWindow):
         ("Widgets", "widget-add-filled.svg", "top"),
         ("Triggers", "treasure-chest-filled.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
+
         ("Settings", "gear-filled.svg", "bottom"),
         ("Developer", "file-text-filled.svg", "bottom"),
     )

@@ -129,7 +129,7 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
             pk_cols = [r[1].lower() for r in obs_cols if r[5] > 0]
             if "platform" not in pk_cols:
                 logger.info("Upgrading table obs_rewards: migrating to composite primary key (reward_name, platform)")
-                cursor.execute('''
+                cursor.execute("""
                     CREATE TABLE obs_rewards_new (
                         reward_name TEXT NOT NULL,
                         filepath TEXT NOT NULL,
@@ -147,8 +147,8 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
                         platform TEXT DEFAULT 'kick',
                         PRIMARY KEY (reward_name, platform)
                     )
-                ''')
-                cursor.execute('''
+                """)
+                cursor.execute("""
                     INSERT OR IGNORE INTO obs_rewards_new (
                         reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes,
                         reward_id, cost, description, background_color, is_user_input_required, platform
@@ -157,7 +157,7 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
                            reward_id, cost, description, background_color, is_user_input_required,
                            COALESCE(platform, 'kick')
                     FROM obs_rewards
-                ''')
+                """)
                 cursor.execute("DROP TABLE obs_rewards")
                 cursor.execute("ALTER TABLE obs_rewards_new RENAME TO obs_rewards")
 
@@ -166,7 +166,7 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
         has_obs_fk = any(len(r) > 2 and str(r[2]).lower() == "obs_rewards" for r in fk_rows)
         if has_obs_fk:
             logger.info("Upgrading table reward_redemptions: removing outdated foreign key referencing obs_rewards")
-            cursor.execute('''
+            cursor.execute("""
                 CREATE TABLE reward_redemptions_new (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reward_name TEXT NOT NULL,
@@ -174,12 +174,12 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
                     platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            ''')
-            cursor.execute('''
+            """)
+            cursor.execute("""
                 INSERT OR IGNORE INTO reward_redemptions_new (id, reward_name, username, platform, timestamp)
                 SELECT id, reward_name, username, COALESCE(platform, 'kick'), timestamp
                 FROM reward_redemptions
-            ''')
+            """)
             cursor.execute("DROP TABLE reward_redemptions")
             cursor.execute("ALTER TABLE reward_redemptions_new RENAME TO reward_redemptions")
 

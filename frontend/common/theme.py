@@ -310,7 +310,7 @@ PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
 
 
 def _build_reset_and_typography_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
-    return f'''
+    return f"""
 /* --- 1. Reset & Root Surfaces --- */
 * {{ font-family: {Size.Typography.FONT_FAMILY}; font-size: {text1}px; color: {Semantic.NEUTRAL_400}; }}
 QMainWindow {{ background-color: {Semantic.NEUTRAL_950}; }}
@@ -335,10 +335,10 @@ QLabel[state="success"] {{ color: {BrandColors.GREEN}; }}
 QLabel[state="info"]    {{ color: {BrandColors.BLUE}; }}
 QLabel[state="warning"] {{ color: {BrandColors.AMBER}; }}
 QLabel[state="bold"]    {{ font-weight: 600; }}
-'''
+"""
 
 def _build_button_qss(text1: int) -> str:
-    return f'''
+    return f"""
 /* --- 3. Flat Buttons --- */
 QPushButton                     {{ background-color: transparent; color: {Semantic.NEUTRAL_000}; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.Padding.PAD_WIDE}; font-size: {text1}px; font-weight: 500; outline: none; }}
 QPushButton[icon_only="true"]   {{ padding: {Size.SPACING_NN}px; }}
@@ -402,10 +402,10 @@ QPushButton[icon_only="true"][role="nav_button"]    {{ padding: {Size.SPACING_NN
 /* Global Disabled Button States */
 QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.BRD_SOFT}; padding: {Size.Padding.PAD_WIDE}; }}
 QPushButton[icon_only="true"]:disabled {{ padding: {Size.SPACING_NN}px; }}
-'''
+"""
 
 def _build_input_qss(text1: int, text2: int) -> str:
-    return f'''
+    return f"""
 /* Form Controls & Inputs */
 QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_200}; font-weight: 400; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.Padding.PAD_CORE}; border: {Borders.BRD_BASE}; }}
 QTextEdit, QPlainTextEdit {{ background-color: {Semantic.NEUTRAL_950}; }}
@@ -533,10 +533,10 @@ QSlider:disabled {{ opacity: 0.5; }}
 QSlider::groove:horizontal:disabled {{ background: {Semantic.NEUTRAL_750}; }}
 QSlider::sub-page:horizontal:disabled {{ background: {Semantic.NEUTRAL_700}; }}
 QSlider::handle:horizontal:disabled {{ background-color: {Semantic.NEUTRAL_500}; border-color: {Semantic.NEUTRAL_700}; }}
-'''
+"""
 
 def _build_surface_qss(text1: int, text2: int) -> str:
-    return f'''
+    return f"""
 /* --- 5. Surfaces, Containers & Badges --- */
 QFrame[role="canvas_container"] {{ background-color: {Semantic.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="sidebar"] {{ background-color: {Semantic.NEUTRAL_950}; border-right: 1px solid {Semantic.NEUTRAL_750}; }}
@@ -678,10 +678,10 @@ QTabWidget QFrame[role="tab_panel"] {{ background-color: transparent; border: no
 QToolTip {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_050}; border: {Borders.BRD_MUTE}; border-radius: {Size.Radius.RAD_XSM}px; padding: {Size.Padding.PAD_CORE}; font-size: {text1}px; }}
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
-'''
+"""
 
 def _build_complex_qss(text1: int, text2: int) -> str:
-    return f'''
+    return f"""
 /* --- 6. Complex Composite Widgets --- */
 
 /* Search Bar */
@@ -758,7 +758,7 @@ QMenu::item:selected {{ background-color: {Semantic.NEUTRAL_750}; color: {Semant
 QMenu::separator {{ height: 1px; background-color: {Semantic.BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}
 
 QToolTip {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_050}; border: 1px solid {Semantic.BORDER_TOP_SHINE}; border-radius: {Size.Radius.RAD_XSM}px; padding: {Size.Padding.PAD_TGHT}; font-size: {text2}px; }}
-'''
+"""
 
 @lru_cache(maxsize=16)
 def get_global_qss(base: int = 12, custom_qss: tuple[str, ...] = ()) -> str:
