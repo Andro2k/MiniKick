@@ -202,7 +202,7 @@ class CommandView(BaseView):
     def _create_cell_container(spacing=Size.SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        layout.setContentsMargins(*Size.Margin.MRG_HSM)
         layout.setSpacing(spacing)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         return container, layout

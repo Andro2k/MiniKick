@@ -10,8 +10,7 @@ from typing import Callable
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QSystemTrayIcon, QApplication
 from PySide6.QtCore import Qt, Slot, Signal, QEvent, QTimer, QByteArray, QThread
 
-from backend.core.app_container_core import AppContainerCore
-from backend.core.app_logger_core import setup_application_logging
+from backend.utils.perf import perf_phase
 from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
 from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
 from backend.providers import KickAPIClient, TwitchAPIClient
@@ -55,50 +54,57 @@ class MainWindowCore(QMainWindow):
         ("Developer", "file-text-filled.svg", "bottom"),
     )
 
-    def __init__(self, updater_manager, app_version: str):
+    def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
-        import time
-
         self.setUpdatesEnabled(False)
         self.resize(1200, 800)
-        startup_phase_started = time.perf_counter()
 
-        self._is_shutting_down = False
-        self._cleanup_complete = False
-        self._kick_auth_start_pending = False
-        self._kick_reauth_pending = False
-        self._twitch_auth_start_pending = False
-        self._twitch_disconnect_pending = False
-        self._kick_disconnect_pending = False
-        self._timer_worker_start_generation = 0
-        self._was_maximized_before_tray = True
+        self.logger = logger
+        self.container = container
+        self.q_log_handler = q_log_handler
         self.updater_manager = updater_manager
         self.app_version = app_version
 
-        self.container = AppContainerCore()
-        self.logger = logging.getLogger("minikick.core")
-        self.logger.info(
-            "[Perf/Startup] Core services initialized in %.2f ms",
-            (time.perf_counter() - startup_phase_started) * 1000
-        )
-        startup_phase_started = time.perf_counter()
-        self.settings_storage = self.container.settings_storage
-        self.rewards_storage = self.container.rewards_storage
-        self.commands_storage = self.container.commands_storage
-        self.spam_storage = self.container.spam_storage
-        self.timers_storage = self.container.timers_storage
-        self.backup_service = self.container.backup_service
-        self.i18n = self.container.i18n
-        self.kick_auth_manager = self.container.kick_auth_manager
-        self.tts_manager = self.container.tts_manager
-        self.overlay_server = self.container.overlay_server
-        self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
+        self._init_flags()
+        self._init_worker_state()
+        self._init_session_state()
+        self._bind_container()
+        self._init_shutdown_support()
+        self.setWindowTitle(self.i18n.get("main.window.title").replace("{version}", app_version))
 
-        title_template = self.i18n.get("main.window.title")
-        self.setWindowTitle(title_template.replace("{version}", app_version))
+        self.logger.info("[MainWindow] Initializing main window components and UI shell...")
+        self.toast = ToastManager(self)
+        with perf_phase(self.logger, "Startup", "Main UI shell and controllers initialized"):
+            self._setup_ui()
+        with perf_phase(self.logger, "Startup", "Tray and startup wiring initialized"):
+            self._setup_tray()
+            self._init_updater()
+            self._connect_signals()
+            self._load_settings_into_ui()
 
-        self.kick_chat_worker = None
+        self.setUpdatesEnabled(True)
+        self.logger.info("[MainWindow] Main window initialization complete.")
+
+    def _init_flags(self):
+        self._is_shutting_down = False
+        self._cleanup_complete = False
+        self._quit_requested = False
+        self._was_maximized_before_tray = True
+        self._media_keys_enabled = False
+        self._kick_auth_start_pending = False
+        self._kick_reauth_pending = False
+        self._kick_disconnect_pending = False
+        self._twitch_auth_start_pending = False
+        self._twitch_disconnect_pending = False
+        self._twitch_chat_start_pending = False
+        self._twitch_reward_start_pending = False
+        self._timer_worker_start_generation = 0
+        self._auto_update_download_active = False
+        self._auto_update_info: dict = {}
+
+    def _init_worker_state(self):
         self.kick_api_client = None
+        self.kick_chat_worker = None
         self.kick_auth_worker = None
         self.fetch_rewards_worker = None
         self.timers_worker = None
@@ -106,60 +112,58 @@ class MainWindowCore(QMainWindow):
         self.global_media_worker = None
         self.twitch_chat_worker = None
         self.twitch_auth_worker = None
-        self._twitch_chat_start_pending = False
-        self._twitch_reward_start_pending = False
         self.youtube_chat_worker = None
+        self.tiktok_chat_worker = None
+        self._whats_new_worker = None
         self._youtube_connected = False
         self._youtube_channel = ""
         self._youtube_connect_pending = False
         self._youtube_disconnect_pending = False
-        self._live_chat_generations = {"youtube": 0, "tiktok": 0}
-        self.tiktok_chat_worker = None
         self._tiktok_connected = False
         self._tiktok_channel = ""
         self._tiktok_connect_pending = False
         self._tiktok_disconnect_pending = False
-        self._media_keys_enabled = False
-        self._whats_new_worker = None
+        self._live_chat_generations = {"youtube": 0, "tiktok": 0}
+
+    def _init_session_state(self):
+        self._cached_total_usages = None
+        self._cached_active_timers = None
+        self.session_metrics = {
+            "messages_processed": 0,
+            "commands_executed": 0,
+            "timers_sent": 0,
+            "spam_blocked": 0,
+        }
+        self.session_platform_messages = {"kick": 0, "twitch": 0, "youtube": 0, "tiktok": 0}
+        self._recent_reward_redemptions = RecentRedemptionCache(maxlen=100)
+
+    def _bind_container(self):
+        c = self.container
+        self.settings_storage = c.settings_storage
+        self.rewards_storage = c.rewards_storage
+        self.commands_storage = c.commands_storage
+        self.spam_storage = c.spam_storage
+        self.timers_storage = c.timers_storage
+        self.backup_service = c.backup_service
+        self.i18n = c.i18n
+        self.kick_auth_manager = c.kick_auth_manager
+        self.tts_manager = c.tts_manager
+        self.overlay_server = c.overlay_server
+        self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
+
+    def _init_shutdown_support(self):
         self._retiring_workers: set = set()
         self._worker_shutdown_coordinator = WorkerShutdownCoordinator(
             self,
             self.logger,
             self._retiring_workers,
         )
-
-        self._cached_total_usages = None
-        self._cached_active_timers = None
-
-        self.session_metrics = {
-            "messages_processed": 0,
-            "spam_blocked": 0
-        }
-        self.session_platform_messages = {
-            "kick": 0,
-            "twitch": 0,
-            "youtube": 0,
-            "tiktok": 0
-        }
-        self._recent_reward_redemptions = RecentRedemptionCache(maxlen=100)
-        self._quit_requested = False
         self._dashboard_metrics_timer = QTimer(self)
         self._dashboard_metrics_timer.setSingleShot(True)
         self._dashboard_metrics_timer.setInterval(300)
         self._dashboard_metrics_timer.timeout.connect(self._flush_dashboard_metrics_update)
 
-        self.logger, self.q_log_handler = setup_application_logging()
-        self.logger.info("[MainWindow] Initializing main window components and UI shell...")
-        self.toast = ToastManager(self)
-        self._setup_ui()
-        self.logger.info(
-            "[Perf/Startup] Main UI shell and controllers initialized in %.2f ms",
-            (time.perf_counter() - startup_phase_started) * 1000
-        )
-        startup_phase_started = time.perf_counter()
-        self.logger.debug("[MainWindow] Setting up system tray...")
-        self._setup_tray()
-
+    def _init_updater(self):
         self.logger.debug("[MainWindow] Checking background silent updates...")
         self.updater_controller = UpdaterController(self.updater_manager)
         self.updater_controller.update_found_silent.connect(self._on_silent_update_found)
@@ -167,22 +171,20 @@ class MainWindowCore(QMainWindow):
             self._on_auto_update_download_finished
         )
         self.updater_controller.error.connect(self._on_auto_update_error)
-        self._auto_update_download_active = False
-        self._auto_update_info: dict = {}
         self.updater_controller.check_updates_silently()
 
-        self.logger.debug("[MainWindow] Connecting signal handlers...")
-        self._connect_signals()
-        self.logger.info("[MainWindow] Hydrating views and loading stored settings into UI...")
-        self._load_settings_into_ui()
-        self.setUpdatesEnabled(True)
-        self.logger.info("[MainWindow] Main window initialization complete.")
-        self.logger.info(
-            "[Perf/Startup] Tray and startup wiring initialized in %.2f ms",
-            (time.perf_counter() - startup_phase_started) * 1000
-        )
 
     def _setup_ui(self):
+        self._build_layout_shell()
+        self._create_services()
+        self._create_views_registry()
+        self._create_controllers()
+        self._start_background_workers()
+        self._assemble_layout()
+        QTimer.singleShot(0, self._update_dashboard_metrics)
+        self._init_feature_badges()
+
+    def _build_layout_shell(self):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QHBoxLayout(self.central_widget)
@@ -194,6 +196,8 @@ class MainWindowCore(QMainWindow):
             self.sidebar.add_tab(name, icon, position=pos, is_active=(name == "Dashboard"))
 
         self.content_stack = QStackedWidget(self.central_widget)
+
+    def _create_services(self):
         self.avatar_service = AvatarService(avatar_storage=self.container.avatar_storage)
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
@@ -205,6 +209,7 @@ class MainWindowCore(QMainWindow):
         self.log_service = LogService(log_storage=self.container.system_log_storage)
         self.schedule_service = self.container.schedule_service
 
+    def _create_views_registry(self):
         self.view_dashboard = DashboardView(self.i18n, browser_service=self.container.browser_service, parent=self)
         self.view_schedule = None
         self.view_chat = None
@@ -221,6 +226,7 @@ class MainWindowCore(QMainWindow):
         self._instantiated_views = {"Dashboard": self.view_dashboard}
         self._view_factory = MainWindowViewFactory(self)
 
+    def _create_controllers(self):
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard,
             avatar_service=self.avatar_service,
@@ -267,7 +273,7 @@ class MainWindowCore(QMainWindow):
             service=self.rewards_service,
             toast_manager=self.toast,
             kick_auth_manager=self.kick_auth_manager,
-            twitch_auth_manager=getattr(self.container, "twitch_auth_manager", None)
+            twitch_auth_manager=self.container.twitch_auth_manager
         )
         self.commands_controller = CommandsController(
             None,
@@ -315,22 +321,16 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n,
             browser_service=self.container.browser_service
         )
+
+    def _start_background_workers(self):
         self._start_schedule_worker()
         self._setup_global_media_keys()
-        self.session_metrics = {
-            "messages_processed": 0,
-            "commands_executed": 0,
-            "timers_sent": 0,
-            "spam_blocked": 0
-        }
 
+    def _assemble_layout(self):
         self.content_stack.addWidget(self.view_dashboard)
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
-
-        QTimer.singleShot(0, self._update_dashboard_metrics)
-        self._init_feature_badges()
 
     def _setup_tray(self):
         self.tray_manager = SystemTrayManager(self.i18n, self)

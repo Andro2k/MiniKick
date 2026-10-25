@@ -1,107 +1,34 @@
 # backend\core\app_container_core.py
-
-import os
-import sys
 import logging
+import os
 
-try:
-    import backend.config as _api_keys
-    KICK_CLIENT_ID = getattr(_api_keys, "KICK_CLIENT_ID", "")
-    KICK_CLIENT_SECRET = getattr(_api_keys, "KICK_CLIENT_SECRET", "")
-    KICK_REDIRECT_URI = getattr(_api_keys, "KICK_REDIRECT_URI", "http://localhost:8080/auth/callback")
-    TWITCH_CLIENT_ID = getattr(_api_keys, "TWITCH_CLIENT_ID", "")
-    TWITCH_CLIENT_SECRET = getattr(_api_keys, "TWITCH_CLIENT_SECRET", "")
-    TWITCH_REDIRECT_URI = getattr(_api_keys, "TWITCH_REDIRECT_URI", "http://localhost:8080/auth/callback")
-except ImportError:
-    sys._api_keys_missing = True
-    KICK_CLIENT_ID = ""
-    KICK_CLIENT_SECRET = ""
-    KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
-    TWITCH_CLIENT_ID = ""
-    TWITCH_CLIENT_SECRET = ""
-    TWITCH_REDIRECT_URI = "http://localhost:8080/auth/callback"
-
-logger = logging.getLogger("minikick.core.app_container")
-
+from backend.config import (
+    API_KEYS_MISSING,
+    KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
+    TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI,
+)
 from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.services.system import create_secret_cipher
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.utils.paths import resource_path
 
+logger = logging.getLogger("minikick.core.app_container")
+
+
 class AppContainerCore:
-    def __init__(self):
-        logger.debug("[AppContainer] Initializing database manager and SQLite storage layers...")
-        self.db_manager = DatabaseManager()
-        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
-        self.secret_cipher = create_secret_cipher()
-        self.kick_token_storage = EncryptedTokenStorage(
-            SQLiteTokenStorage(self.db_manager, provider="kick"), self.secret_cipher
-        )
-        self.twitch_token_storage = EncryptedTokenStorage(
-            SQLiteTokenStorage(self.db_manager, provider="twitch"), self.secret_cipher
-        )
-        self.settings_storage = SQLiteSettingsStorage(self.db_manager)
-        self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
-        self.spam_storage = SQLiteSpamStorage(self.db_manager)
-        self.timers_storage = SQLiteTimersStorage(self.db_manager)
-        self.widgets_storage = SQLiteWidgetsStorage(self.db_manager)
-        self.avatar_storage = SQLiteAvatarStorage(self.db_manager)
-        self.system_log_storage = SQLiteSystemLogStorage(self.db_manager)
-        self.music_storage = SQLiteMusicStorage(self.db_manager)
-        self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
-        self.alert_storage = SQLiteAlertStorage(self.db_manager)
-
-        logger.debug("[AppContainer] Initializing core services (Backup, Settings, Browser, Avatar, Widget, Schedule)...")
-        self.backup_service = BackupService(
-            settings_storage=self.settings_storage,
-            rewards_storage=self.rewards_storage,
-            commands_storage=self.commands_storage,
-            spam_storage=self.spam_storage,
-            timers_storage=self.timers_storage,
-            schedule_storage=self.schedule_storage,
-            alert_storage=self.alert_storage,
-            widgets_storage=self.widgets_storage
-        )
-        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
-        self.browser_service = BrowserService(self.settings_storage)
-        self.i18n = self._init_i18n()
-        self.avatar_service = AvatarService(avatar_storage=self.avatar_storage, db_manager=self.db_manager)
-        self.widget_service = WidgetService(self.widgets_storage)
-        self.schedule_service = ScheduleService(self.schedule_storage)
-
-        auth_html_path = resource_path(os.path.join("assets", "web", "auth.html"))
-
-        logger.debug("[AppContainer] Initializing Kick and Twitch OAuth managers...")
-        self.kick_auth_manager = KickAuthManager(
-            client_id=KICK_CLIENT_ID,
-            client_secret=KICK_CLIENT_SECRET,
-            redirect_uri=KICK_REDIRECT_URI,
-            storage=self.kick_token_storage,
-            success_html_path=auth_html_path,
-            browser_service=self.browser_service
-        )
-
-        self.twitch_auth_manager = TwitchAuthManager(
-            client_id=TWITCH_CLIENT_ID,
-            client_secret=TWITCH_CLIENT_SECRET,
-            redirect_uri=TWITCH_REDIRECT_URI,
-            storage=self.twitch_token_storage,
-            success_html_path=auth_html_path,
-            browser_service=self.browser_service
-        )
-
-        logger.debug("[AppContainer] Initializing TTS Manager and Overlay Server...")
-        self.tts_manager = TTSManager()
-        self.overlay_server = OverlayServerManager(settings_storage=self.settings_storage)
-        self.overlay_server.start()
-        self.alert_service = AlertService(
-            storage=self.alert_storage,
-            overlay_server=self.overlay_server,
-            tts_service=self.tts_manager
-        )
-        self.overlay_server.on_alert_finished = self.alert_service.ack_alert
-        logger.info("[AppContainer] Core dependency container initialized successfully.")
+    def __init__(self, db_manager: DatabaseManager, i18n: TranslationService):
+        self.db_manager = db_manager
+        self.i18n = i18n
         self._music_provider = None
+
+        if API_KEYS_MISSING:
+            logger.warning("[AppContainer] API keys configuration file not found, running with defaults.")
+
+        self._init_storages()
+        self._init_services()
+        self._init_auth()
+        self._init_overlay_and_alerts()
+        logger.info("[AppContainer] Core dependency container initialized successfully.")
 
     @property
     def music_provider(self):
@@ -110,46 +37,90 @@ class AppContainerCore:
     def get_music_provider(self):
         if self._music_provider is None:
             from backend.providers.music import YouTubeMusicProvider
-            self._music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
+            self._music_provider = YouTubeMusicProvider(
+                self.i18n, music_storage=self.music_storage, db_manager=self.db_manager
+            )
         return self._music_provider
 
-
-    def _init_i18n(self) -> TranslationService:
-        if getattr(sys, 'frozen', False):
-            app_dir = os.path.dirname(sys.executable)
-        else:
-            app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            
-        install_lang_path = os.path.join(app_dir, ".install_lang")
-        saved_lang = self.settings_storage.load_string("app_language", "es")
-        ts = TranslationService(default_lang=saved_lang)
-        if os.path.exists(install_lang_path):
-            try:
-                with open(install_lang_path, 'r', encoding='utf-8') as f:
-                    install_lang = f.read().strip()
-                if install_lang in ("es", "en"):
-                    self.settings_storage.save_string("app_language", install_lang)
-                    if install_lang != saved_lang:
-                        saved_lang = install_lang
-                        ts.set_language(saved_lang)
-                try:
-                    os.remove(install_lang_path)
-                except OSError:
-                    pass
-            except Exception as e:
-                logger.debug("[AppContainer] Notice reading .install_lang: %s", e)
-
-        if getattr(sys, "_api_keys_missing", False):
-            logger.warning("[AppContainer] API keys configuration file not found, running with defaults.")
-        return ts
-
     def shutdown(self):
-        if hasattr(self, '_music_provider') and self._music_provider:
-            if hasattr(self._music_provider, "shutdown"):
-                self._music_provider.shutdown()
-        if hasattr(self, 'tts_manager') and self.tts_manager:
-            if hasattr(self.tts_manager, "stop"):
-                self.tts_manager.stop()
-        if hasattr(self, 'overlay_server') and self.overlay_server:
-            if hasattr(self.overlay_server, "stop"):
-                self.overlay_server.stop()
+        components = (
+            (self._music_provider, "shutdown"),
+            (self.tts_manager, "stop"),
+            (self.overlay_server, "stop"),
+        )
+        for component, method_name in components:
+            action = getattr(component, method_name, None)
+            if component is not None and callable(action):
+                action()
+
+    def _init_storages(self):
+        logger.debug("[AppContainer] Initializing SQLite storage layers...")
+        db = self.db_manager
+        self.secret_cipher = create_secret_cipher()
+        self.commands_storage = SQLiteCommandsStorage(db)
+        self.kick_token_storage = EncryptedTokenStorage(
+            SQLiteTokenStorage(db, provider="kick"), self.secret_cipher
+        )
+        self.twitch_token_storage = EncryptedTokenStorage(
+            SQLiteTokenStorage(db, provider="twitch"), self.secret_cipher
+        )
+        self.settings_storage = SQLiteSettingsStorage(db)
+        self.rewards_storage = SQLiteRewardsStorage(db)
+        self.spam_storage = SQLiteSpamStorage(db)
+        self.timers_storage = SQLiteTimersStorage(db)
+        self.widgets_storage = SQLiteWidgetsStorage(db)
+        self.avatar_storage = SQLiteAvatarStorage(db)
+        self.system_log_storage = SQLiteSystemLogStorage(db)
+        self.music_storage = SQLiteMusicStorage(db)
+        self.schedule_storage = SQLiteScheduleStorage(db)
+        self.alert_storage = SQLiteAlertStorage(db)
+
+    def _init_services(self):
+        logger.debug("[AppContainer] Initializing core services...")
+        self.backup_service = BackupService(
+            settings_storage=self.settings_storage,
+            rewards_storage=self.rewards_storage,
+            commands_storage=self.commands_storage,
+            spam_storage=self.spam_storage,
+            timers_storage=self.timers_storage,
+            schedule_storage=self.schedule_storage,
+            alert_storage=self.alert_storage,
+            widgets_storage=self.widgets_storage,
+        )
+        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
+        self.browser_service = BrowserService(self.settings_storage)
+        self.avatar_service = AvatarService(avatar_storage=self.avatar_storage, db_manager=self.db_manager)
+        self.widget_service = WidgetService(self.widgets_storage)
+        self.schedule_service = ScheduleService(self.schedule_storage)
+
+    def _init_auth(self):
+        logger.debug("[AppContainer] Initializing Kick and Twitch OAuth managers...")
+        auth_html_path = resource_path(os.path.join("assets", "web", "auth.html"))
+        self.kick_auth_manager = KickAuthManager(
+            client_id=KICK_CLIENT_ID,
+            client_secret=KICK_CLIENT_SECRET,
+            redirect_uri=KICK_REDIRECT_URI,
+            storage=self.kick_token_storage,
+            success_html_path=auth_html_path,
+            browser_service=self.browser_service,
+        )
+        self.twitch_auth_manager = TwitchAuthManager(
+            client_id=TWITCH_CLIENT_ID,
+            client_secret=TWITCH_CLIENT_SECRET,
+            redirect_uri=TWITCH_REDIRECT_URI,
+            storage=self.twitch_token_storage,
+            success_html_path=auth_html_path,
+            browser_service=self.browser_service,
+        )
+
+    def _init_overlay_and_alerts(self):
+        logger.debug("[AppContainer] Initializing TTS Manager and Overlay Server...")
+        self.tts_manager = TTSManager()
+        self.overlay_server = OverlayServerManager(settings_storage=self.settings_storage)
+        self.overlay_server.start()
+        self.alert_service = AlertService(
+            storage=self.alert_storage,
+            overlay_server=self.overlay_server,
+            tts_service=self.tts_manager,
+        )
+        self.overlay_server.on_alert_finished = self.alert_service.ack_alert

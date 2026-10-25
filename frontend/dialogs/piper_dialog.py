@@ -182,7 +182,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedSize(220, 32)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HSM)
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)

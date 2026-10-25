@@ -181,28 +181,28 @@ class Margin:
 
     MRG_HXS = (2, 0, 2, 0)
     MRG_HSM = (6, 0, 6, 0)
-    MRG_HMD = (8, 0, 8, 0)
 
     MRG_VXS = (0, 2, 0, 2)
     MRG_VSM = (0, 6, 0, 6)
 
     SEC_HDR = (2, 12, 2, 4)
-    SEC_SCR = (2, 2, 8, 2)
     SEC_BDG = (4, 4, 8, 4)
 
-class Padding:   
+class Padding: 
+    PAD_COMP  = "2px 6px"
+    FLAT_MIN  = "2px 8px"
+
     PAD_TINY  = "4px 4px"
     PAD_BASE  = "4px 6px"
+    PAD_TGHT  = "4px 8px"
+    PAD_LIST  = "4px 10px"
+    ASYM_ONE  = "4px 20px 4px 10px"
+
     PAD_CORE  = "6px 10px"
     PAD_WIDE  = "6px 14px"
-    PAD_COMP  = "2px 6px"
-    PAD_TGHT  = "4px 8px"
     PAD_CMBO  = "6px 28px 6px 14px"
-    PAD_LIST  = "4px 10px"
+    
     PAD_CALL  = "10px 14px"   
-    FLAT_MIN  = "2px 8px"
-    FLAT_MID  = "4px 12px"
-    ASYM_ONE  = "4px 20px 4px 10px"
 
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
@@ -340,7 +340,7 @@ QLabel[state="bold"]    {{ font-weight: 600; }}
 def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Flat Buttons --- */
-QPushButton                     {{ background-color: transparent; color: {Semantic.NEUTRAL_000}; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.Padding.PAD_WIDE}; font-size: {text1}px; font-weight: 500; outline: none; }}
+QPushButton                     {{ background-color: transparent; color: {Semantic.NEUTRAL_000}; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.Padding.PAD_BASE}; font-size: {text1}px; font-weight: 500; outline: none; }}
 QPushButton[icon_only="true"]   {{ padding: {Size.SPACING_NN}px; }}
 QPushButton:focus               {{ border: {Borders.BRD_FOCS}; background-color: {Semantic.NEUTRAL_950}; outline: none; }}
 QPushButton:default             {{ border-color: transparent; outline: none; }}
@@ -450,7 +450,7 @@ QLabel[role="searchable_combo_empty"] {{ color: {Semantic.NEUTRAL_500}; font-siz
 
 /* Context Menus */
 QMenu {{ background-color: {Semantic.NEUTRAL_950}; color: {Semantic.NEUTRAL_200}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.Padding.PAD_TINY}; }}
-QMenu::item {{ padding: {Size.Padding.FLAT_MID}; margin: 1px 2px; border-radius: {Size.Radius.RAD_XSM}px; color: {Semantic.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
+QMenu::item {{ padding: {Size.Padding.PAD_LIST}; margin: 1px 2px; border-radius: {Size.Radius.RAD_XSM}px; color: {Semantic.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
 QMenu::item:disabled {{ color: {Semantic.NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {Semantic.NEUTRAL_900}; color: {Semantic.NEUTRAL_050}; border: 1.2px solid {Semantic.BORDER_SUBTLE_GHOST}; }}
 QMenu::item:pressed {{ background-color: {Semantic.NEUTRAL_750}; }}
