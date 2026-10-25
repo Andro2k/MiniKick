@@ -353,9 +353,9 @@ def _tonal_role_qss(role: str, color: str) -> str:
     sel = f'QPushButton[role="{role}"]'
     return (
         f"{sel}           {{ background-color: {rgba(color, 0.14)}; border: 1px solid {rgba(color, 0.30)}; }}\n"
+        f"{sel}:focus     {{ background-color: {rgba(color, 0.26)}; border: 1px solid {rgba(color, 0.80)}; }}\n"
         f"{sel}:hover     {{ background-color: {rgba(color, 0.26)}; border-color: {rgba(color, 0.55)}; }}\n"
         f"{sel}:pressed   {{ background-color: {rgba(color, 0.36)}; }}\n"
-        f"{sel}:focus     {{ background-color: {rgba(color, 0.26)}; border: 1px solid {rgba(color, 0.80)}; }}\n"
         f"{sel}:disabled  {{ background-color: {Semantic.WHITE_GLOW}; border: {Borders.BRD_SOFT}; }}\n"
     )
 
