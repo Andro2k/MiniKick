@@ -3,12 +3,12 @@
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QEvent
-from .controls_widget import ModernButton, ModernSwitch
+from .controls_widget import ModernButton, ModernSwitch, configure_icon_only_button
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
-from frontend.common import get_icon_colored, get_pixmap_colored, get_assets_path, BrandColors, Size
+from frontend.common import get_pixmap_colored, get_assets_path, BrandColors, Size
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -450,9 +450,9 @@ class TableActionCell(QWidget):
         self.layout.addSpacing(Size.SPACING_NN)
         return sw
 
-    def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
-        btn = ModernButton("", role=role, parent=self)
-        btn.setIcon(get_icon_colored(icon_name, color, size=16))
+    def add_button(self, icon_name: str, role: str, tooltip: str, callback) -> ModernButton:
+        btn = ModernButton("", role=role, icon_name=icon_name, parent=self)
+        configure_icon_only_button(btn, Size.ICON_ACTION)
         btn.setToolTip(tooltip)
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)

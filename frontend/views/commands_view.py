@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
-from frontend.common import get_pixmap_colored, is_complete_valid_trigger, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, is_complete_valid_trigger, BrandColors, Size
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -298,16 +298,14 @@ class CommandView(BaseView):
 
         cell.add_button(
             icon_name="edit-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_accent_solid",
+            role="row_action_accent",
             tooltip=self.i18n.get("command.table.tooltip_edit"),
             callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
         )
 
         cell.add_button(
             icon_name="trash-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_danger_solid",
+            role="row_action_danger",
             tooltip=self.i18n.get("command.table.tooltip_delete"),
             callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
         )

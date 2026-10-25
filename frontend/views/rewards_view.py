@@ -438,29 +438,25 @@ class RewardsView(BaseView):
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
                 icon_name="play-filled.svg",
-                color=Palette.NEUTRAL_400 if is_valid_file else Palette.NEUTRAL_050,
-                role="action_outlined" if is_valid_file else "action_danger_solid",
+                role="row_action" if is_valid_file else "row_action_danger",
                 tooltip=play_tooltip,
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
                 icon_name="edit-filled.svg",
-                color=Palette.NEUTRAL_050,
-                role="action_accent_solid",
+                role="row_action_accent",
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"),
                 callback=lambda checked=False, k=key: self.edit_requested.emit(k)
             )
             cell.add_button(
                 icon_name="copy-filled.svg",
-                color=BrandColors.TWITCH,
-                role="action_outlined",
+                role="row_action",
                 tooltip=self.i18n.get("rewards.table.tooltip_duplicate"),
                 callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )
             cell.add_button(
                 icon_name="trash-filled.svg",
-                color=Palette.NEUTRAL_050,
-                role="action_danger_solid",
+                role="row_action_danger",
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"),
                 callback=lambda checked=False, k=key, t=reward_name: self._confirm_delete_reward(k, t)
             )

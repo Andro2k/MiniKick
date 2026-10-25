@@ -221,6 +221,7 @@ class Size:
     SPACING_XL  = 16
     ICON_BASIC = 32
     ICON_SMALL = 24
+    ICON_ACTION = 28
     BADGE_MIN  = 18
     BADGE_MAX  = 22
 
@@ -256,6 +257,11 @@ class Gradients:
         f"qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
         f"stop:0 {BrandColors.GREEN_800}, stop:1 {BrandColors.GREEN_900})"
     )
+
+def rgba(color_hex: str, alpha: float) -> str:
+    h = color_hex.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({r}, {g}, {b}, {alpha:g})"
 
 def get_qcolor_with_alpha(color_hex: str, alpha: int) -> QColor:
     color = QColor(color_hex)
@@ -337,6 +343,24 @@ QLabel[state="warning"] {{ color: {BrandColors.AMBER}; }}
 QLabel[state="bold"]    {{ font-weight: 600; }}
 """
 
+ROW_ACTION_COLORS = {
+    "row_action":        Palette.NEUTRAL_200,
+    "row_action_accent": BrandColors.GREEN,
+    "row_action_danger": BrandColors.RED,
+}
+
+def _tonal_role_qss(role: str, color: str) -> str:
+    sel = f'QPushButton[role="{role}"]'
+    return (
+        f"{sel}           {{ background-color: {rgba(color, 0.14)}; border: 1px solid {rgba(color, 0.30)}; }}\n"
+        f"{sel}:hover     {{ background-color: {rgba(color, 0.26)}; border-color: {rgba(color, 0.55)}; }}\n"
+        f"{sel}:pressed   {{ background-color: {rgba(color, 0.36)}; }}\n"
+        f"{sel}:focus     {{ background-color: {rgba(color, 0.26)}; border: 1px solid {rgba(color, 0.80)}; }}\n"
+        f"{sel}:disabled  {{ background-color: {Semantic.WHITE_GLOW}; border: {Borders.BRD_SOFT}; }}\n"
+    )
+
+_ROW_ACTION_QSS = "".join(_tonal_role_qss(role, color) for role, color in ROW_ACTION_COLORS.items())
+
 def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Flat Buttons --- */
@@ -365,6 +389,8 @@ QPushButton[role="action_accent_solid"]:focus       {{ border: 1.5px solid {Sema
 
 QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.BRD_SOFT}; }}
 
+/* Row actions: tonal buttons for table cells */
+{_ROW_ACTION_QSS}
 /* Platform actions use their brand color without gradients or bevels. */
 QPushButton[role="action_kick"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; }}
 QPushButton[role="action_kick"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}

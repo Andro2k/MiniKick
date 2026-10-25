@@ -163,8 +163,7 @@ class TimersView(BaseView):
 
         cell.add_button(
             icon_name="edit-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_accent_solid",
+            role="row_action_accent",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
         )
@@ -172,8 +171,7 @@ class TimersView(BaseView):
         timer_name = timer_data.get("name", "")
         cell.add_button(
             icon_name="trash-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_danger_solid",
+            role="row_action_danger",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
             callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
         )
