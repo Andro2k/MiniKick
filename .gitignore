@@ -1,6 +1,8 @@
 # Entornos virtuales
 .vscode/
 .venv/
+.claude/
+.interface-design/
 # Archivos compilados de Python
 __pycache__/
 *.py[cod]
