@@ -1,3 +1,4 @@
+# resources\tools\generate_screenshots.py
 
 import os
 import sys
@@ -5,48 +6,36 @@ import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-os.environ["AV_LOG_LEVEL"] = "fatal"
-os.environ["QT_LOGGING_RULES"] = "qt.multimedia.*=false;qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
+from bootstrap.environment import configure_environment
 
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QFont, QFontDatabase
+configure_environment()  # Debe ejecutarse ANTES de importar PySide6
 
 from backend.config import APP_VERSION
-from backend.services.system import GithubUpdateProvider, UpdateManager, WindowsInstaller
+from backend.handlers import QLogHandler
+from bootstrap.qt_setup import get_or_create_application
+from bootstrap.services import StartupServices
 from frontend.main_window import MainWindowCore
-from frontend.common import GLOBAL_QSS, create_dark_palette
+
+
+def build_window() -> MainWindowCore:
+    services = StartupServices()
+    db_manager = services.create_database()
+    i18n = services.create_translator(db_manager)
+    return MainWindowCore(
+        container=services.create_container(db_manager, i18n),
+        q_log_handler=QLogHandler(),
+        updater_manager=services.create_updater(),
+        app_version=APP_VERSION,
+    )
+
 
 def generate_screenshots():
     print("=" * 60)
-    print("[*] GENERADOR DE SCREENSHOTS DE ALTA RESOLUCION (v1.6.0)")
+    print(f"[*] GENERADOR DE SCREENSHOTS DE ALTA RESOLUCION ({APP_VERSION})")
     print("=" * 60)
 
-    app = QApplication.instance() or QApplication(sys.argv)
-    app.setPalette(create_dark_palette())
-    font_family = "Google Sans"
-
-    fonts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "fonts"))
-    if os.path.exists(fonts_dir):
-        for f in os.listdir(fonts_dir):
-            if f.endswith(('.ttf', '.otf')):
-                QFontDatabase.addApplicationFont(os.path.join(fonts_dir, f))
-
-    app_font = QFont(font_family, 10)
-    app_font.setPointSize(10)
-    app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
-    app.setFont(app_font)
-    app.setStyleSheet(GLOBAL_QSS)
-
-    github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
-    windows_installer = WindowsInstaller()
-    updater = UpdateManager(
-        current_version=APP_VERSION,
-        checker=github_provider,
-        downloader=github_provider,
-        installer=windows_installer
-    )
-
-    window = MainWindowCore(updater_manager=updater, app_version=APP_VERSION)
+    app = get_or_create_application()
+    window = build_window()
     window.resize(1920, 1080)
     window.show()
     app.processEvents()

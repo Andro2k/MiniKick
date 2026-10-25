@@ -12,6 +12,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from backend.handlers import QLogHandler
+from bootstrap.services import StartupServices
 from frontend.main_window import MainWindowCore
 
 @pytest.fixture(scope="module")
@@ -42,8 +44,15 @@ def managed_window(qapp):
     windows = []
 
     def _create():
-        updater = MagicMock()
-        win = MainWindowCore(updater_manager=updater, app_version="1.6.1")
+        services = StartupServices()
+        db_manager = services.create_database()
+        i18n = services.create_translator(db_manager)
+        win = MainWindowCore(
+            container=services.create_container(db_manager, i18n),
+            q_log_handler=QLogHandler(),
+            updater_manager=MagicMock(),
+            app_version="1.6.1",
+        )
         windows.append(win)
         return win
 

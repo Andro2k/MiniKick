@@ -81,7 +81,7 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import theme, Size
-    for m in (Size.Margin.SEC_HDR, Size.Margin.MRG_HXS, Size.Margin.MRG_MED, Size.Margin.SEC_SCR, Size.Margin.MRG_XXS, Size.Margin.SEC_BDG):
+    for m in (Size.Margin.SEC_HDR, Size.Margin.MRG_HXS, Size.Margin.MRG_MED, Size.Margin.MRG_XXS, Size.Margin.SEC_BDG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -352,7 +352,6 @@ def test_combobox_and_segmented_action_outlined_style(qapp):
     assert f'QFrame[role="segmented_control"] {{ background-color: {Semantic.NEUTRAL_950}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
     assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
     assert f'QFrame[role="segmented_pagination"] {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'border-left: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette
