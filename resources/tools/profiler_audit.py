@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use project_performance_profiler.py for new commands."""
+# resources\tools\profiler_audit.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

@@ -60,7 +60,7 @@ class KeyRotationTest(unittest.TestCase):
         manager = self._manager(keys=(NEW, OLD, "third"))
         manager._on_raw_frame(mock.MagicMock(), _frame("pusher:error", {"code": 4001}))
         manager._on_close(mock.MagicMock(), 4001, "x")
-        manager._on_close(mock.MagicMock(), 1006, "x")   # un cierre posterior no vuelve a rotar
+        manager._on_close(mock.MagicMock(), 1006, "x")
         self.assertEqual(manager.key, OLD)
 
     def test_stop_socket_resets_to_preferred_key(self) -> None:

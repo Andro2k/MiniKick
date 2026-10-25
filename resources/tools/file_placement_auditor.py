@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use project_file_placement_auditor.py for new commands."""
+# resources\tools\file_placement_auditor.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

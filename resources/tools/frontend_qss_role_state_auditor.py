@@ -17,7 +17,6 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
         pass
 
 def _find_project_root(script_path: str) -> str:
-    """Find the repository root from the auditor's location, independent of cwd."""
     current_dir = os.path.dirname(os.path.abspath(script_path))
     while True:
         if os.path.isfile(os.path.join(current_dir, "frontend", "common", "theme.py")):
@@ -28,7 +27,6 @@ def _find_project_root(script_path: str) -> str:
             break
         current_dir = parent_dir
 
-    # Keep the expected project-relative path so the CLI can report a useful error.
     return os.path.abspath(os.path.join(os.path.dirname(script_path), "..", "..", ".."))
 
 

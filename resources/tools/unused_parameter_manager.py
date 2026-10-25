@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use project_unused_parameter_auditor.py for new commands."""
+# resources\tools\unused_parameter_manager.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path
