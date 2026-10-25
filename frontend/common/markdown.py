@@ -21,8 +21,8 @@ _CALLOUT_STYLES = {
     'TIP': (BrandColors.GREEN, Semantic.CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', Semantic.GREEN_GLOW),
     'CAUTION': (BrandColors.RED, Semantic.CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', Semantic.RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: {Padding.PAD_COMP}; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; font-size: 11px;">\\1</code>'
 
 
 def _render_callout(callout_type: str, lines: list[str]) -> str:

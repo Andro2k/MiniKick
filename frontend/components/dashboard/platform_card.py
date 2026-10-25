@@ -86,10 +86,10 @@ class PlatformStatusCard(QFrame):
             self.lbl_status_pill.setText(f"● {self.i18n.get('dashboard.platforms.status_online')}")
             self.lbl_status_pill.setProperty("state", "online")
         elif state == "connecting":
-            self.lbl_status_pill.setText(f"◌ {self.i18n.get('dashboard.platforms.status_connecting')}")
+            self.lbl_status_pill.setText(f"○ {self.i18n.get('dashboard.platforms.status_connecting')}")
             self.lbl_status_pill.setProperty("state", "connecting")
         else:
-            self.lbl_status_pill.setText(f"○ {self.i18n.get('dashboard.platforms.status_offline')}")
+            self.lbl_status_pill.setText(f"⏻ {self.i18n.get('dashboard.platforms.status_offline')}")
             self.lbl_status_pill.setProperty("state", "offline")
         self.lbl_status_pill.style().unpolish(self.lbl_status_pill)
         self.lbl_status_pill.style().polish(self.lbl_status_pill)
