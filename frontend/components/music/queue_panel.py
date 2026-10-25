@@ -1,7 +1,7 @@
 # frontend\components\music\queue_panel.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
-from PySide6.QtCore import Signal, Qt, QSize, QRectF
+from PySide6.QtCore import Signal, Qt, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 from frontend.widgets import ModernTable, ModernTableCard
@@ -184,7 +184,6 @@ class MusicQueuePanel(QWidget):
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setIcon(self._icon_delete)
-        btn_delete.setIconSize(QSize(16, 16))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
         configure_icon_only_button(btn_delete, size=Size.ICON_SMALL)

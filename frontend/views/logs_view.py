@@ -1,6 +1,6 @@
 # frontend\views\log_view.py
 
-from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
+from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import QFileDialog, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QTableWidgetItem, QWidget, QSizePolicy
 from frontend.widgets import BaseView, ModernTableCard, ModernButton, SegmentedPagination, NoWheelComboBox
@@ -137,7 +137,6 @@ class LogView(BaseView):
         for name, text, role, icon, color, slot, visible in specs:
             btn = ModernButton(text, role=role, parent=self)
             btn.setIcon(get_icon_colored(icon, color, 16))
-            btn.setIconSize(QSize(16, 16))
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             btn.clicked.connect(slot)
             btn.setVisible(visible)

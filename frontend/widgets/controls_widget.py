@@ -59,7 +59,6 @@ class ModernButton(QPushButton):
             current_role = self.property("role") or self._role
             color = self._resolve_role_color(current_role)
         self.setIcon(get_icon_colored(icon_name, color, size))
-        self.setIconSize(QSize(size, size))
 
 class ModernSwitch(QAbstractButton):
     def __init__(self, parent=None):

@@ -1,7 +1,7 @@
 # frontend\components\dialogs\piper_voice_item.py
 
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
-from PySide6.QtCore import Qt, QSize, Signal
+from PySide6.QtCore import Qt, Signal
 from frontend.common import get_icon_colored, Palette, Size
 from frontend.widgets import create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
@@ -57,7 +57,6 @@ class PiperVoiceItemWidget(QWidget):
 
         self.btn_test = QPushButton(self)
         self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_test.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_test)
         self.btn_test.setProperty("role", "action_outlined")
         self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
@@ -68,7 +67,6 @@ class PiperVoiceItemWidget(QWidget):
 
         self.btn_delete = QPushButton(self)
         self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_delete.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_delete)
         self.btn_delete.setProperty("role", "action_danger_solid")
         self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))

@@ -1,7 +1,7 @@
 # frontend\widgets\pagination.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal
 from frontend.common import get_icon_colored, Size
 from .controls_widget import configure_icon_only_button
 
@@ -22,7 +22,6 @@ class SegmentedPagination(QFrame):
         self.btn_first = QPushButton(self)
         self.btn_first.setObjectName("btn_first")
         self.btn_first.setIcon(get_icon_colored("angles-left-filled.svg"))
-        self.btn_first.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_first)
         self.btn_first.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_first.clicked.connect(self.first_requested.emit)
@@ -30,7 +29,6 @@ class SegmentedPagination(QFrame):
         self.btn_prev = QPushButton(self)
         self.btn_prev.setObjectName("btn_prev")
         self.btn_prev.setIcon(get_icon_colored("chevron-left-filled.svg"))
-        self.btn_prev.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_prev)
         self.btn_prev.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_prev.clicked.connect(self.prev_requested.emit)
@@ -42,7 +40,6 @@ class SegmentedPagination(QFrame):
         self.btn_next = QPushButton(self)
         self.btn_next.setObjectName("btn_next")
         self.btn_next.setIcon(get_icon_colored("chevron-right-filled.svg"))
-        self.btn_next.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_next)
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_next.clicked.connect(self.next_requested.emit)
@@ -50,7 +47,6 @@ class SegmentedPagination(QFrame):
         self.btn_last = QPushButton(self)
         self.btn_last.setObjectName("btn_last")
         self.btn_last.setIcon(get_icon_colored("angles-right-filled.svg"))
-        self.btn_last.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_last)
         self.btn_last.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_last.clicked.connect(self.last_requested.emit)

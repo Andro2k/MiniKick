@@ -2,7 +2,7 @@
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy
-from PySide6.QtCore import Qt, QSize, Signal, QEvent
+from PySide6.QtCore import Qt, Signal, QEvent
 from .controls_widget import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
@@ -453,7 +453,6 @@ class TableActionCell(QWidget):
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role, parent=self)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
-        btn.setIconSize(QSize(16, 16))
         btn.setToolTip(tooltip)
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)

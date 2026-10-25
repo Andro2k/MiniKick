@@ -1,7 +1,7 @@
 # frontend\navigation\toast_component.py
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
-from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
+from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
 from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
@@ -53,7 +53,6 @@ class ModernToast(QFrame):
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(ModernToast._pixmap_cache["close"])
-        btn_close.setIconSize(QSize(16, 16))
         configure_icon_only_button(btn_close)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)

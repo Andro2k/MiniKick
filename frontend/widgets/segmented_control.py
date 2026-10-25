@@ -31,7 +31,6 @@ class ModernSegmentedControl(QFrame):
         btn.setCheckable(True)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         configure_icon_only_button(btn, size=self._button_size)
-        btn.setIconSize(self._icon_size)
         if tooltip:
             btn.setToolTip(tooltip)
 

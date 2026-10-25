@@ -2,7 +2,7 @@
 
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
-from PySide6.QtCore import Signal, Qt, QSize, QTimer
+from PySide6.QtCore import Signal, Qt, QTimer
 from frontend.common import get_icon_colored, get_pixmap, Palette, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout, create_text_label
 from .music_mockup import MusicOverlayMockupWidget
@@ -146,12 +146,10 @@ class MusicPlayerSettingsPanel(QWidget):
 
         self.btn_play_pause = ModernButton("", role="action_outlined", parent=self)
         self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_play_pause.setIconSize(QSize(16, 16))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
 
         self.btn_skip = ModernButton("", role="action_outlined", parent=self)
         self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_skip.setIconSize(QSize(16, 16))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
         controls_layout.addWidget(self.btn_play_pause)

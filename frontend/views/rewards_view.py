@@ -184,7 +184,7 @@ class RewardsView(BaseView):
         self.table_card.setMinimumHeight(300)
 
         self.table_rewards = self.table_card.table
-        self.table_rewards.setIconSize(QSize(48, 32))
+        self.table_rewards.setIconSize(QSize(52, 36))
         self.btn_new_rewards = self.table_card.btn_add
         self.btn_new_rewards.clicked.connect(self.add_requested.emit)
 
