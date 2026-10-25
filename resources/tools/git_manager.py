@@ -1,5 +1,6 @@
 # resources/tools/git_manager.py
 
+import questionary
 import argparse
 import contextlib
 import json
@@ -714,43 +715,54 @@ def interactive_menu() -> None:
     if not sys.stdin.isatty():
         return GitReleaseWorkflow.doctor()
 
+    options_map = {
+        "🔍 Auditar estado del repositorio y ramas": GitReleaseWorkflow.audit,
+        "🔀 Cambiar de rama": GitReleaseWorkflow.switch_branch,
+        "🚀 Iniciar nueva versión / release": GitReleaseWorkflow.start_release,
+        "🔄 Sincronizar 'main' y GitHub": GitReleaseWorkflow.sync,
+        "⬇️  Traer origin/main aquí (update)": GitReleaseWorkflow.update_from_main,
+        "🧹 Limpiar ramas antiguas fusionadas": GitReleaseWorkflow.cleanup_merged,
+        "🧪 Verificar tests y preparar PR": GitReleaseWorkflow.finish_check,
+        "🩺 Doctor (diagnóstico de entorno)": GitReleaseWorkflow.doctor,
+        "🚪 Salir": None
+    }
+
+    cli_style = questionary.Style([
+        ('qmark', 'fg:cyan bold'),
+        ('question', 'bold'),
+        ('answer', 'fg:green bold'),
+        ('pointer', 'fg:cyan bold'),
+        ('highlighted', 'fg:cyan bold'),
+        ('selected', 'fg:green'),        
+    ])
+
     while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
         curr = GitAuditService.get_current_branch()
         ver = VersionManager.get_version()
+        
         CLI.banner("GIT RELEASE MANAGER")
         print(f"  {CLI.BOLD}Rama:{CLI.RESET} {CLI.CYAN}{curr}{CLI.RESET} │ {CLI.BOLD}Versión:{CLI.RESET} {CLI.CYAN}{ver}{CLI.RESET}\n")
         
-        options = [
-            ("Auditar estado", GitReleaseWorkflow.audit),
-            ("Cambiar de rama", GitReleaseWorkflow.switch_branch),
-            ("Iniciar nueva versión", GitReleaseWorkflow.start_release),
-            ("Sincronizar 'main'", GitReleaseWorkflow.sync),
-            ("Traer origin/main aquí (update)", GitReleaseWorkflow.update_from_main),
-            ("Limpiar ramas antiguas", GitReleaseWorkflow.cleanup_merged),
-            ("Verificar tests y preparar PR", GitReleaseWorkflow.finish_check),
-            ("Doctor (diagnóstico)", GitReleaseWorkflow.doctor),
-        ]
-        
-        for i, (label, _) in enumerate(options, 1):
-            print(f"  {CLI.DIM}[{i}]{CLI.RESET} {label}")
-        print(f"  {CLI.DIM}[0]{CLI.RESET} Salir\n")
+        choice = questionary.select(
+            "Selecciona una acción (usa las flechas ↑/↓ y presiona Enter):",
+            choices=list(options_map.keys()),
+            pointer="❯",
+            use_indicator=True,
+            style=cli_style
+        ).ask()
 
-        try:
-            choice = input(f"  {CLI.BOLD}Opción:{CLI.RESET} ").strip()
-            if choice in ("0", "q", "exit"): break
-            
-            idx = int(choice) - 1
-            if 0 <= idx < len(options):
-                print()
-                options[idx][1]()
-                print()
-            else:
-                CLI.err("Opción inválida.")
-        except (KeyboardInterrupt, EOFError):
+        if choice == "🚪 Salir" or choice is None:
+            print(f"\n  {CLI.DIM}¡Hasta luego!{CLI.RESET}\n")
             break
-        except ValueError:
-            CLI.err("Entrada inválida.")
-
+            
+        print()
+        action = options_map[choice]
+        if action:
+            action()
+            
+        input(f"\n  {CLI.DIM}Presiona Enter para continuar...{CLI.RESET}")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Git Release Manager")
