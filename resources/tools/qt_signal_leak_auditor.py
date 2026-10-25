@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use frontend_qt_signal_lifecycle_auditor.py for new commands."""
+# resources\tools\qt_signal_leak_auditor.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

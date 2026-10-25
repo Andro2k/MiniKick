@@ -345,17 +345,14 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
     assert (m_log.left(), m_log.top(), m_log.right(), m_log.bottom()) == (0, 0, 0, 0)
 
 def test_combobox_and_segmented_action_outlined_style(qapp):
-    from frontend.common.theme import GLOBAL_QSS, Semantic, Palette
-
-    assert f"QComboBox {{ background-color: {Palette.NEUTRAL_900};" in GLOBAL_QSS
-    assert f"border: 1px solid {Palette.NEUTRAL_700};" in GLOBAL_QSS
-    assert f"QComboBox:hover {{ background-color: {Palette.NEUTRAL_750}; border: 1px solid {Semantic.BORDER_HOVER};" in GLOBAL_QSS
-
-    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
-
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'border-left: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    from frontend.common.theme import GLOBAL_QSS, Semantic, Borders
+    assert f"QComboBox                           {{ background-color: {Semantic.NEUTRAL_900};" in GLOBAL_QSS
+    assert f"border: {Borders.BRD_BASE};" in GLOBAL_QSS
+    assert f"QComboBox:hover                     {{ background-color: {Semantic.NEUTRAL_750}; border: {Borders.BRD_HOVR};" in GLOBAL_QSS
+    assert f'QFrame[role="segmented_control"] {{ background-color: {Semantic.NEUTRAL_950}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'border-left: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette

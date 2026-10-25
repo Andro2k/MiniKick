@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use frontend_design_token_auditor.py for new commands."""
+# resources\tools\design_token_auditor.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

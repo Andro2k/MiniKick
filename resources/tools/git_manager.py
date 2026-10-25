@@ -1,5 +1,6 @@
 # resources/tools/git_manager.py
 
+import questionary
 import argparse
 import contextlib
 import json
@@ -9,7 +10,7 @@ import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Set
 
 if hasattr(sys.stdout, "reconfigure"):
     with contextlib.suppress(Exception):
@@ -35,8 +36,7 @@ MAIN_BRANCH = "main"
 REMOTE_MAIN = f"{DEFAULT_REMOTE}/{MAIN_BRANCH}"
 TEST_DIRS = ("tests", "resources/tests")
 
-
-class Colors:
+class CLI:
     GREEN = "\033[92m"
     BLUE = "\033[94m"
     CYAN = "\033[96m"
@@ -48,21 +48,48 @@ class Colors:
     RESET = "\033[0m"
 
     @classmethod
-    def strip(cls, text: str) -> str:
-        return re.sub(r"\033\[[0-9;]*m", "", text)
+    def banner(cls, title: str) -> None:
+        width = 64
+        print(f"\n{cls.BOLD}{cls.CYAN}╭{'─' * (width - 2)}╮{cls.RESET}")
+        print(f"{cls.BOLD}{cls.CYAN}│{title.center(width - 2)}│{cls.RESET}")
+        print(f"{cls.BOLD}{cls.CYAN}╰{'─' * (width - 2)}╯{cls.RESET}\n")
 
+    @classmethod
+    def ok(cls, msg: str) -> None:
+        print(f"  {cls.GREEN}✓{cls.RESET} {msg}")
 
-def confirm(prompt: str, assume_yes: bool = False) -> bool:
-    if assume_yes:
-        return True
-    if not sys.stdin.isatty():
-        print(f"  {Colors.YELLOW}(Modo no interactivo: añade --yes para confirmar){Colors.RESET}")
-        return False
-    try:
-        return input(f"{prompt} (s/n) [s]: ").strip().lower() in ("", "s", "si", "y", "yes")
-    except (KeyboardInterrupt, EOFError):
-        return False
+    @classmethod
+    def err(cls, msg: str) -> None:
+        print(f"  {cls.RED}✗{cls.RESET} {msg}")
 
+    @classmethod
+    def warn(cls, msg: str) -> None:
+        print(f"  {cls.YELLOW}!{cls.RESET} {msg}")
+
+    @classmethod
+    def info(cls, msg: str) -> None:
+        print(f"  {cls.BLUE}ℹ{cls.RESET} {msg}")
+
+    @classmethod
+    def step(cls, msg: str) -> None:
+        print(f"  {cls.DIM}❯ {msg}{cls.RESET}")
+
+    @classmethod
+    def list_item(cls, msg: str, indent: int = 1) -> None:
+        space = "    " * indent
+        print(f"{space}{cls.DIM}├─ {msg}{cls.RESET}")
+
+    @classmethod
+    def confirm(cls, prompt: str, assume_yes: bool = False) -> bool:
+        if assume_yes:
+            return True
+        if not sys.stdin.isatty():
+            cls.warn("(Modo no interactivo: añade --yes para confirmar)")
+            return False
+        try:
+            return input(f"{prompt} (s/n) [s]: ").strip().lower() in ("", "s", "si", "y", "yes")
+        except (KeyboardInterrupt, EOFError):
+            return False
 
 class GitRunner:
     DEFAULT_TIMEOUT = 120
@@ -151,16 +178,19 @@ class ChangeSummary:
     counts: Dict[str, int] = field(default_factory=dict)
     deleted_dirs: List[Tuple[str, int]] = field(default_factory=list)
 
-    @property
-    def total(self) -> int:
-        return sum(self.counts.values())
-
 
 class GitAuditService:
     @staticmethod
     def get_current_branch() -> str:
         code, out, _ = GitRunner.run(["rev-parse", "--abbrev-ref", "HEAD"])
         return out if code == 0 else "unknown"
+        
+    @staticmethod
+    def get_local_branches() -> List[str]:
+        code, out, _ = GitRunner.run(["branch", "--format=%(refname:short)"])
+        if code != 0 or not out:
+            return []
+        return [b.strip() for b in out.splitlines() if b.strip()]
 
     @staticmethod
     def ref_exists(ref: str) -> bool:
@@ -252,6 +282,7 @@ class GitAuditService:
                 segs = path.split("/")
                 folder = "/".join(segs[:2]) if len(segs) > 2 else (segs[0] if len(segs) > 1 else "(raíz)")
                 deleted[folder] = deleted.get(folder, 0) + 1
+        
         summary.deleted_dirs = sorted(deleted.items(), key=lambda kv: kv[1], reverse=True)[:3]
         return summary
 
@@ -261,14 +292,14 @@ class GitAuditService:
         return GitAuditService.summarize_name_status(out if code == 0 else "")
 
     @staticmethod
-    def protected_release_branches() -> List[str]:
-        return [GitAuditService.get_current_branch(), f"release/{VersionManager.get_version()}"]
+    def protected_release_branches() -> Set[str]:
+        return {GitAuditService.get_current_branch(), f"release/{VersionManager.get_version()}"}
 
     @staticmethod
     def get_merged_release_branches() -> Tuple[List[str], List[str]]:
         local_merged: List[str] = []
         remote_merged: List[str] = []
-        protected = set(GitAuditService.protected_release_branches())
+        protected = GitAuditService.protected_release_branches()
 
         code, out, _ = GitRunner.run(["branch", "--merged", REMOTE_MAIN])
         if code == 0:
@@ -287,7 +318,6 @@ class GitAuditService:
                         remote_merged.append(branch_name)
 
         return local_merged, remote_merged
-
 
 @dataclass(slots=True)
 class Check:
@@ -313,10 +343,25 @@ class DoctorService:
         return str(venv) if venv else sys.executable
 
     @staticmethod
+    def run_checks(fetch: bool = True) -> List[Check]:
+        if fetch:
+            GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
+        checks: List[Check] = [
+            DoctorService._check_interpreter(), 
+            DoctorService._check_pyside(), 
+            DoctorService._check_api_keys()
+        ]
+        checks.extend(DoctorService._check_operation())
+        checks.append(DoctorService._check_version_branch())
+        checks.extend(DoctorService._check_branch_vs_main())
+        checks.extend(DoctorService._check_repo_hygiene())
+        return checks
+
+    @staticmethod
     def _check_interpreter() -> Check:
         venv = DoctorService.venv_python()
         if not venv:
-            return Check("Intérprete", "WARN", "No existe la carpeta .venv del proyecto.", "uv sync   (o crea el entorno virtual)")
+            return Check("Intérprete", "WARN", "No existe la carpeta .venv del proyecto.", "uv sync (o crea el entorno virtual)")
         root_p = Path(PROJECT_ROOT)
         venv_dir = (root_p / ".venv").resolve()
         prefix = Path(sys.prefix).resolve()
@@ -324,8 +369,8 @@ class DoctorService:
             return Check("Intérprete", "OK", f"Usando el entorno del proyecto ({sys.executable}).")
         return Check(
             "Intérprete", "WARN",
-            f"Estás usando {sys.executable}, no el .venv del proyecto (faltarán PySide6 y demás dependencias).",
-            r"Activa el entorno: .\.venv\Scripts\Activate.ps1   (o ejecuta con: uv run python ...)",
+            f"Estás usando {sys.executable}, no el .venv.",
+            r"Activa el entorno: .\.venv\Scripts\Activate.ps1"
         )
 
     @staticmethod
@@ -335,16 +380,12 @@ class DoctorService:
             ok = subprocess.run([python, "-c", "import PySide6"], capture_output=True, timeout=60).returncode == 0
         except Exception:
             ok = False
-        if ok:
-            return Check("PySide6", "OK", "Importable con el intérprete del proyecto.")
-        return Check("PySide6", "FAIL", f"No se puede importar PySide6 con {python}.", "uv sync   (o pip install -r requirements.txt)")
+        return Check("PySide6", "OK", "Importable correctamente.") if ok else Check("PySide6", "FAIL", "Falla importación.", "uv sync")
 
     @staticmethod
     def _check_api_keys() -> Check:
         path = Path(PROJECT_ROOT) / "backend" / "config" / "api_keys.py"
-        if path.is_file():
-            return Check("api_keys.py", "OK", "Presente (credenciales reales).")
-        return Check("api_keys.py", "WARN", "No existe: el backend importa con credenciales vacías y los logins no funcionarán.", "Crea backend/config/api_keys.py con tus claves.")
+        return Check("api_keys.py", "OK", "Presente.") if path.is_file() else Check("api_keys.py", "WARN", "No existe.", "Crea el archivo.")
 
     @staticmethod
     def _check_operation() -> List[Check]:
@@ -352,17 +393,16 @@ class DoctorService:
         op = GitAuditService.in_progress_operation()
         if op == "merge":
             conflicts = GitAuditService.unmerged_files()
-            detail = f"Hay un merge a medias ({len(conflicts)} archivo(s) en conflicto)." if conflicts else "Hay un merge a medias, sin conflictos pendientes."
-            fix = "Resuelve los conflictos, git add <archivos> y git commit -m \"Merge origin/main\"; o cancela con: git merge --abort" if conflicts \
-                else "git commit -m \"Merge origin/main\"   (o cancela con: git merge --abort)"
+            detail = f"Merge a medias ({len(conflicts)} en conflicto)." if conflicts else "Merge a medias, sin conflictos."
+            fix = "Resuelve y git commit" if conflicts else "git commit -m 'Merge'"
             checks.append(Check("Operación en curso", "FAIL", detail, fix))
         elif op:
-            checks.append(Check("Operación en curso", "FAIL", f"Hay un {op} a medias.", f"Termínalo o cancélalo (git {op} --abort)."))
+            checks.append(Check("Operación en curso", "FAIL", f"{op} a medias.", f"git {op} --abort"))
         else:
-            checks.append(Check("Operación en curso", "OK", "Ningún merge/rebase pendiente."))
+            checks.append(Check("Operación en curso", "OK", "Sin operaciones pendientes."))
 
         if GitAuditService.has_index_lock():
-            checks.append(Check("index.lock", "WARN", "Existe .git/index.lock (otro git/IDE lo está usando, o quedó huérfano).", "Cierra otros programas de git; si no hay ninguno: borra .git/index.lock"))
+            checks.append(Check("index.lock", "WARN", "Existe .git/index.lock", "Cierra otros programas o borra el archivo"))
         return checks
 
     @staticmethod
@@ -380,19 +420,16 @@ class DoctorService:
             extra = f" Trae: {', '.join(parts)}." if parts else ""
             if summary.deleted_dirs:
                 extra += " Elimina: " + ", ".join(f"{n} de {d}" for d, n in summary.deleted_dirs) + "."
-            checks.append(Check(
-                "Rama vs main", "WARN",
-                f"'{branch}' va {behind} commit(s) por detrás de {REMOTE_MAIN}.{extra}",
-                "python resources/tools/git_manager.py update",
-            ))
+                
+            checks.append(Check("Rama vs main", "WARN", f"'{branch}' va {behind} por detrás de {REMOTE_MAIN}.{extra}", "git_manager.py update"))
 
         upstream = GitAuditService.get_upstream()
         if not upstream:
-            checks.append(Check("Upstream", "WARN", "La rama actual no tiene upstream configurado.", "git push -u origin <rama>"))
+            checks.append(Check("Upstream", "WARN", "Sin upstream configurado.", "git push -u origin <rama>"))
         else:
             u_ahead, u_behind = GitAuditService.ahead_behind("HEAD", upstream)
             if u_ahead or u_behind:
-                checks.append(Check("Upstream", "WARN", f"Frente a {upstream}: {u_ahead} sin subir, {u_behind} sin bajar.", "git push / git pull --ff-only"))
+                checks.append(Check("Upstream", "WARN", f"{u_ahead} sin subir, {u_behind} sin bajar.", "git push / pull"))
             else:
                 checks.append(Check("Upstream", "OK", f"Sincronizada con {upstream}."))
         return checks
@@ -401,14 +438,7 @@ class DoctorService:
     def _check_repo_hygiene() -> List[Check]:
         checks: List[Check] = []
         root_p = Path(PROJECT_ROOT)
-        if (root_p / ".gitattributes").is_file():
-            checks.append(Check("Saltos de línea", "OK", ".gitattributes presente."))
-        else:
-            checks.append(Check(
-                "Saltos de línea", "WARN",
-                "Sin .gitattributes: en Windows los archivos pueden quedar en CRLF y 'git apply' de parches LF falla.",
-                "Añade '* text=auto' en .gitattributes (o usa: git apply --ignore-whitespace).",
-            ))
+        checks.append(Check("Saltos de línea", "OK", ".gitattributes presente.") if (root_p / ".gitattributes").is_file() else Check("Saltos de línea", "WARN", "Falta .gitattributes.", "Añade '* text=auto'"))
 
         for target_path in TEST_DIRS:
             target_p = root_p / target_path if not Path(target_path).is_absolute() else Path(target_path)
@@ -418,10 +448,7 @@ class DoctorService:
                 except ValueError:
                     rel_str = target_p.as_posix()
                 code, _, _ = GitRunner.run(["check-ignore", "-q", rel_str])
-                if code == 0:
-                    checks.append(Check("Tests en Git", "FAIL", f"'{rel_str}' está ignorado por .gitignore: tus tests no se versionan.", "Quita esa línea de .gitignore."))
-                else:
-                    checks.append(Check("Tests en Git", "OK", f"'{rel_str}' se versiona."))
+                checks.append(Check("Tests en Git", "FAIL", f"Ignorado en .gitignore: {rel_str}", "Quita la línea") if code == 0 else Check("Tests en Git", "OK", f"'{rel_str}' se versiona."))
         return checks
 
     @staticmethod
@@ -429,76 +456,73 @@ class DoctorService:
         branch = GitAuditService.get_current_branch()
         expected = f"release/{VersionManager.get_version()}"
         if branch.startswith("release/") and branch != expected:
-            return Check("Versión vs rama", "WARN", f"Estás en {branch} pero version.py indica {expected}.", "Alinea la versión o cambia de rama.")
+            return Check("Versión vs rama", "WARN", f"En {branch} pero version indica {expected}.", "Alinea la versión.")
         return Check("Versión vs rama", "OK", f"{branch} / {VersionManager.get_version()}")
-
-    @staticmethod
-    def run_checks(fetch: bool = True) -> List[Check]:
-        if fetch:
-            GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
-        checks: List[Check] = [DoctorService._check_interpreter(), DoctorService._check_pyside(), DoctorService._check_api_keys()]
-        checks.extend(DoctorService._check_operation())
-        checks.append(DoctorService._check_version_branch())
-        checks.extend(DoctorService._check_branch_vs_main())
-        checks.extend(DoctorService._check_repo_hygiene())
-        return checks
 
 
 class TestRunner:
-    __test__ = False
-
-    @staticmethod
-    def targets() -> List[Path]:
-        root_p = Path(PROJECT_ROOT)
-        return [root_p / d if not Path(d).is_absolute() else Path(d) for d in TEST_DIRS if (root_p / d).is_dir() or Path(d).is_dir()]
-
     @staticmethod
     def run() -> Optional[bool]:
-        dirs = TestRunner.targets()
+        root_p = Path(PROJECT_ROOT)
+        dirs = [root_p / d if not Path(d).is_absolute() else Path(d) for d in TEST_DIRS if (root_p / d).is_dir() or Path(d).is_dir()]
         if not dirs:
             return None
         python = DoctorService.project_python()
-        try:
-            has_pytest = subprocess.run([python, "-c", "import pytest"], capture_output=True, timeout=60).returncode == 0
-        except Exception:
-            has_pytest = False
-
-        root_p = Path(PROJECT_ROOT)
-        dir_strs = []
-        for d in dirs:
-            try:
-                dir_strs.append(d.relative_to(root_p).as_posix())
-            except ValueError:
-                dir_strs.append(d.as_posix())
+        has_pytest = subprocess.run([python, "-c", "import pytest"], capture_output=True, timeout=60).returncode == 0
+        dir_strs = [d.relative_to(root_p).as_posix() if d.is_relative_to(root_p) else d.as_posix() for d in dirs]
 
         if has_pytest:
             cmd = [python, "-m", "pytest", *dir_strs, "-q"]
         else:
-            modules = []
-            for folder in dirs:
-                try:
-                    rel_p = folder.relative_to(root_p).as_posix()
-                except ValueError:
-                    rel_p = folder.as_posix()
-                prefix = rel_p.replace("/", ".")
-                modules.extend(f"{prefix}.{f.stem}" for f in sorted(folder.glob("test_*.py")))
-            if not modules:
-                return None
+            modules = [f"{d.relative_to(root_p).as_posix().replace('/', '.')}.{f.stem}" for d in dirs for f in sorted(d.glob("test_*.py")) if d.is_relative_to(root_p)]
+            if not modules: return None
             cmd = [python, "-m", "unittest", *modules]
 
-        print(f"  {Colors.DIM}→ {' '.join(cmd)}{Colors.RESET}")
+        CLI.step(f"{' '.join(cmd)}")
         return subprocess.run(cmd, cwd=root_p).returncode == 0
-
-
-STATUS_ICON = {"OK": "✅", "WARN": "⚠️ ", "FAIL": "❌"}
-
 
 class GitReleaseWorkflow:
     @staticmethod
-    def _banner(title: str) -> None:
-        print(f"\n{Colors.BOLD}{Colors.CYAN}{'═' * 64}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.CYAN}{title.center(64)}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.CYAN}{'═' * 64}{Colors.RESET}\n")
+    def switch_branch() -> None:
+        CLI.banner("CAMBIAR DE RAMA")
+        branches = GitAuditService.get_local_branches()
+        curr_branch = GitAuditService.get_current_branch()
+        
+        if not branches:
+            CLI.err("No se encontraron ramas locales.")
+            return
+
+        print(f"  {CLI.BOLD}Ramas disponibles:{CLI.RESET}")
+        for idx, b in enumerate(branches, 1):
+            marker = f"{CLI.CYAN}★{CLI.RESET}" if b == curr_branch else " "
+            print(f"    {marker} {CLI.BOLD}{idx}){CLI.RESET} {b}")
+
+        try:
+            choice = input(f"\n  {CLI.BOLD}Selecciona el número de la rama (0 para cancelar):{CLI.RESET} ").strip()
+            if not choice or choice == "0":
+                return
+            
+            idx = int(choice) - 1
+            if 0 <= idx < len(branches):
+                target = branches[idx]
+                if target == curr_branch:
+                    CLI.info("Ya estás en esta rama.")
+                    return
+                
+                is_clean, _ = GitAuditService.is_working_tree_clean()
+                if not is_clean:
+                    if not CLI.confirm("Tienes cambios sin commitear. Git podría transferirlos o bloquear el cambio. ¿Continuar?"):
+                        return
+
+                code, _, err = GitRunner.run(["checkout", target])
+                if code == 0:
+                    CLI.ok(f"Cambiado a la rama '{target}'")
+                else:
+                    CLI.err(f"No se pudo cambiar de rama:\n{err}")
+            else:
+                CLI.err("Selección inválida.")
+        except ValueError:
+            CLI.err("Entrada inválida.")
 
     @staticmethod
     def doctor(as_json: bool = False) -> bool:
@@ -508,160 +532,102 @@ class GitReleaseWorkflow:
             print(json.dumps({"ok": ok, "checks": [asdict(c) for c in checks]}, indent=2, ensure_ascii=False))
             return ok
 
-        GitReleaseWorkflow._banner("MINIKICK - DOCTOR (ENTORNO Y REPOSITORIO)")
+        CLI.banner("DOCTOR (ENTORNO Y REPOSITORIO)")
+        status_icons = {"OK": f"{CLI.GREEN}✓{CLI.RESET}", "WARN": f"{CLI.YELLOW}!{CLI.RESET}", "FAIL": f"{CLI.RED}✗{CLI.RESET}"}
+        
         for c in checks:
-            color = {"OK": Colors.GREEN, "WARN": Colors.YELLOW, "FAIL": Colors.RED}[c.status]
-            print(f"  {STATUS_ICON[c.status]} {Colors.BOLD}{c.name}:{Colors.RESET} {color}{c.detail}{Colors.RESET}")
+            color = {"OK": CLI.GREEN, "WARN": CLI.YELLOW, "FAIL": CLI.RED}[c.status]
+            print(f"  {status_icons[c.status]} {CLI.BOLD}{c.name}:{CLI.RESET} {color}{c.detail}{CLI.RESET}")
             if c.fix and c.status != "OK":
-                print(f"     {Colors.DIM}💡 {c.fix}{Colors.RESET}")
-        fails = sum(c.status == "FAIL" for c in checks)
-        warns = sum(c.status == "WARN" for c in checks)
-        print(f"\n  Resumen: {len(checks) - fails - warns} OK · {warns} avisos · {fails} errores\n")
+                CLI.list_item(f"Solución: {c.fix}")
+                
+        fails, warns = sum(c.status == "FAIL" for c in checks), sum(c.status == "WARN" for c in checks)
+        print(f"\n  {CLI.DIM}Resumen: {len(checks) - fails - warns} OK · {warns} Avisos · {fails} Errores{CLI.RESET}\n")
         return ok
 
     @staticmethod
     def audit() -> None:
-        GitReleaseWorkflow._banner("MINIKICK - AUDITORÍA DE GIT & REPOSITORIO")
-
+        CLI.banner("AUDITORÍA DE GIT & REPOSITORIO")
         curr_branch = GitAuditService.get_current_branch()
         config_version = VersionManager.get_version()
         expected_branch = f"release/{config_version}"
 
-        print(f"  {Colors.BOLD}Configuración de Versión:{Colors.RESET} {Colors.GREEN}{config_version}{Colors.RESET}")
-        print(f"  {Colors.BOLD}Rama Actual (HEAD):{Colors.RESET}       {Colors.YELLOW}{curr_branch}{Colors.RESET}")
+        print(f"  {CLI.BOLD}Versión:{CLI.RESET} {CLI.CYAN}{config_version}{CLI.RESET} │ {CLI.BOLD}Rama (HEAD):{CLI.RESET} {CLI.CYAN}{curr_branch}{CLI.RESET}")
 
         if curr_branch.startswith("release/") and curr_branch != expected_branch:
-            print(f"  {Colors.RED}⚠️  Advertencia:{Colors.RESET} Estás en {curr_branch}, pero la versión configurada es {config_version} ({expected_branch}).")
+            CLI.warn(f"Estás en {curr_branch}, pero la versión configurada es {config_version}.")
         elif curr_branch == expected_branch:
-            print(f"  {Colors.GREEN}✅ Coherencia:{Colors.RESET} La rama activa coincide exactamente con la versión del software.")
+            CLI.ok("La rama activa coincide con la versión del software.")
 
-        op = GitAuditService.in_progress_operation()
-        if op:
-            print(f"  {Colors.BOLD}Operación en curso:{Colors.RESET}       {Colors.RED}{op} sin terminar{Colors.RESET}  {Colors.DIM}(ejecuta 'doctor' para ver cómo resolverlo){Colors.RESET}")
+        if op := GitAuditService.in_progress_operation():
+            CLI.err(f"Operación '{op}' sin terminar. Ejecuta 'doctor'.")
 
         is_clean, dirty_files = GitAuditService.is_working_tree_clean()
         if is_clean:
-            print(f"  {Colors.BOLD}Estado de Archivos:{Colors.RESET}       {Colors.GREEN}Limpio (sin cambios pendientes){Colors.RESET}")
+            CLI.ok("Árbol de trabajo limpio.")
         else:
-            print(f"  {Colors.BOLD}Estado de Archivos:{Colors.RESET}       {Colors.YELLOW}{len(dirty_files)} archivos con cambios sin commitear{Colors.RESET}")
-            for f in dirty_files[:5]:
-                print(f"    {Colors.DIM}• {f}{Colors.RESET}")
-            if len(dirty_files) > 5:
-                print(f"    {Colors.DIM}... y {len(dirty_files) - 5} más{Colors.RESET}")
+            CLI.warn(f"{len(dirty_files)} archivos con cambios sin commitear.")
+            for f in dirty_files[:3]: CLI.list_item(f)
+            if len(dirty_files) > 3: CLI.list_item(f"... y {len(dirty_files) - 3} más")
 
         GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
         ahead, behind = GitAuditService.get_main_divergence()
         if behind > 0:
-            print(f"  {Colors.BOLD}Sincronización 'main':{Colors.RESET}    {Colors.RED}Desactualizado ({behind} commits por detrás de origin/main){Colors.RESET}")
-            print(f"    {Colors.YELLOW}💡 Sugerencia:{Colors.RESET} Ejecuta la opción 'Sincronizar' para actualizar main.")
+            CLI.err(f"Desactualizado ({behind} commits por detrás de origin/main). Usa 'Sync'.")
         elif ahead > 0:
-            print(f"  {Colors.BOLD}Sincronización 'main':{Colors.RESET}    {Colors.BLUE}Tienes {ahead} commits pendientes de subir a origin/main{Colors.RESET}")
+            CLI.info(f"Tienes {ahead} commits pendientes de subir a origin/main.")
         else:
-            print(f"  {Colors.BOLD}Sincronización 'main':{Colors.RESET}    {Colors.GREEN}Al día con origin/main{Colors.RESET}")
-
-        if curr_branch != MAIN_BRANCH:
-            b_ahead, b_behind = GitAuditService.get_branch_vs_main()
-            if b_behind > 0:
-                print(f"  {Colors.BOLD}Rama actual vs main:{Colors.RESET}      {Colors.RED}{b_behind} commit(s) de origin/main que tu rama NO tiene{Colors.RESET}  {Colors.DIM}(+{b_ahead} propios){Colors.RESET}")
-                print(f"    {Colors.YELLOW}💡 Sugerencia:{Colors.RESET} python resources/tools/git_manager.py update")
-            else:
-                print(f"  {Colors.BOLD}Rama actual vs main:{Colors.RESET}      {Colors.GREEN}Contiene todo origin/main (+{b_ahead} propios){Colors.RESET}")
+            CLI.ok("Al día con origin/main.")
 
         local_merged, remote_merged = GitAuditService.get_merged_release_branches()
-        total_stale = len(local_merged) + len(remote_merged)
-        if total_stale > 0:
-            print(f"  {Colors.BOLD}Ramas Obsoletas:{Colors.RESET}          {Colors.YELLOW}{total_stale} rama(s) ya fusionadas en main detectadas:{Colors.RESET}")
-            for b in local_merged:
-                print(f"    {Colors.DIM}• [Local]  {b}{Colors.RESET}")
-            for b in remote_merged:
-                print(f"    {Colors.DIM}• [Remota] origin/{b}{Colors.RESET}")
-            print(f"    {Colors.YELLOW}💡 Sugerencia:{Colors.RESET} Ejecuta la opción 'Limpiar ramas' para eliminarlas de forma segura.")
+        if total_stale := len(local_merged) + len(remote_merged):
+            CLI.warn(f"{total_stale} rama(s) fusionadas detectadas. Ejecuta 'Limpiar ramas'.")
         else:
-            print(f"  {Colors.BOLD}Ramas Obsoletas:{Colors.RESET}          {Colors.GREEN}Ninguna (árbol ordenado y limpio){Colors.RESET}")
-
-        print(f"\n{Colors.BOLD}{Colors.CYAN}{'─' * 64}{Colors.RESET}\n")
+            CLI.ok("Sin ramas obsoletas pendientes de limpiar.")
+        print()
 
     @staticmethod
     def sync() -> None:
-        print(f"\n{Colors.BLUE}🔄 Sincronizando repositorio con GitHub...{Colors.RESET}")
-
-        print(f"  {Colors.DIM}→ Ejecutando fetch y podando referencias remotas...{Colors.RESET}")
-        code, _, err = GitRunner.run(["fetch", "--all", "--tags", "--prune"])
-        if code != 0:
-            print(f"  {Colors.RED}❌ Falló el fetch: {err}{Colors.RESET}\n")
-            return
+        CLI.info("Sincronizando repositorio con GitHub...")
+        CLI.step("Ejecutando fetch y podando referencias remotas...")
+        if GitRunner.run(["fetch", "--all", "--tags", "--prune"])[0] != 0:
+            return CLI.err("Falló el fetch.")
 
         curr_branch = GitAuditService.get_current_branch()
-        print(f"  {Colors.DIM}→ Verificando rama 'main'...{Colors.RESET}")
+        CLI.step("Verificando rama 'main'...")
 
         if curr_branch == MAIN_BRANCH:
             code, _, err = GitRunner.run(["pull", "--ff-only", DEFAULT_REMOTE, MAIN_BRANCH])
-            if code == 0:
-                print(f"  {Colors.GREEN}✅ 'main' actualizado con éxito.{Colors.RESET}")
-            else:
-                print(f"  {Colors.RED}❌ No se pudo avanzar 'main' (¿divergió de origin/main?): {err}{Colors.RESET}")
+            CLI.ok("'main' actualizado.") if code == 0 else CLI.err(f"No se pudo avanzar 'main': {err}")
         else:
             code, _, err = GitRunner.run(["fetch", DEFAULT_REMOTE, f"{MAIN_BRANCH}:{MAIN_BRANCH}"])
-            if code == 0:
-                print(f"  {Colors.GREEN}✅ 'main' sincronizado con origin/main en segundo plano.{Colors.RESET}")
-            else:
-                print(f"  {Colors.YELLOW}ℹ️  No se pudo avanzar 'main' sin cambiarte de rama ({err}).{Colors.RESET}")
+            CLI.ok("'main' sincronizado en segundo plano.") if code == 0 else CLI.warn(f"No se pudo avanzar 'main' directamente.")
 
-        if curr_branch != MAIN_BRANCH:
-            _, b_behind = GitAuditService.get_branch_vs_main()
-            if b_behind > 0:
-                print(f"  {Colors.YELLOW}⚠️  Tu rama '{curr_branch}' va {b_behind} commit(s) por detrás de origin/main. Usa 'update'.{Colors.RESET}")
-
-        print(f"\n{Colors.GREEN}🎉 Sincronización completada.{Colors.RESET}\n")
+        if curr_branch != MAIN_BRANCH and GitAuditService.get_branch_vs_main()[1] > 0:
+            CLI.warn("Tu rama actual va por detrás de origin/main. Usa 'Update'.")
+        print()
 
     @staticmethod
     def update_from_main(assume_yes: bool = False) -> bool:
         curr_branch = GitAuditService.get_current_branch()
-        print(f"\n{Colors.BLUE}⬇️  Actualizando '{curr_branch}' con {REMOTE_MAIN}...{Colors.RESET}")
+        CLI.info(f"Actualizando '{curr_branch}' con {REMOTE_MAIN}...")
 
-        op = GitAuditService.in_progress_operation()
-        if op:
-            print(f"  {Colors.RED}❌ Hay un {op} sin terminar. Ejecuta 'doctor' para ver cómo resolverlo.{Colors.RESET}\n")
+        if op := GitAuditService.in_progress_operation():
+            CLI.err(f"Hay un {op} sin terminar. Resuélvelo primero."); return False
+
+        if changes := GitAuditService.tracked_changes():
+            CLI.err(f"Tienes {len(changes)} archivo(s) con cambios sin commitear."); return False
+
+        GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
+        if GitAuditService.get_branch_vs_main()[1] == 0:
+            CLI.ok(f"Ya contienes todo {REMOTE_MAIN}. Nada que hacer."); return True
+
+        if not CLI.confirm("¿Continuar con el merge?", assume_yes):
             return False
 
-        changes = GitAuditService.tracked_changes()
-        if changes:
-            print(f"  {Colors.RED}❌ Tienes {len(changes)} archivo(s) con cambios sin commitear. Haz commit o stash antes.{Colors.RESET}")
-            for f in changes[:5]:
-                print(f"    {Colors.DIM}• {f}{Colors.RESET}")
-            print()
-            return False
-
-        code, _, err = GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
-        if code != 0:
-            print(f"  {Colors.RED}❌ Falló el fetch: {err}{Colors.RESET}\n")
-            return False
-
-        if not GitAuditService.ref_exists(REMOTE_MAIN):
-            print(f"  {Colors.RED}❌ No existe {REMOTE_MAIN}.{Colors.RESET}\n")
-            return False
-
-        ahead, behind = GitAuditService.get_branch_vs_main()
-        if behind == 0:
-            print(f"  {Colors.GREEN}✅ Ya contienes todo {REMOTE_MAIN}. Nada que hacer.{Colors.RESET}\n")
-            return True
-
-        summary = GitAuditService.get_main_only_changes()
-        counts = summary.counts
-        print(f"  {behind} commit(s) nuevos en {REMOTE_MAIN}: "
-              f"{counts.get('A', 0)} archivos nuevos, {counts.get('M', 0)} modificados, {counts.get('D', 0)} eliminados.")
-        for folder, n in summary.deleted_dirs:
-            print(f"  {Colors.YELLOW}⚠️  Se eliminarán {n} archivo(s) de {folder}{Colors.RESET}")
-
-        if not confirm("¿Continuar con el merge?", assume_yes):
-            print("  Operación cancelada.\n")
-            return False
-
-        cmd = ["merge", "--ff-only" if curr_branch == MAIN_BRANCH else "--no-edit", REMOTE_MAIN]
-        code, _, err = GitRunner.run(cmd)
+        code, _, err = GitRunner.run(["merge", "--ff-only" if curr_branch == MAIN_BRANCH else "--no-edit", REMOTE_MAIN])
         if code == 0:
-            _, new_behind = GitAuditService.get_branch_vs_main()
-            print(f"  {Colors.GREEN}✅ Merge completado. Te faltan {new_behind} commit(s) de {REMOTE_MAIN}.{Colors.RESET}\n")
+            CLI.ok(f"Merge completado. Te faltan {GitAuditService.get_branch_vs_main()[1]} commit(s) de {REMOTE_MAIN}.")
             return True
 
         return GitReleaseWorkflow._recover_merge(curr_branch, err)
@@ -670,272 +636,182 @@ class GitReleaseWorkflow:
     def _recover_merge(branch: str, err: str) -> bool:
         conflicts = GitAuditService.unmerged_files()
         if conflicts:
-            print(f"  {Colors.RED}❌ Conflictos en {len(conflicts)} archivo(s):{Colors.RESET}")
+            CLI.err(f"Conflictos en {len(conflicts)} archivo(s):")
             for f in conflicts:
-                print(f"    {Colors.DIM}• {f}{Colors.RESET}")
-            print("  Resuélvelos, luego: git add <archivos> && git commit -m \"Merge origin/main\"")
-            print("  O cancela todo con: git merge --abort\n")
+                CLI.list_item(f)
+            CLI.info("Resuélvelos, luego: git add <archivos> && git commit")
             return False
 
         if GitAuditService.in_progress_operation() == "merge":
             msg = f"Merge remote-tracking branch '{REMOTE_MAIN}' into {branch}"
             code, _, commit_err = GitRunner.run(["commit", "-m", msg])
             if code == 0:
-                print(f"  {Colors.GREEN}✅ El merge estaba preparado; se confirmó con un mensaje explícito.{Colors.RESET}\n")
+                CLI.ok("El merge estaba preparado; se confirmó con un mensaje explícito.")
                 return True
-            print(f"  {Colors.RED}❌ No se pudo confirmar el merge: {commit_err}{Colors.RESET}\n")
+            CLI.err(f"No se pudo confirmar el merge: {commit_err}")
             return False
 
-        _, behind = GitAuditService.get_branch_vs_main()
-        if behind == 0:
-            print(f"  {Colors.YELLOW}ℹ️  Git reportó un error ({err}), pero el merge ya se había completado: HEAD contiene {REMOTE_MAIN}.{Colors.RESET}\n")
+        if GitAuditService.get_branch_vs_main()[1] == 0:
+            CLI.warn(f"Git reportó un error, pero el merge ya se había completado: HEAD contiene {REMOTE_MAIN}.")
             return True
 
-        print(f"  {Colors.RED}❌ El merge falló: {err}{Colors.RESET}\n")
+        CLI.err(f"El merge falló: {err}")
         return False
 
     @staticmethod
     def start_release(target_version: Optional[str] = None) -> None:
-        op = GitAuditService.in_progress_operation()
-        if op:
-            print(f"\n{Colors.RED}❌ Hay un {op} sin terminar. Resuélvelo antes de iniciar una versión.{Colors.RESET}")
-            return
-
-        changes = GitAuditService.tracked_changes()
-        if changes:
-            print(f"\n{Colors.RED}❌ Error: Tienes cambios sin commitear en archivos versionados.{Colors.RESET}")
-            print("Por favor, haz commit o stash de tus cambios antes de iniciar una nueva versión.")
-            return
+        if GitAuditService.in_progress_operation() or GitAuditService.tracked_changes():
+            CLI.err("Asegúrate de no tener cambios sin commitear ni operaciones pendientes."); return
 
         current_ver = VersionManager.get_version()
         if not target_version:
             suggested_patch = VersionManager.bump_semver(current_ver, "patch")
-            suggested_minor = VersionManager.bump_semver(current_ver, "minor")
-            print(f"\nVersión actual: {Colors.BOLD}{current_ver}{Colors.RESET}")
-            print(f"1) Siguiente Patch: {Colors.GREEN}{suggested_patch}{Colors.RESET}")
-            print(f"2) Siguiente Minor: {Colors.CYAN}{suggested_minor}{Colors.RESET}")
-            print("3) Escribir versión personalizada")
-            opt = input(f"\nElige una opción (1-3) [{suggested_patch}]: ").strip()
-
-            if opt == "2":
-                target_version = suggested_minor
-            elif opt == "3":
-                custom = input("Escribe la nueva versión (ej. v1.7.0): ").strip()
-                target_version = custom if custom.startswith("v") else f"v{custom}"
-            else:
-                target_version = suggested_patch
+            print(f"\n  Versión actual: {CLI.BOLD}{current_ver}{CLI.RESET}")
+            print(f"  1) Patch: {CLI.CYAN}{suggested_patch}{CLI.RESET}")
+            print(f"  2) Minor: {CLI.CYAN}{VersionManager.bump_semver(current_ver, 'minor')}{CLI.RESET}")
+            print(f"  3) Personalizada")
+            opt = input(f"\n  Elige opción [1]: ").strip()
+            
+            target_version = VersionManager.bump_semver(current_ver, 'minor') if opt == "2" else (
+                input("  Nueva versión: ").strip() if opt == "3" else suggested_patch
+            )
+            target_version = target_version if target_version.startswith("v") else f"v{target_version}"
 
         branch_name = f"release/{target_version}"
-        print(f"\n{Colors.BLUE}🚀 Preparando rama de versión: {Colors.BOLD}{branch_name}{Colors.RESET}...")
+        CLI.info(f"Preparando rama: {branch_name}")
+        GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
 
-        print(f"  {Colors.DIM}→ Trayendo los últimos cambios de {DEFAULT_REMOTE}...{Colors.RESET}")
-        code, _, err = GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
-        if code != 0 or not GitAuditService.ref_exists(REMOTE_MAIN):
-            print(f"  {Colors.RED}❌ No se pudo actualizar {REMOTE_MAIN}: {err or 'referencia inexistente'}{Colors.RESET}")
-            return
+        if GitAuditService.ref_exists(f"refs/heads/{branch_name}"):
+            return CLI.warn("La rama ya existe. Cámbiate a ella usando 'Cambiar de rama'.")
 
-        if GitAuditService.ref_exists(f"refs/heads/{branch_name}") or GitAuditService.ref_exists(f"refs/remotes/{DEFAULT_REMOTE}/{branch_name}"):
-            print(f"  {Colors.YELLOW}⚠️  La rama '{branch_name}' ya existe (local o remota). No se vuelve a crear.{Colors.RESET}")
-            print(f"     Cámbiate a ella con: git checkout {branch_name}   y revisa 'doctor'.")
-            return
+        CLI.step("Creando rama...")
+        if GitRunner.run(["checkout", "-b", branch_name, "--no-track", REMOTE_MAIN])[0] != 0:
+            return CLI.err("No se pudo crear la rama.")
 
-        print(f"  {Colors.DIM}→ Creando rama '{branch_name}' a partir de {REMOTE_MAIN}...{Colors.RESET}")
-        code, _, err = GitRunner.run(["checkout", "-b", branch_name, "--no-track", REMOTE_MAIN])
-        if code != 0:
-            print(f"  {Colors.RED}❌ No se pudo crear la rama: {err}{Colors.RESET}")
-            return
-
-        print(f"  {Colors.DIM}→ Actualizando backend/config/version.py a {target_version}...{Colors.RESET}")
+        CLI.step("Actualizando version.py...")
         if VersionManager.set_version(target_version):
             GitRunner.run(["add", "backend/config/version.py"])
-            code, _, err = GitRunner.run(["commit", "-m", f"chore(release): bump version to {target_version}"])
-            if code != 0:
-                print(f"  {Colors.RED}❌ No se pudo confirmar el cambio de versión: {err}{Colors.RESET}")
-                return
-        else:
-            print(f"  {Colors.DIM}   (version.py ya indicaba {target_version}; no hay commit de versión){Colors.RESET}")
+            GitRunner.run(["commit", "-m", f"chore(release): bump version to {target_version}"])
 
-        print(f"  {Colors.DIM}→ Publicando rama en GitHub...{Colors.RESET}")
-        code, _, err = GitRunner.run(["push", "-u", DEFAULT_REMOTE, branch_name])
-        if code != 0:
-            print(f"  {Colors.YELLOW}⚠️  La rama '{branch_name}' se creó localmente, pero NO se publicó: {err}{Colors.RESET}")
-            return
-
-        print(f"\n{Colors.GREEN}✅ Rama '{branch_name}' creada y publicada con éxito.{Colors.RESET}")
-        print(f"Ahora puedes desarrollar las novedades de la versión {target_version} aquí.\n")
+        CLI.step("Publicando rama...")
+        GitRunner.run(["push", "-u", DEFAULT_REMOTE, branch_name])
+        CLI.ok(f"Rama '{branch_name}' lista.")
 
     @staticmethod
     def cleanup_merged(assume_yes: bool = False) -> None:
         local_merged, remote_merged = GitAuditService.get_merged_release_branches()
-        protected = ", ".join(sorted(set(GitAuditService.protected_release_branches())))
         if not local_merged and not remote_merged:
-            print(f"\n{Colors.GREEN}✅ No se encontraron ramas antiguas fusionadas para limpiar.{Colors.RESET}")
-            print(f"{Colors.DIM}   (Protegidas: {protected}){Colors.RESET}\n")
-            return
+            return CLI.ok("No hay ramas fusionadas para limpiar.")
 
-        print(f"\n{Colors.YELLOW}Se detectaron las siguientes ramas ya integradas a 'main':{Colors.RESET}")
-        for b in local_merged:
-            print(f"  • [Local]  {b}")
-        for b in remote_merged:
-            print(f"  • [Remota] origin/{b}")
-        print(f"{Colors.DIM}  (Protegidas, no se tocan: {protected}){Colors.RESET}")
+        CLI.info("Ramas detectadas listas para eliminar:")
+        for b in local_merged: CLI.list_item(f"[Local]  {b}")
+        for b in remote_merged: CLI.list_item(f"[Remota] origin/{b}")
 
-        if not confirm("\n¿Deseas eliminar estas ramas de forma segura?", assume_yes):
-            print("\nOperación cancelada.\n")
+        if not CLI.confirm("\n¿Eliminar estas ramas de forma segura?", assume_yes):
             return
 
         for b in local_merged:
-            c, _, err = GitRunner.run(["branch", "-D", b])
-            print(f"  {Colors.GREEN}✓ Rama local eliminada: {b}{Colors.RESET}" if c == 0 else f"  {Colors.RED}✗ No se pudo eliminar {b}: {err}{Colors.RESET}")
-
+            c, _, _ = GitRunner.run(["branch", "-D", b])
+            CLI.ok(f"Rama local {b}") if c == 0 else CLI.err(f"Error {b}")
         for b in remote_merged:
-            c, _, err = GitRunner.run(["push", DEFAULT_REMOTE, "--delete", b])
-            print(f"  {Colors.GREEN}✓ Rama remota eliminada: origin/{b}{Colors.RESET}" if c == 0 else f"  {Colors.RED}✗ No se pudo eliminar origin/{b}: {err}{Colors.RESET}")
-
-        print(f"\n{Colors.GREEN}🎉 Limpieza finalizada.{Colors.RESET}\n")
+            c, _, _ = GitRunner.run(["push", DEFAULT_REMOTE, "--delete", b])
+            CLI.ok(f"Rama remota origin/{b}") if c == 0 else CLI.err(f"Error origin/{b}")
 
     @staticmethod
     def finish_check(push: bool = True) -> bool:
         curr_branch = GitAuditService.get_current_branch()
-        if not curr_branch.startswith("release/"):
-            print(f"\n{Colors.YELLOW}⚠️  Aviso: La rama actual es '{curr_branch}', no parece una rama 'release/vX.Y.Z'.{Colors.RESET}")
+        if GitAuditService.in_progress_operation():
+            CLI.err("Hay una operación sin terminar."); return False
 
-        op = GitAuditService.in_progress_operation()
-        if op:
-            print(f"\n{Colors.RED}❌ Hay un {op} sin terminar. Resuélvelo antes de preparar el PR.{Colors.RESET}\n")
-            return False
-
-        GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
-        _, behind = GitAuditService.get_branch_vs_main()
-        if behind > 0:
-            print(f"\n{Colors.YELLOW}⚠️  Tu rama va {behind} commit(s) por detrás de {REMOTE_MAIN}: el PR podría tener conflictos."
-                  f" Considera ejecutar 'update' primero.{Colors.RESET}")
-
-        print(f"\n{Colors.BLUE}🧪 Ejecutando pruebas del proyecto...{Colors.RESET}")
-        result = TestRunner.run()
-        if result is None:
-            root_p = Path(PROJECT_ROOT)
-            dir_names = ", ".join((root_p / d).relative_to(root_p).as_posix() if (root_p / d).is_relative_to(root_p) else str(d) for d in TEST_DIRS)
-            print(f"  {Colors.YELLOW}⚠️  No se encontró carpeta de tests ({dir_names}); se omite este paso.{Colors.RESET}")
-        elif not result:
-            print(f"\n{Colors.RED}❌ Las pruebas no pasaron. Revisa los errores antes de crear el Pull Request.{Colors.RESET}\n")
-            return False
-        else:
-            print(f"\n{Colors.GREEN}✅ Todas las pruebas pasaron satisfactoriamente.{Colors.RESET}")
+        CLI.info("Ejecutando pruebas...")
+        res = TestRunner.run()
+        if res is False:
+            CLI.err("Pruebas fallidas."); return False
+        elif res is True:
+            CLI.ok("Pruebas exitosas.")
 
         if push:
-            print(f"  {Colors.DIM}→ Asegurando que los últimos commits estén en GitHub...{Colors.RESET}")
-            code, _, err = GitRunner.run(["push", DEFAULT_REMOTE, curr_branch])
-            if code != 0:
-                print(f"  {Colors.RED}❌ El push falló: {err}{Colors.RESET}\n")
-                return False
+            CLI.step("Subiendo últimos commits...")
+            if GitRunner.run(["push", DEFAULT_REMOTE, curr_branch])[0] != 0:
+                CLI.err("El push falló."); return False
 
-        pr_url = f"{GITHUB_REPO_URL}/compare/{MAIN_BRANCH}...{curr_branch}?expand=1"
-        print(f"\n{Colors.BOLD}{Colors.CYAN}{'═' * 64}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.GREEN}       ¡TODO LISTO PARA CREAR EL PULL REQUEST A MAIN!           {Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.CYAN}{'═' * 64}{Colors.RESET}")
-        print("\nAbre este enlace en tu navegador para crear y fusionar el PR:")
-        print(f"{Colors.BOLD}{Colors.YELLOW}{pr_url}{Colors.RESET}\n")
-        print("Recomendación al fusionar en GitHub:")
-        print("  1. Haz clic en 'Merge pull request'.")
-        print("  2. Si la versión está terminada, marca 'Delete branch'; si seguirás trabajando en ella, NO la borres.")
-        print("  3. Crea el Tag de la versión en GitHub Releases.\n")
+        CLI.banner("¡LISTO PARA EL PULL REQUEST!")
+        print(f"  {CLI.BOLD}URL:{CLI.RESET} {CLI.BLUE}{GITHUB_REPO_URL}/compare/{MAIN_BRANCH}...{curr_branch}?expand=1{CLI.RESET}\n")
         return True
 
 
 def interactive_menu() -> None:
     if not sys.stdin.isatty():
-        print(f"{Colors.YELLOW}[Modo No-Interactivo detectado] Ejecutando diagnóstico de Git...{Colors.RESET}")
-        GitReleaseWorkflow.doctor()
-        return
+        return GitReleaseWorkflow.doctor()
+
+    options_map = {
+        "🔍 Auditar estado del repositorio y ramas": GitReleaseWorkflow.audit,
+        "🔀 Cambiar de rama": GitReleaseWorkflow.switch_branch,
+        "🚀 Iniciar nueva versión / release": GitReleaseWorkflow.start_release,
+        "🔄 Sincronizar 'main' y GitHub": GitReleaseWorkflow.sync,
+        "⬇️  Traer origin/main aquí (update)": GitReleaseWorkflow.update_from_main,
+        "🧹 Limpiar ramas antiguas fusionadas": GitReleaseWorkflow.cleanup_merged,
+        "🧪 Verificar tests y preparar PR": GitReleaseWorkflow.finish_check,
+        "🩺 Doctor (diagnóstico de entorno)": GitReleaseWorkflow.doctor,
+        "🚪 Salir": None
+    }
+
+    cli_style = questionary.Style([
+        ('qmark', 'fg:cyan bold'),
+        ('question', 'bold'),
+        ('answer', 'fg:green bold'),
+        ('pointer', 'fg:cyan bold'),
+        ('highlighted', 'fg:cyan bold'),
+        ('selected', 'fg:green'),        
+    ])
 
     while True:
-        curr_branch = GitAuditService.get_current_branch()
-        version = VersionManager.get_version()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        curr = GitAuditService.get_current_branch()
+        ver = VersionManager.get_version()
+        
+        CLI.banner("GIT RELEASE MANAGER")
+        print(f"  {CLI.BOLD}Rama:{CLI.RESET} {CLI.CYAN}{curr}{CLI.RESET} │ {CLI.BOLD}Versión:{CLI.RESET} {CLI.CYAN}{ver}{CLI.RESET}\n")
+        
+        choice = questionary.select(
+            "Selecciona una acción (usa las flechas ↑/↓ y presiona Enter):",
+            choices=list(options_map.keys()),
+            pointer="❯",
+            use_indicator=True,
+            style=cli_style
+        ).ask()
 
-        print(f"\n{Colors.BOLD}{Colors.MAGENTA}╔══════════════════════════════════════════════════════════════╗{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.MAGENTA}║               MINIKICK - GIT RELEASE MANAGER                 ║{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.MAGENTA}╚══════════════════════════════════════════════════════════════╝{Colors.RESET}")
-        print(f" Rama: {Colors.YELLOW}{curr_branch}{Colors.RESET} | Versión: {Colors.GREEN}{version}{Colors.RESET}\n")
-        print(f"  {Colors.BOLD}1){Colors.RESET} 🔍 Auditar estado del repositorio y ramas")
-        print(f"  {Colors.BOLD}2){Colors.RESET} 🚀 Iniciar nueva versión / release")
-        print(f"  {Colors.BOLD}3){Colors.RESET} 🔄 Sincronizar 'main' y podar ramas remotas")
-        print(f"  {Colors.BOLD}4){Colors.RESET} 🧹 Limpiar ramas antiguas ya fusionadas")
-        print(f"  {Colors.BOLD}5){Colors.RESET} 🧪 Verificar tests y preparar Pull Request")
-        print(f"  {Colors.BOLD}6){Colors.RESET} 🩺 Doctor (entorno, merge, ramas, .gitignore)")
-        print(f"  {Colors.BOLD}7){Colors.RESET} ⬇️  Traer origin/main a esta rama (update)")
-        print(f"  {Colors.BOLD}0){Colors.RESET} 🚪 Salir")
-
-        try:
-            choice = input(f"\n{Colors.BOLD}Selecciona una opción [1-7, 0]:{Colors.RESET} ").strip()
-        except (KeyboardInterrupt, EOFError):
-            print("\n")
+        if choice == "🚪 Salir" or choice is None:
+            print(f"\n  {CLI.DIM}¡Hasta luego!{CLI.RESET}\n")
             break
-
-        if choice == "1":
-            GitReleaseWorkflow.audit()
-        elif choice == "2":
-            GitReleaseWorkflow.start_release()
-        elif choice == "3":
-            GitReleaseWorkflow.sync()
-        elif choice == "4":
-            GitReleaseWorkflow.cleanup_merged()
-        elif choice == "5":
-            GitReleaseWorkflow.finish_check()
-        elif choice == "6":
-            GitReleaseWorkflow.doctor()
-        elif choice == "7":
-            GitReleaseWorkflow.update_from_main()
-        elif choice in ("0", "q", "exit"):
-            print(f"\n{Colors.DIM}¡Hasta luego!{Colors.RESET}\n")
-            break
-        else:
-            print(f"{Colors.RED}Opción no válida.{Colors.RESET}")
-
+            
+        print()
+        action = options_map[choice]
+        if action:
+            action()
+            
+        input(f"\n  {CLI.DIM}Presiona Enter para continuar...{CLI.RESET}")
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="MiniKick Git Release & Branch Manager")
-    parser.add_argument("command", nargs="?", choices=["audit", "doctor", "update", "sync", "start", "cleanup", "check"],
-                        help="Comando a ejecutar. Si se omite, abre el menú interactivo.")
-    parser.add_argument("--version", "-v", dest="target_version", help="Versión objetivo para 'start' (ej. v1.7.0)")
-    parser.add_argument("--no-push", action="store_true", help="Para el comando 'check', omite hacer git push")
-    parser.add_argument("--yes", "-y", action="store_true", help="No pedir confirmación (update, cleanup)")
-    parser.add_argument("--json", action="store_true", help="Exportar diagnóstico en formato JSON")
+    parser = argparse.ArgumentParser(description="Git Release Manager")
+    parser.add_argument("command", nargs="?", choices=["audit", "doctor", "update", "sync", "start", "cleanup", "check", "switch"])
+    parser.add_argument("--version", "-v", dest="target_version")
+    parser.add_argument("--no-push", action="store_true")
+    parser.add_argument("--yes", "-y", action="store_true")
+    parser.add_argument("--json", action="store_true")
 
     args = parser.parse_args()
 
-    if args.command == "doctor":
-        sys.exit(0 if GitReleaseWorkflow.doctor(as_json=args.json) else 1)
-
-    if args.json:
-        data = {
-            "current_branch": GitAuditService.get_current_branch(),
-            "version": VersionManager.get_version(),
-            "is_working_tree_clean": GitAuditService.is_working_tree_clean()[0],
-            "uncommitted_files": GitAuditService.is_working_tree_clean()[1],
-            "in_progress_operation": GitAuditService.in_progress_operation(),
-            "upstream": GitAuditService.get_upstream(),
-            "main_divergence": dict(zip(["ahead", "behind"], GitAuditService.get_main_divergence())),
-            "branch_vs_main": dict(zip(["ahead", "behind"], GitAuditService.get_branch_vs_main())),
-            "merged_branches": dict(zip(["local", "remote"], GitAuditService.get_merged_release_branches())),
-        }
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-        return
-
-    if not args.command:
-        interactive_menu()
-    elif args.command == "audit":
-        GitReleaseWorkflow.audit()
-    elif args.command == "update":
-        sys.exit(0 if GitReleaseWorkflow.update_from_main(assume_yes=args.yes) else 1)
-    elif args.command == "sync":
-        GitReleaseWorkflow.sync()
-    elif args.command == "start":
-        GitReleaseWorkflow.start_release(args.target_version)
-    elif args.command == "cleanup":
-        GitReleaseWorkflow.cleanup_merged(assume_yes=args.yes)
-    elif args.command == "check":
-        sys.exit(0 if GitReleaseWorkflow.finish_check(push=not args.no_push) else 1)
+    if not args.command: interactive_menu()
+    elif args.command == "doctor": sys.exit(0 if GitReleaseWorkflow.doctor(as_json=args.json) else 1)
+    elif args.command == "audit": GitReleaseWorkflow.audit()
+    elif args.command == "switch": GitReleaseWorkflow.switch_branch()
+    elif args.command == "update": sys.exit(0 if GitReleaseWorkflow.update_from_main(assume_yes=args.yes) else 1)
+    elif args.command == "sync": GitReleaseWorkflow.sync()
+    elif args.command == "start": GitReleaseWorkflow.start_release(args.target_version)
+    elif args.command == "cleanup": GitReleaseWorkflow.cleanup_merged(assume_yes=args.yes)
+    elif args.command == "check": sys.exit(0 if GitReleaseWorkflow.finish_check(push=not args.no_push) else 1)
 
 
 if __name__ == "__main__":

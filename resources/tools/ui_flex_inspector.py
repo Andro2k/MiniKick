@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use frontend_layout_responsiveness_auditor.py for new commands."""
+# resources\tools\ui_flex_inspector.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

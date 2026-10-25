@@ -64,7 +64,7 @@ class SQLiteCommandsStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute('''
+                cursor.execute("""
                     INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(trigger) DO UPDATE SET 
@@ -72,7 +72,7 @@ class SQLiteCommandsStorage:
                         aliases=excluded.aliases, is_regex=excluded.is_regex, permission=excluded.permission,
                         apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube,
                         apply_tiktok=excluded.apply_tiktok
-                ''', (trigger, response, int(is_active), cooldown, aliases, int(is_regex), permission, int(apply_kick), int(apply_twitch), int(apply_youtube), int(apply_tiktok)))
+                """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex), permission, int(apply_kick), int(apply_twitch), int(apply_youtube), int(apply_tiktok)))
                 conn.commit()
             logger.debug("[CommandsStorage] Saved command trigger='%s', active=%s", trigger, is_active)
         except Exception as e:
@@ -117,11 +117,11 @@ class SQLiteCommandsStorage:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 pattern = f"%{query.strip().lower()}%"
-                cursor.execute('''
+                cursor.execute("""
                     SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok 
                     FROM chat_commands 
                     WHERE LOWER(trigger) LIKE ? OR LOWER(response) LIKE ? OR LOWER(aliases) LIKE ?
-                ''', (pattern, pattern, pattern))
+                """, (pattern, pattern, pattern))
                 return [
                     {
                         "trigger": r[0],
@@ -157,7 +157,7 @@ class SQLiteCommandsStorage:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 if platform:
-                    cursor.execute('''
+                    cursor.execute("""
                         SELECT 
                             c.trigger,
                             c.response,
@@ -168,7 +168,7 @@ class SQLiteCommandsStorage:
                         LEFT JOIN command_execution_logs l ON c.trigger = l.command_trigger AND l.platform = ?
                         GROUP BY c.trigger
                         ORDER BY usage_count DESC
-                    ''', (platform,))
+                    """, (platform,))
                 else:
                     cursor.execute("SELECT trigger, response, is_active, usage_count, last_used FROM command_analytics ORDER BY usage_count DESC")
                 return [{"trigger": r[0], "response": r[1], "is_active": bool(r[2]), "usage_count": r[3], "last_used": r[4]} for r in cursor.fetchall()]

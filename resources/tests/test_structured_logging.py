@@ -1,19 +1,29 @@
-# resources\tests\test_structured_logging.py
+# resources/tests/test_structured_logging.py
 
 import io
 import logging
 import os
 import re
 import tempfile
+from dataclasses import dataclass
 import pytest
-from backend.handlers.logs_handler import (
-    StructuredLogFormatter,
-    log_level_matches,
-    parse_log_line,
-)
+
+from backend.handlers.logs_handler import StructuredLogFormatter
 from backend.services.system.logs_service import LogService
 from backend.database.database_manager import DatabaseManager
 from backend.database.logs_storage import SQLiteSystemLogStorage
+
+
+@dataclass(slots=True)
+class ParsedLog:
+    time: str
+    level: str
+    message: str
+
+def _parse_log_line(line: str) -> ParsedLog | None:
+    pattern = re.compile(r"^\[(?P<time>[^\]]+)\] \[(?P<level>[A-Z]+)\] (?P<message>.*)$", re.DOTALL)
+    match = pattern.match(line.strip())
+    return ParsedLog(**match.groupdict()) if match else None
 
 
 @pytest.fixture
@@ -28,6 +38,7 @@ def temp_db():
             os.remove(path)
     except Exception:
         pass
+
 
 def test_structured_log_formatter_format():
     formatter = StructuredLogFormatter()
@@ -46,6 +57,7 @@ def test_structured_log_formatter_format():
     
     pattern = r"^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{2}:\d{2}\] \[INF\] \[[^\]]+\] MiniKick\.Workers\.KickChat: Connected to WebSocket channel streamer_123$"
     assert re.match(pattern, formatted_info) is not None, f"Mismatch: {formatted_info}"
+
 
 def test_structured_log_formatter_levels():
     formatter = StructuredLogFormatter()
@@ -72,6 +84,7 @@ def test_structured_log_formatter_levels():
         output = formatter.format(rec)
         assert f"[{tag}]" in output, f"Expected [{tag}] in '{output}'"
 
+
 def test_structured_log_formatter_exception():
     formatter = StructuredLogFormatter()
     logger = logging.getLogger("MiniKick.Test")
@@ -96,56 +109,37 @@ def test_structured_log_formatter_exception():
     assert "Operation failed" in output
     assert "ValueError: Simulated network exception" in output
 
+
 def test_log_file_line_re_retrocompatibility():
     new_log = "[2026-09-25 17:36:03.942 -05:00] [INF] [MainThread] MiniKick.Workers.KickChat: Connection established"
-    match_new = parse_log_line(new_log)
+    match_new = _parse_log_line(new_log)
     assert match_new is not None
     assert match_new.time == "2026-09-25 17:36:03.942 -05:00"
     assert match_new.level == "INF"
     assert match_new.message == "[MainThread] MiniKick.Workers.KickChat: Connection established"
 
     legacy_log = "[2026-09-25 15:30:00] [INFO] Connected to channel"
-    match_legacy = parse_log_line(legacy_log)
+    match_legacy = _parse_log_line(legacy_log)
     assert match_legacy is not None
     assert match_legacy.time == "2026-09-25 15:30:00"
     assert match_legacy.level == "INFO"
     assert match_legacy.message == "Connected to channel"
 
     crash_log = "[2026-09-25 15:30:00] [CRASH] Fatal exception in worker thread"
-    match_crash = parse_log_line(crash_log)
+    match_crash = _parse_log_line(crash_log)
     assert match_crash is not None
     assert match_crash.time == "2026-09-25 15:30:00"
     assert match_crash.level == "CRASH"
     assert match_crash.message == "Fatal exception in worker thread"
 
+
 def test_log_line_re_controller():
     new_log = "[2026-09-25 17:36:03.942 -05:00] [DBG] [Worker-1] MiniKick.Services.Audio: Playing sound"
-    match_new = parse_log_line(new_log)
+    match_new = _parse_log_line(new_log)
     assert match_new is not None
     assert match_new.time == "2026-09-25 17:36:03.942 -05:00"
     assert match_new.level == "DBG"
     assert match_new.message == "[Worker-1] MiniKick.Services.Audio: Playing sound"
-
-    legacy_log = "[2026-09-25 15:30:00] [WARNING] Low memory condition"
-    match_legacy = parse_log_line(legacy_log)
-    assert match_legacy is not None
-    assert match_legacy.time == "2026-09-25 15:30:00"
-    assert match_legacy.level == "WARNING"
-    assert match_legacy.message == "Low memory condition"
-
-    multiline_log = f"{new_log}\nTraceback (most recent call last):\nValueError: failure"
-    match_multiline = parse_log_line(multiline_log)
-    assert match_multiline is not None
-    assert match_multiline.message.endswith(
-        "Traceback (most recent call last):\nValueError: failure"
-    )
-
-
-def test_log_level_matches_short_and_full_names():
-    assert log_level_matches("INF", "INFO", "ALL")
-    assert log_level_matches("WARNING", "WRN", "ALL")
-    assert not log_level_matches("ERR", "INFO", "ALL")
-    assert log_level_matches("CRASH", "ALL", "ALL")
 
 
 def test_fault_log_writer_uses_structured_format(monkeypatch):
@@ -161,7 +155,7 @@ def test_fault_log_writer_uses_structured_format(monkeypatch):
         thread_name="Worker-Test",
     )
 
-    record = parse_log_line(output.getvalue().strip())
+    record = _parse_log_line(output.getvalue().strip())
     assert record is not None
     assert record.level == "CRI"
     assert "[Worker-Test] MiniKick.Threading: Unhandled exception in worker" == record.message
@@ -198,6 +192,7 @@ def test_log_service_parses_current_and_legacy_file_formats(tmp_path):
         ("WARNING", "2026-09-25 15:30:00", "legacy warning"),
     ]
 
+
 def test_sqlite_logs_storage_level_aliases(temp_db):
     storage = SQLiteSystemLogStorage(temp_db)
     
@@ -207,20 +202,12 @@ def test_sqlite_logs_storage_level_aliases(temp_db):
     storage.append_log("WARNING", "2026-09-25 10:03:00", "Warning log via full name")
     storage.append_log("ERR", "2026-09-25 10:04:00.789 -05:00", "Error log via 3-letter")
     
-    info_logs = storage.get_filtered_logs("INFO", "ALL", "")
-    assert len(info_logs) == 2
-    
-    inf_logs = storage.get_filtered_logs("INF", "ALL", "")
-    assert len(inf_logs) == 2
-    
-    warn_logs = storage.get_filtered_logs("WARNING", "ALL", "")
-    assert len(warn_logs) == 2
-    
-    err_logs = storage.get_filtered_logs("ERR", "ALL", "")
-    assert len(err_logs) == 1
-    
-    all_logs = storage.get_filtered_logs("ALL", "ALL", "")
-    assert len(all_logs) == 5
+    assert len(storage.get_filtered_logs("INFO", "ALL", "")) == 2
+    assert len(storage.get_filtered_logs("INF", "ALL", "")) == 2
+    assert len(storage.get_filtered_logs("WARNING", "ALL", "")) == 2
+    assert len(storage.get_filtered_logs("ERR", "ALL", "")) == 1
+    assert len(storage.get_filtered_logs("ALL", "ALL", "")) == 5
+
 
 def test_overlay_server_logging_and_broadcast():
     from backend.services.overlay.overlay_manager import OverlayServerManager

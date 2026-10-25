@@ -36,14 +36,14 @@ class SQLiteSpamStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute('''
+                cursor.execute("""
                     INSERT INTO spam_filters (filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist, apply_kick, apply_twitch, apply_youtube)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(filter_id) DO UPDATE SET
                         is_active=excluded.is_active, penalty=excluded.penalty, duration=excluded.duration,
                         exclude_group=excluded.exclude_group, max_amount=excluded.max_amount, allowlist=excluded.allowlist,
                         apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
-                ''', (
+                """, (
                     filter_id, int(config.get("is_active", False)), config.get("penalty", "timeout"),
                     config.get("duration", 300), config.get("exclude_group", "none"), config.get("max_amount", 0),
                     config.get("allowlist", ""), int(config.get("apply_kick", True)), int(config.get("apply_twitch", True)),

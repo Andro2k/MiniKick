@@ -25,7 +25,7 @@ class SQLiteAlertStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute('''
+                cursor.execute("""
                     SELECT platform, alert_type, enabled, sound_path, media_path,
                            text_template, duration_ms, sound_volume, tts_read,
                            layout, style, text_color, highlight_color, font_family,
@@ -34,7 +34,7 @@ class SQLiteAlertStorage:
                            bg_color, bg_opacity, border_radius, padding_px, spacing_px,
                            box_shadow, font_weight, text_shadow, card_width, card_height
                     FROM alert_configs
-                ''')
+                """)
                 rows = cursor.fetchall()
                 configs = {}
                 for row in rows:
@@ -167,7 +167,7 @@ class SQLiteAlertStorage:
                     )
                     for c in configs
                 ]
-                cursor.executemany('''
+                cursor.executemany("""
                     INSERT INTO alert_configs (
                         platform, alert_type, enabled, sound_path, media_path,
                         text_template, duration_ms, sound_volume, tts_read,
@@ -206,7 +206,7 @@ class SQLiteAlertStorage:
                         text_shadow=excluded.text_shadow,
                         card_width=excluded.card_width,
                         card_height=excluded.card_height
-                ''', data)
+                """, data)
                 conn.commit()
 
             for c in configs:

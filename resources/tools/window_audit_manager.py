@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use frontend_qt_window_lifecycle_auditor.py for new commands."""
+# resources\tools\window_audit_manager.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

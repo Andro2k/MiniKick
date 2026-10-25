@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use project_architecture_boundary_auditor.py for new commands."""
+# resources\tools\architecture_boundary_auditor.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

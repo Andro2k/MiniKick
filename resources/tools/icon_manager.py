@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use project_icon_integrity_tool.py for new commands."""
+# resources\tools\icon_manager.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

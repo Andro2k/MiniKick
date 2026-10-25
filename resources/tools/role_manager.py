@@ -1,4 +1,4 @@
-"""Compatibility entry point. Use frontend_qss_role_state_auditor.py for new commands."""
+# resources\tools\role_manager.py
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

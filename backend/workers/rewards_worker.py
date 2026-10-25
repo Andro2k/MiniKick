@@ -15,7 +15,7 @@ class FetchRewardsWorker(QThread):
         self.api_client = api_client
         self.broadcaster_id = broadcaster_id
         self.platform = platform
-        self._shutdown_flags["shutting_down"] = False
+        self._is_shutting_down = False
 
     def run(self):
         logger.debug("[FetchRewardsWorker] Fetching rewards for platform: %s...", self.platform)

@@ -26,7 +26,7 @@ class BackendDoesNotImportFrontendTest(unittest.TestCase):
         self.assertGreater(len(files), 20, "el test no está escaneando backend/ (¿ruta incorrecta?)")
         for path in files:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-            for node in ast.walk(tree):   # ast.walk también encuentra imports perezosos dentro de funciones
+            for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     names = [alias.name for alias in node.names]
                 elif isinstance(node, ast.ImportFrom) and node.level == 0:
@@ -74,7 +74,7 @@ class PiperDialogDelegationTest(unittest.TestCase):
     def test_handler_delegates_dialog_to_the_view(self) -> None:
         from PySide6.QtCore import QObject
         from backend.handlers.tts_handler import TTSVoiceHandler
-        controller = QObject()   # TTSVoiceHandler usa al controlador como parent Qt
+        controller = QObject()
         view, service = mock.MagicMock(), mock.MagicMock()
         handler = TTSVoiceHandler(controller, view, service, None, mock.MagicMock())
         handler.load_voices = mock.MagicMock()
@@ -92,7 +92,7 @@ class PiperDialogDelegationTest(unittest.TestCase):
         controller = QObject()
         handler = TTSVoiceHandler(controller, None, mock.MagicMock(), None, mock.MagicMock())
         with mock.patch("backend.services.chat.PiperVoiceManager"), mock.patch("backend.services.chat.PiperVoiceDownloadWorker"):
-            handler.open_piper_voices_dialog()   # no debe lanzar
+            handler.open_piper_voices_dialog()
 
     def test_view_builds_and_runs_the_dialog(self) -> None:
         from frontend.views.chat_view import ChatView

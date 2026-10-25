@@ -1,3 +1,5 @@
+# resources\tests\test_main_window_support.py
+
 import logging
 import subprocess
 import sys
@@ -118,7 +120,7 @@ def test_worker_shutdown_does_not_block_the_event_loop(qapp):
     assert worker not in retiring_workers
 
 
-def test_worker_shutdown_ignores_already_deleted_qthread(qapp, caplog):
+def test_worker_shutdown_ignores_already_deleted_qthread(caplog):
     parent = QObject()
     retiring_workers = set()
     coordinator = WorkerShutdownCoordinator(
@@ -126,9 +128,14 @@ def test_worker_shutdown_ignores_already_deleted_qthread(qapp, caplog):
         logging.getLogger("test.worker_shutdown"),
         retiring_workers,
     )
-    worker = QThread()
-    worker.deleteLater()
-    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    
+    worker = MagicMock(spec=QThread)
+    worker.isRunning.side_effect = RuntimeError("Internal C++ object already deleted")
+    
+    signal_mock = MagicMock()
+    signal_mock.connect.side_effect = RuntimeError("Signal source has been deleted")
+    signal_mock.disconnect.side_effect = RuntimeError("Signal source has been deleted")
+    worker.finished = signal_mock
 
     with caplog.at_level(logging.WARNING, logger="test.worker_shutdown"):
         coordinator.stop_workers([("deleted worker", worker)])
@@ -137,12 +144,11 @@ def test_worker_shutdown_ignores_already_deleted_qthread(qapp, caplog):
     assert worker not in retiring_workers
 
 
-def test_whats_new_fetch_replaces_already_deleted_worker(qapp, monkeypatch):
+def test_whats_new_fetch_replaces_already_deleted_worker(monkeypatch):
     import backend.workers
 
-    stale_worker = QThread()
-    stale_worker.deleteLater()
-    qapp.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    stale_worker = MagicMock(spec=QThread)
+    stale_worker.isRunning.side_effect = RuntimeError("Internal C++ object already deleted")
 
     replacement = SimpleNamespace(
         highlights_fetched=MagicMock(),
@@ -152,6 +158,7 @@ def test_whats_new_fetch_replaces_already_deleted_worker(qapp, monkeypatch):
     )
     worker_factory = MagicMock(return_value=replacement)
     monkeypatch.setattr(backend.workers, "WhatsNewWorker", worker_factory)
+    
     window = SimpleNamespace(
         _is_shutting_down=False,
         _is_window_closing=False,
