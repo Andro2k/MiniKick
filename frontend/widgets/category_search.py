@@ -162,7 +162,6 @@ class CategorySearchComboBox(QFrame):
 
         self.btn_action = QPushButton(self)
         self.btn_action.setIcon(self._icon_search)
-        self.btn_action.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_action)
         self.btn_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_action.clicked.connect(self._on_action_clicked)

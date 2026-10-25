@@ -1,7 +1,7 @@
 # frontend\widgets\search_bar.py
 
 from PySide6.QtWidgets import QFrame, QPushButton
-from PySide6.QtCore import Qt, Signal, QSize, QEvent
+from PySide6.QtCore import Qt, Signal, QEvent
 from frontend.common import get_icon_colored, Size
 from .layout_helpers import create_row_layout, create_frameless_input
 from .controls_widget import configure_icon_only_button
@@ -30,7 +30,6 @@ class UnifiedSearchBar(QFrame):
 
         self.btn_search = QPushButton(self)
         self.btn_search.setIcon(self._icon_search)
-        self.btn_search.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_search)
         self.btn_search.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_search.clicked.connect(self._on_btn_clicked)

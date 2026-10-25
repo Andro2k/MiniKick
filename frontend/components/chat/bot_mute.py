@@ -181,7 +181,6 @@ class BotMutePanel(QWidget):
                 self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
 
             btn_delete.setIcon(self._trash_icon_cache[icon_size])
-            btn_delete.setIconSize(QSize(icon_size, icon_size))
             configure_icon_only_button(btn_delete, size=btn_size)
 
             text_width = fm.horizontalAdvance(lbl_name.text())

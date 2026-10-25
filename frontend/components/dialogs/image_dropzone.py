@@ -60,7 +60,6 @@ class ImageDropzone(QFrame):
 
         self.btn_remove = QPushButton()
         self.btn_remove.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_remove.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_remove)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_remove.setProperty("role", "action_danger_solid")

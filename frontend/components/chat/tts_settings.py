@@ -1,6 +1,6 @@
 # frontend\components\chat\tts_settings.py
 
-from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
+from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout, QComboBox
 from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader, create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
@@ -76,7 +76,6 @@ class VoiceSettingRow(QWidget):
         if test_signal is not None:
             self.btn_test = QPushButton()
             self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, size=16))
-            self.btn_test.setIconSize(QSize(16, 16))
             configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)
             self.btn_test.setProperty("role", "action_outlined")
@@ -182,7 +181,6 @@ class ChatTtsSettingsPanel(QWidget):
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
         self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_manage_piper.setIconSize(QSize(16, 16))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_solid")
         self.btn_manage_piper.setCursor(Qt.CursorShape.PointingHandCursor)

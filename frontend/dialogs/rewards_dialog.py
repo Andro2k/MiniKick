@@ -2,7 +2,7 @@
 
 import os
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog, QRadioButton, QButtonGroup
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt
 
 from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker, create_row_layout, create_labeled_field
 from frontend.common import get_icon_colored, BrandColors, Size
@@ -272,7 +272,6 @@ class RewardsConfigWizard(ModernWizardPanel):
 
             self.btn_refresh = ModernButton("", role="action_outlined")
             self.btn_refresh.setIcon(self._icon_refresh)
-            self.btn_refresh.setIconSize(QSize(16, 16))
             self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
             self.btn_refresh.clicked.connect(self._request_refresh)
             row1.addWidget(self.btn_refresh)
@@ -378,7 +377,6 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
         self.btn_visual.setIcon(self._icon_map_pin)
-        self.btn_visual.setIconSize(QSize(16, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         v_layout.addWidget(self.btn_visual)
 
