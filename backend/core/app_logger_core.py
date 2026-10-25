@@ -83,7 +83,6 @@ def _threading_excepthook(args):
     flush_all_logs()
 
 def flush_all_logs():
-    # root_logger = logging.getLogger()
     for handler in logging.getLogger().handlers:
         try:
             handler.flush()
@@ -130,7 +129,6 @@ def setup_application_logging():
         return logging.getLogger(), _q_log_handler_instance
 
     log_level = _resolve_log_level()
-    # logger = logging.getLogger()
     logger.setLevel(log_level)
     
     for handler in list(logger.handlers):
