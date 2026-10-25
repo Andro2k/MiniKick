@@ -1,3 +1,5 @@
+# backend\controllers\spam_controller.py
+
 import logging
 from PySide6.QtCore import Slot
 from .base_controller import BaseController
