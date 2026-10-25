@@ -1,5 +1,6 @@
-from __future__ import annotations
+# frontend\views\__init__.py
 
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 _EXPORTS = {
