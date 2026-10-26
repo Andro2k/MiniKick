@@ -10,8 +10,8 @@ class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MRG_XSM)
-        layout.setSpacing(Size.SPACING_MD)
+        layout.setContentsMargins(*Size.Margin.MRG_XXS)
+        layout.setSpacing(Size.SPACING_XS)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         plat_upper = platform.upper()
@@ -45,8 +45,8 @@ class CategorySuggestionsPopup(QFrame):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MRG_XXS)
-        layout.setSpacing(Size.SPACING_XS)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
+        layout.setSpacing(Size.SPACING_NN)
 
         self.list_widget = QListWidget(self)
         self.list_widget.setProperty("role", "category_list")
@@ -106,7 +106,6 @@ class CategorySuggestionsPopup(QFrame):
             plat = item_data.get("platform", platform)
 
             list_item = QListWidgetItem(self.list_widget)
-            list_item.setSizeHint(QSize(0, 36))
             payload = {
                 "platform": plat,
                 "id": cat_id,
