@@ -97,7 +97,7 @@ class ModernToast(QFrame):
                 "warning": ("alert-triangle-filled.svg", BrandColors.AMBER),
                 "info": ("circle-info-filled.svg", BrandColors.BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg"))
+            icon_name, icon_color = icon_map.get(state, icon_map["info"])
             ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 
@@ -211,6 +211,6 @@ class ToastManager(QObject):
             current_bottom = target_y - spacing
 
     def eventFilter(self, obj, event):
-        if obj == self.main_window and event.type() == QEvent.Type.Resize:
+        if obj is self.parent() and event.type() == QEvent.Type.Resize:
             self._calculate_positions()
         return False

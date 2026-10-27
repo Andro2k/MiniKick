@@ -109,7 +109,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -120,7 +119,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -130,7 +128,6 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
@@ -140,7 +137,6 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.save_short"),
             role=btn_role,
             icon_name="check-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -554,7 +550,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=16,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -583,7 +578,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=16,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))

@@ -474,7 +474,6 @@ class ModernModal(ModernFramelessShell):
             text=confirm_text,
             role="action_outlined",
             icon_name=confirm_icon,
-            icon_size=16 if confirm_icon else 16,
             parent=self
         )
         btn_confirm.clicked.connect(on_confirm or self.accept)

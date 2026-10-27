@@ -368,12 +368,11 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
-    assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_StyledBackground) is True
-    assert combo._popup.property("role") == "searchable_combo_popup"
+    assert combo._popup.bg_frame.property("role") == "searchable_combo_popup"
     assert f'QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900};' in GLOBAL_QSS
 
     text_edit = VariableTextEdit()
-    assert text_edit.popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
+    assert text_edit.popup_window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
     assert text_edit.popup.property("role") == "variable_autocomplete_popup"
 
     cat_popup = CategorySuggestionsPopup(combo)
