@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QWidget
-from frontend.common import Semantic, get_pixmap_colored
+from frontend.common import Palette, get_pixmap_colored
 
 
 class PlatformDistributionRing(QWidget):
@@ -35,7 +35,7 @@ class PlatformDistributionRing(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = QRectF(9, 9, self.width() - 18, self.height() - 18)
         ring_width = 10
-        painter.setPen(QPen(QColor(Semantic.NEUTRAL_750), ring_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        painter.setPen(QPen(QColor(Palette.NEUTRAL_750), ring_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         painter.drawArc(rect, 0, 360 * 16)
 
         total = sum(count for count, _ in self._segments)
