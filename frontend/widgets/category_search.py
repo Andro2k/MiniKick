@@ -1,5 +1,7 @@
 # frontend\widgets\category_search.py
 
+from frontend.common import BrandColors
+from frontend.common import get_pixmap_colored
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
 from frontend.common import get_icon_colored, Size
@@ -10,22 +12,24 @@ class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MRG_XXS)
-        layout.setSpacing(Size.SPACING_XS)
+        layout.setContentsMargins(*Size.Margin.MRG_XSM)
+        layout.setSpacing(Size.SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         plat_upper = platform.upper()
-        self.badge = QLabel(plat_upper)
-        self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.icon_label = QLabel()
+        self.icon_label.setFixedSize(16, 16)
+        self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         if plat_upper == "KICK":
-            self.badge.setProperty("role", "badge_kick")
+            self.icon_label.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN))
         elif plat_upper == "TWITCH":
-            self.badge.setProperty("role", "badge_twitch")
+            self.icon_label.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE))
         else:
-            self.badge.setProperty("role", "caption")
+            # Si es otra plataforma (o "ALL"), usamos un icono genérico de control
+            self.icon_label.setPixmap(get_pixmap_colored("gamepad-filled.svg"))
 
-        layout.addWidget(self.badge)
+        layout.addWidget(self.icon_label)
 
         self.lbl_name = QLabel(name)
         self.lbl_name.setProperty("role", "body")
