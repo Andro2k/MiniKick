@@ -1,5 +1,6 @@
 # frontend\widgets\category_search.py
 
+from PySide6.QtCore import QSize
 from frontend.common import BrandColors
 from frontend.common import get_pixmap_colored
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
@@ -117,8 +118,10 @@ class CategorySuggestionsPopup(QFrame):
             }
             list_item.setData(Qt.ItemDataRole.UserRole, payload)
 
-            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)       
-            list_item.setSizeHint(custom_widget.sizeHint())
+            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)
+            
+            list_item.setSizeHint(QSize(250, 36))
+            
             self.list_widget.setItemWidget(list_item, custom_widget)
 
         global_pos = self.target_input.mapToGlobal(QPoint(0, self.target_input.height() + 4))
