@@ -125,7 +125,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), params_container)
         self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         actions_layout.addWidget(self.btn_import)

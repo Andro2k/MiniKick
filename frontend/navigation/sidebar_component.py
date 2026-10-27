@@ -120,7 +120,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_outlined")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg"))
         configure_icon_only_button(self.btn_collapsed_update)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
@@ -166,7 +166,7 @@ class Sidebar(QFrame):
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
-        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg"))
         configure_icon_only_button(self.btn_dismiss_update)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
@@ -187,7 +187,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_outlined")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)
         card_layout.addWidget(self.btn_update_action)

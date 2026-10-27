@@ -377,7 +377,7 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 16))
+                item_plat.setIcon(get_icon_colored(icon_name))
                 item_plat.setForeground(QColor(Palette.NEUTRAL_050))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:

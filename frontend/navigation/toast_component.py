@@ -17,7 +17,7 @@ class ModernToast(QFrame):
         self.state_str = state
         self.tag = tag
 
-        self.setFixedWidth(330)
+        self.setFixedWidth(340)
         self.setMinimumHeight(56)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
@@ -48,7 +48,7 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg")
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
@@ -86,8 +86,8 @@ class ModernToast(QFrame):
             msg_h = msg_rect.height() + 8
 
         spacing = 4 if self.message_text else 0
-        total_h = 14 + title_h + spacing + msg_h + 14
-        self.setFixedHeight(max(58, total_h))
+        total_h = title_h + spacing + msg_h + 28
+        self.setFixedHeight(max(56, total_h))
 
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:

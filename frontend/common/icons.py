@@ -65,12 +65,12 @@ def _get_default_dpr() -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str = Palette.NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QIcon:
+def get_icon_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QIcon:
     if dpr is None:
         dpr = _get_default_dpr()
     return _get_icon_colored_impl(name, color_str, size, dpr)
 
-def get_pixmap_colored(name: str, color_str: str = Palette.NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QPixmap:
+def get_pixmap_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QPixmap:
     if dpr is None:
         dpr = _get_default_dpr()
     icon = get_icon_colored(name, color_str, size, dpr)
