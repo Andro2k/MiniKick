@@ -26,7 +26,6 @@ class CategoryItemWidget(QWidget):
         elif plat_upper == "TWITCH":
             self.icon_label.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE))
         else:
-            # Si es otra plataforma (o "ALL"), usamos un icono genérico de control
             self.icon_label.setPixmap(get_pixmap_colored("gamepad-filled.svg"))
 
         layout.addWidget(self.icon_label)
@@ -118,7 +117,8 @@ class CategorySuggestionsPopup(QFrame):
             }
             list_item.setData(Qt.ItemDataRole.UserRole, payload)
 
-            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)
+            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)       
+            list_item.setSizeHint(custom_widget.sizeHint())
             self.list_widget.setItemWidget(list_item, custom_widget)
 
         global_pos = self.target_input.mapToGlobal(QPoint(0, self.target_input.height() + 4))

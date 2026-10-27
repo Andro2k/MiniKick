@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Slot
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import get_assets_path, get_qcolor_with_alpha, Palette, BrandColors, Size
+from frontend.common import get_assets_path, get_qcolor_with_alpha, BrandColors, Size
 
 _ACTIVE_CRASH_WORKERS = set()
 
