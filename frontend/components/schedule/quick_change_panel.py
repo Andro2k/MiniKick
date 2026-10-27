@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
 from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ScheduleQuickChangePanel(QWidget):
@@ -19,7 +19,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_refresh = get_icon_colored("refresh-filled.svg")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -62,7 +62,7 @@ class ScheduleQuickChangePanel(QWidget):
         kick_header.setSpacing(Size.SPACING_MD)
 
         icon_kick = QLabel()
-        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN, size=16))
+        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN))
         lbl_kick_badge = QLabel("KICK")
         lbl_kick_badge.setProperty("role", "badge_kick")
         self.lbl_kick_status = QLabel(self.i18n.get("stream_info.status.loading"))
@@ -107,7 +107,7 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_header.setSpacing(Size.SPACING_MD)
 
         icon_twitch = QLabel()
-        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE, size=16))
+        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE))
         lbl_twitch_badge = QLabel("TWITCH")
         lbl_twitch_badge.setProperty("role", "badge_twitch")
         self.lbl_twitch_status = QLabel(self.i18n.get("stream_info.status.loading"))

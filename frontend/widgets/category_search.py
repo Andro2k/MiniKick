@@ -1,8 +1,8 @@
 # frontend\widgets\category_search.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
-from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
-from frontend.common import get_icon_colored, Palette, Size
+from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
+from frontend.common import get_icon_colored, Size
 from .layout_helpers import render_styled_frame_background
 from .controls_widget import configure_icon_only_button
 
@@ -122,7 +122,7 @@ class CategorySuggestionsPopup(QFrame):
         self.setFixedWidth(max(self.target_input.width(), 260))
 
         visible_count = min(len(results), 6)
-        total_height = visible_count * 38 + 12
+        total_height = visible_count * 50
         self.setFixedHeight(total_height)
         self.show()
         self.raise_()
@@ -149,8 +149,8 @@ class CategorySearchComboBox(QFrame):
         layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_NN)
 
-        self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_050, 16)
-        self._icon_delete = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_search = get_icon_colored("search-filled.svg")
+        self._icon_delete = get_icon_colored("x-filled.svg")
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)

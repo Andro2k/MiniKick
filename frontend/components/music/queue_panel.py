@@ -99,12 +99,12 @@ class MusicQueuePanel(QWidget):
         self.i18n = i18n
         self._current_queue_signature = None
 
-        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED, 16)
-        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050, 16)
-        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK, 16)
-        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT, 16)
-        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED, 16)
-        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK, 16)
+        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED)
+        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050)
+        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK)
+        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
+        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED)
+        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
 
         self._setup_ui()
 

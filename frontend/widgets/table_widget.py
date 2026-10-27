@@ -89,7 +89,7 @@ class ModernTableCard(QFrame):
             if add_button_text:
                 self.btn_add = ModernButton(add_button_text, role="action_outlined", parent=self.header_top_widget)
                 if add_button_icon:
-                    self.btn_add.set_icon(add_button_icon, size=16)
+                    self.btn_add.set_icon(add_button_icon)
                 self.header_controls_layout.addWidget(self.btn_add)
 
         self.stack = QStackedWidget(self)
@@ -133,7 +133,7 @@ class ModernTableCard(QFrame):
         self.lbl_no_results.setWordWrap(True)
 
         self.btn_clear_filters = ModernButton("", role="action_outlined", parent=self.no_results_overlay)
-        self.btn_clear_filters.set_icon("filter-filled.svg", size=16)
+        self.btn_clear_filters.set_icon("filter-filled.svg")
         self.btn_clear_filters.clicked.connect(self.clear_filters)
 
         self.no_results_layout.addStretch(1)
@@ -295,7 +295,7 @@ class ModernTableCard(QFrame):
 
         self.btn_empty_action = ModernButton(button_text, role="action_outlined")
         if button_icon:
-            self.btn_empty_action.set_icon(button_icon, size=16)
+            self.btn_empty_action.set_icon(button_icon)
         self.btn_empty_action.clicked.connect(on_button_clicked)
 
         layout.addStretch(1)
@@ -492,7 +492,7 @@ class PlatformBadgeCell(QWidget):
             if p_key in plat_configs:
                 icon_file, color, name = plat_configs[p_key]
                 lbl_icon = QLabel(self)
-                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color, 16))
+                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color))
                 lbl_icon.setToolTip(name)
                 self.layout.addWidget(lbl_icon)
 

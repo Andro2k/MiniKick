@@ -80,7 +80,7 @@ class CrashReportDialog(ModernModal):
         lbl_traceback = QLabel(self.lbl_traceback_text)
         lbl_traceback.setProperty("role", "body")
 
-        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg", icon_color=Palette.NEUTRAL_000, icon_size=16)
+        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg")
         self.btn_copy_tb.clicked.connect(self._copy_traceback)
 
         tb_header_layout.addWidget(lbl_traceback)

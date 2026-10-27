@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
 from frontend.widgets import create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -17,7 +17,7 @@ class ModernToast(QFrame):
         self.state_str = state
         self.tag = tag
 
-        self.setFixedWidth(330)
+        self.setFixedWidth(340)
         self.setMinimumHeight(56)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
@@ -48,7 +48,7 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16)
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg")
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
@@ -86,8 +86,8 @@ class ModernToast(QFrame):
             msg_h = msg_rect.height() + 8
 
         spacing = 4 if self.message_text else 0
-        total_h = 14 + title_h + spacing + msg_h + 14
-        self.setFixedHeight(max(58, total_h))
+        total_h = title_h + spacing + msg_h + 28
+        self.setFixedHeight(max(56, total_h))
 
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:
@@ -97,8 +97,8 @@ class ModernToast(QFrame):
                 "warning": ("alert-triangle-filled.svg", BrandColors.AMBER),
                 "info": ("circle-info-filled.svg", BrandColors.BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg", Palette.NEUTRAL_400))
-            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
+            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg"))
+            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 
     def update_content(self, title: str, message: str, state: str = "success", duration_ms: int = 3500):

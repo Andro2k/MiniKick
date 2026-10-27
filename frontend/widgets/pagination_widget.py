@@ -1,9 +1,9 @@
 # frontend\widgets\pagination.py
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.common import get_icon_colored, Size
-from .controls_widget import configure_icon_only_button
+from frontend.common import Size
+from .controls_widget import ModernButton
 
 class SegmentedPagination(QFrame):
     first_requested = Signal()
@@ -19,36 +19,24 @@ class SegmentedPagination(QFrame):
         layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_NN)
 
-        self.btn_first = QPushButton(self)
+        self.btn_first = ModernButton(icon_name="angles-left-filled.svg", role="", parent=self)
         self.btn_first.setObjectName("btn_first")
-        self.btn_first.setIcon(get_icon_colored("angles-left-filled.svg"))
-        configure_icon_only_button(self.btn_first)
-        self.btn_first.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_first.clicked.connect(self.first_requested.emit)
 
-        self.btn_prev = QPushButton(self)
+        self.btn_prev = ModernButton(icon_name="chevron-left-filled.svg", role="", parent=self)
         self.btn_prev.setObjectName("btn_prev")
-        self.btn_prev.setIcon(get_icon_colored("chevron-left-filled.svg"))
-        configure_icon_only_button(self.btn_prev)
-        self.btn_prev.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_prev.clicked.connect(self.prev_requested.emit)
 
         self.lbl_page_status = QLabel("1 / 1", self)
         self.lbl_page_status.setObjectName("lbl_page_status")
         self.lbl_page_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.btn_next = QPushButton(self)
+        self.btn_next = ModernButton(icon_name="chevron-right-filled.svg", role="", parent=self)
         self.btn_next.setObjectName("btn_next")
-        self.btn_next.setIcon(get_icon_colored("chevron-right-filled.svg"))
-        configure_icon_only_button(self.btn_next)
-        self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_next.clicked.connect(self.next_requested.emit)
 
-        self.btn_last = QPushButton(self)
+        self.btn_last = ModernButton(icon_name="angles-right-filled.svg", role="", parent=self)
         self.btn_last.setObjectName("btn_last")
-        self.btn_last.setIcon(get_icon_colored("angles-right-filled.svg"))
-        configure_icon_only_button(self.btn_last)
-        self.btn_last.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_last.clicked.connect(self.last_requested.emit)
 
         layout.addWidget(self.btn_first)

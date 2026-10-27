@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QWidget
-from frontend.common import Palette, Semantic, get_pixmap_colored
+from frontend.common import Semantic, get_pixmap_colored
 
 
 class PlatformDistributionRing(QWidget):
@@ -13,7 +13,7 @@ class PlatformDistributionRing(QWidget):
         super().__init__(parent)
         self._segments: list[tuple[int, str]] = []
         self._fallback_avatar = get_pixmap_colored(
-            "user-filled.svg", Palette.NEUTRAL_400, self.DEFAULT_AVATAR_SIZE
+            "user-filled.svg", self.DEFAULT_AVATAR_SIZE
         )
         self._avatar = self._fallback_avatar
         self._avatar_size = self.DEFAULT_AVATAR_SIZE

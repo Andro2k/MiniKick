@@ -63,8 +63,7 @@ class SettingRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
-            icon_lbl.setFixedWidth(20)
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -117,8 +116,7 @@ class SliderRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
-            icon_lbl.setFixedWidth(20)
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             main_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -169,7 +167,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")
@@ -295,8 +293,8 @@ class ExpandableCard(QFrame):
         self.main_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.main_layout.setSpacing(Size.SPACING_NN)
 
-        self._icon_up = get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_050, 16)
-        self._icon_down = get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_050, 16)
+        self._icon_up = get_icon_colored("chevron-up-filled.svg")
+        self._icon_down = get_icon_colored("chevron-down-filled.svg")
         self._is_expanded = False
 
         self.header_widget = QWidget(self)
@@ -308,7 +306,7 @@ class ExpandableCard(QFrame):
 
         if icon_name:
             self.lbl_icon = QLabel(self.header_widget)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_050, 16))
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name))
             h_layout.addWidget(self.lbl_icon, alignment=Qt.AlignmentFlag.AlignTop)
         else:
             self.lbl_icon = None

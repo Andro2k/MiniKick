@@ -44,7 +44,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(BrandColors.RED))
         painter.drawPath(path)
 
-        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", BrandColors.RED, 18)
+        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", BrandColors.RED)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -63,7 +63,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(rect, 6, 6)
         painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
 
-        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", BrandColors.GREEN, 18)
+        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", BrandColors.GREEN)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -103,7 +103,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
         painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
 
-        icon_pixmap = get_pixmap_colored("album-filled.svg", Palette.NEUTRAL_400, 18)
+        icon_pixmap = get_pixmap_colored("album-filled.svg")
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -377,18 +377,18 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 16))
+                item_plat.setIcon(get_icon_colored(icon_name))
                 item_plat.setForeground(QColor(Palette.NEUTRAL_050))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
+                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.AMBER))
                 item_plat.setForeground(QColor(BrandColors.AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
                 item_plat = QTableWidgetItem(plat_name)
-                item_plat.setIcon(get_icon_colored(icon_name, plat_color, 16))
+                item_plat.setIcon(get_icon_colored(icon_name, plat_color))
                 item_plat.setForeground(QColor(plat_color))
 
             item_plat.setFlags(item_plat.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -408,7 +408,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED, 16))
+                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED))
                 item_file.setForeground(QColor(BrandColors.RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:

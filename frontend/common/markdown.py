@@ -30,7 +30,7 @@ def _render_callout(callout_type: str, lines: list[str]) -> str:
     icon_span = f'<span style="font-family: {_NERD_FONT_FAMILY}; font-size: 13px;">{icon}</span>'
     body = "<br/>".join(lines)
     return (
-        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_CALL}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
+        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_WIDE}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
         f'<div style="color: {title_color}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{icon_span} {label}</div>'
         f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; line-height: 1.5;">{body}</div>'
         f'</div>'

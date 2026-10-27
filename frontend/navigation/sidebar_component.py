@@ -59,7 +59,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", 24))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -120,7 +120,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_outlined")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg"))
         configure_icon_only_button(self.btn_collapsed_update)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
@@ -157,7 +157,7 @@ class Sidebar(QFrame):
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_card_icon = QLabel()
-        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN, 16))
+        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN))
         lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_box_layout.addWidget(lbl_card_icon)
 
@@ -166,7 +166,7 @@ class Sidebar(QFrame):
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
-        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg"))
         configure_icon_only_button(self.btn_dismiss_update)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
@@ -187,7 +187,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_outlined")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)
         card_layout.addWidget(self.btn_update_action)
@@ -271,7 +271,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", Palette.NEUTRAL_050, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", 24, dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)

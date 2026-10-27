@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget, QFileDialog
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
-from frontend.common import get_icon_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, BrandColors, Size
 from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ImageDropzone(QFrame):
@@ -59,7 +59,7 @@ class ImageDropzone(QFrame):
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_remove.setIcon(get_icon_colored("x-filled.svg"))
         configure_icon_only_button(self.btn_remove)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_remove.setProperty("role", "action_danger_solid")

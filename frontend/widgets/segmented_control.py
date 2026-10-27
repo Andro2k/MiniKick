@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import get_icon_colored, Palette, Size
+from frontend.common import get_icon_colored, Size
 from .controls_widget import configure_icon_only_button
 
 class ModernSegmentedControl(QFrame):
@@ -38,7 +38,7 @@ class ModernSegmentedControl(QFrame):
         self._icons[option_id] = icon_name
         self._btn_group.addButton(btn)
 
-        btn.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_400, self._icon_size.width()))
+        btn.setIcon(get_icon_colored(icon_name, size=self._icon_size.width()))
         btn.toggled.connect(lambda checked, oid=option_id: self._on_button_toggled(oid, checked))
 
         self._layout.addWidget(btn)
@@ -77,8 +77,7 @@ class ModernSegmentedControl(QFrame):
         btn = self._buttons.get(option_id)
         icon_name = self._icons.get(option_id, "")
         if btn and icon_name:
-            color = Palette.NEUTRAL_050 if checked else Palette.NEUTRAL_400
-            btn.setIcon(get_icon_colored(icon_name, color, self._icon_size.width()))
+            btn.setIcon(get_icon_colored(icon_name, size=self._icon_size.width()))
 
         if checked:
             if self._current_value != option_id:
@@ -97,4 +96,4 @@ class ModernSegmentedControl(QFrame):
                 self._current_value = option_id
                 icon = self._icons.get(option_id, "")
                 if icon:
-                    btn.setIcon(get_icon_colored(icon, Palette.NEUTRAL_050, self._icon_size.width()))
+                    btn.setIcon(get_icon_colored(icon, self._icon_size.width()))

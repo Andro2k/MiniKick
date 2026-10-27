@@ -634,7 +634,7 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*Size.Margin.MRG_MED)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg"))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)

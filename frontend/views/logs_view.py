@@ -57,7 +57,7 @@ def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
         hex_color = _LEVEL_COLORS.get(level, Palette.NEUTRAL_200)
         icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-filled.svg")
-        _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
+        _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color)
     return _LEVEL_ICONS[level]
 
 class LogView(BaseView):
@@ -136,7 +136,7 @@ class LogView(BaseView):
         self._action_buttons: list[ModernButton] = []
         for name, text, role, icon, color, slot, visible in specs:
             btn = ModernButton(text, role=role, parent=self)
-            btn.setIcon(get_icon_colored(icon, color, 16))
+            btn.setIcon(get_icon_colored(icon, color))
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             btn.clicked.connect(slot)
             btn.setVisible(visible)
