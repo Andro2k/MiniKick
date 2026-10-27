@@ -43,17 +43,15 @@ def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> 
         renderer.render(painter, QRectF(0, 0, physical_size, physical_size))
         painter.end()
 
-        if logical_size > 0:
-            colored_pixmap.setDevicePixelRatio(colored_pixmap.width() / logical_size)
-        else:
-            colored_pixmap.setDevicePixelRatio(dpr)
-
+        colored_pixmap.setDevicePixelRatio(colored_pixmap.width() / logical_size)
         return QIcon(colored_pixmap)
     except Exception as e:
         logger.exception("Error rendering colored icon '%s': %s", name, e)
         return QIcon()
 
-def _get_default_dpr() -> float:
+def _resolve_dpr(dpr: float | None) -> float:
+    if dpr is not None:
+        return dpr
     from PySide6.QtWidgets import QApplication
     app = QApplication.instance()
     if app:
@@ -65,30 +63,15 @@ def _get_default_dpr() -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str | int = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QIcon:
-    if isinstance(color_str, int):
-        size = color_str
-        color_str = Palette.NEUTRAL_050
-        
-    if dpr is None:
-        dpr = _get_default_dpr()
-    return _get_icon_colored_impl(name, color_str, size, dpr)
+def get_icon_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QIcon:
+    return _get_icon_colored_impl(name, color_str, size, _resolve_dpr(dpr))
 
-def get_pixmap_colored(name: str, color_str: str | int = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QPixmap:
-    if isinstance(color_str, int):
-        size = color_str
-        color_str = Palette.NEUTRAL_050
-        
-    if dpr is None:
-        dpr = _get_default_dpr()
-    icon = get_icon_colored(name, color_str, size, dpr)
-    return icon.pixmap(QSize(size, size), dpr)
+def get_pixmap_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QPixmap:
+    dpr = _resolve_dpr(dpr)
+    return get_icon_colored(name, color_str, size, dpr).pixmap(QSize(size, size), dpr)
 
 def get_pixmap(name: str, size: int = 16, dpr: float | None = None) -> QPixmap:
-    if dpr is None:
-        dpr = _get_default_dpr()
-    icon = get_icon(name)
-    return icon.pixmap(QSize(size, size), dpr)
+    return get_icon(name).pixmap(QSize(size, size), _resolve_dpr(dpr))
 
 def create_circular_pixmap(img_data: QByteArray, target_size: int | None = None) -> QPixmap:
     image = QImage.fromData(img_data)

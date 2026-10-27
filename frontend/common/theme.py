@@ -67,7 +67,6 @@ class BrandColors:
     PURPLE_DARK    = "#9333EA"
     ORANGE         = "#FF6B35"
     ORANGE_DARK    = "#E0481D"
-    ORANGE_HOVER   = "#FF7E47"
     KICK_BORDER    = "#1A7A42"
     TIKTOK_ACCENT  = "#FF0050"
     TIKTOK_PRESS   = "#00747C"
@@ -275,10 +274,10 @@ def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NE
 
         return str(cached_file).replace('\\', '/')
     except Exception:
-        return get_assets_path(icon_name_or_rel_path).replace('\\', '/')
+        return get_assets_path(icon_name_or_rel_path)
 
 def _get_qss_icon_url(relative_path: str) -> str:
-    return get_assets_path(relative_path).replace('\\', '/')
+    return get_assets_path(relative_path)
 
 PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg"   ,Palette.NEUTRAL_050)
 PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg"  ,Palette.NEUTRAL_050)
