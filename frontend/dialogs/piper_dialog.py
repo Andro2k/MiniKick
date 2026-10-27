@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal, Slot
 from .base_dialog import ModernFramelessShell
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
@@ -186,8 +186,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)
-        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
-        lbl_search_icon.setFixedSize(16, 16)
+        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg"))
         search_layout.addWidget(lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = QLineEdit(search_container)

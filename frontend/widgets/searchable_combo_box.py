@@ -3,7 +3,7 @@
 import time
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
-from frontend.common import get_pixmap_colored, Palette, Size
+from frontend.common import get_pixmap_colored, Size
 from .no_wheel import NoWheelComboBox
 
 class _SearchLineEdit(QLineEdit):
@@ -59,8 +59,7 @@ class SearchableComboPopup(QFrame):
         search_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)
-        self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
-        self.lbl_search_icon.setFixedSize(16, 16)
+        self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg"))
         search_layout.addWidget(self.lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = _SearchLineEdit(self, search_container)

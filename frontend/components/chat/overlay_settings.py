@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import Signal, Slot, QTimer, Qt
 from PySide6.QtWidgets import QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy
-from frontend.common import get_pixmap_colored, Palette, Size
+from frontend.common import get_pixmap_colored, Size
 from frontend.widgets import ModernCard, SettingRow, ModernSwitch, ModernButton, CompactSpinBox, ModernSegmentedControl, NoWheelComboBox, InspectorPropertyRow
 from .chat_mockup import ChatOverlayMockupWidget
 
@@ -16,15 +16,13 @@ def _setup_icon_text_row(
     tooltip: str = "",
     margins=Size.Margin.MRG_NON,
     spacing=Size.SPACING_XS,
-    icon_size=16
 ) -> tuple[QHBoxLayout, QLabel]:
     layout = QHBoxLayout(target_widget)
     layout.setContentsMargins(*margins)
     layout.setSpacing(spacing)
     if icon_name:
         icon_lbl = QLabel(target_widget)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=icon_size))
-        icon_lbl.setFixedSize(icon_size + 2, icon_size + 2)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name))
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_lbl)
     lbl = QLabel(text, target_widget)
@@ -41,7 +39,7 @@ class CompactToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=Size.Margin.MRG_XXS, spacing=Size.SPACING_SM, icon_size=16)
+        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=Size.Margin.MRG_XXS, spacing=Size.SPACING_SM)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
 class ChatOverlaySettingsPanel(ModernCard):
@@ -87,7 +85,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _create_metric_header(self, icon_name: str, text: str, tooltip: str = "") -> QWidget:
         container = QWidget(self)
-        _setup_icon_text_row(container, icon_name, text, tooltip, margins=Size.Margin.MRG_NON, spacing=Size.SPACING_XS, icon_size=16)
+        _setup_icon_text_row(container, icon_name, text, tooltip, margins=Size.Margin.MRG_NON, spacing=Size.SPACING_XS)
         return container
 
     def _setup_ui(self):

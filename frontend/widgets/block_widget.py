@@ -63,8 +63,7 @@ class SettingRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
-            icon_lbl.setFixedWidth(20)
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -117,8 +116,7 @@ class SliderRow(QWidget):
 
         if icon_name:
             icon_lbl = QLabel(parent=self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
-            icon_lbl.setFixedWidth(20)
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
             icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             main_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -169,7 +167,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")

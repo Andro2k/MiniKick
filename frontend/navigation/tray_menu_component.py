@@ -81,7 +81,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addSeparator()
 
         self.action_quit = self.menu.addAction(
-            get_icon_colored("x-filled.svg", BrandColors.RED, 16),
+            get_icon_colored("x-filled.svg", BrandColors.RED),
             self.i18n.get("main.tray.close_app")
         )
         self.action_quit.triggered.connect(self.quit_requested.emit)

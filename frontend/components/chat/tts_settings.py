@@ -15,8 +15,7 @@ class PlatformToggleItem(QWidget):
         layout = create_row_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_LRG, parent=self)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
-        icon_lbl.setFixedSize(18, 18)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
@@ -47,7 +46,7 @@ class VoiceSettingRow(QWidget):
         header_layout = create_row_layout(spacing=Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
 
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")

@@ -59,7 +59,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", 24))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -157,7 +157,7 @@ class Sidebar(QFrame):
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_card_icon = QLabel()
-        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN, 16))
+        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN))
         lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_box_layout.addWidget(lbl_card_icon)
 
@@ -271,7 +271,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", Palette.NEUTRAL_050, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", 24, dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)

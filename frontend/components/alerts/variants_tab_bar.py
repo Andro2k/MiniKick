@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Optional
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 
-from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, BrandColors, Size
 from frontend.widgets import ModernSwitch, ModernCard
 
 class AlertVariantTabPill(QFrame):
@@ -42,7 +42,6 @@ class AlertVariantTabPill(QFrame):
         layout.setSpacing(Size.SPACING_SM)
 
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setFixedSize(16, 16)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         title_text = self.i18n.get(f"alerts.events.{self.alert_type}")
@@ -81,11 +80,11 @@ class AlertVariantTabPill(QFrame):
         if self._is_selected:
             self.setProperty("state", self.platform)
             self.lbl_title.setProperty("state", "white")
-            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent, size=16))
+            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent))
         else:
             self.setProperty("state", "normal")
             self.lbl_title.setProperty("state", "normal")
-            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, Palette.NEUTRAL_400, size=16))
+            self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name))
 
         if self.style():
             self.style().unpolish(self)

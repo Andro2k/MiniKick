@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
 from frontend.widgets import create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -97,8 +97,8 @@ class ModernToast(QFrame):
                 "warning": ("alert-triangle-filled.svg", BrandColors.AMBER),
                 "info": ("circle-info-filled.svg", BrandColors.BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg", Palette.NEUTRAL_400))
-            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
+            icon_name, icon_color = icon_map.get(state, ("circle-info-filled.svg"))
+            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 
     def update_content(self, title: str, message: str, state: str = "success", duration_ms: int = 3500):

@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
-from frontend.common import get_pixmap_colored, Palette, Size
+from frontend.common import get_pixmap_colored, Size
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -27,7 +27,7 @@ class MusicStatsPanel(QWidget):
         queue_header = QHBoxLayout()
         queue_header.setSpacing(Size.SPACING_MD)
         icon_queue = QLabel()
-        icon_queue.setPixmap(get_pixmap_colored("music-notes-filled.svg", Palette.NEUTRAL_400, 16))
+        icon_queue.setPixmap(get_pixmap_colored("music-notes-filled.svg"))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
         lbl_queue_title.setProperty("role", "h3")
         queue_header.addWidget(icon_queue)
@@ -50,7 +50,7 @@ class MusicStatsPanel(QWidget):
         dur_header = QHBoxLayout()
         dur_header.setSpacing(Size.SPACING_MD)
         icon_dur = QLabel()
-        icon_dur.setPixmap(get_pixmap_colored("clock-filled.svg", Palette.NEUTRAL_400, 16))
+        icon_dur.setPixmap(get_pixmap_colored("clock-filled.svg"))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
         lbl_dur_title.setProperty("role", "h3")
         dur_header.addWidget(icon_dur)
@@ -73,7 +73,7 @@ class MusicStatsPanel(QWidget):
         service_header = QHBoxLayout()
         service_header.setSpacing(Size.SPACING_MD)
         icon_cmd = QLabel()
-        icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg", Palette.NEUTRAL_400, 16))
+        icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg"))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "h3")
         self.sw_music_service = ModernSwitch(parent=self)

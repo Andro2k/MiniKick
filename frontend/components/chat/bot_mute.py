@@ -77,7 +77,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
 
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_bot.set_icon("plus-filled.svg", size=16)
+        self.btn_add_bot.set_icon("plus-filled.svg")
 
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -108,7 +108,7 @@ class BotMutePanel(QWidget):
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
 
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_word.set_icon("plus-filled.svg", size=16)
+        self.btn_add_word.set_icon("plus-filled.svg")
 
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
