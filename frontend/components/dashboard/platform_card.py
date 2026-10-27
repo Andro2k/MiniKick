@@ -76,7 +76,6 @@ class PlatformStatusCard(QFrame):
             self.i18n.get(btn_key),
             role=self.button_role,
             icon_name=icon_file,
-            icon_size=16,
             parent=self,
         )
         self.btn_action.setFixedHeight(28)

@@ -21,7 +21,7 @@ def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICO
 
 class ModernButton(QPushButton):
     def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "",
-                 icon_color: str | None = None, icon_size: int = 16, parent=None):
+                 icon_color: str | None = None, parent=None):
         super().__init__(text, parent)
         self._role = role
         self.setProperty("role", role)

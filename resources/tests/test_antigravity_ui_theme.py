@@ -346,12 +346,12 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
 
 def test_combobox_and_segmented_action_outlined_style(qapp):
     from frontend.common.theme import GLOBAL_QSS, Semantic, Borders
-    assert f"QComboBox                           {{ background-color: {Semantic.NEUTRAL_900};" in GLOBAL_QSS
+    assert f"QComboBox                           {{ background-color: {Palette.NEUTRAL_900};" in GLOBAL_QSS
     assert f"border: {Borders.BRD_BASE};" in GLOBAL_QSS
-    assert f"QComboBox:hover                     {{ background-color: {Semantic.NEUTRAL_750}; border: {Borders.BRD_HOVR};" in GLOBAL_QSS
-    assert f'QFrame[role="segmented_control"] {{ background-color: {Semantic.NEUTRAL_950}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
+    assert f"QComboBox:hover                     {{ background-color: {Palette.NEUTRAL_750}; border: {Borders.BRD_HOVR};" in GLOBAL_QSS
+    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette
@@ -368,12 +368,11 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
-    assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_StyledBackground) is True
-    assert combo._popup.property("role") == "searchable_combo_popup"
+    assert combo._popup.bg_frame.property("role") == "searchable_combo_popup"
     assert f'QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900};' in GLOBAL_QSS
 
     text_edit = VariableTextEdit()
-    assert text_edit.popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
+    assert text_edit.popup_window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
     assert text_edit.popup.property("role") == "variable_autocomplete_popup"
 
     cat_popup = CategorySuggestionsPopup(combo)
