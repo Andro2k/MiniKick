@@ -27,7 +27,7 @@ class ModernButton(QPushButton):
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         if icon_name:
-            self.set_icon(icon_name, color=icon_color, size=icon_size)
+            self.set_icon(icon_name, color=icon_color)
 
     def setIcon(self, icon: QIcon):
         super().setIcon(icon)
@@ -52,20 +52,19 @@ class ModernButton(QPushButton):
         }
         return role_map.get(role, Palette.NEUTRAL_050)
 
-    def set_icon(self, icon_name: str, color: str | None = None, size: int = 16):
+    def set_icon(self, icon_name: str, color: str | None = None):
         if not icon_name:
             self.setIcon(QIcon())
             return
             
         if isinstance(color, int):
-            size = color
             color = None
             
         if color is None:
             current_role = self.property("role") or self._role
             color = self._resolve_role_color(current_role)
             
-        self.setIcon(get_icon_colored(icon_name, color_str=color, size=size))
+        self.setIcon(get_icon_colored(icon_name, color_str=color))
 
 class ModernSwitch(QAbstractButton):
     def __init__(self, parent=None):
