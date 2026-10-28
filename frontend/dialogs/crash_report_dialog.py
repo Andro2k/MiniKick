@@ -133,17 +133,14 @@ class CrashReportDialog(ModernModal):
             i18n=self.i18n
         )
         _ACTIVE_CRASH_WORKERS.add(self.worker)
-        self.worker.finished.connect(self._on_worker_finished)
-        self.worker.finished.connect(lambda *_, w=self.worker: _retire_crash_worker(w))
+        self.worker.report_completed.connect(self._on_worker_finished)
+        self.worker.finished.connect(lambda w=self.worker: _retire_crash_worker(w))
         self.worker.start()
 
     def _on_worker_finished(self, success: bool, message: str):
         QApplication.restoreOverrideCursor()
         self.btn_send.setEnabled(True)
         self.btn_send.setText(self.btn_send_text)
-
-        if self.worker and self.worker.isRunning():
-            self.worker.wait(1000)
 
         if success:
             self.accept()
@@ -162,9 +159,7 @@ class CrashReportDialog(ModernModal):
     def _cleanup_worker(self):
         if self.worker:
             try:
-                self.worker.finished.disconnect(self._on_worker_finished)
+                self.worker.report_completed.disconnect(self._on_worker_finished)
             except (RuntimeError, TypeError):
                 pass
-            if self.worker.isRunning():
-                self.worker.wait(500)
             self.worker = None

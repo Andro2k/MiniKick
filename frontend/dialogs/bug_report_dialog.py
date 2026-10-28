@@ -161,8 +161,8 @@ class BugReportDialog(ModernModal):
             severity=self.selected_severity
         )
         _ACTIVE_BUG_WORKERS.add(self.worker)
-        self.worker.finished.connect(self._on_worker_finished)
-        self.worker.finished.connect(lambda *_, w=self.worker: _retire_bug_worker(w))
+        self.worker.report_completed.connect(self._on_worker_finished)
+        self.worker.finished.connect(lambda w=self.worker: _retire_bug_worker(w))
         self.worker.start()
 
     def _set_loading(self, loading: bool):
@@ -182,8 +182,6 @@ class BugReportDialog(ModernModal):
 
     def _on_worker_finished(self, success: bool, message: str):
         self._set_loading(False)
-        if self.worker and self.worker.isRunning():
-            self.worker.wait(1000)
         if success:
             if hasattr(self.parent(), 'toast'):
                 self.parent().toast.show_toast(
@@ -207,9 +205,7 @@ class BugReportDialog(ModernModal):
     def _cleanup_worker(self):
         if self.worker:
             try:
-                self.worker.finished.disconnect(self._on_worker_finished)
+                self.worker.report_completed.disconnect(self._on_worker_finished)
             except (RuntimeError, TypeError):
                 pass
-            if self.worker.isRunning():
-                self.worker.wait(500)
             self.worker = None

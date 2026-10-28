@@ -260,7 +260,7 @@ class YouTubeResolveWorker(QThread):
             self.error.emit(str(e))
 
 class YouTubeSearchWorker(QThread):
-    finished = Signal(bool, str)
+    search_completed = Signal(bool, str)
 
     def __init__(self, search_query: str, query_raw: str, i18n, max_duration_min: int = 10, requester: str = ""):
         super().__init__()
@@ -273,6 +273,8 @@ class YouTubeSearchWorker(QThread):
         self.song_entry = None
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         try:
             import yt_dlp
 
@@ -291,6 +293,8 @@ class YouTubeSearchWorker(QThread):
             info = None
 
             for attempt in range(2):
+                if self.isInterruptionRequested():
+                    return
                 try:
                     with yt_dlp.YoutubeDL(base_opts) as ydl:
                         res = ydl.extract_info(self.search_query, download=False)
@@ -300,8 +304,13 @@ class YouTubeSearchWorker(QThread):
                 except Exception as e:
                     logger.debug("[YouTubeSearchWorker] Search attempt %d failed: %s", attempt + 1, e)
                     if attempt == 0:
-                        time.sleep(1.0)
+                        for _ in range(10):
+                            if self.isInterruptionRequested():
+                                return
+                            self.msleep(100)
 
+            if self.isInterruptionRequested():
+                return
             if not info and self.search_query.startswith("ytsearch1:"):
                 raw_term = self.search_query[10:]
                 yt_music_url = f"https://music.youtube.com/search?q={raw_term}"
@@ -315,16 +324,18 @@ class YouTubeSearchWorker(QThread):
                 except Exception as e:
                     logger.debug("[YouTubeSearchWorker] YouTube Music search failed: %s", e)
 
+            if self.isInterruptionRequested():
+                return
             if not info:
                 msg = self.i18n.get("music.queue.not_found").replace("{query}", self.query_raw)
-                self.finished.emit(False, msg)
+                self.search_completed.emit(False, msg)
                 return
 
             if 'entries' in info:
                 entries = [e for e in info['entries'] if e]
                 if not entries:
                     msg = self.i18n.get("music.queue.not_found").replace("{query}", self.query_raw)
-                    self.finished.emit(False, msg)
+                    self.search_completed.emit(False, msg)
                     return
                 item = entries[0]
             else:
@@ -353,7 +364,7 @@ class YouTubeSearchWorker(QThread):
                     video_url = f"https://www.youtube.com/watch?v={video_id}"
                 else:
                     msg = self.i18n.get("music.queue.no_link")
-                    self.finished.emit(False, msg)
+                    self.search_completed.emit(False, msg)
                     return
 
             author = item.get('uploader') or item.get('channel', '-')
@@ -366,7 +377,7 @@ class YouTubeSearchWorker(QThread):
                         .replace("{user}", self.requester)
                         .replace("{max}", str(self.max_duration_min))
                     )
-                    self.finished.emit(False, msg)
+                    self.search_completed.emit(False, msg)
                     return
 
             duration_str = "-"
@@ -391,8 +402,11 @@ class YouTubeSearchWorker(QThread):
             }
 
             msg = self.i18n.get("music.queue.success").replace("{track}", f"{title} - {author}")
-            self.finished.emit(True, msg)
+            if not self.isInterruptionRequested():
+                self.search_completed.emit(True, msg)
 
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
-            self.finished.emit(False, msg)
+            self.search_completed.emit(False, msg)

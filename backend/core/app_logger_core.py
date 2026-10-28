@@ -98,13 +98,26 @@ def flush_all_logs():
     for handler in root_logger.handlers:
         try:
             handler.flush()
-        except Exception:
-            pass
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to flush handler {type(handler).__name__}: {err}"
+            )
     if _fault_file_handle:
         try:
             _fault_file_handle.flush()
-        except Exception:
-            pass
+        except Exception as err:
+            _write_stderr_diagnostic(f"[MiniKick logging] Failed to flush crash log: {err}")
+
+
+def _write_stderr_diagnostic(message: str) -> None:
+    stream = sys.__stderr__
+    if stream is None:
+        return
+    try:
+        stream.write(message + "\n")
+        stream.flush()
+    except (OSError, ValueError):
+        return
 
 def get_log_dir() -> str:
     app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
@@ -165,6 +178,18 @@ def setup_application_logging():
 def _reset_handlers(root: logging.Logger) -> None:
     for handler in list(root.handlers):
         root.removeHandler(handler)
+        try:
+            handler.flush()
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to flush replaced handler {type(handler).__name__}: {err}"
+            )
+        try:
+            handler.close()
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to close replaced handler {type(handler).__name__}: {err}"
+            )
 
 
 def _build_file_handler(log_dir: str, level: int) -> logging.Handler:
