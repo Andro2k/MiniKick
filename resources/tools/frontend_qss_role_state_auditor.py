@@ -370,7 +370,9 @@ class ASTCodeAuditor(ast.NodeVisitor):
                     ))
 
         if func_name in ("set_dialog_state", "set_state") and node.args:
-            resolved = self._resolve_values(node.args[0], expected_type="state")
+            is_helper = func_name == "set_state" and isinstance(node.func, ast.Name) and len(node.args) >= 2
+            state_arg = node.args[1] if is_helper else node.args[0]
+            resolved = self._resolve_values(state_arg, expected_type="state")
             for v in resolved:
                 self.occurrences.append(RoleOccurrence(
                     role=v,
@@ -378,7 +380,7 @@ class ASTCodeAuditor(ast.NodeVisitor):
                     line=node.lineno,
                     property_type="state",
                     context=self._get_line_text(node.lineno),
-                    inferred_widget="QFrame"
+                    inferred_widget=None if is_helper else "QFrame"
                 ))
 
         if func_name == "create_badge":

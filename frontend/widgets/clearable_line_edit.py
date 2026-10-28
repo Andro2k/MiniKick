@@ -1,10 +1,11 @@
 # frontend\widgets\clearable_line_edit.py
 
 from PySide6.QtWidgets import QFrame, QPushButton
-from PySide6.QtCore import Qt, Signal, QEvent
+from PySide6.QtCore import Qt, Signal
 from frontend.common import get_icon_colored, Size
 from .layout_helpers import create_row_layout, create_frameless_input
 from .controls_widget import configure_icon_only_button
+from .style_utils import sync_focus_state
 
 class ClearableLineEdit(QFrame):
     textChanged = Signal(str)
@@ -100,12 +101,5 @@ class ClearableLineEdit(QFrame):
 
     def eventFilter(self, watched, event):
         if watched == self.txt_input:
-            if event.type() == QEvent.Type.FocusIn:
-                self.setProperty("state", "focused")
-                self.style().unpolish(self)
-                self.style().polish(self)
-            elif event.type() == QEvent.Type.FocusOut:
-                self.setProperty("state", "")
-                self.style().unpolish(self)
-                self.style().polish(self)
+            sync_focus_state(self, event.type())
         return super().eventFilter(watched, event)

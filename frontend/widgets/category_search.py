@@ -1,12 +1,11 @@
 # frontend\widgets\category_search.py
 
-from frontend.common import BrandColors
-from frontend.common import get_pixmap_colored
+from frontend.common import BrandColors, get_pixmap_colored, get_icon_colored, Size
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
-from frontend.common import get_icon_colored, Size
 from .layout_helpers import render_styled_frame_background
 from .controls_widget import configure_icon_only_button
+from .style_utils import sync_focus_state
 
 class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
@@ -225,9 +224,6 @@ class CategorySearchComboBox(QFrame):
         if len(self.txt_input.text().strip()) >= 2:
             self.popup.show_results(platform, results)
 
-    def get_selected_category(self) -> dict | None:
-        return self._selected_category_data
-
     def set_selected_category(self, name: str, cat_id=None, platform: str = ""):
         self._selected_category_data = {
             "name": name,
@@ -238,9 +234,6 @@ class CategorySearchComboBox(QFrame):
         self.txt_input.setText(name)
         self.txt_input.blockSignals(False)
         self.btn_action.setIcon(self._icon_delete if name else self._icon_search)
-
-    def set_platform(self, platform: str):
-        self.default_platform = platform
 
     def text(self) -> str:
         return self.txt_input.text()
@@ -272,12 +265,5 @@ class CategorySearchComboBox(QFrame):
 
     def eventFilter(self, watched, event):
         if watched == self.txt_input:
-            if event.type() == QEvent.Type.FocusIn:
-                self.setProperty("state", "focused")
-                self.style().unpolish(self)
-                self.style().polish(self)
-            elif event.type() == QEvent.Type.FocusOut:
-                self.setProperty("state", "")
-                self.style().unpolish(self)
-                self.style().polish(self)
+            sync_focus_state(self, event.type())
         return super().eventFilter(watched, event)

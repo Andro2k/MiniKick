@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEd
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QLinearGradient, QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon
 from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, Semantic, BrandColors, SwitchTheme, Size, ROW_ACTION_COLORS
+from .style_utils import repolish
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
@@ -15,8 +16,7 @@ def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICO
         button.setFixedSize(size)
     else:
         button.setFixedSize(size, size)
-    button.style().unpolish(button)
-    button.style().polish(button)
+    repolish(button)
 
 
 class ModernButton(QPushButton):
@@ -215,7 +215,6 @@ class VariableTextEdit(QTextEdit):
             self.autocomplete_data = autocomplete_data
 
         self.trigger_chars = list(self.autocomplete_data.keys())
-        self.current_trigger = None
 
         bg_qcolor = QColor(highlight_bg) if highlight_bg else None
         self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
@@ -267,7 +266,6 @@ class VariableTextEdit(QTextEdit):
             self._show_popup(event.text())
 
     def _show_popup(self, trigger: str):
-        self.current_trigger = trigger
         items = self.autocomplete_data.get(trigger, [])
         if not items:
             return

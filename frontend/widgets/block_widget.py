@@ -232,15 +232,6 @@ class FadingScrollArea(QScrollArea):
             self.setWidget(widget)
         self.verticalScrollBar().valueChanged.connect(lambda _: self.viewport().update())
 
-    @property
-    def fade_size(self) -> int:
-        return self.fade_height
-
-    def set_fade_size(self, size: int):
-        self.fade_height = size
-        if self.viewport():
-            self.viewport().update()
-
     def viewportEvent(self, event):
         res = super().viewportEvent(event)
         if event.type() == QEvent.Type.Paint:
@@ -359,9 +350,6 @@ class ExpandableCard(QFrame):
 
     def add_widget(self, widget: QWidget, *args, **kwargs):
         self.body_layout.addWidget(widget, *args, **kwargs)
-
-    def add_layout(self, layout, *args, **kwargs):
-        self.body_layout.addLayout(layout, *args, **kwargs)
 
     def _handle_header_click(self, event):
         child = self.header_widget.childAt(event.pos())

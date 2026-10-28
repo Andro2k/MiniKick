@@ -52,6 +52,7 @@
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+| **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
 
 ---
 
@@ -1041,3 +1042,24 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
 * **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.
+
+---
+
+### INC-043: `AttributeError` y cierre de MiniKick al eliminar una encuesta
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la excepción interrumpía el procesamiento de `PollDeleteEvent` y el hilo Qt podía destruirse mientras seguía activo).
+* **Reportes Asociados**: Log de usuario `minikick.log`, líneas 68-70.
+* **Fecha y Versión del Fallo**: 2026-10-27 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  Error processing frame for event 'App\Events\PollDeleteEvent':
+  'KickChatWorker' object has no attribute '_retiring_poll_workers'
+  QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running
+  ```
+* **Causa Raíz**: La ruta de retiro asíncrono del worker de sincronización añade los hilos todavía activos a `_retiring_poll_workers` para mantenerlos referenciados hasta su señal `finished`, pero el constructor de `KickChatWorker` no inicializaba ese conjunto.
+* **Archivos y Módulos Modificados**:
+  - `backend/workers/kick_chat_worker.py`
+  - `resources/tests/test_kick_ws_key_rotation.py`
+* **Solución Implementada**: Se inicializa `_retiring_poll_workers` como un conjunto por instancia. La prueba de regresión verifica que el worker activo permanece referenciado durante el retiro y que se elimina del conjunto al finalizar.
+* **Pruebas y Verificación**: `resources/tests/test_kick_ws_key_rotation.py` cubre el ciclo de retención y liberación del worker.

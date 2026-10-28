@@ -133,7 +133,7 @@ class BadgeTheme:
     BADGE_MOD = "#3EC669"
     BADGE_VIP = "#E08338"
     BADGE_SUB = "#389CE0"
-    BADGE_BCG = "#29315A"
+    BADGE_BCG = Palette.NEUTRAL_750
 
 class SwitchTheme:
     SWITCH_TRACK_ON_0  = "#1E8E4D"
@@ -421,7 +421,7 @@ QLineEdit:read-only:focus, QTextEdit:read-only:focus, QPlainTextEdit:read-only:f
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border: {Borders.BRD_FAIL}; }}
 QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_750}; padding: {Padding.PAD_BASE}; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.2px solid {BrandColors.PURPLE}; color: {BrandColors.PURPLE}; font-weight: 500; background-color: {Palette.NEUTRAL_950}; }}
-QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font'; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; border: {Borders.BRD_SOFT}; border-radius: {Size.Radius.RAD_MED}px; padding: {Size.SPACING_XS}px {Size.SPACING_XXS}px; }}
+QTextEdit[role="ConsoleDisplay"] {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; font-family: 'GoogleSansCode Nerd Font';  border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 
 /* ComboBox */
 QComboBox                           {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; min-width: 120px; }}
@@ -615,11 +615,11 @@ QLabel[role="badge"] {{ background-color: {Palette.NEUTRAL_900}; color: {Palette
 QLabel[role="badge_kick"] {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; font-weight: 500; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.FLAT_MIN}; font-size: {text2}px; border: {Borders.GRN_MEDM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
 QLabel[role="badge_twitch"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 500; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.FLAT_MIN}; font-size: {text2}px; border: {Borders.PRP_MEDM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
 QLabel[role="tag_badge"] {{ background-color: {Semantic.PURPLE_GLOW}; color: {BrandColors.PURPLE}; font-weight: 600; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.FLAT_MIN}; font-size: {text2}px; border: {Borders.PRP_MEDM}; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MAX}px; }}
-QLabel[role="rank_number"] {{ color: {BrandColors.GREEN}; font-weight: 500; min-width: 20px; }}
-QLabel[role="rank_number"][state="gold"] {{ color: {BrandColors.AMBER}; font-weight: 700; font-size: 13px; }}
-QLabel[role="rank_number"][state="silver"] {{ color: {Palette.NEUTRAL_400}; font-weight: 700; font-size: 13px; }}
-QLabel[role="rank_number"][state="bronze"] {{ color: {BrandColors.AMBER_DARK}; font-weight: 700; font-size: 13px; }}
-QLabel[role="rank_number"][state="normal"] {{ color: {Palette.NEUTRAL_500}; font-weight: 500; }}
+QLabel[role="rank_number"] {{ color: {BrandColors.GREEN}; font-weight: 700; font-size: 13px; min-width: 20px; }}
+QLabel[role="rank_number"][state="golden"] {{ color: {BrandColors.AMBER}; }}
+QLabel[role="rank_number"][state="silver"] {{ color: {Palette.NEUTRAL_400}; }}
+QLabel[role="rank_number"][state="bronze"] {{ color: {BrandColors.AMBER_DARK}; }}
+QLabel[role="rank_number"][state="normal"] {{ color: {Palette.NEUTRAL_500}; }}
 QLabel[role="status_pill"]                      {{ border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_MINI}; font-size: 12px; font-weight: 500; }}
 QLabel[role="status_pill"][state="online"]      {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; border: {Borders.GRN_THIN}; font-weight: 600; }}
 QLabel[role="status_pill"][state="connecting"]  {{ background-color: {Semantic.AMBER_GLOW}; color: {BrandColors.AMBER}; border: {BrandColors.AMBER}; font-weight: 600; }}

@@ -98,5 +98,21 @@ class WorkerWiringTest(unittest.TestCase):
         self.assertEqual(worker.chat_manager.key, NEW)
         self.assertEqual(worker.keys, (NEW, OLD))
 
+    def test_poll_sync_worker_is_retained_until_it_finishes(self) -> None:
+        from backend.workers.kick_chat_worker import KickChatWorker
+
+        worker = KickChatWorker(mock.MagicMock(), mock.MagicMock(), "us2", (NEW, OLD))
+        poll_worker = mock.MagicMock()
+        poll_worker.isRunning.return_value = True
+        worker._poll_sync_worker = poll_worker
+
+        worker._stop_poll_sync_worker()
+
+        self.assertIn(poll_worker, worker._retiring_poll_workers)
+        callback = poll_worker.finished.connect.call_args.args[0]
+        callback()
+        self.assertNotIn(poll_worker, worker._retiring_poll_workers)
+        poll_worker.deleteLater.assert_called_once_with()
+
 if __name__ == "__main__":
     unittest.main()

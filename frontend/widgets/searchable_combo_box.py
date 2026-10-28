@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
 from frontend.common import get_pixmap_colored, Size
 from .no_wheel import NoWheelComboBox
+from .style_utils import set_state
 
 class _SearchLineEdit(QLineEdit):
     def __init__(self, popup: "SearchableComboPopup", parent=None):
@@ -205,27 +206,17 @@ class SearchableComboPopup(QFrame):
 class SearchableComboBox(NoWheelComboBox):
     def __init__(self, parent: QWidget = None, placeholder: str = "", empty_text: str = ""):
         super().__init__(parent)
-        self._placeholder = placeholder
-        self._empty_text = empty_text
         self._popup = SearchableComboPopup(self, placeholder=placeholder, empty_text=empty_text, parent=self)
         self._last_popup_close_time = 0.0
 
     def setPlaceholderText(self, placeholder: str):
-        self._placeholder = placeholder
         self._popup.search_input.setPlaceholderText(placeholder)
-
-    def setEmptyText(self, empty_text: str):
-        self._empty_text = empty_text
-        self._popup.empty_text = empty_text
-        self._popup.lbl_empty.setText(empty_text)
 
     def showPopup(self):
         if self.count() == 0:
             return
 
-        self.setProperty("state", "active")
-        self.style().unpolish(self)
-        self.style().polish(self)
+        set_state(self, "active")
         self.update()
 
         self._popup.sync_items()
@@ -237,9 +228,7 @@ class SearchableComboBox(NoWheelComboBox):
 
     def _on_popup_closed(self):
         self._last_popup_close_time = time.time()
-        self.setProperty("state", "normal")
-        self.style().unpolish(self)
-        self.style().polish(self)
+        set_state(self, "normal")
         self.update()
 
     def mousePressEvent(self, event):

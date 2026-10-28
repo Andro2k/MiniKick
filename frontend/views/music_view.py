@@ -164,10 +164,10 @@ class MusicView(BaseView):
     def update_queue(self, queue_items: list[dict]):
         self.queue_panel.update_queue(queue_items)
 
-    def set_auth_state(self, connected: bool, label_key: str = ""):
-        self.player_panel.set_auth_state(connected, label_key)
-        self.commands_panel.set_enabled_state(True)
-        self.queue_panel.card_queue.setVisible(True)
+    # def set_auth_state(self, connected: bool, label_key: str = ""):
+    #     self.player_panel.set_auth_state(connected, label_key)
+    #     self.commands_panel.set_enabled_state(True)
+    #     self.queue_panel.card_queue.setVisible(True)
 
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)
