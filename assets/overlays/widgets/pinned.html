@@ -4,33 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniKick - Pinned Message OBS Overlay</title>
+    <title>MiniKick - Pinned Message OBS Overlay (Neutral)</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
 
-        * {
+        html,
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        }
-
-        body {
-            background: transparent;
-            overflow: hidden;
             width: 100vw;
             height: 100vh;
+            background: transparent !important;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            margin: 0;
-            padding: 20px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
         }
 
         #pinned-container {
             width: 100%;
-            max-width: 580px;
-            margin: auto;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             position: relative;
             z-index: 1000;
             opacity: 0;
@@ -45,17 +50,19 @@
         }
 
         .pinned-card {
-            background: rgba(15, 19, 26, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
-            border-radius: 20px;
+            width: 100%;
+            max-width: 580px;
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             overflow: hidden;
             color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            zoom: 1.5;
         }
 
         .pinned-header {
@@ -63,29 +70,21 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 9px 18px;
-            background: rgba(255, 193, 7, 0.12);
-            border-bottom: 1px solid rgba(255, 193, 7, 0.18);
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 7px;
-        }
-
-        .pin-svg {
-            width: 15px;
-            height: 15px;
-            color: #ffc107;
-            display: block;
-            flex-shrink: 0;
+            gap: 8px;
         }
 
         .badge-tag {
             font-size: 11px;
             font-weight: 800;
-            color: #ffc107;
+            color: #e4e4e7;
             text-transform: uppercase;
             letter-spacing: 1.2px;
         }
@@ -94,19 +93,19 @@
             font-size: 13px;
             font-weight: 800;
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 2px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 10px;
             border-radius: 6px;
         }
 
         .pinned-body {
-            padding: 14px 20px;
+            padding: 16px 20px;
         }
 
         .pinned-text {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
-            color: #f0f6fc;
+            color: #e4e4e7;
             line-height: 1.5;
             word-break: break-word;
         }
@@ -119,10 +118,6 @@
         <div class="pinned-card">
             <div class="pinned-header">
                 <div class="header-left">
-                    <svg class="pin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="17" x2="12" y2="22"></line>
-                        <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6a1 1 0 0 1 1-1 1.5 1.5 0 0 0 1.5-1.5V3a1 1 0 0 0-1-1H7.5a1 1 0 0 0-1 1v.5A1.5 1.5 0 0 0 8 5a1 1 0 0 1 1 1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"></path>
-                    </svg>
                     <span id="badge-tag" class="badge-tag">MENSAJE FIJADO</span>
                 </div>
                 <span id="author-name" class="author-name">@Streamer</span>
@@ -137,6 +132,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
 
         const pinnedContainer = document.getElementById('pinned-container');
         const badgeTag = document.getElementById('badge-tag');
@@ -181,9 +177,7 @@
                             hidePinned();
                         }
                     }
-                } catch (err) {
-                    console.error("Error al procesar evento mensaje fijado:", err);
-                }
+                } catch (err) {}
             };
 
             ws.onerror = function () {
@@ -233,8 +227,11 @@
             }
 
             const username = sender.username || sender.slug || '@Streamer';
-            const identity = sender.identity || {};
-            const userColor = identity.color || '#ffc107';
+            
+            // Para el diseño neutro, forzamos el color del nombre a blanco o lo mantenemos sutil. 
+            // Si quieres usar el color del usuario, descomenta la siguiente línea y borra la del color blanco.
+            const userColor = sender.identity?.color || '#ffffff'; 
+            // const userColor = '#ffffff';
 
             authorName.textContent = username.startsWith('@') ? username : `@${username}`;
             authorName.style.color = userColor;
@@ -247,7 +244,14 @@
             pinnedContainer.classList.remove('visible');
         }
 
-        connectWS();
+        if (isPreview) {
+            renderPinned({
+                sender: { username: 'TheAndro2K' },
+                content: '¡Bienvenidos al stream! Hoy jugaremos Valorant con subs, dejen su ID en el chat. 🚀'
+            });
+        } else {
+            connectWS();
+        }
     </script>
 </body>
 
