@@ -31,7 +31,7 @@ class UpdateCheckWorker(QThread):
             self.error.emit(str(e))
 
 class UpdateDownloadWorker(QThread):
-    finished = Signal(bool)
+    download_completed = Signal(bool)
     error = Signal(str)
     progress = Signal(int)
 
@@ -49,7 +49,7 @@ class UpdateDownloadWorker(QThread):
                 
             success = self.manager.perform_update(self.download_url, progress_cb)
             logger.info("[UpdateDownloadWorker] Download completed with status: %s", success)
-            self.finished.emit(success)
+            self.download_completed.emit(success)
         except Exception as e:
             logger.error("[UpdateDownloadWorker] Error downloading update: %s", e)
             self.error.emit(str(e))

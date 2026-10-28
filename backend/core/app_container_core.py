@@ -19,6 +19,7 @@ class AppContainerCore:
     def __init__(self, db_manager: DatabaseManager, i18n: TranslationService):
         self.db_manager = db_manager
         self.i18n = i18n
+        self._is_shutdown = False
         self._music_provider = None
 
         if API_KEYS_MISSING:
@@ -43,15 +44,33 @@ class AppContainerCore:
         return self._music_provider
 
     def shutdown(self):
+        if self._is_shutdown:
+            return
+        self._is_shutdown = True
+
         components = (
             (self._music_provider, "shutdown"),
-            (self.tts_manager, "stop"),
+            (self.tts_manager, "shutdown"),
             (self.overlay_server, "stop"),
         )
         for component, method_name in components:
+            if component is None:
+                continue
             action = getattr(component, method_name, None)
-            if component is not None and callable(action):
+            if not callable(action):
+                logger.warning(
+                    "[AppContainer] Component %s has no callable %s() method.",
+                    type(component).__name__,
+                    method_name,
+                )
+                continue
+            try:
                 action()
+            except Exception:
+                logger.exception(
+                    "[AppContainer] Failed to stop component %s.",
+                    type(component).__name__,
+                )
 
     def _init_storages(self):
         logger.debug("[AppContainer] Initializing SQLite storage layers...")

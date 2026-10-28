@@ -19,7 +19,7 @@ def _sanitize_filename_component(text: str, default: str = "anonymous") -> str:
     return cleaned or default
 
 class BugReportWorker(QThread):
-    finished = Signal(bool, str)
+    report_completed = Signal(bool, str)
 
     def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n=None, severity: str = "Low", parent=None):
         super().__init__(parent)
@@ -33,7 +33,7 @@ class BugReportWorker(QThread):
 
     def run(self):
         if not DISCORD_WEBHOOK_URL:
-            self.finished.emit(False, self.i18n.get("dialogs.bug_report.err_no_webhook"))
+            self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_no_webhook"))
             return
 
         try:
@@ -105,8 +105,8 @@ class BugReportWorker(QThread):
                 resp = requests.post(DISCORD_WEBHOOK_URL, json=data, timeout=15)
 
             if resp.status_code in (200, 204):
-                self.finished.emit(True, self.i18n.get("dialogs.bug_report.success_send"))
+                self.report_completed.emit(True, self.i18n.get("dialogs.bug_report.success_send"))
             else:
-                self.finished.emit(False, self.i18n.get("dialogs.bug_report.err_discord").replace("{code}", str(resp.status_code)))
+                self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_discord").replace("{code}", str(resp.status_code)))
         except Exception as e:
-            self.finished.emit(False, self.i18n.get("dialogs.bug_report.err_send").replace("{error}", str(e)))
+            self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_send").replace("{error}", str(e)))
