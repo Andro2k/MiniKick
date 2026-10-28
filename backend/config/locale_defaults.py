@@ -1590,7 +1590,7 @@ DEFAULT_DICTIONARY = {
         },
         "clock": {
             "desc": "Displays the current time and date in real-time in a sleek capsule design for your stream.",
-            "title": "Clock & Date (!time)"
+            "title": "Clock & Date"
         },
         "combo": {
             "desc": "Detect when your chat repeats an emote streak and show a fiery animated counter in OBS.",

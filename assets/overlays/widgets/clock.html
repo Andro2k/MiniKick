@@ -4,209 +4,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniKick - Date & Time Clock OBS Overlay</title>
+    <title>MiniKick - Date & Time Clock OBS Overlay (Responsive)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
 
-        * {
+        html,
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        }
-
-        body,
-        html {
-            background: transparent;
-            overflow: hidden;
             width: 100vw;
             height: 100vh;
+            background: transparent !important;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
         #clock-container {
-            position: relative;
-            z-index: 1000;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 100%;
+            max-height: 100%;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.4s ease;
         }
 
         #clock-container.hidden {
             display: none !important;
         }
 
-        /* Segmented Capsule Card */
         .clock-capsule {
             display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            min-width: 240px;
-            border-radius: 22px;
-            overflow: hidden;
-            background: rgba(15, 19, 26, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
-            transition: all 0.3s ease;
+            flex-wrap: wrap-reverse; 
+            align-items: center;
+            justify-content: center;
+            column-gap: 24px;
+            row-gap: 12px;
+            padding: 12px 24px;
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            color: #ffffff;
+            zoom: 1.2;
         }
 
-        /* Top Segment: Date Bar */
+        .time-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ffffff;
+            font-weight: 800;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .time-main {
+            font-size: 56px;
+            letter-spacing: 1px;
+        }
+
+        .time-meta {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .time-seconds {
+            font-size: 16px;
+            color: #a1a1aa;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .time-period {
+            font-size: 16px;
+            color: #a1a1aa;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
         .date-segment {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 8px 24px;
-            background: rgba(255, 255, 255, 0.08);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            color: #cbd5e1;
-            font-size: 11px;
-            font-weight: 800;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: #e4e4e7;
+            font-size: 14px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.4px;
+            letter-spacing: 1.5px;
             white-space: nowrap;
         }
 
         .date-segment.hidden {
             display: none !important;
         }
-
-        /* Bottom Segment: Time Display */
-        .time-segment {
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 6px;
-            padding: 12px 28px;
-            color: #ffffff;
+        
+        .date-arrow {
+            color: #a1a1aa;
+            margin: 0 6px;
             font-weight: 900;
-            line-height: 1;
         }
 
-        .time-main {
-            font-size: 38px;
-            letter-spacing: 0.5px;
-        }
-
-        .time-seconds {
-            font-size: 20px;
-            color: #94a3b8;
-            font-weight: 700;
-        }
-
-        .time-period {
-            font-size: 14px;
-            color: #94a3b8;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-left: 4px;
-        }
-
-        /* Theme Presets (Mirroring User Reference Image) */
-        /* 1. Dark / Slate (Default) */
-        .theme-dark {
-            background: rgba(15, 19, 26, 0.94);
-            border-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .theme-dark .date-segment {
-            background: rgba(255, 255, 255, 0.07);
-            color: #94a3b8;
-        }
-
-        .theme-dark .time-main {
-            color: #ffffff;
-        }
-
-        /* 2. Pastel / Lavender */
-        .theme-pastel {
-            background: #e0e7ff;
-            border-color: rgba(165, 180, 252, 0.6);
-            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.2);
-        }
-
-        .theme-pastel .date-segment {
-            background: #818cf8;
-            color: #ffffff;
-            border-bottom: none;
-        }
-
-        .theme-pastel .time-segment {
-            color: #312e81;
-        }
-
-        .theme-pastel .time-main {
-            color: #312e81;
-        }
-
-        .theme-pastel .time-seconds,
-        .theme-pastel .time-period {
-            color: #4f46e5;
-        }
-
-        /* 3. Warm / Peach */
-        .theme-warm {
-            background: #ffedd5;
-            border-color: rgba(253, 186, 116, 0.6);
-            box-shadow: 0 12px 30px rgba(234, 88, 12, 0.18);
-        }
-
-        .theme-warm .date-segment {
-            background: #fb923c;
-            color: #ffffff;
-            border-bottom: none;
-        }
-
-        .theme-warm .time-segment {
-            color: #7c2d12;
-        }
-
-        .theme-warm .time-main {
-            color: #7c2d12;
-        }
-
-        .theme-warm .time-seconds,
-        .theme-warm .time-period {
-            color: #c2410c;
-        }
-
-        /* 4. Kick Minimal Accent */
-        .theme-kick {
-            background: rgba(13, 17, 23, 0.94);
-            border-color: rgba(83, 252, 24, 0.25);
-        }
-
-        .theme-kick .date-segment {
-            background: rgba(83, 252, 24, 0.12);
-            color: #53fc18;
-            border-bottom: 1px solid rgba(83, 252, 24, 0.15);
-        }
-
-        .theme-kick .time-main {
-            color: #ffffff;
-        }
-
-        .theme-kick .time-period {
-            color: #53fc18;
-        }
     </style>
 </head>
 
 <body>
 
     <div id="clock-container">
-        <div id="clock-capsule" class="clock-capsule theme-dark">
+        <div id="clock-capsule" class="clock-capsule">
+            
             <div id="date-segment" class="date-segment">
-                <span id="date-text">VIERNES, 11 DE SEPTIEMBRE</span>
+                <span id="date-day">MON</span>
+                <span class="date-arrow">→</span>
+                <span id="date-full">21 JUL</span>
             </div>
+
             <div class="time-segment">
-                <span id="time-main" class="time-main">10:52</span>
-                <span id="time-seconds" class="time-seconds" style="display: none;">:00</span>
-                <span id="time-period" class="time-period">PM</span>
+                <span id="time-main" class="time-main">08:56</span>
+                <div class="time-meta">
+                    <span id="time-seconds" class="time-seconds" style="display: none;">00</span>
+                    <span id="time-period" class="time-period">PM</span>
+                </div>
             </div>
+            
         </div>
     </div>
 
@@ -214,63 +154,61 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
-        const timeFormat = (urlParams.get('format') || '12h').toLowerCase(); // 12h or 24h
+        const timeFormat = (urlParams.get('format') || '12h').toLowerCase();
         const showDateParam = urlParams.get('date');
         const showDate = showDateParam !== 'false';
         const showSeconds = urlParams.get('seconds') === 'true';
-        const theme = (urlParams.get('theme') || 'dark').toLowerCase();
 
         const capsuleEl = document.getElementById('clock-capsule');
         const dateSegmentEl = document.getElementById('date-segment');
-        const dateTextEl = document.getElementById('date-text');
+        const dateDayEl = document.getElementById('date-day');
+        const dateFullEl = document.getElementById('date-full');
         const timeMainEl = document.getElementById('time-main');
         const timeSecondsEl = document.getElementById('time-seconds');
         const timePeriodEl = document.getElementById('time-period');
 
-        // Apply theme class
-        capsuleEl.className = `clock-capsule theme-${theme}`;
 
         if (!showDate) {
             dateSegmentEl.classList.add('hidden');
         }
 
         if (showSeconds) {
-            timeSecondsEl.style.display = 'inline';
+            timeSecondsEl.style.display = 'block';
         }
 
         const MONTHS_ES = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+            'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
         ];
         const DAYS_ES = [
-            'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
+            'DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'
         ];
 
         const MONTHS_EN = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ];
         const DAYS_EN = [
-            'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+            'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'
         ];
 
         function updateClock() {
             const now = new Date();
 
-            // Format Date
             if (showDate) {
                 const dayName = (lang === 'en' ? DAYS_EN : DAYS_ES)[now.getDay()];
                 const monthName = (lang === 'en' ? MONTHS_EN : MONTHS_ES)[now.getMonth()];
                 const dayNum = now.getDate();
 
+                dateDayEl.textContent = dayName;
+                
                 if (lang === 'en') {
-                    dateTextEl.textContent = `${dayName}, ${monthName} ${dayNum}`;
+                    dateFullEl.textContent = `${dayNum} ${monthName.toUpperCase()}`;
                 } else {
-                    dateTextEl.textContent = `${dayName}, ${dayNum} de ${monthName}`;
+                    dateFullEl.textContent = `${dayNum} ${monthName.toUpperCase()}`;
                 }
             }
 
-            // Format Time
             let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
@@ -282,20 +220,19 @@
                 const period = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12;
                 if (hours === 0) hours = 12;
-                timeMainEl.textContent = `${hours}:${minutes}`;
+                timeMainEl.textContent = `${String(hours).padStart(2, '0')}:${minutes}`;
                 timePeriodEl.textContent = period;
-                timePeriodEl.style.display = 'inline';
+                timePeriodEl.style.display = 'block';
             }
 
             if (showSeconds) {
-                timeSecondsEl.textContent = `:${seconds}`;
+                timeSecondsEl.textContent = seconds;
             }
         }
 
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Optional WebSocket listener for live toggle
         if (window.location.protocol !== 'file:') {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;

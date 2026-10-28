@@ -89,7 +89,6 @@ class FlowLayout(QLayout):
 
         is_single_line = (len(lines) == 1)
         for line in lines:
-            n = len(line)
             w = (effective_rect.width() - (max_n - 1) * h_space) / max_n
 
             line_height = 0

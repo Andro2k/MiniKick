@@ -96,4 +96,4 @@ class ModernSegmentedControl(QFrame):
                 self._current_value = option_id
                 icon = self._icons.get(option_id, "")
                 if icon:
-                    btn.setIcon(get_icon_colored(icon, self._icon_size.width()))
+                    btn.setIcon(get_icon_colored(icon, size=self._icon_size.width()))

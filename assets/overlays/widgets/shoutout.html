@@ -3,42 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniKick - Shoutout OBS Overlay</title>
+    <title>MiniKick - Shoutout OBS Overlay (Neutral)</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
 
-        * {
+        html,
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-
-        body {
-            background: transparent;
-            overflow: hidden;
             width: 100vw;
             height: 100vh;
+            background: transparent !important;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
         #shoutout-container {
+            width: 100%;
+            height: 100%;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
             z-index: 1000;
             perspective: 1000px;
         }
 
         .so-card {
-            min-width: 340px;
-            max-width: 420px;
-            background: rgba(15, 19, 26, 0.94);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
-            border-radius: 20px;
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             overflow: hidden;
             color: #ffffff;
             opacity: 0;
@@ -48,6 +55,7 @@
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            zoom: 1.5;
         }
 
         .so-card.active {
@@ -59,12 +67,12 @@
             display: flex;
             align-items: center;
             gap: 7px;
-            padding: 8px 18px;
-            background: rgba(83, 252, 24, 0.1);
-            border-bottom: 1px solid rgba(83, 252, 24, 0.15);
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 11px;
             font-weight: 800;
-            color: #53fc18;
+            color: #a1a1aa;
             text-transform: uppercase;
             letter-spacing: 1.3px;
         }
@@ -72,18 +80,18 @@
         .so-body {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 14px 20px;
+            gap: 16px;
+            padding: 16px 20px;
         }
 
         .so-avatar-wrapper {
             position: relative;
-            width: 54px;
-            height: 54px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            background: #1e293b;
+            background: #18181b;
             flex-shrink: 0;
         }
 
@@ -97,11 +105,11 @@
             position: absolute;
             bottom: -2px;
             right: -2px;
-            background: #53fc18;
-            color: #000;
+            background: #ffffff;
+            color: #18181b;
             font-size: 9px;
             font-weight: 900;
-            padding: 1px 5px;
+            padding: 2px 6px;
             border-radius: 6px;
             text-transform: uppercase;
         }
@@ -111,11 +119,12 @@
             flex-direction: column;
             gap: 2px;
             overflow: hidden;
+            max-width: 200px;
         }
 
         .so-username {
             font-size: 20px;
-            font-weight: 900;
+            font-weight: 800;
             color: #ffffff;
             line-height: 1.1;
             overflow: hidden;
@@ -124,9 +133,9 @@
         }
 
         .so-url {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            color: #94a3b8;
+            color: #a1a1aa;
         }
     </style>
 </head>
@@ -152,7 +161,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
-        const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
 
         const soCard = document.getElementById('so-card');
         const soAvatar = document.getElementById('so-avatar');
@@ -200,9 +209,7 @@
                     if (data.event === 'shoutout') {
                         showShoutout(data);
                     }
-                } catch (err) {
-                    console.error("Error parsing shoutout event:", err);
-                }
+                } catch (err) {}
             };
 
             ws.onerror = function () {
@@ -250,7 +257,16 @@
             }, 8000);
         }
 
-        connectWS();
+        if (isPreview) {
+            showShoutout({
+                target: 'TheAndro2K',
+                url: 'https://kick.com/TheAndro2K',
+                avatar_url: 'https://kick.com/favicon.ico'
+            });
+            if (soTimeout) clearTimeout(soTimeout);
+        } else {
+            connectWS();
+        }
     </script>
 </body>
 </html>

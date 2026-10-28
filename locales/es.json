@@ -1588,7 +1588,7 @@
         },
         "clock": {
             "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
-            "title": "Reloj y Fecha (!time)"
+            "title": "Reloj y Fecha"
         },
         "combo": {
             "desc": "Detecta cuando tu chat repite un mismo emote en racha y muestra un espectacular contador animado de fuego en OBS.",

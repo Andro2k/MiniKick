@@ -204,15 +204,6 @@ class ModernTableCard(QFrame):
             self.header_actions_widget.show()
             self.reflow_header_actions()
 
-    def set_action_buttons(self, buttons: list[ModernButton]):
-        self._ensure_header()
-        self.action_buttons = list(buttons)
-        for btn in self.action_buttons:
-            btn.setParent(self.header_actions_widget)
-            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.setMinimumHeight(30)
-        self.reflow_header_actions()
-
     def reflow_header_actions(self, available_width: int | None = None):
         if not hasattr(self, "header_actions_layout") or self.header_actions_layout is None:
             return

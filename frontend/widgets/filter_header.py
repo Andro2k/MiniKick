@@ -57,14 +57,6 @@ class FilterHeaderView(QHeaderView):
             self.viewport().update()
             self.filter_changed.emit(self.get_active_filters())
 
-    def has_active_filters(self) -> bool:
-        for col, config in self._column_filters.items():
-            opts = config.get("options", [])
-            all_ids = {opt["id"] for opt in opts}
-            if opts and len(config["active"]) < len(all_ids):
-                return True
-        return False
-
     def sectionSizeFromContents(self, logicalIndex: int) -> QSize:
         base_size = super().sectionSizeFromContents(logicalIndex)
         if logicalIndex in self._column_filters:

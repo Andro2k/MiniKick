@@ -265,7 +265,7 @@ class DashboardChattersTable(ModernCard):
             lbl_rank.setProperty("role", "rank_number")
             lbl_rank.setAlignment(Qt.AlignmentFlag.AlignCenter)
             if rank == 1:
-                lbl_rank.setProperty("state", "gold")
+                lbl_rank.setProperty("state", "golden")
             elif rank == 2:
                 lbl_rank.setProperty("state", "silver")
             elif rank == 3:

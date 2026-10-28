@@ -59,7 +59,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", 24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", size=24))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -271,7 +271,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", size=24, dpr=dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)

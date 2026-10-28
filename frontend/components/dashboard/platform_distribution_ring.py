@@ -13,7 +13,7 @@ class PlatformDistributionRing(QWidget):
         super().__init__(parent)
         self._segments: list[tuple[int, str]] = []
         self._fallback_avatar = get_pixmap_colored(
-            "user-filled.svg", self.DEFAULT_AVATAR_SIZE
+            "user-filled.svg", size=self.DEFAULT_AVATAR_SIZE
         )
         self._avatar = self._fallback_avatar
         self._avatar_size = self.DEFAULT_AVATAR_SIZE

@@ -217,7 +217,7 @@ class MusicController(QObject):
         self.view.slider_vol.setValue(vol)
         self.view.slider_vol.blockSignals(False)
         self.view.lbl_vol_perc.setText(f"{vol}%")
-        self.view.set_auth_state(connected=True, label_key="music.status.youtube_active")
+        # self.view.set_auth_state(connected=True, label_key="music.status.youtube_active")
         self._poll_now_playing()
 
     def set_volume(self, volume: int):

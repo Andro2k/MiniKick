@@ -77,6 +77,7 @@ class KickChatWorker(QThread):
         self.chat_manager = KickWebSocketManager(cluster, keys)
         self._is_stopped = False
         self._poll_sync_worker: KickPollSyncWorker | None = None
+        self._retiring_poll_workers: set[KickPollSyncWorker] = set()
         self._backoff = ExponentialBackoff(initial=1.5, max_backoff=30.0, factor=1.5, jitter=0.2)
 
     def run(self):
