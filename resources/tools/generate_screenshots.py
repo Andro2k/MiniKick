@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from bootstrap.environment import configure_environment
 
-configure_environment()  # Debe ejecutarse ANTES de importar PySide6
+configure_environment()
 
 from backend.config import APP_VERSION
 from backend.handlers import QLogHandler

@@ -522,7 +522,6 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setFixedHeight(4)
         self.progress_bar.setRange(0, self.total_steps)
         self.progress_bar.setValue(0)
         self.progress_bar.setProperty("role", "wizard_progress")

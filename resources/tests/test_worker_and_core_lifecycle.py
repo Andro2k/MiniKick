@@ -248,11 +248,9 @@ def test_flush_failures_are_reported_to_original_stderr(monkeypatch):
 def test_cooperative_sleep_breaks_immediately_on_interruption(qapp):
     from backend.utils.worker_utils import cooperative_sleep
 
-    # A stopped worker aborts immediately
     fake_worker = types.SimpleNamespace(_is_stopped=True)
     assert cooperative_sleep(fake_worker, duration_seconds=5.0, step_ms=10) is False
 
-    # A running QThread that is interrupted aborts immediately
     started_event = threading.Event()
     results = []
 

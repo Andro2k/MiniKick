@@ -86,28 +86,9 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.setSpacing(Size.SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # self._setup_status_card()
         self._setup_now_playing_card()
         self._setup_volume_card()
         self._setup_overlay_url_card()
-
-    # def _setup_status_card(self):
-    #     card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
-
-    #     status_layout = QHBoxLayout()
-    #     status_layout.setContentsMargins(*Size.Margin.MRG_NON)
-    #     status_layout.setSpacing(Size.SPACING_MD)
-
-    #     # self.lbl_auth_status = QLabel(self.i18n.get("music.status.youtube_active"))
-    #     # self.lbl_auth_status.setProperty("role", "h3")
-
-    #     # provider_info = QVBoxLayout()
-    #     # provider_info.setContentsMargins(*Size.Margin.MRG_NON)
-    #     # provider_info.addWidget(self.lbl_auth_status)
-
-    #     # status_layout.addLayout(provider_info, stretch=1)
-    #     card.addLayout(status_layout)
-    #     self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
         self.card_player = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD, orientation="vertical")
@@ -308,10 +289,6 @@ class MusicPlayerSettingsPanel(QWidget):
     def _reset_copy_btn(self, original_text: str):
         self.btn_copy_music_url.setText(original_text)
         self.btn_copy_music_url.setEnabled(True)
-
-    # def set_auth_state(self, connected: bool, label_key: str = ""):
-    #     self._cached_auth_state = (connected, label_key)
-    #     self.lbl_auth_status.setText(self.i18n.get("music.status.youtube_active"))
 
     _format_time = staticmethod(_format_time)
 
