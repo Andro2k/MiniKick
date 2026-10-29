@@ -1,4 +1,4 @@
-# backend\\utils\\text_utils.py
+# backend\utils\text_utils.py
 
 import re
 

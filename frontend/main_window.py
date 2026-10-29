@@ -498,17 +498,23 @@ class MainWindowCore(QMainWindow):
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
         target_view = self._get_or_create_view(view_name)
         if target_view:
+            switch_started = time.perf_counter()
             self.content_stack.setCurrentWidget(target_view)
+            hooks_started = time.perf_counter()
             if view_name == "Dashboard":
                 self._update_dashboard_metrics(force_db_query=True)
             elif view_name == "Settings":
                 self._update_integrations_status_ui()
             elif view_name == "Triggers":
                 self._fetch_api_rewards()
+            finished = time.perf_counter()
             self.logger.info(
-                "[Perf/Navigation] Navigation to '%s' completed in %.2f ms",
+                "[Perf/Navigation] Navigation to '%s' completed in %.2f ms (create=%.2f, switch=%.2f, hooks=%.2f)",
                 view_name,
-                (time.perf_counter() - navigation_started) * 1000,
+                (finished - navigation_started) * 1000,
+                (switch_started - navigation_started) * 1000,
+                (hooks_started - switch_started) * 1000,
+                (finished - hooks_started) * 1000,
             )
 
     def _get_or_create_view(self, view_name: str):
