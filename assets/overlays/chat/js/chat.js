@@ -3,12 +3,9 @@
  * Handles URL configuration, message DOM rendering, emote parsing,
  * color contrast correction, and WebSocket event stream.
  */
-
-// 1. Configuration & URL Parameters
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token') || '';
 const urlOrientation = urlParams.get('orientation');
-
 const MAX_SAFE_DOM_NODES = 50;
 const VALID_THEMES = new Set(['dark', 'light', 'minimal']);
 const MIN_FONT_SIZE = 10;
@@ -29,7 +26,6 @@ let hideCommands = urlParams.get('hide_commands') === 'true';
 let showBadges = urlParams.get('show_badges') !== 'false';
 let showPlatform = urlParams.get('show_platform') !== 'false';
 
-// Apply theme and base styles
 const themeStyle = document.getElementById('theme-style');
 if (themeStyle) {
     themeStyle.href = `/css/${theme}.css`;
@@ -47,20 +43,13 @@ if (container) {
     container.classList.add(`orientation-${orientation}`, `flow-${flow}`);
 }
 
-/**
- * Applies live configuration changes dispatched from MiniKick via WebSocket.
- * Supports individual styles for vertical and horizontal orientations.
- * @param {Object} cfg Active chat overlay settings from server
- */
 function applyLiveConfig(cfg) {
     if (!cfg || typeof cfg !== 'object') return;
 
-    // Resolve orientation: locked by URL if provided, or updated live
     if (!urlOrientation && cfg.orientation) {
         orientation = cfg.orientation;
     }
 
-    // Extract profile specific to current orientation (vertical or horizontal)
     const modeConfig = (cfg[orientation] && typeof cfg[orientation] === 'object')
         ? cfg[orientation]
         : cfg;
@@ -125,20 +114,12 @@ function applyLiveConfig(cfg) {
     }
 }
 
-// Precompiled regular expressions for high throughput
 const REGEX_ESCAPE = /[&<>"']/g;
 const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
 const REGEX_KICK_EMOTE = /\[emote:(\d+):([^\]]+)\]/g;
 const REGEX_TIKTOK_STICKER = /\[([a-zA-Z0-9_\-]+)\]/g;
 
-// 2. Color Contrast & String Utilities
-/**
- * O(1) W3C relative luminance check. If the username color is too dark for
- * dark overlay backgrounds, it automatically boosts the luminance to ensure
- * high readability without altering the original user tint.
- * @param {string} hex
- * @returns {string} Safe readable hex color
- */
+
 function ensureReadableColor(hex) {
     if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) {
         return hex || '#FAFAFA';
@@ -154,7 +135,6 @@ function ensureReadableColor(hex) {
     const b = parseInt(clean.substring(4, 6), 16);
     if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
 
-    // Standard relative luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     if (luminance < 0.38) {
         const boost = c => Math.min(255, Math.round(c + (255 - c) * 0.55));
@@ -171,7 +151,6 @@ function escapeHtml(text) {
     return String(text).replace(REGEX_ESCAPE, m => ESCAPE_MAP[m]);
 }
 
-// 3. Emote Parsing Pipeline
 function parseTwitchEmotes(rawMessage, emotesTag) {
     if (!emotesTag || typeof emotesTag !== 'string' || !emotesTag.includes(':') || emotesTag.startsWith('[')) {
         return null;
@@ -199,22 +178,35 @@ function parseTwitchEmotes(rawMessage, emotesTag) {
     if (ranges.length === 0) return null;
 
     ranges.sort((a, b) => a.start - b.start);
-    const chars = Array.from(rawMessage);
-    let result = '';
+    const parts = [];
     let lastIdx = 0;
 
     for (let i = 0; i < ranges.length; i++) {
         const { emoteId, start, end } = ranges[i];
-        if (start >= lastIdx) {
-            const beforeText = chars.slice(lastIdx, start).join('');
-            const emoteCode = chars.slice(start, end + 1).join('');
-            result += escapeHtml(beforeText);
-            result += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`;
+        if (start >= lastIdx && end < rawMessage.length) {
+            const emoteCode = rawMessage.substring(start, end + 1);
+            parts.push(escapeHtml(rawMessage.substring(lastIdx, start)));
+            parts.push(`<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`);
             lastIdx = end + 1;
         }
     }
-    result += escapeHtml(chars.slice(lastIdx).join(''));
-    return result;
+    parts.push(escapeHtml(rawMessage.substring(lastIdx)));
+    return parts.join('');
+}
+
+const emoteRegexCache = new Map();
+function getCachedEmoteRegex(key, source) {
+    let regex = emoteRegexCache.get(key);
+    if (!regex) {
+        regex = new RegExp(source, 'g');
+        emoteRegexCache.set(key, regex);
+        if (emoteRegexCache.size > 500) {
+            const oldestKey = emoteRegexCache.keys().next().value;
+            emoteRegexCache.delete(oldestKey);
+        }
+    }
+    regex.lastIndex = 0;
+    return regex;
 }
 
 function parseYouTubeEmotes(messageHtml, emotesTag) {
@@ -235,9 +227,8 @@ function parseYouTubeEmotes(messageHtml, emotesTag) {
                     seenNames.add(em.name);
                     const cleanLabel = escapeHtml(em.name.replace(/^:+|:+$/g, ''));
                     const escUrl = escapeHtml(em.url);
-                    const escapedBase = em.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    const regex = new RegExp(escapedBase, 'g');
-                    messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                    const replacement = `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`;
+                    messageHtml = messageHtml.split(em.name).join(replacement);
                 }
             }
         }
@@ -269,9 +260,10 @@ function parseTikTokEmotes(messageHtml, emotesTag) {
                     const cleanName = rawName.replace(/^\[+|\]+$/g, '');
                     const cleanLabel = escapeHtml(cleanName);
                     const escUrl = escapeHtml(em.url);
-                    const escapedBase = cleanName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    const regex = new RegExp(`\\[${escapedBase}\\]|\\b${escapedBase}\\b`, 'g');
-                    messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                    const replacement = `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`;
+                    const escapedBase = cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const regex = getCachedEmoteRegex(`tiktok:${cleanName}`, `\\[${escapedBase}\\]|\\b${escapedBase}\\b`);
+                    messageHtml = messageHtml.replace(regex, replacement);
                 }
             }
         }
@@ -304,7 +296,6 @@ function formatChatMessage(data) {
     let rawText = data.message || '';
     let isAction = false;
 
-    // IRC /me or ACTION detection
     if (rawText.startsWith('\u0001ACTION ') && rawText.endsWith('\u0001')) {
         isAction = true;
         rawText = rawText.slice(8, -1).trim();
@@ -315,7 +306,6 @@ function formatChatMessage(data) {
 
     let safeMsg = '';
 
-    // Suppress Twitch GIF placeholder, Giphy links, or redundant gif_url from text display if gif_url is present
     if (data.gif_url) {
         rawText = rawText.replace(/\[.*? GIF by .*?\]/gi, '').trim();
         if (rawText.includes(data.gif_url)) {
@@ -337,7 +327,6 @@ function formatChatMessage(data) {
         }
     }
 
-    // 1. Twitch native emotes if provided
     if (data.platform === 'twitch' && data.emotes_tag) {
         const twitchHtml = parseTwitchEmotes(rawText, data.emotes_tag);
         if (twitchHtml !== null) {
@@ -345,25 +334,19 @@ function formatChatMessage(data) {
         }
     }
 
-    // 2. Default HTML escaping if not formatted by Twitch
     if (!safeMsg) {
         safeMsg = escapeHtml(rawText);
     }
 
-    // 3. YouTube custom emotes
     if (data.platform === 'youtube' && data.emotes_tag) {
         safeMsg = parseYouTubeEmotes(safeMsg, data.emotes_tag);
     }
 
-    // 4. TikTok custom emotes
     if (data.platform === 'tiktok' && data.emotes_tag) {
         safeMsg = parseTikTokEmotes(safeMsg, data.emotes_tag);
     }
 
-    // 5. Kick emotes
     safeMsg = parseKickEmotes(safeMsg);
-
-    // 6. TikTok twemoji stickers
     safeMsg = parseTikTokStickers(safeMsg);
 
     return { formattedHtml: safeMsg, isAction };
@@ -392,7 +375,6 @@ function getRoleClass(badges) {
     if (badges.includes('bot') || badges.includes('twitchbot')) return 'bot';
     return 'default';
 }
-
 
 const AVATAR_GRADIENTS = [
     'linear-gradient(135deg, #3b82f6, #1d4ed8)',
@@ -454,7 +436,6 @@ function resolveAvatarUrl(platform, username) {
     return Promise.resolve('');
 }
 
-// 4. DOM Construction & Message Rendering
 function addMessage(data) {
     if (!showBots && data.badges && data.badges.includes('bot')) {
         return;
@@ -480,7 +461,6 @@ function addMessage(data) {
 
     const safeUsernameColor = ensureReadableColor(data.color);
 
-    // 1. Avatar construction (image or initial letter fallback)
     const avatarWrap = document.createElement('div');
     avatarWrap.className = 'avatar-wrap';
 
@@ -526,20 +506,15 @@ function addMessage(data) {
             });
         }
     }
-    msgBox.appendChild(avatarWrap);
-
-    // 2. Body wrapper
     const bodyWrap = document.createElement('div');
     bodyWrap.className = 'message-body-wrap';
 
-    // Header construction
     const header = document.createElement('div');
     header.className = 'message-header';
 
     const headerLeft = document.createElement('div');
     headerLeft.className = 'header-left';
 
-    // Badges & Roles resolution (O(1) lookups via resolveBadge)
     if (showBadges && data.badges && Array.isArray(data.badges) && typeof resolveBadge === 'function') {
         for (let i = 0; i < data.badges.length; i++) {
             const badgeKey = data.badges[i];
@@ -564,7 +539,6 @@ function addMessage(data) {
         }
     }
 
-    // Username construction
     const nameSpan = document.createElement('span');
     nameSpan.className = 'username';
     nameSpan.style.color = safeUsernameColor;
@@ -572,7 +546,6 @@ function addMessage(data) {
     headerLeft.appendChild(nameSpan);
     header.appendChild(headerLeft);
 
-    // Timestamp without seconds: [HH:MM]
     if (showTime) {
         const timeSpan = document.createElement('span');
         timeSpan.className = 'timestamp';
@@ -585,7 +558,6 @@ function addMessage(data) {
 
     bodyWrap.appendChild(header);
 
-    // Content construction
     const { formattedHtml, isAction } = formatChatMessage(data);
     const content = document.createElement('div');
     content.className = `message-content${isAction ? ' action' : ''}`;
@@ -612,7 +584,7 @@ function addMessage(data) {
     }
 
     bodyWrap.appendChild(content);
-    msgBox.appendChild(bodyWrap);
+    msgBox.append(avatarWrap, bodyWrap);
 
     if (bigEmotes && (!showGifs || !data.gif_url) && isOnlyEmotes(formattedHtml)) {
         msgBox.classList.add('only-emotes');
@@ -620,13 +592,9 @@ function addMessage(data) {
 
     container.appendChild(msgBox);
 
-    // Prune DOM and maintain limits
     pruneMessages();
-
-    // Auto-scroll
     autoScroll();
 
-    // Auto-fade timer
     if (fadeTime > 0) {
         setTimeout(() => {
             removeMessage(msgBox);
@@ -634,7 +602,6 @@ function addMessage(data) {
     }
 }
 
-// 5. Message Lifecycle & Auto-Scroll
 function pruneMessages() {
     while (container.children.length > MAX_SAFE_DOM_NODES) {
         const first = container.firstElementChild;
@@ -654,12 +621,16 @@ function pruneMessages() {
 
 function removeMessage(msgBox) {
     if (!msgBox || msgBox.classList.contains('fade-out')) return;
-    msgBox.classList.add('fade-out');
-    setTimeout(() => {
+
+    const removeFromContainer = () => {
         if (msgBox.parentNode === container) {
             container.removeChild(msgBox);
         }
-    }, 400);
+    };
+
+    msgBox.addEventListener('transitionend', removeFromContainer, { once: true });
+    msgBox.addEventListener('animationend', removeFromContainer, { once: true });
+    msgBox.classList.add('fade-out');
 }
 
 function autoScroll() {
@@ -670,7 +641,6 @@ function autoScroll() {
     }
 }
 
-// 6. WebSocket Connection & Heartbeat Manager
 let ws = null;
 let reconnectTimer = null;
 let heartbeatTimer = null;
@@ -735,5 +705,4 @@ function scheduleReconnect() {
     reconnectTimer = setTimeout(connectWS, 3000);
 }
 
-// Start WebSocket connection
 connectWS();

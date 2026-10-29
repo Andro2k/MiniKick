@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniKick Chat Overlay</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
@@ -22,7 +19,7 @@
         }
 
         body {
-            padding: 5px;
+            padding: 1px 2px;
             overflow: hidden;
             background-color: transparent;
             height: 100vh;
@@ -35,7 +32,7 @@
 
         #chat-container {
             display: flex;
-            gap: 0.86em;
+            gap: 0.25em;
             height: 100%;
             width: 100%;
             font-size: var(--font-size);
@@ -91,8 +88,8 @@
             display: inline-flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 0.57em !important;
-            padding: 0.43em 1.14em !important;
+            gap: 0.24em !important;
+            padding: 0.1em !important;
             width: auto !important;
             min-width: 7.14em !important;
             max-width: none !important;
@@ -121,8 +118,8 @@
 
         #chat-container.orientation-horizontal .username::after {
             content: ":";
-            margin-left: 0.07em;
-            opacity: 0.85;
+            /* margin-left: 0.07em; */
+            /* opacity: 0.85; */
         }
 
         #chat-container.orientation-horizontal .message-content {
@@ -162,8 +159,8 @@
             display: flex;
             flex-direction: row;
             align-items: flex-start;
-            gap: 0.86em;
-            padding: 0.72em 1em;
+            gap: 0.48em;
+            padding: 0.48em;
             width: 100%;
             max-width: 500px;
             position: relative;
@@ -529,7 +526,6 @@
             transform: scale(1.02);
         }
 
-        /* Avatar Container & Fallback */
         .avatar-wrap {
             position: relative;
             flex-shrink: 0;
@@ -587,5 +583,4 @@
     <script src="/js/badges.js"></script>
     <script src="/js/chat.js"></script>
 </body>
-
 </html>

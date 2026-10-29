@@ -5,7 +5,7 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: flex-start !important;
-    gap: 0.86em;
+    gap: 0.48em;
     width: 100%;
     max-width: 500px;
     background: rgba(20, 22, 34, 0.80);
@@ -13,7 +13,7 @@
     -webkit-backdrop-filter: blur(18px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 1.29em;
-    padding: 0.72em 1em;
+    padding: 0.48em;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     color: #f8fafc;
     position: relative;
@@ -68,7 +68,6 @@
     margin-top: 1px;
 }
 
-/* Avatar Box & Badge */
 .message-box.theme-dark .avatar-wrap {
     position: relative;
     flex-shrink: 0;
@@ -119,7 +118,6 @@
     display: block;
 }
 
-/* Role-specific Accents */
 .message-box.theme-dark.role-broadcaster {
     border-color: rgba(192, 132, 252, 0.4);
     box-shadow: 0 0 22px rgba(192, 132, 252, 0.25);
@@ -149,7 +147,6 @@
     box-shadow: 0 0 24px rgba(0, 242, 254, 0.4);
 }
 
-/* Horizontal pill adaptation */
 #chat-container.orientation-horizontal .message-box.theme-dark {
     display: inline-flex !important;
     flex-direction: row !important;

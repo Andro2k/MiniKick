@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,7 +66,6 @@
         (function () {
             'use strict';
 
-            // --- 1. CONSTANTS & DISPATCH SETS (O(1) lookups) ---
             const IMAGE_EXTENSIONS = new Set([
                 '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.avif'
             ]);
@@ -81,31 +79,24 @@
             const DEFAULT_DISPLAY_DURATION_SEC = 5.0;
             const RECONNECT_DELAY_MS = 3000;
             const HEARTBEAT_INTERVAL_MS = 15000;
-
-            // --- 2. CONFIGURATION & DOM REFERENCES ---
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token') || '';
             const container = document.getElementById('container');
-
-            // --- 3. QUEUE & PLAYBACK STATE ---
             const alertQueue = [];
             let isPlaying = false;
             let currentMediaCleanup = null;
 
-            // --- 4. MEDIA CLASSIFIER (O(1)) ---
             function getMediaType(ext) {
                 if (IMAGE_EXTENSIONS.has(ext)) return 'image';
                 if (AUDIO_EXTENSIONS.has(ext)) return 'audio';
                 return 'video';
             }
 
-            // --- 5. POSITION CALCULATOR ---
             function applyPosition(mediaEl, data) {
                 const scale = typeof data.scale === 'number' ? data.scale : 1.0;
                 mediaEl.style.transformOrigin = 'top left';
 
                 if (data.is_random_pos) {
-                    // Safe boundaries so media doesn't overflow off-screen
                     const randX = Math.floor(Math.random() * 70);
                     const randY = Math.floor(Math.random() * 70);
                     mediaEl.style.left = `${randX}%`;
@@ -120,7 +111,6 @@
                 mediaEl.dataset.scale = scale;
             }
 
-            // --- 6. ALERT PLAYBACK ENGINE ---
             function processQueue() {
                 if (isPlaying || alertQueue.length === 0) {
                     return;
@@ -153,7 +143,6 @@
                     }
 
                     if (mediaEl) {
-                        // Visual fade-out transition
                         if (mediaEl.classList && mediaEl.classList.contains('is-visible')) {
                             mediaEl.classList.remove('is-visible');
                             mediaEl.classList.add('is-exiting');
@@ -174,7 +163,6 @@
 
                 currentMediaCleanup = finishPlayback;
 
-                // Watchdog: Guarantees queue progression even if media freezes, stalls, or hangs
                 const durationSec = typeof data.duration === 'number' && data.duration > 0
                     ? data.duration
                     : DEFAULT_DISPLAY_DURATION_SEC;
@@ -184,7 +172,6 @@
                     finishPlayback();
                 }, maxWatchdogMs);
 
-                // --- Media Factory Dispatch ---
                 if (mediaType === 'image') {
                     mediaEl = document.createElement('img');
                     mediaEl.className = 'media-layer';
@@ -224,7 +211,6 @@
                     });
 
                 } else {
-                    // Video Layer
                     mediaEl = document.createElement('video');
                     mediaEl.className = 'media-layer';
                     mediaEl.autoplay = true;
@@ -251,13 +237,11 @@
 
                     mediaEl.play().catch((e) => {
                         console.warn('[Rewards Overlay] Autoplay de video bloqueado:', e);
-                        // Safe recovery: Never leave the queue deadlocked
                         finishPlayback();
                     });
                 }
             }
 
-            // Explicit hardware resource disposal (avoids VRAM & buffer leaks in OBS)
             function cleanupMedia(el) {
                 if (!el) return;
                 try {
@@ -274,7 +258,6 @@
                 }
             }
 
-            // --- 7. WEBSOCKET CONNECTION MANAGER ---
             let ws = null;
             let reconnectTimer = null;
             let heartbeatTimer = null;
@@ -308,7 +291,6 @@
                         const data = JSON.parse(event.data);
                         if (data.type === 'pong') return;
 
-                        // Bounded FIFO Queue Guard
                         if (alertQueue.length >= MAX_QUEUE_SIZE) {
                             console.warn('[Rewards Overlay] Cola saturada; descartando alerta antigua.');
                             alertQueue.shift();
@@ -373,10 +355,8 @@
                 }, RECONNECT_DELAY_MS);
             }
 
-            // Boot
             connectWS();
         })();
     </script>
 </body>
-
 </html>
