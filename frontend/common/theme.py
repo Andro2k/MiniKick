@@ -198,7 +198,6 @@ class Size:
     SPACING_XL  = 16
     ICON_BASIC = 32
     ICON_SMALL = 24
-    ICON_ACTION = 28
     BADGE_MIN  = 18
     BADGE_MAX  = 22
 

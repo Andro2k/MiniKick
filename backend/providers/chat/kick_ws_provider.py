@@ -386,7 +386,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
 
             if self._pending_ping_time > 0.0 and (now - self._pending_ping_time) > pong_timeout:
                 logger.warning(
-                    "[KickWebSocket] Pusher heartbeat timeout! Sin respuesta 'pusher:pong' tras %.1fs. Forzando cierre del socket zombie para reconexión.",
+                    "[KickWebSocket] Pusher heartbeat timeout! No 'pusher:pong' response after %.1fs. Forcing zombie socket to close for reconnection.",
                     now - self._pending_ping_time
                 )
                 try:
@@ -401,9 +401,9 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 try:
                     self._pending_ping_time = now
                     ws.send(fast_dumps({"event": "pusher:ping", "data": {}}))
-                    logger.debug("[KickWebSocket] Despachado pusher:ping proactivo (inactivo %.1fs)", now - self._last_activity_time)
+                    logger.debug("[KickWebSocket] Dispatched pusher:proactive ping (idle %.1fs)", now - self._last_activity_time)
                 except Exception as e:
-                    logger.debug("[KickWebSocket] Error enviando pusher:ping proactivo: %s", e)
+                    logger.debug("[KickWebSocket] Error sending proactive pusher:ping: %s", e)
 
     def _handle_ping(self, _inner: dict, ws: websocket.WebSocketApp) -> None:
         self._last_activity_time = time.time()
@@ -411,12 +411,12 @@ class KickWebSocketManager(BaseChatSocketProvider):
             try:
                 ws.send(fast_dumps({"event": "pusher:pong", "data": {}}))
             except Exception as e:
-                logger.debug("[KickWebSocket] Error enviando pusher:pong: %s", e)
+                logger.debug("[KickWebSocket] Error sending pusher:pong: %s", e)
 
     def _handle_pong(self, _inner: dict, _ws: websocket.WebSocketApp) -> None:
         self._pending_ping_time = 0.0
         self._last_activity_time = time.time()
-        logger.debug("[KickWebSocket] Pusher heartbeat verificado (pusher:pong recibido)")
+        logger.debug("[KickWebSocket] Pusher heartbeat verified (pusher:pong received)")
 
     def stop_socket(self) -> None:
         self._running = False

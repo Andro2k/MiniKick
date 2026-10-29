@@ -2,6 +2,7 @@
 
 from .command_utils import sanitize_command_trigger, validate_trigger_prefix, is_complete_valid_trigger
 from .json_utils import fast_loads, fast_dumps, fast_load, fast_dump, parse_kick_payload
+from .text_utils import is_speakable_text
 from .worker_utils import stop_provider_chat_worker
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "fast_load",
     "fast_dump",
     "parse_kick_payload",
+    "is_speakable_text",
     "stop_provider_chat_worker",
 ]

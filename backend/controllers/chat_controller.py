@@ -580,7 +580,7 @@ class ChatController(QObject):
     def _handle_plugin_skiptts(self, dto: ChatMessageDTO, _prefix: str = "!skiptts") -> None:
         platform = getattr(dto, "platform", "kick")
         self.service.stop_tts()
-        logger.info("[ChatController] TTS detenido/saltado por moderador @%s en %s", dto.user, platform)
+        logger.info("[ChatController] TTS stopped/skipped by moderator @%s on %s", dto.user, platform)
         msg = self.i18n.get("chat.commands.skiptts_success").replace("{user}", dto.user)
         self.command_service.send_response(msg, platform=platform)
         if self.toast:

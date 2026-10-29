@@ -74,7 +74,7 @@ class TikTokChatProvider:
                         client._clean_tasks()
                         return
                     except Exception as clean_err:
-                        logger.debug("[TikTokChatProvider] Error ejecutando _clean_tasks nativo: %s", clean_err)
+                        logger.debug("[TikTokChatProvider] Error running native _clean_tasks: %s", clean_err)
 
                 try:
                     if hasattr(client, "disconnect") and getattr(client, "connected", False):
@@ -89,7 +89,7 @@ class TikTokChatProvider:
                 if pending:
                     loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
         except Exception as e:
-            logger.debug("[TikTokChatProvider] Error drenando tareas de loop: %s", e)
+            logger.debug("[TikTokChatProvider] Error draining loop tasks: %s", e)
 
     def _build_client(
         self,
@@ -308,7 +308,7 @@ class TikTokChatProvider:
             from TikTokLive.events import CommentEvent, ConnectEvent, DisconnectEvent
             from TikTokLive.client.errors import UserNotFoundError, UserOfflineError, AgeRestrictedError, TikTokLiveError
         except ImportError as e:
-            err_msg = f"Dependencia TikTokLive no disponible: {e}"
+            err_msg = f"TikTokLive dependency not available: {e}"
             logger.error("[TikTokChatProvider] %s", err_msg)
             if on_error:
                 on_error(err_msg)
@@ -436,7 +436,7 @@ class TikTokChatProvider:
                 else:
                     self._drain_client_loop(client)
             except Exception as e:
-                logger.debug("[TikTokChatProvider] Error menor al desconectar cliente: %s", e)
+                logger.debug("[TikTokChatProvider] Minor error disconnecting client: %s", e)
         self._seen_msg_ids.clear()
         self._seen_ids_order.clear()
-        logger.info("[TikTokChatProvider] Chat detenido para @%s", self._target_unique_id)
+        logger.info("[TikTokChatProvider] Chat stopped for @%s", self._target_unique_id)
