@@ -6,7 +6,7 @@ import sys
 
 from PySide6.QtGui import QIcon, QFont, QFontDatabase
 from PySide6.QtWidgets import QApplication
-from frontend.common import GLOBAL_QSS, create_dark_palette, resource_path
+from frontend.common import get_global_qss, create_dark_palette, resource_path
 
 logger = logging.getLogger("minikick.bootstrap.qt")
 
@@ -24,7 +24,7 @@ def create_application() -> QApplication:
     app.setPalette(create_dark_palette())
     _load_fonts()
     app.setFont(_build_font())
-    app.setStyleSheet(GLOBAL_QSS)
+    app.setStyleSheet(get_global_qss(12))
     app.setWindowIcon(QIcon(resource_path(os.path.join("assets", "icons", "icon.ico"))))
     return app
 

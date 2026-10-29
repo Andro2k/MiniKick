@@ -779,10 +779,8 @@ def get_global_qss(base: int = 12, custom_qss: tuple[str, ...] = ()) -> str:
     sections.extend(rule.strip() for rule in custom_qss if rule and rule.strip())
     return "\n".join(sections)
 
-GLOBAL_QSS = get_global_qss(12)
-
 def create_dark_palette() -> QPalette:
-    palette = QPalette()
+    palette         = QPalette()
     dark_window     = QColor(Palette.NEUTRAL_950)
     dark_base       = QColor(Palette.NEUTRAL_900)
     dark_alt_base   = QColor(Palette.NEUTRAL_900)
