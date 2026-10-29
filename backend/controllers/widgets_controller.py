@@ -2,13 +2,13 @@
 
 import datetime
 import heapq
-from backend.utils.json_utils import fast_loads
 import logging
-import re
 import threading
 import time
+from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
+from backend.utils.emote_parser import extract_emotes
 
 logger = logging.getLogger("minikick.controllers.widgets")
 
@@ -56,10 +56,7 @@ class WidgetsController(QObject):
         "chatters": "[PLUGIN_WIDGET_CHATTERS]"
     }
 
-    _KICK_EMOTE_REGEX = re.compile(r"\[emote:(?:(\d+):)?([^\]]+)\]")
-    _EMOJI_REGEX = re.compile(r"[\U00010000-\U0010ffff\u2600-\u27bf]")
-
-    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None, spam_service=None):
+    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None, ignored_users_provider: Callable[[], set[str]] | None = None):
         super().__init__()
         self.view = view
         self.widget_service = widget_service
@@ -68,7 +65,7 @@ class WidgetsController(QObject):
         from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
         self.toast = toast_manager
-        self.spam_service = spam_service
+        self._ignored_users_provider = ignored_users_provider
 
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
@@ -213,7 +210,6 @@ class WidgetsController(QObject):
             commands = self.command_service.get_all_commands()
             tag_map = {c["response"]: c for c in commands if isinstance(c, dict) and "response" in c}
             widgets = self.widget_service.get_all_widgets()
-            changed = False
 
             for w_id, w_data in widgets.items():
                 tag = self.PLUGIN_TAGS.get(w_id)
@@ -239,7 +235,6 @@ class WidgetsController(QObject):
                     self.widget_service.save_widget(
                         w_id, is_active, cmd_trigger, cooldown, perm, w_data.get("config", {})
                     )
-                    changed = True
 
             if self.view:
                 if self.view.isVisible():
@@ -282,11 +277,6 @@ class WidgetsController(QObject):
                 existing_cmd.get("aliases") == aliases):
                 return
 
-        apply_k = existing_cmd.get("apply_kick", True) if existing_cmd else True
-        apply_tw = existing_cmd.get("apply_twitch", True) if existing_cmd else True
-        apply_yt = existing_cmd.get("apply_youtube", True) if existing_cmd else True
-        apply_tk = existing_cmd.get("apply_tiktok", True) if existing_cmd else True
-
         self.command_service.save_command(
             trigger=cmd_name,
             response=tag,
@@ -294,11 +284,7 @@ class WidgetsController(QObject):
             cooldown=cooldown,
             aliases=aliases,
             is_regex=False,
-            permission=perm,
-            apply_kick=apply_k,
-            apply_twitch=apply_tw,
-            apply_youtube=apply_yt,
-            apply_tiktok=apply_tk
+            permission=perm
         )
 
     def sync_commands_with_db(self):
@@ -547,58 +533,18 @@ class WidgetsController(QObject):
         if not self.overlay_server:
             return
 
-        emotes_list = []
-        for match in self._KICK_EMOTE_REGEX.finditer(content):
-            e_id, e_name = match.groups()
-            if e_id:
-                emotes_list.append({
-                    "type": "image",
-                    "src": f"https://files.kick.com/emotes/{e_id}/fullsize",
-                    "name": e_name
-                })
-            else:
-                emotes_list.append({
-                    "type": "text",
-                    "src": e_name,
-                    "name": e_name
-                })
+        w_exp = self.widget_service.get_widget("explosion")
+        w_combo = self.widget_service.get_widget("combo")
+        explosion_on = w_exp.get("is_active", True)
+        combo_on = w_combo.get("is_active", True)
+        if not (explosion_on or combo_on):
+            return
 
-        if platform in ("youtube", "tiktok") and emotes_tag:
-            try:
-                custom_emotes = fast_loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
-                for em in custom_emotes:
-                    if isinstance(em, dict) and em.get("url"):
-                        emotes_list.append({
-                            "type": "image",
-                            "src": em["url"],
-                            "name": em.get("name", f"{platform}_emote")
-                        })
-            except Exception:
-                pass
-
-        if platform == "twitch" and emotes_tag and not emotes_tag.startswith("["):
-            for group in emotes_tag.split("/"):
-                if ":" in group:
-                    e_id = group.split(":")[0]
-                    if e_id:
-                        emotes_list.append({
-                            "type": "image",
-                            "src": f"https://static-cdn.jtvnw.net/emoticons/v2/{e_id}/default/dark/2.0",
-                            "name": f"twitch_{e_id}"
-                        })
-
-        for emoji_char in self._EMOJI_REGEX.findall(content):
-            emotes_list.append({
-                "type": "text",
-                "src": emoji_char,
-                "name": emoji_char
-            })
-
+        emotes_list = extract_emotes(content, platform, emotes_tag)
         if not emotes_list:
             return
 
-        w_exp = self.widget_service.get_widget("explosion")
-        if w_exp.get("is_active", True):
+        if explosion_on:
             cfg_exp = w_exp.get("config", {})
             min_emotes = int(cfg_exp.get("min_emotes", 1))
             particle_count = int(cfg_exp.get("particle_count", 15))
@@ -609,8 +555,7 @@ class WidgetsController(QObject):
                     "count": particle_count
                 })
 
-        w_combo = self.widget_service.get_widget("combo")
-        if w_combo.get("is_active", True):
+        if combo_on:
             cfg_combo = w_combo.get("config", {})
             min_combo = int(cfg_combo.get("min_combo", 3))
             timeout_sec = float(cfg_combo.get("timeout_sec", 5.0))
@@ -672,13 +617,11 @@ class WidgetsController(QObject):
             return self._cached_ignored_bots_set
 
         ignored_set: set[str] = set()
-        if self.spam_service and hasattr(self.spam_service, "storage"):
+        if self._ignored_users_provider:
             try:
-                ignored_str = self.spam_service.storage.load_string("tts_ignored_users", "")
-                if ignored_str:
-                    ignored_set = {u.strip().lstrip('@').lower() for u in ignored_str.split(",") if u.strip()}
-            except Exception:
-                pass
+                ignored_set = set(self._ignored_users_provider())
+            except Exception as ex:
+                logger.warning("[WidgetsController] Could not load ignored users: %s", ex)
         self._cached_ignored_bots_set = ignored_set
         self._last_ignored_bots_fetch = now
         return self._cached_ignored_bots_set

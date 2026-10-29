@@ -189,3 +189,24 @@ def test_widgets_controller_include_commands_toggle(temp_db):
     )
     assert "commandspammer" in controller._chatters_counts
     assert controller._chatters_counts["commandspammer"]["count"] == 1
+
+
+def test_handle_chat_message_skips_emote_parsing_when_widgets_inactive(monkeypatch):
+    from unittest.mock import MagicMock
+    from backend.controllers import widgets_controller as wc
+
+    parse = MagicMock(side_effect=AssertionError("emote parsing should be skipped"))
+    monkeypatch.setattr(wc, "extract_emotes", parse)
+
+    widget_svc = MagicMock()
+    widget_svc.get_widget.return_value = {"is_active": False, "config": {}}
+    overlay = MagicMock()
+    controller = wc.WidgetsController(
+        view=None, widget_service=widget_svc, command_service=MagicMock(), overlay_server=overlay
+    )
+    monkeypatch.setattr(controller, "_record_chatter_message", MagicMock())
+
+    controller.handle_chat_message("viewer", "[emote:1:KEKW] 🔥", platform="kick")
+
+    parse.assert_not_called()
+    overlay.trigger_widget_event.assert_not_called()

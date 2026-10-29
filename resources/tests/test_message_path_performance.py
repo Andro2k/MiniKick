@@ -115,21 +115,16 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
 
     load_calls = {"n": 0}
 
-    class _FakeSettingsStorage:
-        def load_string(self, key, default=""):
-            load_calls["n"] += 1
-            return "Nightbot,@StreamElements"
-
-    class _FakeSpamService:
-        def __init__(self):
-            self.storage = _FakeSettingsStorage()
+    def _fake_provider():
+        load_calls["n"] += 1
+        return {"nightbot", "streamelements"}
 
     controller = WidgetsController(
         view=None,
         widget_service=service,
         command_service=cmd_service,
         overlay_server=MagicMock(),
-        spam_service=_FakeSpamService()
+        ignored_users_provider=_fake_provider
     )
 
     first = controller._get_ignored_bots()

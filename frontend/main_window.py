@@ -251,7 +251,7 @@ class MainWindowCore(QMainWindow):
             overlay_server=self.overlay_server,
             i18n=self.i18n,
             toast_manager=self.toast,
-            spam_service=self.spam_service
+            ignored_users_provider=self.chat_service.get_ignored_users
         )
         self.dashboard_controller.widgets_controller = self.widgets_controller
         self.music_controller = MusicController(

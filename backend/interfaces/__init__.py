@@ -6,6 +6,7 @@ from .i_settings import SettingsStorage
 from .i_tts import ITTSProvider
 from .i_updater import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .i_music_provider import IMusicProvider
+from .i_music_chat_context import IMusicChatContext
 from .i_alerts import AlertStorageProtocol
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "IUpdateDownloader",
     "IUpdateInstaller",
     "IMusicProvider",
+    "IMusicChatContext",
     "AlertStorageProtocol",
     "TokenEncryptionError",
 ]
