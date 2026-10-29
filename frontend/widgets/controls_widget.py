@@ -114,8 +114,8 @@ class ModernSwitch(QAbstractButton):
             track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
             border_color = QColor(Palette.NEUTRAL_750)
         elif is_checked:
-            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_0))
-            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_ON_1))
+            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_00))
+            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_ON_01))
             border_color = QColor(BrandColors.GREEN) if has_focus else QColor(BrandColors.KICK_BORDER)
         else:
             track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_DIS_0))
@@ -147,7 +147,7 @@ class ModernSwitch(QAbstractButton):
             thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_OFF_1))
         elif is_checked:
             thumb_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_000))
-            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_ON_1))
+            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_ON_01))
         else:
             thumb_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_0))
             thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_1))
