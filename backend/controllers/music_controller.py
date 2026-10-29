@@ -391,12 +391,7 @@ class MusicController(QObject):
         logger.info("[User Action] Seek playback requested: %d ms", position_ms)
         if not self.music_provider:
             return
-        if hasattr(self.music_provider, "seek"):
-            self.music_provider.seek(position_ms)
-        elif hasattr(self.music_provider, "set_position"):
-            self.music_provider.set_position(position_ms)
-        elif hasattr(self.music_provider, "player") and hasattr(self.music_provider.player, "setPosition"):
-            self.music_provider.player.setPosition(position_ms)
+        self.music_provider.seek(position_ms)
         self.refresh_now_playing()
 
     @Slot(bool)

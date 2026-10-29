@@ -134,7 +134,7 @@ class MusicCommandHandler:
         user_lower = user.lower()
         now = time.time()
 
-        queue_items = provider.get_queue() if provider and hasattr(provider, "get_queue") else []
+        queue_items = provider.get_queue()
         if len(queue_items) >= self.ctx.max_queue_size:
             msg = self.i18n.get("music.chat.queue_full").replace("{user}", user).replace("{max}", str(self.ctx.max_queue_size))
             self.send_chat_message(msg, platform=platform)
@@ -204,7 +204,7 @@ class MusicCommandHandler:
 
     def _handle_plugin_pause(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(provider, platform=platform):
-            if hasattr(provider, "pause_playback") and provider.pause_playback():
+            if provider.pause_playback():
                 self.send_chat_message(self.i18n.get("music.chat.pause_success"), platform=platform)
                 self.ctx.refresh_now_playing()
             else:
@@ -212,7 +212,7 @@ class MusicCommandHandler:
 
     def _handle_plugin_resume(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(provider, platform=platform):
-            if hasattr(provider, "resume_playback") and provider.resume_playback():
+            if provider.resume_playback():
                 self.send_chat_message(self.i18n.get("music.chat.resume_success"), platform=platform)
                 self.ctx.refresh_now_playing()
             else:

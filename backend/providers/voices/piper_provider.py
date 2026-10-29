@@ -1,7 +1,6 @@
 # backend\providers\voices\piper_provider.py
 
 import os
-import re
 import wave
 import tempfile
 import threading
@@ -10,6 +9,7 @@ from typing import Dict, List, Optional
 from PySide6.QtCore import QUrl, QEventLoop
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.services.chat.piper_manager import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
+from backend.utils.text_utils import is_speakable_text
 
 logger = logging.getLogger("minikick.providers.piper_provider")
 
@@ -107,15 +107,6 @@ class PiperTTSProvider:
                 samples[i] = scaled
 
         return samples.tobytes()
-
-    @staticmethod
-    def _is_speakable_text(text: str) -> bool:
-        if not text or not text.strip():
-            return False
-        cleaned = re.sub(r'https?://\S+|www\.\S+', '', text).strip()
-        if not cleaned:
-            return False
-        return any(c.isalnum() for c in cleaned)
 
     @staticmethod
     def _prepare_compatible_config(json_path: str) -> str:
@@ -250,7 +241,7 @@ class PiperTTSProvider:
             return None
 
     def prepare(self, text: str, voice_id: str = None) -> None:
-        if not self._is_speakable_text(text):
+        if not is_speakable_text(text):
             return
         target_voice = voice_id or self.voice_id
         cache_key = (text, target_voice)
@@ -264,7 +255,7 @@ class PiperTTSProvider:
                 self._cache[cache_key] = temp_path
 
     def speak(self, text: str, voice_id: str = None) -> None:
-        if not self._is_speakable_text(text):
+        if not is_speakable_text(text):
             return
         target_voice = voice_id or self.voice_id
         cache_key = (text, target_voice)

@@ -332,7 +332,7 @@ class YouTubeMusicProvider(QObject):
             )
             return effective
         except Exception as e:
-            logger.debug("[YouTubeMusicProvider] Error calculando ganancia de sonoridad: %s", e)
+            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
             return max(0.0, min(1.0, perceptual_vol))
 
     def set_ducking(self, ducked: bool) -> None:

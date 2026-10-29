@@ -232,7 +232,7 @@ class OverlayServerManager:
         broadcast_payload["media_url"] = media_url
         broadcast_payload["media_ext"] = media_ext
 
-        logger.info("[Overlay] Emitiendo alerta en vivo: '%s' (%s)", payload.get("formatted_text"), payload.get("id"))
+        logger.info("[Overlay] Issuing live alert: '%s' (%s)", payload.get("formatted_text"), payload.get("id"))
         self._broadcast("alert_clients", "alerts", broadcast_payload)
 
     def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = "", avatar_url: str = ""):

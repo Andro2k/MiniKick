@@ -71,7 +71,7 @@ class CommandHelpFormatter:
         if target_cat:
             if target_cat == "moderation" and not is_mod:
                 return []
-            return self._category_messages(target_cat, categories[target_cat], labels[target_cat])
+            return self._category_messages(categories[target_cat], labels[target_cat])
 
         return self._overview_messages(categories, labels, is_mod, raw_args in _ALL_MODE_WORDS)
 
