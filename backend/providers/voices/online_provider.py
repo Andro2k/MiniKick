@@ -6,7 +6,6 @@ import os
 import tempfile
 import threading
 import time
-import edge_tts
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput, QMediaDevices
 from PySide6.QtCore import QUrl, QEventLoop
 from backend.utils.text_utils import is_speakable_text
@@ -144,6 +143,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
+                import edge_tts
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 elapsed = time.perf_counter() - start_t
@@ -210,6 +210,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
+                import edge_tts
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 t_dl_end = time.perf_counter() - t_dl_start
@@ -333,6 +334,7 @@ class WebTTSProvider:
 
     def get_available_voices(self) -> list[dict]:
         try:
+            import edge_tts
             voices = asyncio.run(edge_tts.list_voices())
             filtered = [
                 {"id": v["ShortName"], "name": v["FriendlyName"]}
