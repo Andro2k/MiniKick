@@ -443,7 +443,7 @@ class TableActionCell(QWidget):
 
     def add_button(self, icon_name: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role, icon_name=icon_name, parent=self)
-        configure_icon_only_button(btn, Size.ICON_ACTION)
+        configure_icon_only_button(btn, Size.ICON_SMALL)
         btn.setToolTip(tooltip)
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)
