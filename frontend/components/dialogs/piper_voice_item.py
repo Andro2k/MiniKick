@@ -76,7 +76,6 @@ class PiperVoiceItemWidget(QWidget):
         header_layout.addWidget(self.btn_delete)
 
         self.btn_download = QPushButton(self)
-        self.btn_download.setFixedHeight(30)
         self.btn_download.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
         self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
@@ -88,7 +87,6 @@ class PiperVoiceItemWidget(QWidget):
         main_layout.addLayout(header_layout)
 
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFixedHeight(4)
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)

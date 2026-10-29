@@ -5,7 +5,7 @@ import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient, KickWebSocketManager
 from backend.services.chat import ChatMessageDTO
-from backend.utils.worker_utils import ExponentialBackoff
+from backend.utils.worker_utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.kick_chat")
 
@@ -24,11 +24,14 @@ class KickPollSyncWorker(QThread):
 
     def stop(self):
         self._is_stopped = True
+        self.requestInterruption()
+        self.quit()
 
     def run(self):
         logger.info("[KickPollSyncWorker] Started poll reconciliation worker for '%s'", self.channel_slug)
         while not self._is_stopped and not self.isInterruptionRequested():
-            self.msleep(self.interval_ms)
+            if not cooperative_sleep(self, self.interval_ms / 1000.0, step_ms=50):
+                break
             if self._is_stopped or self.isInterruptionRequested():
                 break
 
@@ -107,7 +110,7 @@ class KickChatWorker(QThread):
                 except Exception as e:
                     logger.debug("[KickChatWorker] Error checking initial poll on startup: %s", e)
 
-            while not self._is_stopped:
+            while not self._is_stopped and not self.isInterruptionRequested():
                 self.chat_manager.start_socket(
                     room_id,
                     channel_id=channel_id,
@@ -118,14 +121,15 @@ class KickChatWorker(QThread):
                     on_pinned_deleted=self._dispatch_pinned_deleted,
                     on_reward_redeemed=self._dispatch_reward,
                 )
-                if not self._is_stopped:
+                if not self._is_stopped and not self.isInterruptionRequested():
                     delay_sec = self._backoff.next_delay()
                     logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
-                    self.msleep(int(delay_sec * 1000))
+                    if not cooperative_sleep(self, delay_sec, step_ms=50):
+                        break
 
         except Exception as e:
             logger.error("[KickChatWorker] Unhandled error (%s) in worker thread: %s", type(e).__name__, e, exc_info=True)
-            if not self._is_stopped:
+            if not self._is_stopped and not self.isInterruptionRequested():
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, avatar_url: str = ""):
@@ -224,5 +228,7 @@ class KickChatWorker(QThread):
     def stop(self):
         logger.info("[KickChatWorker] Stopping Kick chat worker...")
         self._is_stopped = True
+        self.requestInterruption()
         self._stop_poll_sync_worker()
         self.chat_manager.stop_socket()
+        self.quit()

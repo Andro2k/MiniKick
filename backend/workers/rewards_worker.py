@@ -18,6 +18,8 @@ class FetchRewardsWorker(QThread):
         self._is_shutting_down = False
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         logger.debug("[FetchRewardsWorker] Fetching rewards for platform: %s...", self.platform)
         try:
             if self.platform == "twitch":
@@ -27,6 +29,9 @@ class FetchRewardsWorker(QThread):
                 resp = self.api_client.fetch_channel_rewards(self.broadcaster_id)
             else:
                 resp = self.api_client.fetch_channel_rewards()
+
+            if self.isInterruptionRequested():
+                return
 
             data = resp.get("data", [])
             rewards_list = []
@@ -39,8 +44,11 @@ class FetchRewardsWorker(QThread):
                     rewards_map[title] = item
 
             logger.debug("[FetchRewardsWorker] Fetched %d reward(s) for platform: %s", len(rewards_list), self.platform)
-            self.rewards_fetched.emit(rewards_list, rewards_map)
+            if not self.isInterruptionRequested():
+                self.rewards_fetched.emit(rewards_list, rewards_map)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[FetchRewardsWorker] Error fetching rewards (%s) for platform %s: %s", type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
 
@@ -57,6 +65,8 @@ class CreateRewardWorker(QThread):
         self.platform = platform
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         title = self.payload.get("title", "?")
         logger.debug("[CreateRewardWorker] Creating reward '%s' on platform: %s...", title, self.platform)
         try:
@@ -78,12 +88,16 @@ class CreateRewardWorker(QThread):
                     is_user_input_required=self.payload.get("is_user_input_required", False),
                     should_redemptions_skip_request_queue=self.payload.get("should_redemptions_skip_request_queue", False)
                 )
+            if self.isInterruptionRequested():
+                return
             reward_data = resp.get("data", {})
             if isinstance(reward_data, dict):
                 reward_data["platform"] = self.platform
             logger.debug("[CreateRewardWorker] Reward '%s' created successfully on platform: %s", title, self.platform)
             self.reward_created.emit(reward_data)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[CreateRewardWorker] Error creating reward '%s' (%s) on platform %s: %s", title, type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
 
@@ -101,6 +115,8 @@ class UpdateRewardWorker(QThread):
         self.platform = platform
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         title = self.payload.get("title", self.reward_id)
         logger.debug("[UpdateRewardWorker] Updating reward '%s' (id=%s) on platform: %s...", title, self.reward_id, self.platform)
         try:
@@ -112,11 +128,15 @@ class UpdateRewardWorker(QThread):
                 )
             else:
                 resp = self.api_client.update_channel_reward(self.reward_id, self.payload)
+            if self.isInterruptionRequested():
+                return
             reward_data = resp.get("data", {})
             if isinstance(reward_data, dict):
                 reward_data["platform"] = self.platform
             logger.debug("[UpdateRewardWorker] Reward '%s' updated successfully on platform: %s", title, self.platform)
             self.reward_updated.emit(reward_data)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[UpdateRewardWorker] Error updating reward '%s' (%s) on platform %s: %s", title, type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))

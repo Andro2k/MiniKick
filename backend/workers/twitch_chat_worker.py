@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchSocketManager
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
-from backend.utils.worker_utils import ExponentialBackoff
+from backend.utils.worker_utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.twitch_chat")
 
@@ -82,26 +82,27 @@ class TwitchChatWorker(QThread):
                     logger.warning("[TwitchChatWorker] Connection lost with Twitch IRC.")
                     self.connection_lost.emit()
 
-            while not self._is_stopped:
+            while not self._is_stopped and not self.isInterruptionRequested():
                 self.socket_manager.start_socket(
                     channel_name=self.channel_name,
                     on_message=self._dispatch_message,
                     on_connected=_on_connected,
                     on_disconnected=_on_disconnected
                 )
-                if not self._is_stopped:
+                if not self._is_stopped and not self.isInterruptionRequested():
                     delay_sec = self._backoff.next_delay()
                     logger.debug("[TwitchChatWorker] Socket loop finished. Retrying in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
-                    self.msleep(int(delay_sec * 1000))
+                    if not cooperative_sleep(self, delay_sec, step_ms=50):
+                        break
 
         except Exception as e:
             logger.error("[TwitchChatWorker] Unhandled error (%s) in Twitch chat worker: %s", type(e).__name__, e, exc_info=True)
-            if not self._is_stopped:
+            if not self._is_stopped and not self.isInterruptionRequested():
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, emotes_tag: str = "", gif_url: str = ""):
         self._backoff.reset()
-        if self._is_stopped:
+        if self._is_stopped or self.isInterruptionRequested():
             return
 
         now_str = datetime.datetime.now().strftime("%H:%M")
@@ -133,5 +134,6 @@ class TwitchChatWorker(QThread):
     def stop(self):
         logger.info("[TwitchChatWorker] Stopping Twitch chat worker...")
         self._is_stopped = True
+        self.requestInterruption()
         self.socket_manager.stop_socket()
         self.quit()

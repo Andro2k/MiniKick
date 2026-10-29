@@ -168,7 +168,6 @@ class PiperVoicesDialog(ModernFramelessShell):
             btn.setProperty("role", "segmented_item")
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setFixedHeight(28)
             if tab_id == "all":
                 btn.setChecked(True)
             btn.toggled.connect(lambda checked, tid=tab_id: self._on_tab_toggled(tid, checked))

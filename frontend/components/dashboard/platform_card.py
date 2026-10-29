@@ -78,7 +78,6 @@ class PlatformStatusCard(QFrame):
             icon_name=icon_file,
             parent=self,
         )
-        self.btn_action.setFixedHeight(28)
         layout.addWidget(self.btn_action)
 
     def _apply_pill_style(self, state: str):

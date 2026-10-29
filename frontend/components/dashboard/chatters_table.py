@@ -58,7 +58,6 @@ class DashboardChattersTable(ModernCard):
             role="action_kick",
             parent=self
         )
-        self.btn_today.setFixedHeight(28)
         self.btn_today.clicked.connect(self._on_today_clicked)
 
         self.btn_yesterday = ModernButton(
@@ -66,12 +65,9 @@ class DashboardChattersTable(ModernCard):
             role="action_outlined",
             parent=self
         )
-        self.btn_yesterday.setFixedHeight(28)
         self.btn_yesterday.clicked.connect(self._on_yesterday_clicked)
 
         self.combo_dates = NoWheelComboBox(self)
-        self.combo_dates.setFixedHeight(28)
-        self.combo_dates.setMinimumWidth(140)
         self.combo_dates.addItem(self.i18n.get("dashboard.chatters.filter_date_placeholder"), "")
         self.combo_dates.currentIndexChanged.connect(self._on_combo_date_changed)
 
@@ -103,7 +99,6 @@ class DashboardChattersTable(ModernCard):
             role="action_kick",
             parent=self.banner_inactive
         )
-        self.btn_activate_banner.setFixedHeight(28)
         self.btn_activate_banner.clicked.connect(self.activate_widget_requested.emit)
 
         banner_layout.addWidget(lbl_banner_icon)
@@ -306,7 +301,6 @@ class DashboardChattersTable(ModernCard):
             pbar.setTextVisible(False)
             pbar.setRange(0, 100)
             pbar.setValue(min(100, int(share_pct)))
-            pbar.setFixedHeight(6)
 
             lbl_pct = QLabel(f"{share_pct:.1f}%", share_widget)
             lbl_pct.setProperty("role", "caption")
