@@ -178,22 +178,35 @@ function parseTwitchEmotes(rawMessage, emotesTag) {
     if (ranges.length === 0) return null;
 
     ranges.sort((a, b) => a.start - b.start);
-    const chars = Array.from(rawMessage);
-    let result = '';
+    const parts = [];
     let lastIdx = 0;
 
     for (let i = 0; i < ranges.length; i++) {
         const { emoteId, start, end } = ranges[i];
-        if (start >= lastIdx) {
-            const beforeText = chars.slice(lastIdx, start).join('');
-            const emoteCode = chars.slice(start, end + 1).join('');
-            result += escapeHtml(beforeText);
-            result += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`;
+        if (start >= lastIdx && end < rawMessage.length) {
+            const emoteCode = rawMessage.substring(start, end + 1);
+            parts.push(escapeHtml(rawMessage.substring(lastIdx, start)));
+            parts.push(`<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`);
             lastIdx = end + 1;
         }
     }
-    result += escapeHtml(chars.slice(lastIdx).join(''));
-    return result;
+    parts.push(escapeHtml(rawMessage.substring(lastIdx)));
+    return parts.join('');
+}
+
+const emoteRegexCache = new Map();
+function getCachedEmoteRegex(key, source) {
+    let regex = emoteRegexCache.get(key);
+    if (!regex) {
+        regex = new RegExp(source, 'g');
+        emoteRegexCache.set(key, regex);
+        if (emoteRegexCache.size > 500) {
+            const oldestKey = emoteRegexCache.keys().next().value;
+            emoteRegexCache.delete(oldestKey);
+        }
+    }
+    regex.lastIndex = 0;
+    return regex;
 }
 
 function parseYouTubeEmotes(messageHtml, emotesTag) {
@@ -214,9 +227,8 @@ function parseYouTubeEmotes(messageHtml, emotesTag) {
                     seenNames.add(em.name);
                     const cleanLabel = escapeHtml(em.name.replace(/^:+|:+$/g, ''));
                     const escUrl = escapeHtml(em.url);
-                    const escapedBase = em.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    const regex = new RegExp(escapedBase, 'g');
-                    messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                    const replacement = `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`;
+                    messageHtml = messageHtml.split(em.name).join(replacement);
                 }
             }
         }
@@ -248,9 +260,10 @@ function parseTikTokEmotes(messageHtml, emotesTag) {
                     const cleanName = rawName.replace(/^\[+|\]+$/g, '');
                     const cleanLabel = escapeHtml(cleanName);
                     const escUrl = escapeHtml(em.url);
-                    const escapedBase = cleanName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    const regex = new RegExp(`\\[${escapedBase}\\]|\\b${escapedBase}\\b`, 'g');
-                    messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                    const replacement = `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`;
+                    const escapedBase = cleanName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const regex = getCachedEmoteRegex(`tiktok:${cleanName}`, `\\[${escapedBase}\\]|\\b${escapedBase}\\b`);
+                    messageHtml = messageHtml.replace(regex, replacement);
                 }
             }
         }
@@ -362,7 +375,6 @@ function getRoleClass(badges) {
     if (badges.includes('bot') || badges.includes('twitchbot')) return 'bot';
     return 'default';
 }
-
 
 const AVATAR_GRADIENTS = [
     'linear-gradient(135deg, #3b82f6, #1d4ed8)',
@@ -494,8 +506,6 @@ function addMessage(data) {
             });
         }
     }
-    msgBox.appendChild(avatarWrap);
-
     const bodyWrap = document.createElement('div');
     bodyWrap.className = 'message-body-wrap';
 
@@ -574,7 +584,7 @@ function addMessage(data) {
     }
 
     bodyWrap.appendChild(content);
-    msgBox.appendChild(bodyWrap);
+    msgBox.append(avatarWrap, bodyWrap);
 
     if (bigEmotes && (!showGifs || !data.gif_url) && isOnlyEmotes(formattedHtml)) {
         msgBox.classList.add('only-emotes');
@@ -611,12 +621,16 @@ function pruneMessages() {
 
 function removeMessage(msgBox) {
     if (!msgBox || msgBox.classList.contains('fade-out')) return;
-    msgBox.classList.add('fade-out');
-    setTimeout(() => {
+
+    const removeFromContainer = () => {
         if (msgBox.parentNode === container) {
             container.removeChild(msgBox);
         }
-    }, 400);
+    };
+
+    msgBox.addEventListener('transitionend', removeFromContainer, { once: true });
+    msgBox.addEventListener('animationend', removeFromContainer, { once: true });
+    msgBox.classList.add('fade-out');
 }
 
 function autoScroll() {
