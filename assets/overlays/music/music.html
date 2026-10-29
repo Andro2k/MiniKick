@@ -1,1160 +1,416 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniKick – Music Overlay</title>
-    <!-- Typography -->
+    <title>MiniKick – Music Overlay (Neutral Dual Layout)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <!-- Single supported music overlay style -->
-    <link id="theme-style" rel="stylesheet" href="/music/css/glass.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* ==========================================================================
-           1. CSS Variables & Reset
-           ========================================================================== */
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        :root {
-            --dynamic-accent: #3B82F6;
-            --dynamic-bg-start: rgba(20, 24, 33, 0.85);
-            --dynamic-bg-end: rgba(10, 12, 18, 0.95);
-            --dynamic-glow: rgba(59, 130, 246, 0.4);
-            --classic-surface: #f2e5cf;
-            --classic-border: #d5c2a7;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: transparent;
+        html, body {
+            margin: 0;
+            padding: 0;
             width: 100vw;
             height: 100vh;
+            background: transparent !important;
             overflow: hidden;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
         }
 
-        /* ==========================================================================
-           2. Player Shell & Hardware-Accelerated Visibility
-           ========================================================================== */
-        #player {
-            position: relative;
-            opacity: 0;
+        #player-container {
+            max-width: 100%;
+            max-height: 100%;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; 
             transform: translateY(20px) scale(0.96);
-            transition:
-                opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                background 0.5s ease,
-                border-color 0.5s ease,
-                box-shadow 0.5s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease;
             pointer-events: none;
-            overflow: hidden;
-            will-change: transform, opacity;
         }
 
-        #player.visible {
+        #player-container.visible {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
 
-        /* Dynamic Color Theme (adaptive extraction from cover art) */
-        #player.theme-dynamic {
-            background: linear-gradient(135deg, var(--dynamic-bg-start), var(--dynamic-bg-end));
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px var(--dynamic-glow);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            color: #FFFFFF;
-        }
-
-        #player.theme-dynamic.layout-classic {
-            background: var(--classic-surface);
-            border: 1px solid var(--classic-border);
-            box-shadow: 0 12px 30px rgba(53, 39, 43, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-            color: #35272b;
-        }
-
-        #player.theme-dynamic.layout-classic .cover-art-wrap {
-            border: 1px solid rgba(75, 50, 61, 0.24);
-            box-shadow: 0 5px 12px rgba(53, 39, 43, 0.18);
-        }
-
-        #player.theme-dynamic.layout-classic .now-playing-tag,
-        #player.theme-dynamic.layout-classic .artist,
-        #player.theme-dynamic.layout-classic .progress-time {
-            color: rgba(53, 39, 43, 0.68);
-            text-shadow: none;
-        }
-
-        #player.theme-dynamic.layout-classic .title {
-            color: #35272b;
-            text-shadow: none;
-        }
-
-        #player.theme-dynamic.layout-classic .progress-bar-wrap {
-            background: rgba(53, 39, 43, 0.2);
-        }
-
-        #player.theme-dynamic.layout-classic .label-now-badge {
-            background: rgba(255, 255, 255, 0.45);
-            color: #35272b;
-            border: 1px solid var(--classic-border);
-        }
-
-        #player.theme-dynamic.layout-vinyl {
-            background: linear-gradient(135deg, var(--dynamic-bg-start), var(--dynamic-bg-end));
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.36), 0 0 28px var(--dynamic-glow);
-            color: #fff;
-        }
-
-        #player.theme-dynamic .progress-bar-fill,
-        #player.theme-dynamic .pill-progress-fill,
-        #player.theme-dynamic .eq span,
-        #player.theme-dynamic .soundwave-bars span {
-            background: var(--dynamic-accent);
-            box-shadow: 0 0 10px var(--dynamic-glow);
-        }
-
-        #player.theme-dynamic.layout-vinyl .vinyl-center {
-            border-color: var(--dynamic-accent);
-            box-shadow: 0 0 14px var(--dynamic-glow);
-        }
-
-        /* --- Classic player model --- */
-        #player.layout-classic {
+        .music-card {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px;
-            border-radius: 18px;
-            width: clamp(400px, 94vw, 580px);
-            min-height: 150px;
-        }
-
-        #player.layout-classic .cover-art-wrap {
-            width: 118px;
-            height: 118px;
-            flex-shrink: 0;
-            border-radius: 14px;
-            overflow: hidden;
-            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-        }
-
-        #player.layout-classic .player-main {
-            gap: 8px;
-            min-width: 0;
-        }
-
-        #player.layout-classic .now-playing-tag {
-            display: block;
-            margin-bottom: 2px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        #player.layout-classic .header-row { gap: 8px; }
-        #player.layout-classic .artist { font-size: 13px; font-weight: 600; }
-        #player.layout-classic .title { font-size: clamp(18px, 3vw, 25px); }
-        #player.layout-classic .soundwave-bars { display: none; }
-
-        #player.layout-vinyl {
-            width: clamp(520px, 94vw, 780px);
-            min-height: 340px;
-            padding: 28px 38px;
-            border-radius: 42px;
-        }
-
-        #player.layout-vinyl .turntable-deck {
-            width: 310px;
-            height: 310px;
-        }
-
-        #player.layout-vinyl .vinyl-disc {
-            width: 280px;
-            height: 280px;
-        }
-
-        #player.layout-vinyl .vinyl-center {
-            width: 142px;
-            height: 142px;
-        }
-
-        #player.layout-vinyl .tonearm {
-            width: 86px;
-            height: 172px;
-            top: 8px;
-            right: 4px;
-            transform-origin: 62px 28px;
-        }
-
-        #player.layout-vinyl:not(.playing) .tonearm { transform: rotate(-30deg); }
-        #player.layout-vinyl .now-playing-tag { font-size: 18px; margin-bottom: 28px; }
-        #player.layout-vinyl .artist { font-size: 23px; text-transform: none; }
-        #player.layout-vinyl .title { font-size: clamp(26px, 4vw, 42px); }
-
-        #player.theme-dynamic .progress-bar-fill {
-            background: var(--dynamic-accent);
-            box-shadow: 0 0 10px var(--dynamic-accent);
-        }
-
-        #player.theme-dynamic .label-now-badge {
-            background: rgba(255, 255, 255, 0.15);
-            color: var(--dynamic-accent);
-            border: 1px solid var(--dynamic-glow);
-        }
-
-        #player.theme-dynamic .eq span {
-            background: var(--dynamic-accent);
-        }
-
-        /* ==========================================================================
-           3. Layout Variations
-           ========================================================================== */
-
-        /* --- Common Cover Art Images --- */
-        #player .cover-art-wrap img,
-        .pill-art-thumb img,
-        .vinyl-center img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scale(1.36);
-            transform-origin: center center;
-        }
-
-        /* --- Standard Layout --- */
-        #player.layout-standard {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            padding: 14px 20px;
-            border-radius: 20px;
-            width: clamp(400px, 92vw, 560px);
-        }
-
-        #player.layout-standard .cover-art-wrap {
-            position: relative;
-            flex-shrink: 0;
-            width: 84px;
-            height: 84px;
+            gap: 20px;
+            padding: 8px 12px;         
+            background: rgba(24, 24, 27, 0.85); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            zoom: 1.5; 
         }
 
-        /* --- Card Layout --- */
-        #player.layout-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 7px 18px 7px 7px;
-            border-radius: 14px;
-            width: clamp(340px, 88vw, 480px);
-            min-height: 64px;
-            overflow: hidden;
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-        }
-
-        #player.layout-card .cover-art-wrap {
-            width: 50px;
-            height: 50px;
+        .cover-art-wrap {
+            width: 80px;
+            height: 80px;
             border-radius: 10px;
             overflow: hidden;
             flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
-        #player.layout-card .player-main {
-            gap: 2px;
-        }
-
-        #player.layout-card .progress-container,
-        #player.layout-card .label-now-badge,
-        #player.layout-card #eq-container,
-        #player.layout-card .soundwave-bars {
-            display: none !important;
-        }
-
-        #player.layout-card .card-play-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 26px;
-            height: 26px;
-            color: rgba(255, 255, 255, 0.75);
-            flex-shrink: 0;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-        }
-
-        #player.layout-card .card-play-icon svg {
-            width: 17px;
-            height: 17px;
-            fill: currentColor;
-        }
-
-        /* --- Pill Layout --- */
-        #player.layout-pill {
-            display: flex;
-            align-items: center;
-            padding: 6px 18px 6px 6px;
-            border-radius: 9999px;
-            width: clamp(300px, 88vw, 440px);
-            max-width: 440px;
-            overflow: hidden;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(28px) saturate(190%);
-            -webkit-backdrop-filter: blur(28px) saturate(190%);
-        }
-
-        #player.layout-pill .cover-art-wrap {
-            display: none !important;
-        }
-
-        #pill-extra {
-            display: none;
-            align-items: center;
-            gap: 12px;
+        .cover-art-wrap img {
             width: 100%;
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .pill-art-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            overflow: hidden;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            border: 1.2px solid rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pill-text-column {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 2px;
-            overflow: hidden;
-            flex: 1 1 auto;
-            min-width: 0;
-            max-width: 100%;
-        }
-
-        #player.layout-pill .title {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            color: #FFFFFF;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-            width: 100%;
-            min-width: 0;
-        }
-
-        #player.layout-pill .artist {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: 12.5px;
-            color: rgba(255, 255, 255, 0.78);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
-            width: 100%;
-            min-width: 0;
-        }
-
-        .pill-progress-wrap {
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 2px;
-        }
-
-        .pill-progress-fill {
             height: 100%;
-            width: 0%;
-            background: #FFFFFF;
-            border-radius: 2px;
-            transition: width 0.05s linear;
-        }
-
-        .pill-action-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #FFFFFF;
-            opacity: 0.85;
-            flex-shrink: 0;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-        }
-
-        .pill-action-icon svg {
-            width: 15px;
-            height: 15px;
-            fill: currentColor;
-        }
-
-        /* --- Vinyl & Floating Layouts --- */
-        #player.layout-vinyl,
-        #player.layout-floating {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 20px 24px;
-            border-radius: 32px;
-            width: clamp(400px, 90vw, 500px);
-            min-height: 160px;
-            overflow: visible;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-        }
-
-        #player.layout-vinyl .player-main,
-        #player.layout-floating .player-main {
-            order: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            flex: 1 1 auto;
-            min-width: 0;
-            padding: 4px 0;
-        }
-
-        .now-playing-tag {
-            display: none;
-        }
-
-        #player.layout-vinyl .now-playing-tag,
-        #player.layout-floating .now-playing-tag {
-            display: block;
-            font-family: 'Outfit', 'Inter', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: rgba(255, 255, 255, 0.65);
-            margin-bottom: 24px;
-            text-transform: uppercase;
-        }
-
-        #player.layout-vinyl .artist,
-        #player.layout-floating .artist {
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: rgba(255, 255, 255, 0.65);
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-
-        #player.layout-vinyl .title,
-        #player.layout-floating .title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #FFFFFF;
-            line-height: 1.25;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            object-fit: cover;
+            display: none; 
         }
 
         .turntable-deck {
             display: none;
-        }
-
-        #player.layout-vinyl .turntable-deck,
-        #player.layout-floating .turntable-deck {
-            order: 2;
-            display: flex;
+            position: relative;
+            width: 130px;
+            height: 130px;
+            flex-shrink: 0;
             align-items: center;
             justify-content: center;
-            position: relative;
-            width: 140px;
-            height: 140px;
-            flex-shrink: 0;
         }
 
         .vinyl-disc {
-            display: none;
-        }
-
-        #player.layout-vinyl .vinyl-disc,
-        #player.layout-floating .vinyl-disc {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 130px;
-            height: 130px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background:
+            background: 
                 radial-gradient(circle, #0a0a0a 0%, #0a0a0a 24%, #1e1e1e 25%, #111111 27%, #2a2a2a 31%, #151515 35%, #303030 39%, #181818 44%, #323232 49%, #161616 54%, #2c2c2c 60%, #121212 68%, #262626 78%, #080808 100%),
                 conic-gradient(from 30deg at 50% 50%, rgba(255, 255, 255, 0.22) 0deg, transparent 50deg, rgba(255, 255, 255, 0.15) 90deg, transparent 140deg, rgba(255, 255, 255, 0.22) 180deg, transparent 230deg, rgba(255, 255, 255, 0.15) 270deg, transparent 320deg, rgba(255, 255, 255, 0.22) 360deg);
             background-blend-mode: screen;
-            border: 2px solid #1f1f23;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 2;
-        }
-
-        #player.layout-vinyl.playing .vinyl-disc,
-        #player.layout-floating.playing .vinyl-disc {
-            animation: spin-vinyl 4s linear infinite;
-        }
-
-        #player.layout-vinyl:not(.playing) .vinyl-disc,
-        #player.layout-floating:not(.playing) .vinyl-disc {
+            border: 1px solid #1f1f23;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             animation: spin-vinyl 4s linear infinite;
             animation-play-state: paused;
         }
 
-        .tonearm {
-            display: none;
+        .playing .vinyl-disc {
+            animation-play-state: running;
         }
 
-        #player.layout-vinyl .tonearm,
-        #player.layout-floating .tonearm {
-            display: block;
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 50px;
-            height: 100px;
-            z-index: 10;
-            transform-origin: 36px 16px;
-            transform: rotate(0deg);
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            pointer-events: none;
-        }
-
-        #player.layout-vinyl .tonearm svg,
-        #player.layout-floating .tonearm svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        #player.layout-vinyl:not(.playing) .tonearm,
-        #player.layout-floating:not(.playing) .tonearm {
-            transform: rotate(-30deg);
+        @keyframes spin-vinyl {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .vinyl-center {
-            width: 66px;
-            height: 66px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             overflow: hidden;
             position: relative;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 6px rgba(0,0,0,0.6);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .vinyl-center img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            transform: scale(1.3);
         }
 
         .vinyl-hole {
             position: absolute;
-            width: 9px;
-            height: 9px;
-            background: #FFFFFF;
+            width: 6px;
+            height: 6px;
+            background: #18181b;
             border-radius: 50%;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.9);
             z-index: 5;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.9);
         }
 
-        @keyframes spin-vinyl {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+        .tonearm {
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 40px;
+            height: 80px;
+            z-index: 10;
+            transform-origin: 29px 13px;
+            transform: rotate(-30deg);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
         }
 
-        #player.layout-vinyl .cover-art-wrap,
-        #player.layout-floating .cover-art-wrap {
-            display: none !important;
-        }
-
-        /* --- Compact Layout --- */
-        #player.layout-compact {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 18px;
-            border-radius: 16px;
-            width: clamp(320px, 85vw, 420px);
-        }
-
-        #player.layout-compact .cover-art-wrap {
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        /* ==========================================================================
-           4. Common Elements: Art Fallbacks, Typography & Controls
-           ========================================================================== */
-        .cover-art-wrap .fallback-icon,
-        .pill-art-thumb .fallback-icon,
-        .vinyl-center .fallback-icon {
+        .tonearm svg {
             width: 100%;
             height: 100%;
+            display: block;
+        }
+
+        .playing .tonearm {
+            transform: rotate(12deg);
+        }
+
+        .music-card.layout-vinyl .turntable-deck {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.08);
         }
-
-        .cover-art-wrap .fallback-icon svg,
-        .pill-art-thumb .fallback-icon svg,
-        .vinyl-center .fallback-icon svg {
-            width: 45%;
-            height: 45%;
-            stroke: rgba(255, 255, 255, 0.7);
-        }
-
-        .cover-art-wrap.has-thumbnail .fallback-icon {
+        .music-card.layout-vinyl .cover-art-wrap {
             display: none;
         }
 
-        .player-main {
-            flex: 1;
-            overflow: hidden;
+        .fallback-icon {
+            width: 40px;
+            height: 40px;
+            color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .vinyl-center .fallback-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .info-col {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            justify-content: center;
+            flex: 1;
+            min-width: 200px;
+            max-width: 320px;
         }
 
         .header-row {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
+            margin-bottom: 4px;
         }
 
-        .info {
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .label-now-badge {
-            font-size: clamp(9px, 1.8vw, 12px);
+        .now-playing-badge {
+            font-size: 10px;
             font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 4px 10px;
+            color: #e4e4e7;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 8px;
             border-radius: 6px;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
         }
 
         .title {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(16px, 2.8vw, 21px);
-            font-weight: 700;
-            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+            margin-bottom: 2px;
         }
 
         .artist {
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(12px, 2.0vw, 15px);
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            font-weight: 600;
+            color: #a1a1aa; 
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.7);
+            margin-bottom: 10px;
         }
 
-        /* Soundwave Bars (Vinyl / Floating) */
-        .soundwave-bars {
-            display: none;
-            align-items: center;
-            gap: 3px;
-            height: 22px;
-            margin-top: 4px;
-        }
-
-        #player.layout-vinyl .soundwave-bars,
-        #player.layout-floating .soundwave-bars {
-            display: flex;
-        }
-
-        #player.layout-vinyl .progress-container,
-        #player.layout-floating .progress-container,
-        #player.layout-vinyl .label-now-badge,
-        #player.layout-floating .label-now-badge,
-        #player.layout-vinyl #eq-container,
-        #player.layout-floating #eq-container {
-            display: none !important;
-        }
-
-        .soundwave-bars span {
-            display: inline-block;
-            width: 3px;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.85);
-            transition: height 0.2s ease, opacity 0.2s ease;
-        }
-
-        #player.playing .soundwave-bars span {
-            animation: soundwave-pulse 1.2s ease-in-out infinite alternate;
-        }
-
-        .soundwave-bars span:nth-child(1) { height: 4px; animation-delay: 0.05s; }
-        .soundwave-bars span:nth-child(2) { height: 8px; animation-delay: 0.15s; }
-        .soundwave-bars span:nth-child(3) { height: 14px; animation-delay: 0.25s; }
-        .soundwave-bars span:nth-child(4) { height: 18px; animation-delay: 0.10s; }
-        .soundwave-bars span:nth-child(5) { height: 12px; animation-delay: 0.30s; }
-        .soundwave-bars span:nth-child(6) { height: 16px; animation-delay: 0.40s; }
-        .soundwave-bars span:nth-child(7) { height: 22px; animation-delay: 0.20s; }
-        .soundwave-bars span:nth-child(8) { height: 15px; animation-delay: 0.35s; }
-        .soundwave-bars span:nth-child(9) { height: 20px; animation-delay: 0.10s; }
-        .soundwave-bars span:nth-child(10) { height: 24px; animation-delay: 0.45s; }
-        .soundwave-bars span:nth-child(11) { height: 17px; animation-delay: 0.15s; }
-        .soundwave-bars span:nth-child(12) { height: 22px; animation-delay: 0.30s; }
-        .soundwave-bars span:nth-child(13) { height: 19px; animation-delay: 0.50s; }
-        .soundwave-bars span:nth-child(14) { height: 23px; animation-delay: 0.25s; }
-        .soundwave-bars span:nth-child(15) { height: 16px; animation-delay: 0.40s; }
-        .soundwave-bars span:nth-child(16) { height: 21px; animation-delay: 0.10s; }
-        .soundwave-bars span:nth-child(17) { height: 14px; animation-delay: 0.35s; }
-        .soundwave-bars span:nth-child(18) { height: 18px; animation-delay: 0.20s; }
-        .soundwave-bars span:nth-child(19) { height: 12px; animation-delay: 0.45s; }
-        .soundwave-bars span:nth-child(20) { height: 15px; animation-delay: 0.15s; }
-        .soundwave-bars span:nth-child(21) { height: 10px; animation-delay: 0.30s; }
-        .soundwave-bars span:nth-child(22) { height: 6px; animation-delay: 0.50s; }
-        .soundwave-bars span:nth-child(23) { height: 4px; animation-delay: 0.20s; }
-        .soundwave-bars span:nth-child(24) { height: 3px; animation-delay: 0.10s; }
-
-        @keyframes soundwave-pulse {
-            0% { transform: scaleY(0.35); opacity: 0.6; }
-            50% { transform: scaleY(1.15); opacity: 1.0; }
-            100% { transform: scaleY(0.5); opacity: 0.75; }
-        }
-
-        /* Progress Bar & Equalizer */
         .progress-container {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             width: 100%;
         }
 
         .progress-bar-wrap {
             width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
             overflow: hidden;
-            position: relative;
         }
 
         .progress-bar-fill {
             height: 100%;
             width: 0%;
-            border-radius: 3px;
-            transition: width 0.05s linear;
-            background: #FFFFFF;
+            background: #ffffff;
+            border-radius: 2px;
+            transition: width 0.1s linear;
         }
 
-        .progress-time {
+        .time-row {
             display: flex;
             justify-content: space-between;
             font-size: 11px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.92);
-            opacity: 0.92;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+            color: #71717a;
         }
 
-        .eq {
+        .eq-container {
             display: flex;
             align-items: flex-end;
             gap: 2px;
-            height: 16px;
-            flex-shrink: 0;
+            height: 14px;
+            opacity: 0.8;
         }
 
-        .eq span {
+        .eq-container span {
             display: block;
             width: 3px;
+            background: #ffffff;
             border-radius: 1px;
             height: 3px;
-            background: #FFFFFF;
         }
 
-        #player.playing .eq span:nth-child(1) { animation: eq-bar 1.0s ease-in-out 0.00s infinite alternate; }
-        #player.playing .eq span:nth-child(2) { animation: eq-bar 1.0s ease-in-out 0.15s infinite alternate; }
-        #player.playing .eq span:nth-child(3) { animation: eq-bar 1.0s ease-in-out 0.30s infinite alternate; }
-        #player.playing .eq span:nth-child(4) { animation: eq-bar 1.0s ease-in-out 0.45s infinite alternate; }
-
-        @keyframes eq-bar {
-            from { height: 3px; opacity: 0.55; }
-            to { height: 16px; opacity: 1.0; }
+        .playing .eq-container span {
+            animation: eq-bounce 1s ease-in-out infinite alternate;
         }
 
-        #player.theme-dynamic.layout-classic .progress-bar-fill {
-            background: var(--dynamic-accent);
-            box-shadow: 0 0 8px var(--dynamic-glow);
+        .playing .eq-container span:nth-child(1) { animation-delay: 0s; }
+        .playing .eq-container span:nth-child(2) { animation-delay: 0.2s; }
+        .playing .eq-container span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes eq-bounce {
+            0% { height: 3px; }
+            100% { height: 14px; }
         }
 
-        #player.theme-dynamic.layout-vinyl .player-main {
-            max-width: 390px;
-        }
-
-        #player.theme-dynamic.layout-vinyl .now-playing-tag {
-            color: rgba(255, 255, 255, 0.68);
-            margin-bottom: 20px;
-        }
-
-        #player.theme-dynamic.layout-vinyl .title {
-            font-size: clamp(26px, 4vw, 40px);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: 0;
-        }
-
-        #player.theme-dynamic.layout-vinyl .artist {
-            font-size: 20px;
-            text-transform: none;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: 0;
-        }
-
-        #player.theme-dynamic.layout-vinyl .turntable-deck {
-            width: 310px;
-            height: 310px;
-        }
-
-        #player.theme-dynamic.layout-vinyl .vinyl-disc {
-            width: 280px;
-            height: 280px;
-        }
-
-        #player.theme-dynamic.layout-vinyl .vinyl-center {
-            width: 142px;
-            height: 142px;
-        }
-
-        #player.theme-dynamic.layout-vinyl .tonearm {
-            width: 86px;
-            height: 172px;
-            top: 8px;
-            right: 4px;
-            transform-origin: 62px 28px;
-        }
-
-        #player.theme-dynamic.layout-vinyl:not(.playing) .tonearm {
-            transform: rotate(-30deg);
-        }
-
-        #player.theme-dynamic.layout-classic {
-            width: min(580px, calc(100vw - 16px));
-            max-width: calc(100vw - 16px);
-            max-height: calc(100vh - 16px);
-            min-height: 0;
-            padding: clamp(6px, 2.4vw, 14px);
-            gap: clamp(8px, 2.75vw, 16px);
-        }
-
-        #player.theme-dynamic.layout-classic .cover-art-wrap {
-            width: min(118px, 20vw, max(48px, calc(100vh - 48px)));
-            height: auto;
-            aspect-ratio: 1;
-        }
-
-        #player.theme-dynamic.layout-classic .player-main {
-            flex: 1 1 0;
-            max-width: min(390px, 68%);
-        }
-
-        #player.theme-dynamic.layout-vinyl {
-            --vinyl-deck-size: clamp(110px, min(40vw, calc(100vh - 64px)), 310px);
-            --vinyl-disc-size: clamp(100px, min(36vw, calc(100vh - 78px)), 280px);
-            width: min(780px, calc(100vw - 16px));
-            max-width: calc(100vw - 16px);
-            max-height: calc(100vh - 16px);
-            min-height: 0;
-            padding: clamp(8px, min(3vh, 28px), 28px) clamp(8px, min(4.8vw, 38px), 38px);
-            gap: clamp(6px, 2.5vw, 20px);
-            border-radius: clamp(18px, 5vw, 42px);
-        }
-
-        #player.theme-dynamic.layout-vinyl .player-main {
-            flex: 1 1 0;
-            width: 60%;
-            max-width: min(390px, 60%);
-            min-width: 0;
-        }
-
-        #player.theme-dynamic.layout-vinyl .turntable-deck {
-            flex: 0 1 var(--vinyl-deck-size);
-            width: var(--vinyl-deck-size);
-            height: var(--vinyl-deck-size);
-        }
-
-        #player.theme-dynamic.layout-vinyl .vinyl-disc {
-            width: var(--vinyl-disc-size);
-            height: var(--vinyl-disc-size);
-        }
-
-        #player.theme-dynamic.layout-vinyl .vinyl-center {
-            width: 50%;
-            height: auto;
-            aspect-ratio: 1;
-        }
-
-        #player.theme-dynamic.layout-vinyl .tonearm {
-            width: clamp(38px, min(11vw, 10vh), 86px);
-            height: auto;
-            aspect-ratio: 1 / 2;
-            top: clamp(2px, 1vh, 8px);
-            right: 2px;
-            transform-origin: 72% 16%;
-        }
-
-        @media (max-height: 250px) {
-            #player.theme-dynamic.layout-vinyl {
-                --vinyl-deck-size: max(64px, calc(100vh - 48px));
-                --vinyl-disc-size: max(58px, calc(100vh - 58px));
-                padding-top: 6px;
-                padding-bottom: 6px;
-            }
-
-            #player.theme-dynamic.layout-vinyl .now-playing-tag { margin-bottom: 6px; }
-            #player.theme-dynamic.layout-vinyl .artist { font-size: clamp(12px, 3vh, 20px); }
-            #player.theme-dynamic.layout-vinyl .title { font-size: clamp(14px, 5vh, 32px); }
-        }
     </style>
 </head>
 
 <body>
 
-    <div id="player">
-        <!-- Turntable Deck (Vinyl / Floating) -->
-        <div class="turntable-deck" id="turntable-deck">
-            <div class="vinyl-disc" id="vinyl-disc">
-                <div class="vinyl-center">
-                    <img id="vinyl-art" src="" alt="Vinyl Art" crossorigin="anonymous" style="display: none;">
-                    <div class="fallback-icon" id="vinyl-fallback">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                        </svg>
-                    </div>
-                    <div class="vinyl-hole"></div>
-                </div>
-            </div>
-            <div class="tonearm" id="tonearm">
-                <svg viewBox="0 0 50 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="pivot-grad" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="#6B7280" />
-                            <stop offset="100%" stop-color="#1F2937" />
-                        </radialGradient>
-                        <linearGradient id="metal-rod-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#E5E7EB" />
-                            <stop offset="50%" stop-color="#9CA3AF" />
-                            <stop offset="100%" stop-color="#4B5563" />
-                        </linearGradient>
-                        <filter id="tonearm-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.6)" />
-                        </filter>
-                    </defs>
-                    <g filter="url(#tonearm-shadow)">
-                        <line x1="36" y1="16" x2="16" y2="75" stroke="url(#metal-rod-grad)" stroke-width="3.5"
-                            stroke-linecap="round" />
-                        <rect x="11" y="73" width="10" height="18" rx="2.5" transform="rotate(25 16 75)" fill="#18181C"
-                            stroke="#4A4A52" stroke-width="1.2" />
-                        <line x1="16" y1="88" x2="14" y2="92" stroke="#FFFFFF" stroke-width="1.2"
-                            stroke-linecap="round" />
-                        <circle cx="36" cy="16" r="10" fill="url(#pivot-grad)" stroke="rgba(255, 255, 255, 0.4)"
-                            stroke-width="1.5" />
-                        <circle cx="36" cy="16" r="4.5" fill="#111827" stroke="#4B5563" stroke-width="1" />
-                    </g>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Cover Art Wrap (Standard, Card, Compact) -->
-        <div class="cover-art-wrap" id="cover-art-wrap">
-            <img id="cover-art" src="" alt="Cover Art" crossorigin="anonymous" style="display: none;">
-            <div class="fallback-icon" id="cover-fallback">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                </svg>
-            </div>
-        </div>
-
-        <!-- Player Main Content -->
-        <div class="player-main" id="player-main">
-            <div class="now-playing-tag" id="now-playing-tag">Now Playing</div>
-            <div class="header-row" id="header-row">
-                <div class="info">
-                    <div class="artist" id="song-artist">–</div>
-                    <div class="title" id="song-title">–</div>
-                </div>
-                <div class="card-play-icon" id="card-play-icon" style="display: none;">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="6 4 20 12 6 20 6 4" fill="currentColor"></polygon>
+    <div id="player-container">
+        <div class="music-card layout-classic" id="music-card">
+            
+            <div class="cover-art-wrap">
+                <img id="cover-art" src="" alt="Album Art">
+                <div class="fallback-icon" id="cover-fallback">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
                     </svg>
                 </div>
-                <div id="standard-badges-wrap" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                    <div class="label-now-badge" id="label-now">Now Playing</div>
-                    <div class="eq" id="eq-container">
-                        <span></span><span></span><span></span><span></span>
+            </div>
+
+            <div class="turntable-deck">
+                <div class="vinyl-disc">
+                    <div class="vinyl-center">
+                        <img id="vinyl-art" src="" alt="Vinyl Art">
+                        <div class="fallback-icon" id="vinyl-fallback">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div class="vinyl-hole"></div>
+                    </div>
+                </div>
+                <div class="tonearm">
+                    <svg viewBox="0 0 50 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="pivot-grad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#a1a1aa" />
+                                <stop offset="100%" stop-color="#3f3f46" />
+                            </radialGradient>
+                            <linearGradient id="metal-rod-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f4f4f5" />
+                                <stop offset="50%" stop-color="#a1a1aa" />
+                                <stop offset="100%" stop-color="#52525b" />
+                            </linearGradient>
+                            <filter id="tonearm-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.5)" />
+                            </filter>
+                        </defs>
+                        <g filter="url(#tonearm-shadow)">
+                            <line x1="36" y1="16" x2="16" y2="75" stroke="url(#metal-rod-grad)" stroke-width="4" stroke-linecap="round" />
+                            <rect x="11" y="73" width="10" height="18" rx="2.5" transform="rotate(25 16 75)" fill="#18181b" stroke="#71717a" stroke-width="1.2" />
+                            <line x1="16" y1="88" x2="14" y2="92" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" />
+                            <circle cx="36" cy="16" r="10" fill="url(#pivot-grad)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1.5" />
+                            <circle cx="36" cy="16" r="4" fill="#18181b" stroke="#52525b" stroke-width="1" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="info-col">
+                <div class="header-row">
+                    <div class="now-playing-badge" id="status-badge">REPRODUCIENDO</div>
+                    <div class="eq-container">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                
+                <div class="title" id="song-title">Cargando...</div>
+                <div class="artist" id="song-artist">Esperando música</div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="time-row">
+                        <span id="time-current">0:00</span>
+                        <span id="time-total">0:00</span>
                     </div>
                 </div>
             </div>
 
-            <div class="soundwave-bars" id="soundwave-bars">
-                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-            </div>
-
-            <div class="progress-container" id="progress-container">
-                <div class="progress-bar-wrap">
-                    <div class="progress-bar-fill" id="progress-fill"></div>
-                </div>
-                <div class="progress-time" id="progress-time">
-                    <span id="time-current">0:00</span>
-                    <span id="time-total">0:00</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Pill Layout Container -->
-        <div id="pill-extra" style="display: none;">
-            <div class="pill-art-thumb">
-                <img id="pill-art" src="" alt="Art" crossorigin="anonymous" style="display: none;">
-                <div class="fallback-icon" id="pill-fallback">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                    </svg>
-                </div>
-            </div>
-            <div class="pill-text-column">
-                <div class="title" id="pill-title">–</div>
-                <div class="artist" id="pill-artist">–</div>
-                <div class="pill-progress-wrap">
-                    <div class="pill-progress-fill" id="pill-progress-fill"></div>
-                </div>
-            </div>
-            <div class="pill-action-icon" id="pill-action-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="6 4 20 12 6 20 6 4" fill="currentColor"></polygon>
-                </svg>
-            </div>
         </div>
     </div>
 
-    <!-- Canvas for dynamic palette extraction -->
-    <canvas id="color-canvas" width="32" height="32" style="display:none;"></canvas>
-
     <script>
-        // ==========================================================================
-        // 1. Cached DOM References (Resolved once upfront: O(1) in animation ticks)
-        // ==========================================================================
-        const DOM = {
-            player: document.getElementById('player'),
-            themeStyle: document.getElementById('theme-style'),
-            colorCanvas: document.getElementById('color-canvas'),
-            elTitle: document.getElementById('song-title'),
-            elArtist: document.getElementById('song-artist'),
-            elLabel: document.getElementById('label-now'),
-            elCover: document.getElementById('cover-art'),
-            elCoverWrap: document.getElementById('cover-art-wrap'),
-            elCoverFallback: document.getElementById('cover-fallback'),
-            elPlayerMain: document.getElementById('player-main'),
-            elCardPlay: document.getElementById('card-play-icon'),
-            elBadgesWrap: document.getElementById('standard-badges-wrap'),
-            elCurrentTime: document.getElementById('time-current'),
-            elTotalTime: document.getElementById('time-total'),
-            elProgressFill: document.getElementById('progress-fill'),
-            elPillExtra: document.getElementById('pill-extra'),
-            elPillArt: document.getElementById('pill-art'),
-            elPillFallback: document.getElementById('pill-fallback'),
-            elPillTitle: document.getElementById('pill-title'),
-            elPillArtist: document.getElementById('pill-artist'),
-            elPillFill: document.getElementById('pill-progress-fill'),
-            elVinylArt: document.getElementById('vinyl-art'),
-            elVinylFallback: document.getElementById('vinyl-fallback'),
-        };
-
-        // ==========================================================================
-        // 2. Configuration & Initialization
-        // ==========================================================================
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
-        const theme = 'dynamic';
-        const requestedLayout = urlParams.get('layout') || 'classic';
-        const supportedLayouts = new Set(['classic', 'vinyl']);
-        const layout = supportedLayouts.has(requestedLayout) ? requestedLayout : 'classic';
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
+        const layoutStyle = urlParams.get('layout') === 'vinyl' ? 'vinyl' : 'classic';
+        const playerContainer = document.getElementById('player-container');
+        const musicCard = document.getElementById('music-card');
+        const elTitle = document.getElementById('song-title');
+        const elArtist = document.getElementById('song-artist');
+        const elBadge = document.getElementById('status-badge');        
+        const elCover = document.getElementById('cover-art');
+        const elFallback = document.getElementById('cover-fallback');
+        const elVinylArt = document.getElementById('vinyl-art');
+        const elVinylFallback = document.getElementById('vinyl-fallback');
+        const elCurrentTime = document.getElementById('time-current');
+        const elTotalTime = document.getElementById('time-total');
+        const elProgressFill = document.getElementById('progress-fill');
 
-        if (DOM.themeStyle) {
-            DOM.themeStyle.href = '/music/css/glass.css';
-        }
-        DOM.player.classList.add(`theme-${theme}`, `layout-${layout}`);
-
-        // Layout-specific DOM adjustments
-        if (layout === 'vinyl') {
-            if (DOM.elCoverWrap) DOM.elCoverWrap.style.display = 'none';
-        }
+        if (lang === 'en') elBadge.textContent = 'NOW PLAYING';
+        
+        musicCard.className = `music-card layout-${layoutStyle}`;
 
         let hideTimer = null;
         let currentProgress = 0;
@@ -1163,79 +419,6 @@
         let animFrameId = null;
         let lastTimestamp = null;
 
-        // ==========================================================================
-        // 3. Dynamic Color Extraction (CORS-safe with fallback)
-        // ==========================================================================
-        function extractDynamicColors(imgElement) {
-            if (theme !== 'dynamic' || !imgElement || !imgElement.complete) return;
-            try {
-                const canvas = DOM.colorCanvas;
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, 32, 32);
-                ctx.drawImage(imgElement, 0, 0, 32, 32);
-
-                const imgData = ctx.getImageData(0, 0, 32, 32).data;
-                let rSum = 0, gSum = 0, bSum = 0, count = 0;
-
-                for (let i = 0; i < imgData.length; i += 16) {
-                    const r = imgData[i];
-                    const g = imgData[i + 1];
-                    const b = imgData[i + 2];
-                    const max = Math.max(r, g, b);
-                    const min = Math.min(r, g, b);
-
-                    if (max - min > 20) {
-                        rSum += r;
-                        gSum += g;
-                        bSum += b;
-                        count++;
-                    }
-                }
-
-                if (count === 0) {
-                    rSum = 59; gSum = 130; bSum = 246; count = 1;
-                }
-
-                const avgR = Math.round(rSum / count);
-                const avgG = Math.round(gSum / count);
-                const avgB = Math.round(bSum / count);
-
-                const accent = `rgb(${avgR}, ${avgG}, ${avgB})`;
-                const bgStart = `rgba(${Math.round(avgR * 0.35)}, ${Math.round(avgG * 0.35)}, ${Math.round(avgB * 0.35)}, 0.9)`;
-                const bgEnd = `rgba(${Math.round(avgR * 0.15)}, ${Math.round(avgG * 0.15)}, ${Math.round(avgB * 0.15)}, 0.96)`;
-                const glow = `rgba(${avgR}, ${avgG}, ${avgB}, 0.4)`;
-                const classicR = Math.round(244 * 0.78 + avgR * 0.22);
-                const classicG = Math.round(233 * 0.78 + avgG * 0.22);
-                const classicB = Math.round(215 * 0.78 + avgB * 0.22);
-                const borderR = Math.round(178 * 0.55 + avgR * 0.45);
-                const borderG = Math.round(155 * 0.55 + avgG * 0.45);
-                const borderB = Math.round(142 * 0.55 + avgB * 0.45);
-
-                DOM.player.style.setProperty('--dynamic-accent', accent);
-                DOM.player.style.setProperty('--dynamic-bg-start', bgStart);
-                DOM.player.style.setProperty('--dynamic-bg-end', bgEnd);
-                DOM.player.style.setProperty('--dynamic-glow', glow);
-                DOM.player.style.setProperty('--classic-surface', `rgb(${classicR}, ${classicG}, ${classicB})`);
-                DOM.player.style.setProperty('--classic-border', `rgb(${borderR}, ${borderG}, ${borderB})`);
-            } catch (e) {
-                // Fallback default on CORS restricted images
-                DOM.player.style.setProperty('--dynamic-accent', '#3B82F6');
-                DOM.player.style.setProperty('--dynamic-bg-start', 'rgba(20, 24, 33, 0.85)');
-                DOM.player.style.setProperty('--dynamic-bg-end', 'rgba(10, 12, 18, 0.95)');
-                DOM.player.style.setProperty('--dynamic-glow', 'rgba(59, 130, 246, 0.4)');
-            }
-        }
-
-        if (DOM.elCover) {
-            DOM.elCover.onload = function () {
-                extractDynamicColors(DOM.elCover);
-            };
-        }
-
-        // ==========================================================================
-        // 4. Time Formatting & High-Performance Progress Animation Engine
-        // ==========================================================================
         function formatTime(ms) {
             if (!ms || isNaN(ms) || ms < 0) return '0:00';
             const totalSecs = Math.floor(ms / 1000);
@@ -1245,13 +428,11 @@
         }
 
         function updateProgressUI() {
-            if (DOM.elCurrentTime) DOM.elCurrentTime.textContent = formatTime(currentProgress);
-            if (DOM.elTotalTime) DOM.elTotalTime.textContent = formatTime(totalDuration);
+            elCurrentTime.textContent = formatTime(currentProgress);
+            elTotalTime.textContent = formatTime(totalDuration);
 
             const percent = (totalDuration > 0) ? Math.min(100, (currentProgress / totalDuration) * 100) : 0;
-            const widthStr = `${percent}%`;
-            if (DOM.elProgressFill) DOM.elProgressFill.style.width = widthStr;
-            if (DOM.elPillFill) DOM.elPillFill.style.width = widthStr;
+            elProgressFill.style.width = `${percent}%`;
         }
 
         function startProgressTicker() {
@@ -1273,7 +454,6 @@
                     stopProgressTicker();
                 }
             }
-
             animFrameId = requestAnimationFrame(tick);
         }
 
@@ -1284,38 +464,46 @@
             }
         }
 
-        function updateThumb(imgEl, fallbackEl, url) {
-            if (!imgEl || !fallbackEl) return;
+        function updateCover(url) {
             if (url) {
-                imgEl.src = url;
-                imgEl.style.display = 'block';
-                fallbackEl.style.display = 'none';
-                imgEl.onerror = function () {
-                    imgEl.style.display = 'none';
-                    fallbackEl.style.display = 'flex';
+                elCover.src = url;
+                elCover.style.display = 'block';
+                elFallback.style.display = 'none';
+
+                elVinylArt.src = url;
+                elVinylArt.style.display = 'block';
+                elVinylFallback.style.display = 'none';
+
+                elCover.onerror = elVinylArt.onerror = () => {
+                    elCover.style.display = 'none';
+                    elFallback.style.display = 'flex';
+                    elVinylArt.style.display = 'none';
+                    elVinylFallback.style.display = 'flex';
                 };
             } else {
-                imgEl.src = '';
-                imgEl.style.display = 'none';
-                fallbackEl.style.display = 'flex';
+                elCover.src = '';
+                elCover.style.display = 'none';
+                elFallback.style.display = 'flex';
+                
+                elVinylArt.src = '';
+                elVinylArt.style.display = 'none';
+                elVinylFallback.style.display = 'flex';
             }
         }
 
-        // ==========================================================================
-        // 5. Player State & Lifecycle Management
-        // ==========================================================================
         function showPlayer(title, artist, playing, thumbnail, progress, duration) {
             clearTimeout(hideTimer);
-            if (DOM.elTitle) DOM.elTitle.textContent = title || '–';
-            if (DOM.elArtist) DOM.elArtist.textContent = artist || '–';
-            if (DOM.elLabel) DOM.elLabel.textContent = playing ? 'Now Playing' : 'Paused';
+            
+            elTitle.textContent = title || 'Desconocido';
+            elArtist.textContent = artist || 'Desconocido';
+            
+            if (playing) {
+                elBadge.textContent = lang === 'en' ? 'NOW PLAYING' : 'REPRODUCIENDO';
+            } else {
+                elBadge.textContent = lang === 'en' ? 'PAUSED' : 'PAUSADO';
+            }
 
-            if (DOM.elPillTitle) DOM.elPillTitle.textContent = title || '–';
-            if (DOM.elPillArtist) DOM.elPillArtist.textContent = artist || '–';
-
-            updateThumb(DOM.elCover, DOM.elCoverFallback, thumbnail);
-            updateThumb(DOM.elPillArt, DOM.elPillFallback, thumbnail);
-            updateThumb(DOM.elVinylArt, DOM.elVinylFallback, thumbnail);
+            updateCover(thumbnail);
 
             isPlaying = playing;
             currentProgress = progress || 0;
@@ -1324,21 +512,24 @@
             updateProgressUI();
             startProgressTicker();
 
-            DOM.player.classList.toggle('playing', isPlaying);
-            DOM.player.classList.add('visible');
+            if (isPlaying) {
+                musicCard.classList.add('playing');
+            } else {
+                musicCard.classList.remove('playing');
+            }
+            
+            playerContainer.classList.add('visible');
         }
 
         function scheduleHide(delayMs) {
             clearTimeout(hideTimer);
             hideTimer = setTimeout(() => {
-                DOM.player.classList.remove('visible', 'playing');
+                playerContainer.classList.remove('visible');
+                musicCard.classList.remove('playing');
                 stopProgressTicker();
             }, delayMs);
         }
 
-        // ==========================================================================
-        // 6. Resilient WebSocket Client (Idempotent auto-reconnection)
-        // ==========================================================================
         let ws = null;
         let reconnectTimer = null;
         let heartbeatTimer = null;
@@ -1348,17 +539,14 @@
                 try { ws.close(); } catch (e) { }
                 ws = null;
             }
-            if (reconnectTimer) {
-                clearTimeout(reconnectTimer);
-                reconnectTimer = null;
-            }
+            if (reconnectTimer) clearTimeout(reconnectTimer);
 
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws?topic=music&token=${encodeURIComponent(token)}`;
             ws = new WebSocket(wsUrl);
 
             ws.onopen = function () {
-                console.log("[Music Overlay] WebSocket conectado exitosamente.");
+                console.log("[Music Overlay] WebSocket conectado.");
                 heartbeatTimer = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({ type: 'ping' }));
@@ -1399,7 +587,7 @@
                         }
                     }
                 } catch (e) {
-                    console.error("[Music Overlay] Error parseando evento de música:", e);
+                    console.error("Error parseando evento de música:", e);
                 }
             };
 
@@ -1417,27 +605,30 @@
         }
 
         function cleanup() {
-            if (heartbeatTimer) {
-                clearInterval(heartbeatTimer);
-                heartbeatTimer = null;
-            }
-            if (reconnectTimer) {
-                clearTimeout(reconnectTimer);
-                reconnectTimer = null;
-            }
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            if (reconnectTimer) clearTimeout(reconnectTimer);
         }
 
         function scheduleReconnect() {
             if (reconnectTimer) return;
             reconnectTimer = setTimeout(() => {
                 reconnectTimer = null;
-                console.log("[Music Overlay] Intentando reconectar WebSocket...");
                 connectWS();
             }, 3000);
         }
 
-        // Initialize connection
-        connectWS();
+        if (isPreview) {
+            showPlayer(
+                "Glimpse of Us", 
+                "Joji", 
+                true, 
+                "https://i.scdn.co/image/ab67616d0000b273b320d3f8da015112185289f6", 
+                65000, 
+                233000
+            );
+        } else {
+            connectWS();
+        }
     </script>
 </body>
 
