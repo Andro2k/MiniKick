@@ -149,7 +149,6 @@
     box-shadow: 0 0 24px rgba(0, 242, 254, 0.4);
 }
 
-/* Horizontal pill adaptation */
 #chat-container.orientation-horizontal .message-box.theme-dark {
     display: inline-flex !important;
     flex-direction: row !important;
