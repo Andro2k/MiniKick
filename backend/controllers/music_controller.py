@@ -19,6 +19,14 @@ _DEFAULT_MUSIC_COMMANDS: dict[str, tuple[str, int, str, bool, str]] = {
 
 _MUSIC_PLUGIN_TAGS = {k: v[0] for k, v in _DEFAULT_MUSIC_COMMANDS.items()}
 
+
+def _default_music_cfg(trigger: str) -> dict:
+    response, cooldown, aliases, is_regex, permission = _DEFAULT_MUSIC_COMMANDS[trigger]
+    return {
+        "trigger": trigger, "response": response, "cooldown": cooldown,
+        "aliases": aliases, "is_regex": is_regex, "permission": permission,
+    }
+
 _ERROR_KEYWORD_MAP = (
     ("age", "music.youtube.age_restricted"),
     ("inappropriate", "music.youtube.inappropriate"),
@@ -51,7 +59,6 @@ class MusicController(QObject):
         self.current_volume = 100
         self._last_song: dict | None = None
         self.music_service_enabled = True
-        self._user_last_request_time: dict[str, float] = {}
         self._provider_connected = False
 
         self.max_user_songs = 2
@@ -63,7 +70,7 @@ class MusicController(QObject):
 
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
-        self.polling_timer.timeout.connect(self._poll_now_playing)
+        self.polling_timer.timeout.connect(self.refresh_now_playing)
 
         self._init_youtube_provider()
         self._load_initial_state()
@@ -100,7 +107,7 @@ class MusicController(QObject):
             self.view.media_keys_toggled.connect(self.handle_media_keys_toggle)
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
-        self.view.view_shown.connect(self._poll_now_playing)
+        self.view.view_shown.connect(self.refresh_now_playing)
         self.view.view_shown.connect(self._sync_switches_from_db)
 
         if hasattr(self.view, "max_user_songs_changed"):
@@ -135,17 +142,9 @@ class MusicController(QObject):
         commands = self.command_service.get_all_commands()
         existing_responses = {c.get("response") for c in commands if isinstance(c, dict)}
 
-        for trigger, (response, cooldown, aliases, is_regex, permission) in _DEFAULT_MUSIC_COMMANDS.items():
+        for trigger, (response, *_rest) in _DEFAULT_MUSIC_COMMANDS.items():
             if response not in existing_responses:
-                self.command_service.save_command(
-                    trigger=trigger,
-                    response=response,
-                    is_active=True,
-                    cooldown=cooldown,
-                    aliases=aliases,
-                    is_regex=is_regex,
-                    permission=permission
-                )
+                self.command_service.save_command_from(_default_music_cfg(trigger), is_active=True)
 
         self._sync_switches_from_db()
 
@@ -184,7 +183,7 @@ class MusicController(QObject):
         if not self._provider_connected:
             self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
             if hasattr(self.music_provider, "queue_updated"):
-                self.music_provider.queue_updated.connect(self._poll_now_playing)
+                self.music_provider.queue_updated.connect(self.refresh_now_playing)
             self._provider_connected = True
 
         vol = 100
@@ -213,11 +212,22 @@ class MusicController(QObject):
                 vol = 100
         self.current_volume = vol
 
+        self._show_volume(vol)
+        self.refresh_now_playing()
+
+    def _show_volume(self, volume: int):
         self.view.slider_vol.blockSignals(True)
-        self.view.slider_vol.setValue(vol)
+        self.view.slider_vol.setValue(volume)
         self.view.slider_vol.blockSignals(False)
-        self.view.lbl_vol_perc.setText(f"{vol}%")
-        self._poll_now_playing()
+        self.view.lbl_vol_perc.setText(f"{volume}%")
+
+    def apply_chat_volume(self, volume: int):
+        self.set_volume(volume)
+        if self.view is not None and hasattr(self.view, "slider_vol"):
+            self._show_volume(volume)
+
+    def send_chat_message(self, message: str, platform: str = "kick"):
+        self.command_service.send_response(message, platform=platform)
 
     def set_volume(self, volume: int):
         self.current_volume = volume
@@ -256,7 +266,7 @@ class MusicController(QObject):
             self.settings_storage.save_string("youtube_max_song_duration", str(self.max_song_duration))
 
     @Slot()
-    def _poll_now_playing(self):
+    def refresh_now_playing(self):
         if not self.music_provider:
             return
         song = self.music_provider.get_current_song()
@@ -293,7 +303,7 @@ class MusicController(QObject):
         if self.music_provider and hasattr(self.music_provider, "remove_from_queue"):
             success = self.music_provider.remove_from_queue(index)
             if success:
-                self._poll_now_playing()
+                self.refresh_now_playing()
                 msg = self.i18n.get("music.toast.removed_from_queue")
                 if self.toast:
                     self.toast.show_toast(self.i18n.get("music.header.title"), msg, "success")
@@ -304,7 +314,7 @@ class MusicController(QObject):
         if self.music_provider and hasattr(self.music_provider, "move_in_queue"):
             success = self.music_provider.move_in_queue(from_index, to_index)
             if success:
-                self._poll_now_playing()
+                self.refresh_now_playing()
                 msg = self.i18n.get("music.toast.moved_in_queue")
                 if self.toast:
                     self.toast.show_toast(self.i18n.get("music.header.title"), msg, "info")
@@ -319,36 +329,8 @@ class MusicController(QObject):
         if not tag:
             logger.warning("[MusicController] Unknown music command trigger '%s', ignoring toggle", trigger)
             return
-        if existing:
-            self.command_service.save_command(
-                trigger=trigger,
-                response=tag,
-                is_active=is_active,
-                cooldown=existing.get("cooldown", 5),
-                aliases=existing.get("aliases", ""),
-                is_regex=False,
-                permission=existing.get("permission", "everyone"),
-                apply_kick=existing.get("apply_kick", True),
-                apply_twitch=existing.get("apply_twitch", True),
-                apply_youtube=existing.get("apply_youtube", True),
-                apply_tiktok=existing.get("apply_tiktok", True)
-            )
-        else:
-            def_meta = _DEFAULT_MUSIC_COMMANDS.get(trigger, (tag, 5, "", False, "everyone"))
-            _, def_cd, def_aliases, def_rx, def_perm = def_meta
-            self.command_service.save_command(
-                trigger=trigger,
-                response=tag,
-                is_active=is_active,
-                cooldown=def_cd,
-                aliases=def_aliases,
-                is_regex=def_rx,
-                permission=def_perm,
-                apply_kick=True,
-                apply_twitch=True,
-                apply_youtube=True,
-                apply_tiktok=True
-            )
+        base = {**_default_music_cfg(trigger), **(existing or {})}
+        self.command_service.save_command_from(base, response=tag, is_active=is_active)
 
         status_text = self.i18n.get("music.status.enabled") if is_active else self.i18n.get("music.status.disabled")
         status_msg = (self.i18n.get("music.toast.command_toggled")).replace("{trigger}", trigger).replace("{status}", status_text.lower())
@@ -395,14 +377,14 @@ class MusicController(QObject):
             self.music_provider.pause_playback()
         else:
             self.music_provider.resume_playback()
-        self._poll_now_playing()
+        self.refresh_now_playing()
 
     @Slot()
     def handle_skip(self):
         logger.info("[User Action] Skipped current song")
         if self.music_provider:
             self.music_provider.skip_current()
-            self._poll_now_playing()
+            self.refresh_now_playing()
 
     @Slot(int)
     def handle_seek(self, position_ms: int):
@@ -415,7 +397,7 @@ class MusicController(QObject):
             self.music_provider.set_position(position_ms)
         elif hasattr(self.music_provider, "player") and hasattr(self.music_provider.player, "setPosition"):
             self.music_provider.player.setPosition(position_ms)
-        self._poll_now_playing()
+        self.refresh_now_playing()
 
     @Slot(bool)
     def handle_youtube_auto_resume_toggle(self, enabled: bool):

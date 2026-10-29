@@ -4,7 +4,7 @@ from collections import deque
 import datetime
 import logging
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
-from backend.handlers import TTSVoiceHandler, ChatFilterHandler
+from backend.handlers import TTSVoiceHandler, ChatFilterHandler, CommandHelpFormatter
 from backend.services import MessagePipeline, ChatMessageDTO
 from backend.services.chat.giphy_service import GiphyService
 
@@ -145,6 +145,21 @@ _DEFAULT_MOD_COMMANDS: dict[str, dict] = {
     },
 }
 
+_DEFAULT_TTS_COMMAND: dict = {
+    "cooldown": 1,
+    "aliases": "",
+    "is_regex": False,
+    "permission": "everyone",
+}
+
+_DEFAULT_SYSTTS_COMMAND: dict = {
+    "trigger": "!systts",
+    "cooldown": 3,
+    "aliases": "!ttssys",
+    "is_regex": False,
+    "permission": "moderator",
+}
+
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
@@ -170,6 +185,7 @@ class ChatController(QObject):
             i18n, service, on_ignored_users_changed=self.tts_ignored_users_changed.emit
         )
         self.voice_handler = TTSVoiceHandler(self, view, service, toast_manager, i18n)
+        self.help_formatter = CommandHelpFormatter(i18n)
         self.giphy_service = giphy_service or GiphyService()
 
         self._tts_enabled = True
@@ -345,75 +361,23 @@ class ChatController(QObject):
         if self.voice_handler._all_voices:
             self.voice_handler._on_voices_fetched(self.voice_handler._all_voices, provider, is_initial=True)
 
-    def _upsert_system_command(self, cmd_map: dict[str, dict], tag: str, default_cfg: dict, active_override: bool | None = None) -> None:
-        existing = cmd_map.get(tag)
-        is_active = active_override if active_override is not None else default_cfg.get("is_active", True)
-        
-        self.command_service.blockSignals(True)
-        try:
-            if not existing:
-                self.command_service.save_command(
-                    trigger=default_cfg["trigger"],
-                    response=tag,
-                    is_active=is_active,
-                    cooldown=default_cfg.get("cooldown", 2),
-                    aliases=default_cfg.get("aliases", ""),
-                    is_regex=default_cfg.get("is_regex", False),
-                    permission=default_cfg.get("permission", "everyone"),
-                    apply_kick=default_cfg.get("apply_kick", True),
-                    apply_twitch=default_cfg.get("apply_twitch", True),
-                    apply_youtube=default_cfg.get("apply_youtube", True),
-                    apply_tiktok=default_cfg.get("apply_tiktok", True),
-                )
-            else:
-                def_aliases = [a.strip() for a in default_cfg.get("aliases", "").split(",") if a.strip()]
-                curr_aliases = [a.strip() for a in existing.get("aliases", "").split(",") if a.strip()]
-                if def_aliases and any(na not in curr_aliases for na in def_aliases):
-                    merged_aliases = list(dict.fromkeys(curr_aliases + def_aliases))
-                    self.command_service.save_command(
-                        trigger=existing["trigger"],
-                        response=existing["response"],
-                        is_active=existing.get("is_active", True),
-                        cooldown=existing.get("cooldown", default_cfg.get("cooldown", 2)),
-                        aliases=",".join(merged_aliases),
-                        is_regex=existing.get("is_regex", False),
-                        permission=existing.get("permission", default_cfg.get("permission", "everyone")),
-                        apply_kick=existing.get("apply_kick", True),
-                        apply_twitch=existing.get("apply_twitch", True),
-                        apply_youtube=existing.get("apply_youtube", True),
-                        apply_tiktok=existing.get("apply_tiktok", True),
-                    )
-        finally:
-            self.command_service.blockSignals(False)
-
     def _register_system_commands(self) -> None:
         settings = self._tts_settings_cache
         commands = self.command_service.get_all_commands()
         cmd_map = _build_command_response_map(commands)
 
-        tts_cfg = {
-            "trigger": settings.get("command", "!tts"),
-            "cooldown": 1,
-            "aliases": "",
-            "is_regex": False,
-            "permission": "everyone"
-        }
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS]", tts_cfg, active_override=settings.get("use_command", False))
-
-        systts_cfg = {
-            "trigger": "!systts",
-            "cooldown": 3,
-            "aliases": "!ttssys",
-            "is_regex": False,
-            "permission": "moderator"
-        }
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_SYSTTS]", systts_cfg, active_override=True)
-
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"], active_override=settings.get("mod_mute_command_enabled", True))
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], active_override=settings.get("mod_block_command_enabled", True))
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_SKIP]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_SKIP]"], active_override=True)
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], active_override=True)
-        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_COMMANDS]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_COMMANDS]"], active_override=True)
+        tts_cfg = {**_DEFAULT_TTS_COMMAND, "trigger": settings.get("command", "!tts")}
+        system_commands = (
+            ("[PLUGIN_CHAT_TTS]", tts_cfg, settings.get("use_command", False)),
+            ("[PLUGIN_CHAT_SYSTTS]", _DEFAULT_SYSTTS_COMMAND, True),
+            ("[PLUGIN_CHAT_TTS_MUTE]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"], settings.get("mod_mute_command_enabled", True)),
+            ("[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], settings.get("mod_block_command_enabled", True)),
+            ("[PLUGIN_CHAT_TTS_SKIP]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_SKIP]"], True),
+            ("[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], True),
+            ("[PLUGIN_CHAT_COMMANDS]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_COMMANDS]"], True),
+        )
+        for tag, cfg, active in system_commands:
+            self.command_service.ensure_command(tag, cfg, is_active=active)
 
         for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
             legacy_cmd = cmd_map.get(legacy_tag)
@@ -654,163 +618,20 @@ class ChatController(QObject):
                 warn_msg = self.i18n.get("chat.status.giphy_key_required").replace("{user}", dto.user)
                 self.command_service.send_response(warn_msg, platform=platform)
 
-    def _send_chunked_command_responses(self, header: str, sections: list[str], platform: str = "kick", max_chars: int = 380) -> None:
-        if not sections:
-            return
-
-        full_candidate = f"{header} " + " | ".join(sections)
-        if len(full_candidate) <= max_chars:
-            self.command_service.send_response(full_candidate, platform=platform)
-            return
-
-        chunks: list[str] = []
-        current = header
-        for sec in sections:
-            candidate = f"{current} | {sec}" if current != header else f"{header} {sec}"
-            if len(candidate) <= max_chars:
-                current = candidate
-            else:
-                if current != header:
-                    chunks.append(current)
-                if len(f"{header} {sec}") <= max_chars:
-                    current = f"{header} {sec}"
-                else:
-                    current = header
-                    sub_items = sec.split(", ")
-                    sub_accum = ""
-                    for item in sub_items:
-                        sub_cand = f"{sub_accum}, {item}" if sub_accum else item
-                        if len(f"{header} {sub_cand}") <= max_chars:
-                            sub_accum = sub_cand
-                        else:
-                            if sub_accum:
-                                chunks.append(f"{header} {sub_accum}")
-                            sub_accum = item
-                    if sub_accum:
-                        current = f"{header} {sub_accum}"
-        if current and current != header:
-            chunks.append(current)
-
-        for idx, chunk in enumerate(chunks):
+    def _send_staggered_responses(self, messages: list[str], platform: str = "kick") -> None:
+        for idx, message in enumerate(messages):
             if idx == 0:
-                self.command_service.send_response(chunk, platform=platform)
+                self.command_service.send_response(message, platform=platform)
             else:
-                QTimer.singleShot(idx * 400, lambda c=chunk: self.command_service.send_response(c, platform=platform))
+                QTimer.singleShot(idx * 400, lambda m=message: self.command_service.send_response(m, platform=platform))
 
     def _handle_plugin_commands(self, dto: ChatMessageDTO, prefix: str) -> None:
         raw_args = dto.content[len(prefix):].strip().lower()
         platform = getattr(dto, "platform", "kick")
-        user_badges = [str(b).lower() for b in (dto.badges or [])]
-        is_mod = any(b in ("moderator", "broadcaster") for b in user_badges)
+        is_mod = any(str(b).lower() in ("moderator", "broadcaster") for b in (dto.badges or []))
 
-        all_commands = self.command_service.get_all_commands()
-        if not all_commands:
-            msg = self.i18n.get("chat.commands_help.empty_general")
-            self.command_service.send_response(msg, platform=platform)
-            return
-
-        categories = {
-            "chat": {"active": [], "inactive": []},
-            "music": {"active": [], "inactive": []},
-            "widgets": {"active": [], "inactive": []},
-            "moderation": {"active": [], "inactive": []},
-        }
-
-        for cmd in all_commands:
-            trig = cmd.get("trigger", "").strip()
-            if not trig:
-                continue
-            resp = cmd.get("response", "")
-            is_active = bool(cmd.get("is_active", True))
-            perm = cmd.get("permission", "everyone").lower()
-
-            if resp.startswith("[PLUGIN_MUSIC_"):
-                cat = "music"
-            elif resp.startswith("[PLUGIN_WIDGET_"):
-                cat = "widgets"
-            elif resp in ("[PLUGIN_CHAT_TTS_MUTE]", "[PLUGIN_CHAT_TTS_BLOCK]", "[PLUGIN_CHAT_TTS_SKIP]") or perm in ("moderator", "broadcaster"):
-                cat = "moderation"
-            else:
-                cat = "chat"
-
-            if is_active:
-                categories[cat]["active"].append(trig)
-            else:
-                categories[cat]["inactive"].append(trig)
-
-        for cat in categories:
-            categories[cat]["active"].sort()
-            categories[cat]["inactive"].sort()
-
-        labels = {
-            "chat": self.i18n.get("chat.commands_help.sec_chat"),
-            "music": self.i18n.get("chat.commands_help.sec_music"),
-            "widgets": self.i18n.get("chat.commands_help.sec_widgets"),
-            "moderation": self.i18n.get("chat.commands_help.sec_moderation"),
-        }
-
-        sec_alias_map = {
-            "chat": "chat", "general": "chat",
-            "musica": "music", "music": "music", "cancion": "music",
-            "widgets": "widgets", "widget": "widgets",
-            "mod": "moderation", "moderacion": "moderation", "moderator": "moderation"
-        }
-        target_cat = sec_alias_map.get(raw_args)
-        if target_cat:
-            if target_cat == "moderation" and not is_mod:
-                return
-            act = categories[target_cat]["active"]
-            inact = categories[target_cat]["inactive"]
-            cat_label = labels[target_cat]
-            if not act and not inact:
-                msg = self.i18n.get("chat.commands_help.empty_category").replace("{category}", cat_label)
-                self.command_service.send_response(msg, platform=platform)
-                return
-
-            act_tag = self.i18n.get("chat.commands_help.active_tag")
-            inact_tag = self.i18n.get("chat.commands_help.inactive_tag")
-            parts = []
-            if act:
-                parts.append(f"{act_tag}: {', '.join(act)}")
-            if inact:
-                parts.append(f"{inact_tag}: {', '.join(inact)}")
-
-            header = f"{cat_label}:"
-            self._send_chunked_command_responses(header, parts, platform=platform)
-            return
-
-        is_all_mode = raw_args in ("all", "todos", "status", "estado", "full")
-        header = self.i18n.get("chat.commands_help.status_header") if is_all_mode else self.i18n.get("chat.commands_help.active_header")
-        sections_to_show = ["chat", "music", "widgets"]
-        if is_mod:
-            sections_to_show.append("moderation")
-
-        section_strings = []
-        for cat_key in sections_to_show:
-            act = categories[cat_key]["active"]
-            inact = categories[cat_key]["inactive"]
-            cat_label = labels[cat_key]
-
-            if is_all_mode:
-                if not act and not inact:
-                    continue
-                inner_parts = []
-                if act:
-                    inner_parts.append(f"✅ {', '.join(act)}")
-                if inact:
-                    inner_parts.append(f"❌ {', '.join(inact)}")
-                section_strings.append(f"{cat_label}: [{' | '.join(inner_parts)}]")
-            else:
-                if not act:
-                    continue
-                section_strings.append(f"{cat_label}: {', '.join(act)}")
-
-        if not section_strings:
-            msg = self.i18n.get("chat.commands_help.empty_general")
-            self.command_service.send_response(msg, platform=platform)
-            return
-
-        self._send_chunked_command_responses(header, section_strings, platform=platform)
+        messages = self.help_formatter.format(self.command_service.get_all_commands(), raw_args, is_mod)
+        self._send_staggered_responses(messages, platform)
 
     def _resolve_user_role(self, badges: list, user: str) -> str:
         badge_set = set(badges) if badges else set()
@@ -1061,106 +882,27 @@ class ChatController(QObject):
             cmd_needs_update = True
 
         if cmd_needs_update:
-            self.command_service.blockSignals(True)
-            try:
-                if existing:
-                    if existing["trigger"] != target_trigger:
-                        self.command_service.delete_command(existing["trigger"])
-                    self.command_service.save_command(
-                        trigger=target_trigger,
-                        response="[PLUGIN_CHAT_TTS]",
-                        is_active=target_use_cmd,
-                        cooldown=existing.get("cooldown", 1),
-                        aliases=existing.get("aliases", ""),
-                        is_regex=existing.get("is_regex", False),
-                        permission=existing.get("permission", "everyone"),
-                        apply_kick=existing.get("apply_kick", True),
-                        apply_twitch=existing.get("apply_twitch", True),
-                        apply_youtube=existing.get("apply_youtube", True),
-                        apply_tiktok=existing.get("apply_tiktok", True)
-                    )
-                else:
-                    self.command_service.save_command(
-                        trigger=target_trigger,
-                        response="[PLUGIN_CHAT_TTS]",
-                        is_active=target_use_cmd,
-                        cooldown=1,
-                        aliases="",
-                        is_regex=False,
-                        permission="everyone",
-                        apply_kick=True,
-                        apply_twitch=True,
-                        apply_youtube=True,
-                        apply_tiktok=True
-                    )
-
-                existing_systts = cmd_map.get("[PLUGIN_CHAT_SYSTTS]")
-                if not existing_systts:
-                    self.command_service.save_command(
-                        trigger="!systts",
-                        response="[PLUGIN_CHAT_SYSTTS]",
-                        is_active=True,
-                        cooldown=3,
-                        aliases="!ttssys",
-                        is_regex=False,
-                        permission="moderator"
-                    )
-            finally:
-                self.command_service.blockSignals(False)
+            with self.command_service.silent_updates():
+                if existing and existing["trigger"] != target_trigger:
+                    self.command_service.delete_command(existing["trigger"])
+                self.command_service.save_command_from(
+                    existing or _DEFAULT_TTS_COMMAND,
+                    trigger=target_trigger,
+                    response="[PLUGIN_CHAT_TTS]",
+                    is_active=target_use_cmd,
+                )
+                if "[PLUGIN_CHAT_SYSTTS]" not in cmd_map:
+                    self.command_service.save_command_from(_DEFAULT_SYSTTS_COMMAND, response="[PLUGIN_CHAT_SYSTTS]")
 
         target_mod_mute = settings.get("mod_mute_command_enabled", True)
         target_mod_block = settings.get("mod_block_command_enabled", True)
         target_show_gifs = settings.get("chat_overlay_show_gifs", True)
-        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", target_mod_mute)
-        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", target_mod_block)
-        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_GIF]", target_show_gifs)
-
-    def _sync_command_active_state(self, cmd_map_or_commands: list[dict] | dict[str, dict], plugin_tag: str, is_active: bool) -> None:
-        cmd_map = cmd_map_or_commands if isinstance(cmd_map_or_commands, dict) else _build_command_response_map(cmd_map_or_commands)
-        cmd = cmd_map.get(plugin_tag)
-        if cmd:
-            if cmd.get("is_active") != is_active:
-                self.command_service.blockSignals(True)
-                try:
-                    self.command_service.save_command(
-                        trigger=cmd["trigger"],
-                        response=cmd["response"],
-                        is_active=is_active,
-                        cooldown=cmd.get("cooldown", 2),
-                        aliases=cmd.get("aliases", ""),
-                        is_regex=cmd.get("is_regex", False),
-                        permission=cmd.get("permission", "everyone"),
-                        apply_kick=cmd.get("apply_kick", True),
-                        apply_twitch=cmd.get("apply_twitch", True),
-                        apply_youtube=cmd.get("apply_youtube", True),
-                        apply_tiktok=cmd.get("apply_tiktok", True)
-                    )
-                finally:
-                    self.command_service.blockSignals(False)
-
-                QTimer.singleShot(0, self.command_service.commands_changed.emit)
-        elif is_active:
-            def_cmd = _DEFAULT_MOD_COMMANDS.get(plugin_tag)
-            if def_cmd:
-                self.command_service.blockSignals(True)
-                try:
-                    self.command_service.save_command(
-                        trigger=def_cmd["trigger"],
-                        response=def_cmd["response"],
-                        is_active=True,
-                        cooldown=def_cmd["cooldown"],
-                        aliases=def_cmd["aliases"],
-                        is_regex=def_cmd["is_regex"],
-                        permission=def_cmd["permission"],
-                        apply_kick=def_cmd["apply_kick"],
-                        apply_twitch=def_cmd["apply_twitch"],
-                        apply_youtube=def_cmd["apply_youtube"],
-                        apply_tiktok=def_cmd["apply_tiktok"]
-                    )
-                finally:
-                    self.command_service.blockSignals(False)
-
-                QTimer.singleShot(0, self.command_service.commands_changed.emit)
+        for tag, active in (
+            ("[PLUGIN_CHAT_TTS_MUTE]", target_mod_mute),
+            ("[PLUGIN_CHAT_TTS_BLOCK]", target_mod_block),
+            ("[PLUGIN_CHAT_GIF]", target_show_gifs),
+        ):
+            self.command_service.set_command_active_by_tag(tag, active, _DEFAULT_MOD_COMMANDS.get(tag))
 
     def _sync_tts_command_from_db(self) -> None:
         commands = self.command_service.get_all_commands()

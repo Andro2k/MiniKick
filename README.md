@@ -2,7 +2,7 @@
 
 **El centro de control definitivo, modular y ultra ligero para streamers en Kick, Twitch, YouTube y TikTok**
 
-[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/) [![GUI PySide6](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Tests](https://img.shields.io/badge/Tests-273%20PASS-brightgreen?style=for-the-badge&logo=pytest&labelColor=191919)](#arquitectura-e-ingenier%C3%ADa) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/) [![GUI PySide6](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Tests](https://img.shields.io/badge/Tests-318%20PASS-brightgreen?style=for-the-badge&logo=pytest&labelColor=191919)](#arquitectura-e-ingenier%C3%ADa) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](LICENSE)
 
 <br>
 
@@ -179,7 +179,7 @@ uv sync
 # 3. Ejecutar la aplicación en modo desarrollo
 uv run python main.py
 
-# 4. Ejecutar la suite completa de pruebas (273 tests)
+# 4. Ejecutar la suite completa de pruebas (318 tests)
 uv run pytest resources/tests
 
 # 5. Ejecutar la auditoría maestra de calidad (11 herramientas)

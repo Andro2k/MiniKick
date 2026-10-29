@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from PySide6.QtWidgets import QApplication
 from backend.controllers.chat_controller import ChatController, _build_command_response_map, _parse_mute_args, _parse_block_args
 from backend.services.chat.chat_service import ChatService
+from backend.services.chat.commands_service import CommandService
 from backend.services.chat.chat_pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
 
@@ -102,12 +103,28 @@ def test_pure_mod_argument_parsers():
     assert _parse_block_args("!ttsunblock", "!ttsunblock free word") == (True, "free word")
     assert _parse_block_args("!unblockword", "!unblockword") == (True, "")
 
+class _InMemoryCommandStorage:
+    def __init__(self):
+        self.commands = []
+    def load_all(self):
+        return [dict(c) for c in self.commands]
+    def save_command(self, trigger, response, is_active, cooldown, aliases, is_regex, permission, *args):
+        self.commands = [c for c in self.commands if c["trigger"] != trigger]
+        self.commands.append({"trigger": trigger, "response": response, "is_active": is_active,
+                              "cooldown": cooldown, "aliases": aliases, "is_regex": is_regex,
+                              "permission": permission})
+    def delete_command(self, trigger):
+        self.commands = [c for c in self.commands if c["trigger"] != trigger]
+    def get_command_by_trigger(self, trigger):
+        return next((dict(c) for c in self.commands if c["trigger"] == trigger), None)
+
 def test_chat_controller_init_and_system_command_upsert(qapp, mock_dependencies):
     d = mock_dependencies
+    cmd_svc = CommandService(commands_storage=_InMemoryCommandStorage())
     controller = ChatController(
         view=d["view"],
         service=d["service"],
-        command_service=d["command_service"],
+        command_service=cmd_svc,
         spam_service=d["spam_service"],
         i18n=d["i18n"],
         toast_manager=d["toast"],
@@ -116,7 +133,7 @@ def test_chat_controller_init_and_system_command_upsert(qapp, mock_dependencies)
 
     assert controller.giphy_service is d["giphy_service"]
 
-    saved_responses = [call[1]["response"] for call in d["command_service"].save_command.call_args_list]
+    saved_responses = {c["response"] for c in cmd_svc.get_all_commands()}
     assert "[PLUGIN_CHAT_TTS]" in saved_responses
     assert "[PLUGIN_CHAT_SYSTTS]" in saved_responses
     assert "[PLUGIN_CHAT_TTS_MUTE]" in saved_responses

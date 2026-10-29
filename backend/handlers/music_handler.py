@@ -3,38 +3,35 @@
 import logging
 import time
 
+from backend.interfaces import IMusicChatContext
+
 logger = logging.getLogger("minikick.handlers.music_command")
 
 class MusicCommandHandler:
-    def __init__(self, controller):
-        self.controller = controller
+    def __init__(self, context: IMusicChatContext):
+        self.ctx = context
+        self._last_request_time: dict[str, float] = {}
 
     @property
     def i18n(self):
-        return self.controller.i18n
+        return self.ctx.i18n
 
     def send_chat_message(self, message: str, platform: str = "kick"):
-        if hasattr(self.controller, "command_service") and self.controller.command_service:
-            self.controller.command_service.send_response(message, platform=platform)
-        else:
-            api = getattr(self.controller, "command_service", None)
-            api_client = getattr(api, "api_client", None) if api else None
-            if api_client:
-                api_client.post_chat_message(message)
+        self.ctx.send_chat_message(message, platform=platform)
 
-    def _require_active_provider(self, _api, provider, platform: str = "kick") -> bool:
+    def _require_active_provider(self, provider, platform: str = "kick") -> bool:
         if provider:
             return True
         self.send_chat_message(self.i18n.get("music.chat.not_linked_youtube"), platform=platform)
         return False
 
     def handle_command(self, tag: str, user: str, message: str, prefix_used: str, platform: str = "kick"):
-        if not getattr(self.controller, "music_service_enabled", True):
+        if not self.ctx.music_service_enabled:
             msg = self.i18n.get("music.stats.service_disabled_chat").replace("{user}", user)
             self.send_chat_message(msg, platform=platform)
             return
 
-        provider = self.controller.music_provider
+        provider = self.ctx.music_provider
         dispatch_table = {
             "[PLUGIN_MUSIC_SR]": self._handle_plugin_sr,
             "[PLUGIN_MUSIC_SKIP]": self._handle_plugin_skip,
@@ -47,9 +44,9 @@ class MusicCommandHandler:
 
         executor = dispatch_table.get(tag)
         if executor:
-            executor(self.controller.command_service, provider, user, message, prefix_used, platform=platform)
+            executor(provider, user, message, prefix_used, platform=platform)
 
-    def _handle_plugin_playlist(self, _api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_playlist(self, provider, user, message, prefix_used, platform: str = "kick"):
         if not provider or not hasattr(provider, "get_queue"):
             msg = self.i18n.get("music.chat.no_queue_available").replace("{user}", user)
             self.send_chat_message(msg, platform=platform)
@@ -124,29 +121,29 @@ class MusicCommandHandler:
                 )
                 self.send_chat_message(extra_msg, platform=platform)
 
-    def _handle_plugin_sr(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_sr(self, provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
             msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
             self.send_chat_message(msg, platform=platform)
             return
 
-        if not self._require_active_provider(api, provider, platform=platform):
+        if not self._require_active_provider(provider, platform=platform):
             return
 
         user_lower = user.lower()
         now = time.time()
 
         queue_items = provider.get_queue() if provider and hasattr(provider, "get_queue") else []
-        if len(queue_items) >= self.controller.max_queue_size:
-            msg = self.i18n.get("music.chat.queue_full").replace("{user}", user).replace("{max}", str(self.controller.max_queue_size))
+        if len(queue_items) >= self.ctx.max_queue_size:
+            msg = self.i18n.get("music.chat.queue_full").replace("{user}", user).replace("{max}", str(self.ctx.max_queue_size))
             self.send_chat_message(msg, platform=platform)
             return
 
-        last_time = self.controller._user_last_request_time.get(user_lower, 0.0)
+        last_time = self._last_request_time.get(user_lower, 0.0)
         elapsed = now - last_time
-        if elapsed < self.controller.user_cooldown:
-            remaining = int(self.controller.user_cooldown - elapsed) + 1
+        if elapsed < self.ctx.user_cooldown:
+            remaining = int(self.ctx.user_cooldown - elapsed) + 1
             msg = self.i18n.get("music.chat.cooldown_active").replace("{user}", user).replace("{seconds}", str(remaining))
             self.send_chat_message(msg, platform=platform)
             return
@@ -156,44 +153,42 @@ class MusicCommandHandler:
         if current_song and (current_song.get("requester") or "").lower() == user_lower:
             user_active_count += 1
 
-        if user_active_count >= self.controller.max_user_songs:
+        if user_active_count >= self.ctx.max_user_songs:
             msg = (
                 self.i18n.get("music.chat.user_limit_reached")
                 .replace("{user}", user)
                 .replace("{count}", str(user_active_count))
-                .replace("{max}", str(self.controller.max_user_songs))
+                .replace("{max}", str(self.ctx.max_user_songs))
             )
             self.send_chat_message(msg, platform=platform)
             return
 
-        self.controller._user_last_request_time[user_lower] = now
+        self._last_request_time[user_lower] = now
 
         def on_complete(_success, reply_msg):
             self.send_chat_message(reply_msg, platform=platform)
-            if hasattr(self.controller, "_poll_now_playing"):
-                self.controller._poll_now_playing()
+            self.ctx.refresh_now_playing()
 
         success, immediate_reply = provider.add_to_queue(
             query,
             callback=on_complete,
             requester=user,
             platform=platform,
-            max_duration_min=self.controller.max_song_duration
+            max_duration_min=self.ctx.max_song_duration
         )
-        if hasattr(self.controller, "_poll_now_playing"):
-            self.controller._poll_now_playing()
+        self.ctx.refresh_now_playing()
         if immediate_reply:
             self.send_chat_message(immediate_reply, platform=platform)
 
-    def _handle_plugin_skip(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
-        if self._require_active_provider(api, provider, platform=platform):
+    def _handle_plugin_skip(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
+        if self._require_active_provider(provider, platform=platform):
             if provider.skip_current():
                 self.send_chat_message(self.i18n.get("music.chat.skip_success"), platform=platform)
             else:
                 self.send_chat_message(self.i18n.get("music.chat.skip_failed"), platform=platform)
 
-    def _handle_plugin_song(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
-        if self._require_active_provider(api, provider, platform=platform):
+    def _handle_plugin_song(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
+        if self._require_active_provider(provider, platform=platform):
             song = provider.get_current_song()
             if song:
                 is_playing = song.get("is_playing", False)
@@ -207,29 +202,29 @@ class MusicCommandHandler:
                 msg = self.i18n.get("music.chat.song_empty_youtube")
                 self.send_chat_message(msg, platform=platform)
 
-    def _handle_plugin_pause(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
-        if self._require_active_provider(api, provider, platform=platform):
+    def _handle_plugin_pause(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
+        if self._require_active_provider(provider, platform=platform):
             if hasattr(provider, "pause_playback") and provider.pause_playback():
                 self.send_chat_message(self.i18n.get("music.chat.pause_success"), platform=platform)
-                self.controller._poll_now_playing()
+                self.ctx.refresh_now_playing()
             else:
                 self.send_chat_message(self.i18n.get("music.chat.pause_failed"), platform=platform)
 
-    def _handle_plugin_resume(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
-        if self._require_active_provider(api, provider, platform=platform):
+    def _handle_plugin_resume(self, provider, _user, _message, _prefix_used, platform: str = "kick"):
+        if self._require_active_provider(provider, platform=platform):
             if hasattr(provider, "resume_playback") and provider.resume_playback():
                 self.send_chat_message(self.i18n.get("music.chat.resume_success"), platform=platform)
-                self.controller._poll_now_playing()
+                self.ctx.refresh_now_playing()
             else:
                 self.send_chat_message(self.i18n.get("music.chat.resume_failed"), platform=platform)
 
-    def _handle_plugin_volume(self, _api, _provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_volume(self, _provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
             msg = (
                 self.i18n.get("music.chat.vol_current")
                 .replace("{user}", user)
-                .replace("{volume}", str(self.controller.current_volume))
+                .replace("{volume}", str(self.ctx.current_volume))
             )
             self.send_chat_message(msg, platform=platform)
             return
@@ -243,12 +238,7 @@ class MusicCommandHandler:
             self.send_chat_message(msg, platform=platform)
             return
 
-        self.controller.set_volume(vol_val)
-        if hasattr(self.controller.view, "slider_vol"):
-            self.controller.view.slider_vol.blockSignals(True)
-            self.controller.view.slider_vol.setValue(vol_val)
-            self.controller.view.slider_vol.blockSignals(False)
-            self.controller.view.lbl_vol_perc.setText(f"{vol_val}%")
+        self.ctx.apply_chat_volume(vol_val)
 
         msg = self.i18n.get("music.chat.vol_success").replace("{user}", user).replace("{volume}", str(vol_val)).replace("{vol}", str(vol_val))
         self.send_chat_message(msg, platform=platform)

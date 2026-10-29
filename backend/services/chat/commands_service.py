@@ -3,8 +3,9 @@
 import logging
 import re
 import time
+from contextlib import contextmanager
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QTimer, Signal
 from backend.utils.command_utils import sanitize_command_trigger
 
 logger = logging.getLogger("minikick.services.chat.commands")
@@ -31,7 +32,6 @@ class CommandService(QObject):
         self._regex_commands: list[dict] = []
         self._all_commands_cache: list[dict] = []
         
-        from PySide6.QtCore import QTimer
         self._save_timer = QTimer(self)
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(400)
@@ -112,6 +112,65 @@ class CommandService(QObject):
             if cmd["trigger"].strip().lower() == clean:
                 return cmd
         return self.storage.get_command_by_trigger(trigger)
+
+    def get_command_by_response(self, response_tag: str) -> dict | None:
+        for cmd in self._all_commands_cache:
+            if cmd.get("response") == response_tag:
+                return dict(cmd)
+        return None
+
+    @contextmanager
+    def silent_updates(self):
+        was_blocked = self.blockSignals(True)
+        try:
+            yield
+        finally:
+            self.blockSignals(was_blocked)
+
+    def save_command_from(self, cfg: dict, **overrides) -> None:
+        data = {**cfg, **overrides}
+        self.save_command(
+            trigger=data["trigger"],
+            response=data["response"],
+            is_active=data.get("is_active", True),
+            cooldown=data.get("cooldown", 2),
+            aliases=data.get("aliases", ""),
+            is_regex=data.get("is_regex", False),
+            permission=data.get("permission", "everyone"),
+            apply_kick=data.get("apply_kick"),
+            apply_twitch=data.get("apply_twitch"),
+            apply_youtube=data.get("apply_youtube"),
+            apply_tiktok=data.get("apply_tiktok"),
+        )
+
+    def ensure_command(self, response_tag: str, default_cfg: dict, is_active: bool | None = None) -> None:
+        existing = self.get_command_by_response(response_tag)
+        with self.silent_updates():
+            if not existing:
+                active = is_active if is_active is not None else default_cfg.get("is_active", True)
+                self.save_command_from(default_cfg, response=response_tag, is_active=active)
+                return
+            default_aliases = [a.strip() for a in default_cfg.get("aliases", "").split(",") if a.strip()]
+            current_aliases = [a.strip() for a in existing.get("aliases", "").split(",") if a.strip()]
+            if default_aliases and any(a not in current_aliases for a in default_aliases):
+                merged = ",".join(dict.fromkeys(current_aliases + default_aliases))
+                self.save_command_from(existing, aliases=merged)
+
+    def set_command_active_by_tag(self, response_tag: str, is_active: bool, default_cfg: dict | None = None) -> bool:
+        existing = self.get_command_by_response(response_tag)
+        if existing:
+            if existing.get("is_active") == is_active:
+                return False
+            target = existing
+        elif is_active and default_cfg:
+            target = {**default_cfg, "response": response_tag}
+        else:
+            return False
+
+        with self.silent_updates():
+            self.save_command_from(target, is_active=is_active)
+        QTimer.singleShot(0, self.commands_changed.emit)
+        return True
 
     def search_commands(self, query: str) -> list[dict]:
         clean_q = query.strip().lower()
