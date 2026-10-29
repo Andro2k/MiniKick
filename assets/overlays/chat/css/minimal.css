@@ -1,56 +1,93 @@
 /* assets/overlays/chat/css/minimal.css */
-/* MiniKick Minimalist Chat Theme */
+/* MiniKick Chat Overlay — Minimal (sin card) Theme tokens */
+/* Solo redefine variables CSS; todo el layout vive en chat.html */
 
+:root {
+    /* Card — sin fondo, sin borde, sin sombra */
+    --msg-bg:              transparent;
+    --msg-border:          transparent;
+    --msg-radius:          0px;
+    --msg-shadow:          none;
+    --msg-blur:            0px;
+    --msg-color:           #ffffff;
+
+    /* Tipografía */
+    --username-color:      var(--author-color, rgba(192, 132, 252, 0.95));
+    --username-weight:     800;
+    --username-tracking:   0.2px;
+    --content-color:       #ffffff;
+    --content-weight:      600;
+    --content-line-height: 1.42;
+    --timestamp-color:     rgba(255, 255, 255, 0.65);
+    --timestamp-size:      calc(var(--font-size) * 0.78);
+
+    /* Avatar — más pequeño que glass, sin sombra fuerte */
+    --avatar-size:         2.29em;
+    --avatar-shadow:       0 2px 6px rgba(0, 0, 0, 0.6);
+    --avatar-badge-border: #000000;
+
+    /* Avatar horizontal — igual que vertical en minimal */
+    --avatar-h-size:        2.29em;
+    --avatar-badge-h-border:#000000;
+    --pill-padding:         0.1em 0.4em;
+    --pill-radius:          0px;
+
+    /* Roles — minimal no usa background en roles, solo borde sutil */
+    --role-broadcaster-border: transparent;
+    --role-broadcaster-shadow: none;
+    --role-broadcaster-bg:     transparent;
+    --role-moderator-border:   transparent;
+    --role-moderator-shadow:   none;
+    --role-moderator-bg:       transparent;
+    --role-vip-border:         transparent;
+    --role-vip-shadow:         none;
+    --role-vip-bg:             transparent;
+    --role-subscriber-border:  transparent;
+    --role-subscriber-shadow:  none;
+    --role-subscriber-bg:      transparent;
+
+    /* Highlighted — sutil en minimal */
+    --highlighted-border: rgba(255, 255, 255, 0.35);
+    --highlighted-shadow: none;
+}
+
+/* ---- Overrides de layout minimal (padding/margin propios) ---- */
 .message-box {
-    background: transparent;
-    border: none;
-    border-radius: 0;
     padding: calc(var(--font-size) * 0.25) calc(var(--font-size) * 0.4);
     margin-bottom: calc(var(--font-size) * 0.35);
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     align-self: flex-start;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
     gap: 0.71em;
     width: auto;
     max-width: 100%;
-}
-
-.message-box .message-body-wrap {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 .message-header {
-    display: flex;
-    align-items: center;
     gap: calc(var(--font-size) * 0.35);
     margin-bottom: calc(var(--font-size) * 0.15);
     line-height: 1.2;
+    justify-content: flex-start;
 }
 
 .username {
-    font-family: 'Outfit', sans-serif;
     font-size: calc(var(--font-size) * 1.05);
-    font-weight: 800;
-    letter-spacing: 0.2px;
-    text-shadow: 
+    text-shadow:
         0 0 10px var(--author-color, rgba(192, 132, 252, 0.85)),
         0 1px 3px rgba(0, 0, 0, 0.95),
         0 2px 6px rgba(0, 0, 0, 0.85) !important;
 }
 
+.message-content {
+    font-size: calc(var(--font-size) * 0.98);
+    letter-spacing: 0.15px;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.95),
+        0 2px 6px rgba(0, 0, 0, 0.85),
+        0 0 1px rgba(0, 0, 0, 0.9) !important;
+}
+
 .timestamp {
-    font-family: 'Inter', sans-serif;
-    font-size: calc(var(--font-size) * 0.72);
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.65);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
@@ -58,67 +95,16 @@
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.85));
 }
 
-.message-content {
-    color: #FFFFFF;
-    font-family: 'Inter', sans-serif;
-    font-size: calc(var(--font-size) * 0.98);
-    font-weight: 600;
-    line-height: 1.42;
-    letter-spacing: 0.15px;
-    text-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.95),
-        0 2px 6px rgba(0, 0, 0, 0.85),
-        0 0 1px rgba(0, 0, 0, 0.9) !important;
-    word-break: break-word;
-}
-
-/* Minimal Avatar Styles */
-.message-box .avatar-wrap {
-    position: relative;
-    flex-shrink: 0;
-    width: 2.29em;
-    height: 2.29em;
-    margin-top: 0.14em;
-}
-
-.message-box .avatar-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-
-.message-box .avatar-fallback {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.93em;
-    font-weight: 800;
-    color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-    text-transform: uppercase;
-}
-
-.message-box .avatar-badge {
-    position: absolute;
+.avatar-badge {
     bottom: -0.14em;
     right: -0.14em;
     width: 1em;
     height: 1em;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-    border: 1.5px solid #000000;
+    border-width: 1.5px;
 }
 
-.message-box .avatar-badge svg {
+.avatar-badge svg {
     width: 0.57em;
     height: 0.57em;
 }

@@ -453,7 +453,7 @@ function addMessage(data) {
 
     const roleClass = getRoleClass(data.badges);
     const msgBox = document.createElement('div');
-    msgBox.className = `message-box theme-${theme} role-${roleClass} ${animClass}`;
+    msgBox.className = `message-box role-${roleClass} ${animClass}`;
 
     if (data.is_highlighted || data.highlighted) {
         msgBox.classList.add('highlighted');
@@ -552,7 +552,7 @@ function addMessage(data) {
         const now = new Date();
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
-        timeSpan.innerText = `[${hh}:${mm}]`;
+        timeSpan.innerText = `${hh}:${mm}`;
         header.appendChild(timeSpan);
     }
 
