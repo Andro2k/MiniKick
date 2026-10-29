@@ -243,3 +243,132 @@ def test_flush_failures_are_reported_to_original_stderr(monkeypatch):
     app_logger_core.flush_all_logs()
 
     assert "Failed to flush handler FailingHandler: flush failed" in stderr.getvalue()
+
+
+def test_cooperative_sleep_breaks_immediately_on_interruption(qapp):
+    from backend.utils.worker_utils import cooperative_sleep
+
+    # A stopped worker aborts immediately
+    fake_worker = types.SimpleNamespace(_is_stopped=True)
+    assert cooperative_sleep(fake_worker, duration_seconds=5.0, step_ms=10) is False
+
+    # A running QThread that is interrupted aborts immediately
+    started_event = threading.Event()
+    results = []
+
+    class SleepWorker(QThread):
+        def run(self):
+            started_event.set()
+            results.append(cooperative_sleep(self, duration_seconds=5.0, step_ms=10))
+
+    worker = SleepWorker()
+    worker.start()
+    assert started_event.wait(1)
+    worker.requestInterruption()
+    assert worker.wait(1000)
+    assert results == [False]
+
+
+def test_chat_and_reward_workers_stop_sets_interruption_and_quit():
+    from backend.workers.kick_chat_worker import KickChatWorker, KickPollSyncWorker
+    from backend.workers.twitch_chat_worker import TwitchChatWorker
+    from backend.workers.twitch_rewards_worker import TwitchRewardWorker
+
+    i18n_mock = mock.Mock()
+    api_mock = mock.Mock()
+    api_mock.fetch_active_poll.return_value = None
+
+    poll_worker = KickPollSyncWorker(api_mock, "test_channel", interval_ms=500)
+    poll_worker.start()
+    poll_worker.stop()
+    assert poll_worker.isInterruptionRequested()
+    assert poll_worker._is_stopped is True
+    assert poll_worker.wait(1000)
+
+    kick_worker = KickChatWorker(i18n_mock, api_mock, "us2", ("key1",))
+    kick_worker.start()
+    kick_worker.stop()
+    assert kick_worker.isInterruptionRequested()
+    assert kick_worker._is_stopped is True
+    assert kick_worker.wait(1000)
+
+    twitch_worker = TwitchChatWorker(channel_name="", oauth_token="")
+    twitch_worker.start()
+    twitch_worker.stop()
+    assert twitch_worker.isInterruptionRequested()
+    assert twitch_worker._is_stopped is True
+    assert twitch_worker.wait(1000)
+
+    twitch_rewards = TwitchRewardWorker(i18n_mock, mock.Mock(), "cid", "bid")
+    twitch_rewards.start()
+    twitch_rewards.stop()
+    assert twitch_rewards.isInterruptionRequested()
+    assert twitch_rewards._running is False
+    assert twitch_rewards.wait(1000)
+
+
+def test_voice_fetcher_worker_cleans_up_com_apartment(monkeypatch):
+    import sys
+    from backend.workers.voice_worker import VoiceFetcherWorker
+
+    fake_pythoncom = mock.MagicMock()
+    monkeypatch.setitem(sys.modules, "pythoncom", fake_pythoncom)
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    tts_mock = mock.Mock()
+    tts_mock.get_available_voices.return_value = ["Voice 1"]
+
+    worker = VoiceFetcherWorker(tts_mock, "windows_sapi")
+    worker.run()
+
+    fake_pythoncom.CoInitialize.assert_called_once()
+    fake_pythoncom.CoUninitialize.assert_called_once()
+
+
+def test_ephemeral_workers_suppress_signals_when_interrupted():
+    from backend.workers.rewards_worker import FetchRewardsWorker
+    from backend.workers.updater_worker import UpdateCheckWorker
+
+    fetch_started = threading.Event()
+    release_fetch = threading.Event()
+
+    def fake_fetch(*_args, **_kwargs):
+        fetch_started.set()
+        release_fetch.wait(timeout=2)
+        return {"data": [{"title": "Reward 1"}]}
+
+    api_mock = mock.Mock()
+    api_mock.fetch_channel_rewards.side_effect = fake_fetch
+    rewards_worker = FetchRewardsWorker(api_mock, platform="kick")
+
+    rewards_received = []
+    rewards_worker.rewards_fetched.connect(lambda *args: rewards_received.append(args))
+    rewards_worker.start()
+
+    assert fetch_started.wait(2)
+    rewards_worker.requestInterruption()
+    release_fetch.set()
+    assert rewards_worker.wait(2000)
+    assert rewards_received == []
+
+    check_started = threading.Event()
+    release_check = threading.Event()
+
+    def fake_check(*_args, **_kwargs):
+        check_started.set()
+        release_check.wait(timeout=2)
+        return {"version": "1.7.0"}
+
+    manager_mock = mock.Mock()
+    manager_mock.check_for_updates.side_effect = fake_check
+    updater_worker = UpdateCheckWorker(manager_mock)
+
+    updates_received = []
+    updater_worker.update_found.connect(lambda *args: updates_received.append(args))
+    updater_worker.start()
+
+    assert check_started.wait(2)
+    updater_worker.requestInterruption()
+    release_check.set()
+    assert updater_worker.wait(2000)
+    assert updates_received == []

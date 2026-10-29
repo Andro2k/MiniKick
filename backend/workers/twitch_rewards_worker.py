@@ -4,7 +4,7 @@ import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchEventSubProvider
 from backend.services.system import TranslationService
-from backend.utils.worker_utils import ExponentialBackoff
+from backend.utils.worker_utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.twitch_rewards")
 
@@ -50,7 +50,8 @@ class TwitchRewardWorker(QThread):
                 access_token = tokens.get("access_token", "")
                 if not access_token:
                     logger.warning("[TwitchRewardWorker] No valid access token available for EventSub.")
-                    self.msleep(5000)
+                    if not cooperative_sleep(self, 5.0, step_ms=50):
+                        break
                     continue
 
                 self.provider.start_socket(
@@ -64,7 +65,7 @@ class TwitchRewardWorker(QThread):
                 )
             except Exception as e:
                 logger.error("[TwitchRewardWorker] Unhandled exception in worker: %s", e)
-                if self._running:
+                if self._running and not self.isInterruptionRequested():
                     self.error_occurred.emit(str(e))
 
             if not self._running or self.isInterruptionRequested():
@@ -72,10 +73,12 @@ class TwitchRewardWorker(QThread):
 
             delay_sec = self._backoff.next_delay()
             logger.debug("[TwitchRewardWorker] Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
-            self.msleep(int(delay_sec * 1000))
+            if not cooperative_sleep(self, delay_sec, step_ms=50):
+                break
 
     def stop(self):
         self._running = False
         self.requestInterruption()
         if self.provider:
             self.provider.stop_socket()
+        self.quit()

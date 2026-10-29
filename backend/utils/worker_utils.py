@@ -2,6 +2,7 @@
 
 import logging
 import random
+import time
 
 logger = logging.getLogger("minikick.utils.worker_utils")
 
@@ -12,6 +13,29 @@ def stop_provider_chat_worker(worker, provider, target_logger: logging.Logger, w
     if provider and hasattr(provider, "stop_chat"):
         provider.stop_chat()
     worker.quit()
+
+def cooperative_sleep(worker, duration_seconds: float, step_ms: int = 50) -> bool:
+    total_ms = max(0, int(duration_seconds * 1000))
+    if total_ms == 0:
+        return True
+    step = max(10, step_ms)
+    elapsed = 0
+    while elapsed < total_ms:
+        if getattr(worker, "_is_stopped", False) or getattr(worker, "_running", True) is False:
+            return False
+        if hasattr(worker, "isInterruptionRequested") and worker.isInterruptionRequested():
+            return False
+        chunk = min(step, total_ms - elapsed)
+        if hasattr(worker, "msleep"):
+            worker.msleep(chunk)
+        else:
+            time.sleep(chunk / 1000.0)
+        elapsed += chunk
+    return not (
+        getattr(worker, "_is_stopped", False)
+        or getattr(worker, "_running", True) is False
+        or (hasattr(worker, "isInterruptionRequested") and worker.isInterruptionRequested())
+    )
 
 class ExponentialBackoff:
     def __init__(

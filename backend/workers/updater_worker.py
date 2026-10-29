@@ -17,9 +17,13 @@ class UpdateCheckWorker(QThread):
         self.manager = manager
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         logger.debug("[UpdateCheckWorker] Checking for updates on GitHub...")
         try:
             info = self.manager.check_for_updates()
+            if self.isInterruptionRequested():
+                return
             if info:
                 logger.info("[UpdateCheckWorker] Found update: %s", info.get("version", ""))
                 self.update_found.emit(info)
@@ -27,6 +31,8 @@ class UpdateCheckWorker(QThread):
                 logger.debug("[UpdateCheckWorker] No updates found.")
                 self.no_update.emit()
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[UpdateCheckWorker] Error checking for updates: %s", e)
             self.error.emit(str(e))
 
@@ -42,15 +48,22 @@ class UpdateDownloadWorker(QThread):
         self.download_url = download_url
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         logger.info("[UpdateDownloadWorker] Starting download from %s...", self.download_url)
         try:
             def progress_cb(pct):
-                self.progress.emit(pct)
-                
+                if not self.isInterruptionRequested():
+                    self.progress.emit(pct)
+
             success = self.manager.perform_update(self.download_url, progress_cb)
+            if self.isInterruptionRequested():
+                return
             logger.info("[UpdateDownloadWorker] Download completed with status: %s", success)
             self.download_completed.emit(success)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[UpdateDownloadWorker] Error downloading update: %s", e)
             self.error.emit(str(e))
 
@@ -66,9 +79,13 @@ class ReleaseNotesWorker(QThread):
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         logger.debug("[ReleaseNotesWorker] Fetching latest release notes...")
         try:
             data = self.provider.fetch_latest_release()
+            if self.isInterruptionRequested():
+                return
             if data and data.get("tag_name"):
                 logger.debug("[ReleaseNotesWorker] Release notes fetched: %s", data.get("tag_name"))
                 self.release_fetched.emit(data)
@@ -77,6 +94,8 @@ class ReleaseNotesWorker(QThread):
                 logger.error("[ReleaseNotesWorker] Failed to fetch release notes: %s", err_msg)
                 self.error_occurred.emit(err_msg)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[ReleaseNotesWorker] Exception fetching release notes: %s", e)
             self.error_occurred.emit(str(e))
 
@@ -100,9 +119,13 @@ class WhatsNewWorker(QThread):
         self.parse_content = parse_release_notes_content
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         logger.debug("[WhatsNewWorker] Fetching release notes from GitHub for v%s...", self.app_version)
         try:
             data = self.provider.fetch_release_for_version(self.app_version)
+            if self.isInterruptionRequested():
+                return
             if data and data.get("body"):
                 highlights = self.parse_content(data["body"])
                 if highlights:
@@ -112,5 +135,7 @@ class WhatsNewWorker(QThread):
             logger.debug("[WhatsNewWorker] No highlights parsed from GitHub release")
             self.error_occurred.emit("No highlights parsed from GitHub release")
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[WhatsNewWorker] Exception fetching release from GitHub: %s", e)
             self.error_occurred.emit(str(e))
