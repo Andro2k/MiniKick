@@ -1,14 +1,12 @@
 # frontend\views\base_view.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QSpacerItem
 from PySide6.QtCore import Qt
 from frontend.common import Size
 from frontend.widgets.block_widget import ViewHeader, FadingScrollArea
 
-_COLUMN_STRETCH = 100
-
 class BaseView(QWidget):
-    def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None, max_content_width: int | None = None, min_content_width: int | None = None):
+    def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None, max_content_width: int | None = Size.CONTENT_WIDE_MAX_WIDTH, min_content_width: int | None = None):
         super().__init__(parent)
         self.i18n = i18n
 
@@ -50,7 +48,11 @@ class BaseView(QWidget):
         row = QHBoxLayout(self.scroll_content)
         row.setContentsMargins(*Size.Margin.MRG_NON)
         row.setSpacing(Size.SPACING_NN)
-        row.addStretch(1)
-        row.addWidget(column, _COLUMN_STRETCH)
-        row.addStretch(1)
+        row.addSpacerItem(self._side_spacer())
+        row.addWidget(column, 1)
+        row.addSpacerItem(self._side_spacer())
         return column
+
+    @staticmethod
+    def _side_spacer() -> QSpacerItem:
+        return QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)

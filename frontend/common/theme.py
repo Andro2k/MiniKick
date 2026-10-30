@@ -202,6 +202,7 @@ class Size:
     BADGE_MAX  = 22
     CONTENT_MAX_WIDTH = 880
     CONTENT_MIN_WIDTH = 520
+    CONTENT_WIDE_MAX_WIDTH = 1440
 
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
     return f"{width:g}px {style} {color}"

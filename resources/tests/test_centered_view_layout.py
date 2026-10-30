@@ -43,12 +43,29 @@ def test_centered_view_shrinks_fluidly_down_to_min_width(qapp):
     assert view.content_column.width() == Size.CONTENT_MIN_WIDTH
 
 
-def test_default_view_keeps_full_width_layout(qapp):
+def test_default_view_uses_the_wide_centered_column(qapp):
     view = BaseView(_I18n(), "t", "s")
+    _show(qapp, view, 2000)
+    width, left, right = _margins(view)
+    assert width == Size.CONTENT_WIDE_MAX_WIDTH
+    assert abs(left - right) <= 1 and left > 0
+
+
+def test_column_uses_the_full_width_until_it_reaches_the_cap(qapp):
+    view = BaseView(_I18n(), "t", "s")
+    for width in (700, 1100, Size.CONTENT_WIDE_MAX_WIDTH - 40):
+        _show(qapp, view, width)
+        column_width, left, right = _margins(view)
+        assert (left, right) == (0, 0)
+        assert column_width == view.scroll_content.width() < Size.CONTENT_WIDE_MAX_WIDTH
+
+
+def test_view_can_opt_out_of_the_width_cap(qapp):
+    view = BaseView(_I18n(), "t", "s", max_content_width=None)
     assert view.content_column is view.scroll_content
     assert view.main_layout.parentWidget() is view.scroll_content
-    _show(qapp, view, 1600)
-    assert view.scroll_content.width() >= 1500
+    _show(qapp, view, 2000)
+    assert view.scroll_content.width() >= 1900
 
 
 def test_setting_row_roles_are_configurable_and_backward_compatible(qapp):
