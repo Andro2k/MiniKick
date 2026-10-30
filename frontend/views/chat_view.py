@@ -2,14 +2,14 @@
 
 from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel, ChatSpamPanel
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
 from frontend.common import Size
 
 
 class _FloatingChatWindow(QWidget):
-    def __init__(self, title: str, on_close, parent=None):
+    def __init__(self, title: str, on_close):
         window_flags = (
             Qt.WindowType.Window
             | Qt.WindowType.WindowTitleHint
@@ -18,7 +18,7 @@ class _FloatingChatWindow(QWidget):
             | Qt.WindowType.WindowMaximizeButtonHint
             | Qt.WindowType.WindowCloseButtonHint
         )
-        super().__init__(parent, window_flags)
+        super().__init__(None, window_flags)
         self._on_close = on_close
         self._return_requested = False
         self.setWindowTitle(title)
@@ -39,11 +39,6 @@ class _FloatingChatWindow(QWidget):
             return
         self._return_requested = True
         self._on_close()
-
-    def changeEvent(self, event):
-        super().changeEvent(event)
-        if event.type() == QEvent.Type.WindowStateChange and self.isMinimized():
-            self._return_to_chat()
 
     def closeEvent(self, event):
         self._return_to_chat()
@@ -146,11 +141,14 @@ class ChatView(BaseView):
         self._floating_chat_dialog = _FloatingChatWindow(
             self.i18n.get("chat.display.window_title"),
             self._reattach_chat_display,
-            parent=self.window(),
         )
         self._floating_chat_dialog.add_chat_display(self.chat_display_panel)
         self.chat_display_panel.set_detached(True)
         self._floating_chat_dialog.show()
+
+    def close_floating_chat(self) -> None:
+        if self._floating_chat_dialog is not None:
+            self._floating_chat_dialog.close()
 
     def _reattach_chat_display(self) -> None:
         floating_dialog = self._floating_chat_dialog

@@ -144,13 +144,7 @@ class RewardsView(BaseView):
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
 
-        obs_row = SettingRow(
-            icon_name="link-filled.svg",
-            title_text=self.i18n.get("rewards.obs.title"),
-            desc_text=self.i18n.get("rewards.obs.desc"),
-            right_widget=self.btn_copy_url,
-            contents_margins=Size.Margin.MRG_NON
-        )
+        obs_row = SettingRow.minimal(self.i18n.get("rewards.obs.title"), self.i18n.get("rewards.obs.desc"), self.btn_copy_url, contents_margins=Size.Margin.MRG_NON)
 
         obs_card.addWidget(obs_row)
         self.main_layout.addWidget(obs_card)

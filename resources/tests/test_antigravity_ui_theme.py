@@ -171,7 +171,7 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     assert card.divider.isHidden()
 
     i18n = TranslationService(default_lang="es")
-    widget_card = WidgetCard("shoutout", "Shoutout", "Desc", "star-filled.svg", i18n)
+    widget_card = WidgetCard("shoutout", "Shoutout", "Desc", i18n)
     assert isinstance(widget_card, ExpandableCard)
     assert isinstance(widget_card.divider, ModernDivider)
     assert widget_card.divider.isHidden()
@@ -189,8 +189,7 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     assert not spam_card.divider.isHidden()
 
     w_view = WidgetsView(i18n)
-    assert w_view.body_layout.spacing() == Size.SPACING_MD
-    assert w_view.columns_layout.spacing() == Size.SPACING_MD
+    assert w_view.cards_layout.spacing() == Size.SPACING_MD
 
     s_panel = ChatSpamPanel(i18n)
     assert s_panel.panel_layout.spacing() == Size.SPACING_MD

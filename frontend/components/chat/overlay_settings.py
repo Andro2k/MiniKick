@@ -238,12 +238,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         card_preview.addWidget(self.mockup_widget)
 
         self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
-        self.row_copy_obs = SettingRow(
-            "link-filled.svg",
-            self.i18n.get("chat.settings.obs_title"),
-            self.i18n.get("chat.settings.obs_desc"),
-            self.btn_copy_overlay_obs
-        )
+        self.row_copy_obs = SettingRow.minimal(self.i18n.get("chat.settings.obs_title"), self.i18n.get("chat.settings.obs_desc"), self.btn_copy_overlay_obs)
         card_preview.addWidget(self.row_copy_obs)
         self.addWidget(card_preview)
 

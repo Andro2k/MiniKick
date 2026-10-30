@@ -286,7 +286,8 @@ class ModernScrollArea(FadingScrollArea):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):
-    def __init__(self, title: str, desc: str = "", icon_name: str = "", parent=None, switch_enabled: bool = True, description: str = ""):
+    def __init__(self, title: str, desc: str = "", icon_name: str = "", parent=None, switch_enabled: bool = True, description: str = "",
+                 title_role: str = "h3", desc_role: str = "body", header_margins: tuple = Size.Margin.MRG_MED):
         super().__init__(parent)
         final_desc = description if description else desc
         self.setProperty("role", "card")
@@ -304,7 +305,7 @@ class ExpandableCard(QFrame):
         self.header_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.header_widget.setCursor(Qt.CursorShape.PointingHandCursor)
         h_layout = QHBoxLayout(self.header_widget)
-        h_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        h_layout.setContentsMargins(*header_margins)
         h_layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:
@@ -320,10 +321,10 @@ class ExpandableCard(QFrame):
         text_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.lbl_title = QLabel(title, self.header_widget)
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", title_role)
 
         self.lbl_desc = QLabel(final_desc, self.header_widget)
-        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setProperty("role", desc_role)
         self.lbl_desc.setWordWrap(True)
         if not final_desc:
             self.lbl_desc.hide()

@@ -24,13 +24,7 @@ class AlertsOverlayCard(ModernCard):
         )
         self.btn_copy_url.clicked.connect(self._copy_overlay_url)
 
-        overlay_row = SettingRow(
-            icon_name="link-filled.svg",
-            title_text=self.i18n.get("alerts.overlay_card.title"),
-            desc_text=self.i18n.get("alerts.overlay_card.desc"),
-            right_widget=self.btn_copy_url,
-            contents_margins=Size.Margin.MRG_NON
-        )
+        overlay_row = SettingRow.minimal(self.i18n.get("alerts.overlay_card.title"), self.i18n.get("alerts.overlay_card.desc"), self.btn_copy_url, contents_margins=Size.Margin.MRG_NON)
         
         self.addWidget(overlay_row)
 

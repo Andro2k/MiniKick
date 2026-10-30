@@ -812,6 +812,8 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = True
         self._is_window_closing = True
         self._dashboard_metrics_timer.stop()
+        if self.view_chat is not None:
+            self.view_chat.close_floating_chat()
 
         self.logger.info("[Shutdown] Initiating application shutdown sequence...")
         self._stop_all_workers(self._finish_cleanup)

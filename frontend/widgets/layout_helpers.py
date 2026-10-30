@@ -98,30 +98,6 @@ def create_box_layout(
     return layout
 
 
-def create_two_column_container(
-    parent: QWidget | None = None,
-    spacing: int = Size.SPACING_MD,
-    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON
-) -> tuple[QWidget, QVBoxLayout, QBoxLayout, QVBoxLayout, QVBoxLayout]:
-    body_container = QWidget(parent) if parent else QWidget()
-    body_layout = create_col_layout(spacing=spacing, margins=margins, parent=body_container)
-    columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=spacing, margins=margins)
-
-    col1 = QWidget(body_container)
-    col1_layout = create_col_layout(spacing=spacing, margins=margins, parent=col1)
-    col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-    col2 = QWidget(body_container)
-    col2_layout = create_col_layout(spacing=spacing, margins=margins, parent=col2)
-    col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-    columns_layout.addWidget(col1, stretch=1)
-    columns_layout.addWidget(col2, stretch=1)
-    body_layout.addLayout(columns_layout)
-
-    return body_container, body_layout, columns_layout, col1_layout, col2_layout
-
-
 def create_frameless_input(
     parent: QWidget | None = None,
     placeholder: str = "",

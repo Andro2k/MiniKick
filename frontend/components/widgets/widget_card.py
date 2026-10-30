@@ -9,8 +9,11 @@ class WidgetCard(ExpandableCard):
     widget_changed = Signal(str, bool, str, int, str, object)
     counter_action_triggered = Signal(str, str, object)
 
-    def __init__(self, widget_id: str, title: str, desc: str, icon_name: str, i18n, obs_overlay_url: str = "", parent=None):
-        super().__init__(title=title, desc=desc, icon_name=icon_name, parent=parent, switch_enabled=True)
+    def __init__(self, widget_id: str, title: str, desc: str, i18n, obs_overlay_url: str = "", parent=None):
+        super().__init__(
+            title=title, desc=desc, parent=parent, switch_enabled=True,
+            title_role="setting_title", desc_role="caption", header_margins=Size.Margin.MRG_LRG
+        )
         self.widget_id = widget_id
         self.i18n = i18n
         self.obs_overlay_url = obs_overlay_url
