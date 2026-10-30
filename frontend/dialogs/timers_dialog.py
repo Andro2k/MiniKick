@@ -30,10 +30,10 @@ class TimerConfigWizard(ModernWizardPanel):
             subtitle_steps=subtitle_steps,
             i18n=i18n,
             width=750,
-            height=700,
+            height=750,
             resizable=True,
             min_width=750,
-            min_height=700,
+            min_height=750,
             dialog_key="timer_config_wizard",
             parent=parent
         )

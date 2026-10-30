@@ -26,7 +26,6 @@ def _protocol_attributes(protocol: type) -> set[str]:
 
 
 def _declared_members(cls: type) -> set[str]:
-    """Atributos de clase + `self.x = ...` asignados en cualquier método (sin instanciar)."""
     members = set(vars(cls))
     tree = ast.parse(textwrap.dedent(inspect.getsource(cls)))
     for node in ast.walk(tree):
@@ -46,7 +45,6 @@ def _params(signature: inspect.Signature) -> list[inspect.Parameter]:
 
 
 def _assert_signature_compatible(owner: str, name: str, expected: inspect.Signature, actual: inspect.Signature) -> None:
-    """El proveedor puede renombrar con `_` o añadir parámetros con default, nada más."""
     exp, act = _params(expected), _params(actual)
     assert len(act) >= len(exp), f"{owner}.{name}: faltan parámetros ({len(act)} < {len(exp)})"
 
@@ -95,7 +93,7 @@ def test_tts_providers_fulfil_tts_contract(provider_cls):
 
 def test_contract_check_detects_divergence():
     class Broken:
-        def get_queue(self, extra):  # parámetro extra sin default
+        def get_queue(self, extra):
             return []
 
     expected = _protocol_methods(IMusicProvider)["get_queue"]
