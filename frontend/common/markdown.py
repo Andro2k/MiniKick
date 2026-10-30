@@ -30,7 +30,7 @@ def _render_callout(callout_type: str, lines: list[str]) -> str:
     icon_span = f'<span style="font-family: {_NERD_FONT_FAMILY}; font-size: 13px;">{icon}</span>'
     body = "<br/>".join(lines)
     return (
-        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_WIDE}; margin: 12px 0; border-radius: 0 6px 6px 0;">'
+        f'<div style="border-left: 3px solid {border_color}; background-color: {background_color}; padding: {Padding.PAD_WIDE}; margin: 12px 0px; border-radius: 0px 6px 6px 0px;">'
         f'<div style="color: {title_color}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{icon_span} {label}</div>'
         f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; line-height: 1.5;">{body}</div>'
         f'</div>'
@@ -38,7 +38,7 @@ def _render_callout(callout_type: str, lines: list[str]) -> str:
 
 
 def _render_table(rows: list[list[str]]) -> str:
-    output = ['<table style="border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 12px;">']
+    output = ['<table style="border-collapse: collapse; width: 100%; margin: 14px 0px; font-size: 12px;">']
     for row_index, row in enumerate(rows):
         is_header = row_index == 0
         background = Palette.NEUTRAL_900 if is_header else Palette.NEUTRAL_950
@@ -57,18 +57,18 @@ def _render_table(rows: list[list[str]]) -> str:
 
 def _render_block(line: str) -> str:
     if line.startswith('# '):
-        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_SM}px; margin: 16px 0 10px 0;">{line[2:]}</h1>'
+        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_SM}px; margin: 16px 0px 10px 0px;">{line[2:]}</h1>'
     if line.startswith('## '):
-        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_XXS}px; margin: 14px 0 8px 0;">{line[3:]}</h2>'
+        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: {Size.SPACING_XXS}px; margin: 14px 0px 8px 0px;">{line[3:]}</h2>'
     if line.startswith('### '):
-        return f'<h3 style="color: {Palette.NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0 6px 0;">{line[4:]}</h3>'
+        return f'<h3 style="color: {Palette.NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0px 8px 0px;">{line[4:]}</h3>'
     if line in ('---', '***'):
-        return f'<hr style="border: none; border-top: 1px solid {Palette.NEUTRAL_900}; margin: 14px 0;" />'
+        return f'<hr style="border: none; border-top: 1px solid {Palette.NEUTRAL_900}; margin: 14px 0px;" />'
     if line.startswith(('- ', '* ')):
-        return f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">• {line[2:]}</div>'
+        return f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 4px 0px 4px 16px; line-height: 1.5;">• {line[2:]}</div>'
     if line.startswith(('• ', '◦ ')):
-        return f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">{line}</div>'
-    return f'<p style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 6px 0; line-height: 1.5;">{line}</p>'
+        return f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 4px 0px 4px 16px; line-height: 1.5;">{line}</div>'
+    return f'<p style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 6px 0px; line-height: 1.5;">{line}</p>'
 
 
 @lru_cache(maxsize=16)

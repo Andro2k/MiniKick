@@ -55,7 +55,7 @@ class MainWindowCore(QMainWindow):
         ("Developer", "file-text-filled.svg", "bottom"),
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
-    _PREWARM_START_DELAY_MS = 1500
+    _PREWARM_START_DELAY_MS = 300
     _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
@@ -812,6 +812,8 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = True
         self._is_window_closing = True
         self._dashboard_metrics_timer.stop()
+        if self.view_chat is not None:
+            self.view_chat.close_floating_chat()
 
         self.logger.info("[Shutdown] Initiating application shutdown sequence...")
         self._stop_all_workers(self._finish_cleanup)

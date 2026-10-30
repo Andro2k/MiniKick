@@ -144,13 +144,7 @@ class RewardsView(BaseView):
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
 
-        obs_row = SettingRow(
-            icon_name="link-filled.svg",
-            title_text=self.i18n.get("rewards.obs.title"),
-            desc_text=self.i18n.get("rewards.obs.desc"),
-            right_widget=self.btn_copy_url,
-            contents_margins=Size.Margin.MRG_NON
-        )
+        obs_row = SettingRow.minimal(self.i18n.get("rewards.obs.title"), self.i18n.get("rewards.obs.desc"), self.btn_copy_url, contents_margins=Size.Margin.MRG_NON)
 
         obs_card.addWidget(obs_row)
         self.main_layout.addWidget(obs_card)
@@ -262,7 +256,10 @@ class RewardsView(BaseView):
         self._apply_filters()
 
     def set_connected_platforms(self, connected_platforms: dict):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         self._apply_filters()
 
     def _apply_filters(self):

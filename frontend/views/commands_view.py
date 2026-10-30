@@ -235,7 +235,10 @@ class CommandView(BaseView):
         return create_badge(self.i18n.get(i18n_key), state=raw_perm)
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == getattr(self, "connected_platforms", None):
+            return
+        self.connected_platforms = new_state
         if self._raw_commands:
             self.populate_table(self._raw_commands)
 

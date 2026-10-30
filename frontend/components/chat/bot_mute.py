@@ -43,20 +43,8 @@ class BotMutePanel(QWidget):
         self.sw_cmd_block = ModernSwitch(self)
         self.sw_cmd_block.setChecked(True)
 
-        row_cmd_mute = SettingRow(
-            "shield-user-filled.svg",
-            self.i18n.get("chat.mod_commands.mute_cmd_title"),
-            self.i18n.get("chat.mod_commands.mute_cmd_desc"),
-            self.sw_cmd_mute,
-            contents_margins=Size.Margin.MRG_LRG
-        )
-        row_cmd_block = SettingRow(
-            "shield-filled.svg",
-            self.i18n.get("chat.mod_commands.block_cmd_title"),
-            self.i18n.get("chat.mod_commands.block_cmd_desc"),
-            self.sw_cmd_block,
-            contents_margins=Size.Margin.MRG_LRG
-        )
+        row_cmd_mute = SettingRow.minimal(self.i18n.get("chat.mod_commands.mute_cmd_title"), self.i18n.get("chat.mod_commands.mute_cmd_desc"), self.sw_cmd_mute)
+        row_cmd_block = SettingRow.minimal(self.i18n.get("chat.mod_commands.block_cmd_title"), self.i18n.get("chat.mod_commands.block_cmd_desc"), self.sw_cmd_block)
         commands_card.addWidget(row_cmd_mute)
         commands_card.add_separator()
         commands_card.addWidget(row_cmd_block)

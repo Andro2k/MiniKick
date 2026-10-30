@@ -182,14 +182,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "body")
 
-        self.row_vol = SliderRow(
-            icon_name="volume-up-filled.svg",
-            title_text=self.i18n.get("music.player.volume_title"),
-            desc_text=self.i18n.get("music.player.volume_desc"),
-            slider_widget=self.slider_vol,
-            value_label=self.lbl_vol_perc,
-            contents_margins=Size.Margin.MRG_NON
-        )
+        self.row_vol = SliderRow.minimal(self.i18n.get("music.player.volume_title"), self.i18n.get("music.player.volume_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_NON)
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
         self.card_volume.addWidget(self.row_vol)
         self.panel_layout.addWidget(self.card_volume, alignment=Qt.AlignmentFlag.AlignTop)
