@@ -116,6 +116,9 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
     _REWARD_ICON_CACHE[cache_key] = icon
     return icon
 
+def _platform_flags(state: dict) -> dict[str, bool]:
+    return {platform: bool(state.get(platform, False)) for platform in ("kick", "twitch")}
+
 class RewardsView(BaseView):
     add_requested = Signal()
     edit_requested = Signal(str)
@@ -257,7 +260,7 @@ class RewardsView(BaseView):
 
     def set_connected_platforms(self, connected_platforms: dict):
         new_state = dict(connected_platforms or {})
-        if new_state == self.connected_platforms:
+        if _platform_flags(new_state) == _platform_flags(self.connected_platforms):
             return
         self.connected_platforms = new_state
         self._apply_filters()

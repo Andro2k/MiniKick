@@ -80,3 +80,15 @@ def test_none_is_treated_as_empty_state(factory):
     setter(view, {})
     assert view.connected_platforms == {}
     assert rebuild.call_count <= 1
+
+
+def test_rewards_view_ignores_platforms_it_does_not_use():
+    view, setter, rebuild = _rewards()
+    view.connected_platforms = {"kick": True, "twitch": False}
+
+    setter(view, {"kick": True, "twitch": False, "youtube": True, "tiktok": False})
+    assert rebuild.call_count == 0
+
+    setter(view, {"kick": True, "twitch": True, "youtube": True, "tiktok": False})
+    assert rebuild.call_count == 1
+    assert view.connected_platforms["twitch"] is True

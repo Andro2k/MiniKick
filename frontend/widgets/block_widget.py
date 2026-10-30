@@ -38,7 +38,7 @@ class SectionHeader(QWidget):
         layout.setContentsMargins(*margins)
         layout.setSpacing(Size.SPACING_NN)
         self.lbl = QLabel(text, parent=self)
-        self.lbl.setProperty("role", "section_header")
+        self.lbl.setProperty("role", "h3")
         layout.addWidget(self.lbl)
 
     def setText(self, text: str):
@@ -287,7 +287,7 @@ class ModernScrollArea(FadingScrollArea):
 
 class ExpandableCard(QFrame):
     def __init__(self, title: str, desc: str = "", icon_name: str = "", parent=None, switch_enabled: bool = True, description: str = "",
-                 title_role: str = "h3", desc_role: str = "body", header_margins: tuple = Size.Margin.MRG_MED):
+                 title_role: str = "setting_title", desc_role: str = "body", header_margins: tuple = Size.Margin.MRG_MED):
         super().__init__(parent)
         final_desc = description if description else desc
         self.setProperty("role", "card")
@@ -404,7 +404,7 @@ class ExpandableSettingCard(ExpandableCard):
         b_layout = self.body_layout
 
         lbl_gen = QLabel(self.i18n.get("spam.card.config_title"))
-        lbl_gen.setProperty("role", "h3")
+        lbl_gen.setProperty("role", "setting_title")
         b_layout.addWidget(lbl_gen)
 
         platforms_layout = QHBoxLayout()

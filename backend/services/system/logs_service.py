@@ -5,6 +5,7 @@ import logging
 from collections import deque
 from backend.database import SQLiteSystemLogStorage
 from backend.core.log_format import log_level_matches, parse_log_line
+from .log_writer import BatchedLogWriter
 
 logger = logging.getLogger("minikick.services.logs")
 
@@ -21,6 +22,7 @@ class LogService:
         os.makedirs(self.log_dir, exist_ok=True)
         self.max_logs = 1000
         self._live_history: deque[tuple[str, str, str]] = deque(maxlen=self.max_logs)
+        self._writer = BatchedLogWriter(self.storage.append_logs) if self.storage else None
 
     def _get_date_threshold(self, date_filter: str) -> str:
         if not date_filter:
@@ -35,15 +37,21 @@ class LogService:
 
     def append_record(self, time_str: str, level: str, message: str) -> bool:
         self._live_history.append((level, time_str, message))
-        if self.storage:
-            try:
-                self.storage.append_log(level, time_str, message)
-            except Exception:
-                logger.exception("[LogService] Error appending log.")
+        if self._writer:
+            self._writer.submit((level, time_str, message))
         return False
+
+    def flush_pending(self) -> None:
+        if self._writer:
+            self._writer.flush()
+
+    def close(self) -> None:
+        if self._writer:
+            self._writer.close()
 
     def clear_history(self):
         self._live_history.clear()
+        self.flush_pending()
         if self.storage:
             try:
                 self.storage.clear_logs()
@@ -51,6 +59,7 @@ class LogService:
                 logger.error("[LogService] Error clearing log storage: %s", e)
 
     def get_history(self) -> list[tuple[str, str, str]]:
+        self.flush_pending()
         if self.storage:
             logs = self.storage.get_all_logs()
             if logs:
@@ -58,6 +67,7 @@ class LogService:
         return list(self._live_history)
 
     def get_filtered_history(self, filter_level: str, all_label: str, search_term: str, date_filter: str = "") -> list[tuple[str, str, str]]:
+        self.flush_pending()
         if self.storage:
             threshold = self._get_date_threshold(date_filter) if date_filter else ""
             logs = self.storage.get_filtered_logs(filter_level, all_label, search_term, threshold)
