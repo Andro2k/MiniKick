@@ -113,7 +113,7 @@ def test_dashboard_view_profile_cards_and_margins(qapp):
     assert hasattr(view, "distribution_panel")
     assert hasattr(view, "channel_badges_container")
     assert len(view.channel_badge_cards) == 4
-    assert view.channel_badges_container.parentWidget() is view.scroll_content
+    assert view.channel_badges_container.parentWidget() is view.content_column
     assert hasattr(view, "card_kick")
     assert hasattr(view, "card_twitch")
     assert hasattr(view, "card_youtube")

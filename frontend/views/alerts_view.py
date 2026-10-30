@@ -348,9 +348,9 @@ class AlertsView(BaseView):
                 if hasattr(self, 'notice_banner'):
                     self.notice_banner.card_layout.invalidate()
                     self.notice_banner.updateGeometry()
-                if hasattr(self, 'scroll_content'):
-                    self.scroll_content.layout().invalidate()
-                    self.scroll_content.updateGeometry()
+                if hasattr(self, 'content_column'):
+                    self.content_column.layout().invalidate()
+                    self.content_column.updateGeometry()
 
         target_direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:

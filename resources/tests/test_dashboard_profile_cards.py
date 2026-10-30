@@ -12,7 +12,7 @@ class _TestI18n:
 def test_channel_stats_render_as_cards_outside_profile_panel(qapp):
     dashboard = DashboardView(_TestI18n())
 
-    assert dashboard.channel_badges_container.parentWidget() is dashboard.scroll_content
+    assert dashboard.channel_badges_container.parentWidget() is dashboard.content_column
     assert len(dashboard.channel_badge_cards) == 4
     assert set(dashboard.channel_badges) == {"followers", "created", "category", "identifier"}
     assert all(isinstance(card, StatCard) for card in dashboard.channel_badge_cards)
