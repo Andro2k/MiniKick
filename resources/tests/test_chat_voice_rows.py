@@ -17,7 +17,6 @@ def _inside_control(label: QLabel) -> bool:
 
 
 def _icon_labels(widget: QWidget) -> list[QLabel]:
-    """Íconos propios de la fila (se ignora la lupa interna del combo con búsqueda)."""
     return [
         lbl for lbl in widget.findChildren(QLabel)
         if lbl.pixmap() is not None and not lbl.pixmap().isNull() and not _inside_control(lbl)

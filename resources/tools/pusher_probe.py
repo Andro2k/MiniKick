@@ -1,18 +1,4 @@
 # resources\tools\pusher_probe.py\
-"""
-MiniKick - Pusher Key Probe
-===========================
-Comprueba contra el servidor REAL de Pusher qué claves de KICK_PUSHER acepta Kick en este momento,
-y (opcionalmente) escucha frames de un chat. Sustituye al antiguo test_pusher_idle.py, que abría una
-conexión de red al importarse y bloqueaba la ejecución de pytest.
-
-Uso:
-  python resources/tools/pusher_probe.py                                  (prueba todas las claves configuradas)
-  python resources/tools/pusher_probe.py --idle --room 89137556 --wait 130 (suscribe y espera frames)
-  python resources/tools/pusher_probe.py --json                            (salida máquina)
-
-Código de salida: 0 si la clave PREFERIDA (la primera de KICK_PUSHER.keys) fue aceptada, 1 si no.
-"""
 
 import argparse
 import json

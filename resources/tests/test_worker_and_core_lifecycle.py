@@ -1,11 +1,11 @@
+# resources\tests\test_worker_and_core_lifecycle.py
+
 import io
 import logging
 import sys
 import threading
 import types
 from unittest import mock
-
-import pytest
 from PySide6.QtCore import QThread, Signal
 
 

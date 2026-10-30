@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from PySide6.QtCore import QEvent, QEventLoop, QObject, QThread, QTimer
+from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
 
 from frontend.main_window import MainWindowCore
 from frontend.main_window_views import MainWindowViewFactory

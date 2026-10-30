@@ -1,7 +1,7 @@
 ﻿# resources\tests\test_antigravity_ui_theme.py
 
 from PySide6.QtWidgets import QLabel, QPushButton
-from frontend.common import GLOBAL_QSS, get_global_qss, Palette
+from frontend.common import get_global_qss, Palette
 from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernDivider
 from frontend.views.settings_view import SettingsView
 from frontend.navigation import Sidebar
@@ -319,8 +319,8 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
     )
     assert card.table.selectionBehavior() == QTableWidget.SelectionBehavior.SelectRows
     assert card.table.selectionMode() == QTableWidget.SelectionMode.SingleSelection
-    assert "QTableWidget::item:hover:!selected" not in GLOBAL_QSS
-    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in GLOBAL_QSS
+    assert "QTableWidget::item:hover:!selected" not in get_global_qss(12)
+    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in (get_global_qss(12))
 
     m = card.card_layout.contentsMargins()
     assert (m.left(), m.top(), m.right(), m.bottom()) == (0, 0, 0, 0)
