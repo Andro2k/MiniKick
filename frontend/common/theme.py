@@ -246,7 +246,7 @@ def get_qcolor_with_alpha(color_hex: str, alpha: int) -> QColor:
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
 @lru_cache(maxsize=128)
-def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NEUTRAL_400) -> str:
+def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NEUTRAL_050) -> str:
     clean_name = os.path.basename(icon_name_or_rel_path)
     orig_path = resolve_icon_path(clean_name)
     if not orig_path or not os.path.exists(orig_path):
@@ -278,13 +278,13 @@ def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NE
 def _get_qss_icon_url(relative_path: str) -> str:
     return get_assets_path(relative_path)
 
-PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg"   ,Palette.NEUTRAL_050)
-PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg"  ,Palette.NEUTRAL_050)
-PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg"    ,Palette.NEUTRAL_050)
-PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg"  ,Palette.NEUTRAL_050)
-PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg" ,Palette.NEUTRAL_050)
-PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg" ,Palette.NEUTRAL_050)
-PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg"         ,Palette.NEUTRAL_050)
+PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg")
+PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg")
+PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg")
+PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg")
+PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg")
+PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg")
+PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
 PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
 PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
@@ -435,7 +435,7 @@ QComboBox::down-arrow               {{ image: url("{PATH_ICON_CHEVRON_DW}"); wid
 QComboBox::down-arrow:on, QComboBox[state="active"]::down-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); }}
 QComboBox:disabled::down-arrow      {{ opacity: 0.4; }}
 QComboBox QAbstractItemView         {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; font-size: {text1}px; border: {Borders.BRD_MUTE}; border-radius: {Size.Radius.RAD_MED}px; selection-background-color: {Palette.NEUTRAL_750}; selection-color: {Palette.NEUTRAL_050}; outline: none; }}
-QComboBox QAbstractItemView::item   {{ font-size: {text1}px; border-radius: {Size.Radius.RAD_XSM}px; margin: 2px; }}
+QComboBox QAbstractItemView::item   {{ font-size: {text1}px; border-radius: {Size.Radius.RAD_XSM}px; margin: 4px 4px ; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:focus, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
 
 /* Searchable ComboBox Popup */
@@ -446,7 +446,7 @@ QLineEdit[role="searchable_combo_input"]:focus {{ background-color: transparent;
 QListWidget[role="searchable_combo_list"] {{ background-color: {Palette.NEUTRAL_900}; border: none; outline: none; icon-size: 64px 24px; }}
 QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 400; padding: {Padding.PAD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; border: none; outline: none; }}
 QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; outline: none; }}
-QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; margin: 4px 2px 4px 0px; border-radius: {Size.Radius.RAD_XXS}px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; margin: 2px 4px; border-radius: {Size.Radius.RAD_XXS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {Palette.NEUTRAL_700}; min-height: 20px; border-radius: {Size.Radius.RAD_XXS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical:hover {{ background: {Palette.NEUTRAL_900}; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}

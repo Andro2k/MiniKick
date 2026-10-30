@@ -44,9 +44,6 @@ class SectionHeader(QWidget):
     def setText(self, text: str):
         self.lbl.setText(text)
 
-SETTING_TITLE_ROLE = "setting_title"
-SETTING_DESC_ROLE = "caption"
-
 class SettingRow(QWidget):
     def __init__(
         self,
@@ -95,7 +92,7 @@ class SettingRow(QWidget):
 
     @classmethod
     def minimal(cls, title_text: str, desc_text: str, right_widget: QWidget = None, **kwargs) -> "SettingRow":
-        return cls(title_text=title_text, desc_text=desc_text, right_widget=right_widget, title_role=SETTING_TITLE_ROLE, desc_role=SETTING_DESC_ROLE, **kwargs)
+        return cls(title_text=title_text, desc_text=desc_text, right_widget=right_widget, title_role="setting_title", desc_role="caption", **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
@@ -161,7 +158,7 @@ class SliderRow(QWidget):
 
     @classmethod
     def minimal(cls, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, **kwargs) -> "SliderRow":
-        return cls("", title_text, desc_text, slider_widget, value_label, title_role=SETTING_TITLE_ROLE, desc_role=SETTING_DESC_ROLE, **kwargs)
+        return cls("", title_text, desc_text, slider_widget, value_label, title_role="setting_title", desc_role="caption", **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
