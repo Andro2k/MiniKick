@@ -1,4 +1,4 @@
-# bootstrap/services.py
+# bootstrap\services.py\\
 
 from backend.config import APP_VERSION
 from bootstrap.translator import load_translator

@@ -1,4 +1,4 @@
-# resources/tools/frontend_qss_role_state_auditor.py
+# resources\tools\frontend_qss_role_state_auditor.py\
 
 import ast
 import difflib

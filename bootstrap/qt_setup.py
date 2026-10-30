@@ -1,4 +1,4 @@
-# bootstrap/qt_setup.py
+# bootstrap\qt_setup.py\\
 
 import logging
 import os

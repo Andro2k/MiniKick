@@ -1,4 +1,4 @@
-# backend/services/__init__.py
+# backend\services\__init__.py\
 
 from .alerts import AlertService, AlertQueue
 from .auth import BaseOAuthManager, KickAuthManager, TwitchAuthManager, OAuthCallbackServer

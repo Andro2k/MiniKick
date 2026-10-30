@@ -1,4 +1,4 @@
-# resources/tools/frontend_hardcoded_text_auditor.py
+# resources\tools\frontend_hardcoded_text_auditor.py\
 
 import ast
 import os

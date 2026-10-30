@@ -1,4 +1,4 @@
-# backend/services/chat/__init__.py
+# backend\services\chat\__init__.py
 
 from .chat_service import ChatService
 from .commands_service import CommandService

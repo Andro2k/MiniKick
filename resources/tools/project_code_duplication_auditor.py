@@ -1,4 +1,4 @@
-# resources/tools/project_code_duplication_auditor.py
+# resources\tools\project_code_duplication_auditor.py\
 
 import argparse
 import ast

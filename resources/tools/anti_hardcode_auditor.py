@@ -1,4 +1,4 @@
-# resources/tools/anti_hardcode_auditor.py
+# resources\tools\anti_hardcode_auditor.py\
 
 from importlib import import_module as _import_module
 from pathlib import Path as _Path

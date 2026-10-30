@@ -1,4 +1,4 @@
-# backend/services/auth/__init__.py
+# backend\services\auth\__init__.py
 
 from .auth_service import BaseOAuthManager, KickAuthManager, TwitchAuthManager, OAuthCallbackServer
 

@@ -1,4 +1,4 @@
-# resources/tools/project_translation_integrity_auditor.py
+# resources\tools\project_translation_integrity_auditor.py\
 
 import argparse
 import ast

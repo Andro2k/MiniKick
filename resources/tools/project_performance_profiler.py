@@ -1,4 +1,4 @@
-# resources/tools/project_performance_profiler.py
+# resources\tools\project_performance_profiler.py\
 
 import argparse
 import contextlib

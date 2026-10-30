@@ -1,4 +1,4 @@
-# resources/tools/git_manager.py
+# resources\tools\git_manager.py\
 
 import questionary
 import argparse
