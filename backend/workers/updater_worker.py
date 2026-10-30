@@ -1,4 +1,4 @@
-# backend\workers\update_worker.py
+# backend\workers\updater_worker.py
 
 import logging
 from PySide6.QtCore import QThread, Signal
