@@ -300,13 +300,11 @@ QDialog {{ background-color: {Palette.NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* --- 2. Typography Scale --- */
-QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: -0.2px; }}
-QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_200}; }}
+QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="section_header"] {{ font-size: {h3}px; font-weight: 600; color: {Palette.NEUTRAL_050}; background: transparent; padding: {Size.SPACING_NN}px {Size.SPACING_NN}px {Size.SPACING_XS}px {Size.SPACING_NN}px; }}
-QLabel[role="sidebar_section_header"] {{ font-size: 11px; font-weight: 600; color: {Palette.NEUTRAL_400}; padding: {Size.SPACING_SM}px {Size.SPACING_MD}px {Size.SPACING_XS}px {Size.SPACING_MD}px; letter-spacing: 0.5px; background: transparent; }}
-QLabel[role="profile_name"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; background: transparent; }}
-QLabel[role="profile_role"] {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; background: transparent; }}
+QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_400}; letter-spacing: 0.5px; }}
+QLabel[role="profile_name"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}

@@ -217,7 +217,7 @@ class Sidebar(QFrame):
         self.profile_name_lbl.setProperty("role", "profile_name")
 
         self.profile_role_lbl = QLabel()
-        self.profile_role_lbl.setProperty("role", "profile_role")
+        self.profile_role_lbl.setProperty("role", "caption")
 
         self.profile_text_layout.addWidget(self.profile_name_lbl)
         self.profile_text_layout.addWidget(self.profile_role_lbl)
