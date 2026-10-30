@@ -842,6 +842,11 @@ class MainWindowCore(QMainWindow):
         except Exception:
             self.logger.exception("[Shutdown] Failed to stop application services.")
 
+        try:
+            self.log_service.close()
+        except Exception:
+            self.logger.exception("[Shutdown] Failed to flush pending log records.")
+
         db_manager = getattr(self.container, "db_manager", None)
         if db_manager is not None:
             try:
