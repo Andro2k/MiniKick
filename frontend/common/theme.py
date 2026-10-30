@@ -200,6 +200,8 @@ class Size:
     ICON_SMALL = 24
     BADGE_MIN  = 18
     BADGE_MAX  = 22
+    CONTENT_MAX_WIDTH = 880
+    CONTENT_MIN_WIDTH = 520
 
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
     return f"{width:g}px {style} {color}"
@@ -306,6 +308,7 @@ QLabel[role="profile_name"] {{ font-size: {text1}px; font-weight: 600; color: {P
 QLabel[role="profile_role"] {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; background: transparent; }}
 QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
+QLabel[role="setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="monospace"]{{ font-size: {text2}px; color: {Palette.NEUTRAL_400}; }}
 QLabel[state="normal"]  {{ color: {Palette.NEUTRAL_400}; }}
 QLabel[state="white"]   {{ color: {Palette.NEUTRAL_050}; }}

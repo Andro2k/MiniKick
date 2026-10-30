@@ -28,8 +28,18 @@ class SettingsView(BaseView):
     tiktok_integration_clicked = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(i18n=i18n, title_key="settings.header.title", subtitle_key="settings.header.subtitle", parent=parent)
+        super().__init__(
+            i18n=i18n,
+            title_key="settings.header.title",
+            subtitle_key="settings.header.subtitle",
+            parent=parent,
+            max_content_width=Size.CONTENT_MAX_WIDTH,
+            min_content_width=Size.CONTENT_MIN_WIDTH,
+        )
         self._setup_ui()
+
+    def _setting_row(self, title_key: str, desc_key: str, control: QWidget) -> SettingRow:
+        return SettingRow.minimal(self.i18n.get(title_key), self.i18n.get(desc_key), control)
 
     def _setup_ui(self):
         header_system = SectionHeader(self.i18n.get("settings.sections.system"), parent=self, first=True)
@@ -40,12 +50,7 @@ class SettingsView(BaseView):
         self.combo_lang.addItem("English", "en")
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
 
-        row_lang = SettingRow(
-            icon_name="globe-filled.svg",
-            title_text=self.i18n.get("settings.system.lang_title"),
-            desc_text=self.i18n.get("settings.system.lang_desc"),
-            right_widget=self.combo_lang
-        )
+        row_lang = self._setting_row("settings.system.lang_title", "settings.system.lang_desc", self.combo_lang)
 
         self.combo_font = NoWheelComboBox(self)
         font_sizes = [
@@ -58,12 +63,7 @@ class SettingsView(BaseView):
             self.combo_font.addItem(name, size)
         self.combo_font.currentIndexChanged.connect(self._on_font_changed)
 
-        row_font = SettingRow(
-            icon_name="file-text-filled.svg",
-            title_text=self.i18n.get("settings.system.font_title"),
-            desc_text=self.i18n.get("settings.system.font_desc"),
-            right_widget=self.combo_font
-        )
+        row_font = self._setting_row("settings.system.font_title", "settings.system.font_desc", self.combo_font)
 
         self._current_browser_path = "default"
         self._installed_browser_paths = set()
@@ -89,22 +89,12 @@ class SettingsView(BaseView):
         browser_layout.addWidget(self.combo_browser)
         browser_layout.addWidget(self.btn_browse_browser)
 
-        row_browser = SettingRow(
-            icon_name="window-pointer-filled.svg",
-            title_text=self.i18n.get("settings.system.browser_title"),
-            desc_text=self.i18n.get("settings.system.browser_desc"),
-            right_widget=browser_container
-        )
+        row_browser = self._setting_row("settings.system.browser_title", "settings.system.browser_desc", browser_container)
 
         self.sw_start_bg = ModernSwitch(self)
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
 
-        row_tray = SettingRow(
-            icon_name="minimize-filled.svg",
-            title_text=self.i18n.get("settings.system.tray_title"),
-            desc_text=self.i18n.get("settings.system.tray_desc"),
-            right_widget=self.sw_start_bg
-        )
+        row_tray = self._setting_row("settings.system.tray_title", "settings.system.tray_desc", self.sw_start_bg)
 
         card_system.addWidget(row_lang)
         card_system.add_separator()
@@ -135,19 +125,9 @@ class SettingsView(BaseView):
         self.combo_music_audio_device.currentIndexChanged.connect(self._on_music_audio_device_changed)
         self.combo_tts_audio_device.currentIndexChanged.connect(self._on_tts_audio_device_changed)
 
-        row_music_audio = SettingRow(
-            icon_name="music-notes-filled.svg",
-            title_text=self.i18n.get("settings.audio.music_title"),
-            desc_text=self.i18n.get("settings.audio.music_desc"),
-            right_widget=self.combo_music_audio_device
-        )
+        row_music_audio = self._setting_row("settings.audio.music_title", "settings.audio.music_desc", self.combo_music_audio_device)
 
-        row_tts_audio = SettingRow(
-            icon_name="volume-up-filled.svg",
-            title_text=self.i18n.get("settings.audio.tts_title"),
-            desc_text=self.i18n.get("settings.audio.tts_desc"),
-            right_widget=self.combo_tts_audio_device
-        )
+        row_tts_audio = self._setting_row("settings.audio.tts_title", "settings.audio.tts_desc", self.combo_tts_audio_device)
 
         card_audio.addWidget(row_music_audio)
         card_audio.add_separator()
@@ -162,42 +142,22 @@ class SettingsView(BaseView):
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
         self.btn_unlink = self.btn_kick_integration
 
-        self.row_kick_integration = SettingRow(
-            icon_name="brand-kick.svg",
-            title_text=self.i18n.get("settings.integrations.kick_title"),
-            desc_text=self.i18n.get("settings.integrations.desc"),
-            right_widget=self.btn_kick_integration
-        )
+        self.row_kick_integration = self._setting_row("settings.integrations.kick_title", "settings.integrations.desc", self.btn_kick_integration)
 
         self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_outlined", parent=self)
         self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
 
-        self.row_twitch_integration = SettingRow(
-            icon_name="brand-twitch.svg",
-            title_text=self.i18n.get("settings.integrations.twitch_title"),
-            desc_text=self.i18n.get("settings.integrations.desc"),
-            right_widget=self.btn_twitch_integration
-        )
+        self.row_twitch_integration = self._setting_row("settings.integrations.twitch_title", "settings.integrations.desc", self.btn_twitch_integration)
 
         self.btn_youtube_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_youtube"), role="action_outlined", parent=self)
         self.btn_youtube_integration.clicked.connect(self.youtube_integration_clicked.emit)
 
-        self.row_youtube_integration = SettingRow(
-            icon_name="brand-youtube.svg",
-            title_text=self.i18n.get("settings.integrations.youtube_title"),
-            desc_text=self.i18n.get("settings.integrations.desc"),
-            right_widget=self.btn_youtube_integration
-        )
+        self.row_youtube_integration = self._setting_row("settings.integrations.youtube_title", "settings.integrations.desc", self.btn_youtube_integration)
 
         self.btn_tiktok_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_tiktok"), role="action_outlined", parent=self)
         self.btn_tiktok_integration.clicked.connect(self.tiktok_integration_clicked.emit)
 
-        self.row_tiktok_integration = SettingRow(
-            icon_name="brand-tiktok.svg",
-            title_text=self.i18n.get("settings.integrations.tiktok_title"),
-            desc_text=self.i18n.get("settings.integrations.desc"),
-            right_widget=self.btn_tiktok_integration
-        )
+        self.row_tiktok_integration = self._setting_row("settings.integrations.tiktok_title", "settings.integrations.desc", self.btn_tiktok_integration)
 
         integrations_card.addWidget(self.row_kick_integration)
         integrations_card.add_separator()
@@ -226,12 +186,7 @@ class SettingsView(BaseView):
         btn_backup_layout.addWidget(self.btn_export)
         btn_backup_layout.addWidget(self.btn_import)
 
-        row_backup = SettingRow(
-            icon_name="restart-filled.svg",
-            title_text=self.i18n.get("settings.backup.title"),
-            desc_text=self.i18n.get("settings.backup.desc"),
-            right_widget=btn_backup_container
-        )
+        row_backup = self._setting_row("settings.backup.title", "settings.backup.desc", btn_backup_container)
         card_backup.addWidget(row_backup)
         self.main_layout.addWidget(header_backup)
         self.main_layout.addWidget(card_backup)
@@ -242,43 +197,23 @@ class SettingsView(BaseView):
         self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined", parent=self)
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
-        row_update = SettingRow(
-            icon_name="cloud-download-filled.svg",
-            title_text=self.i18n.get("settings.system.update_title"),
-            desc_text=self.i18n.get("settings.system.update_desc"),
-            right_widget=self.btn_update
-        )
+        row_update = self._setting_row("settings.system.update_title", "settings.system.update_desc", self.btn_update)
 
         self.sw_auto_update_download = ModernSwitch(self)
         self.sw_auto_update_download.toggled.connect(
             self.auto_update_download_toggled.emit
         )
-        row_auto_update_download = SettingRow(
-            icon_name="cloud-download-filled.svg",
-            title_text=self.i18n.get("settings.system.auto_update_download_title"),
-            desc_text=self.i18n.get("settings.system.auto_update_download_desc"),
-            right_widget=self.sw_auto_update_download
-        )
+        row_auto_update_download = self._setting_row("settings.system.auto_update_download_title", "settings.system.auto_update_download_desc", self.sw_auto_update_download)
 
         self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined", parent=self)
         self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
 
-        row_release_notes = SettingRow(
-            icon_name="file-text-filled.svg",
-            title_text=self.i18n.get("settings.system.release_notes_title"),
-            desc_text=self.i18n.get("settings.system.release_notes_desc"),
-            right_widget=self.btn_release_notes
-        )
+        row_release_notes = self._setting_row("settings.system.release_notes_title", "settings.system.release_notes_desc", self.btn_release_notes)
 
         self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_outlined", parent=self)
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
-        row_feedback = SettingRow(
-            icon_name="bug-filled.svg",
-            title_text=self.i18n.get("settings.feedback.title"),
-            desc_text=self.i18n.get("settings.feedback.desc"),
-            right_widget=self.btn_feedback
-        )
+        row_feedback = self._setting_row("settings.feedback.title", "settings.feedback.desc", self.btn_feedback)
 
         support_card.addWidget(row_update)
         support_card.add_separator()

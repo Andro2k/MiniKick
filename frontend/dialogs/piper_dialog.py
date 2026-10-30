@@ -45,7 +45,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         header_layout.setSpacing(Size.SPACING_MD)
 
         icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(get_pixmap_colored("microphone-filled.svg", BrandColors.GREEN, size=24))
+        icon_lbl.setPixmap(get_pixmap_colored("megaphone-filled.svg", BrandColors.GREEN, size=24))
         header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         title_layout = QVBoxLayout()

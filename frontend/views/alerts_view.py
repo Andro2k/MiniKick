@@ -118,7 +118,7 @@ class AlertsView(BaseView):
         self.btn_notice_connect = ModernButton(
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
-            icon_name="plug-filled.svg",
+            icon_name="brand-twitch.svg",
             parent=self
         )
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)
