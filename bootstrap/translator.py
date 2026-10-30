@@ -1,4 +1,4 @@
-# bootstrap/translator.py
+# bootstrap\translator.py\\
 
 import logging
 import os

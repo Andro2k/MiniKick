@@ -1,4 +1,4 @@
-# frontend/common/__init__.py
+# frontend\common\__init__.py\
 
 from .paths import get_assets_path, resolve_icon_path, resource_path
 from .icons import create_circular_pixmap, get_icon, get_icon_colored, get_pixmap, get_pixmap_colored

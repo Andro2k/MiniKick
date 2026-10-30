@@ -1,4 +1,4 @@
-# resources/tools/project_quality_suite.py
+# resources\tools\project_quality_suite.py\
 
 import argparse
 import contextlib
