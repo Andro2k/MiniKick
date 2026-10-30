@@ -21,6 +21,7 @@ from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import DashboardView
 from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
 from frontend.main_window_views import MainWindowViewFactory
+from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.worker_shutdown import WorkerShutdownCoordinator
 
@@ -53,6 +54,9 @@ class MainWindowCore(QMainWindow):
         ("Settings", "gear-filled.svg", "bottom"),
         ("Developer", "file-text-filled.svg", "bottom"),
     )
+    _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
+    _PREWARM_START_DELAY_MS = 1500
+    _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
@@ -224,6 +228,15 @@ class MainWindowCore(QMainWindow):
         self.view_alerts = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
+        self._last_navigation_at: float | None = None
+        self._view_prewarmer = ViewPrewarmer(
+            create_view=self._get_or_create_view,
+            view_names=[name for name, _icon, _area in self._NAV_CONFIG if name not in self._PREWARM_EXCLUDED_VIEWS],
+            is_created=lambda name: name in self._instantiated_views,
+            is_active=lambda: not self._is_shutting_down,
+            seconds_since_navigation=self._seconds_since_navigation,
+            schedule=QTimer.singleShot,
+        )
         self._view_factory = MainWindowViewFactory(self)
 
     def _create_controllers(self):
@@ -495,6 +508,7 @@ class MainWindowCore(QMainWindow):
 
     def _handle_navigation(self, view_name: str):
         navigation_started = time.perf_counter()
+        self._last_navigation_at = navigation_started
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
         target_view = self._get_or_create_view(view_name)
         if target_view:
@@ -522,6 +536,12 @@ class MainWindowCore(QMainWindow):
 
     def _schedule_startup_followups(self) -> None:
         QTimer.singleShot(750, self._check_whats_new_dialog)
+        self._view_prewarmer.start(self._PREWARM_START_DELAY_MS)
+
+    def _seconds_since_navigation(self) -> float:
+        if self._last_navigation_at is None:
+            return float("inf")
+        return time.perf_counter() - self._last_navigation_at
 
     def _init_feature_badges(self):
         try:
@@ -1429,6 +1449,7 @@ class MainWindowCore(QMainWindow):
         youtube_channel = getattr(self, "_youtube_channel", "")
         tiktok_connected = getattr(self, "_tiktok_connected", False)
         tiktok_channel = getattr(self, "_tiktok_channel", "")
+        refresh_started = time.perf_counter()
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_kick_status(
@@ -1452,6 +1473,7 @@ class MainWindowCore(QMainWindow):
                 msg_count=self.session_platform_messages.get("tiktok", 0)
             )
 
+        dashboard_done = time.perf_counter()
         if hasattr(self, "view_settings") and self.view_settings:
             self.view_settings.set_integrations_status(
                 kick_connected=kick_connected,
@@ -1464,7 +1486,9 @@ class MainWindowCore(QMainWindow):
                 tiktok_channel=tiktok_channel
             )
 
+        settings_view_done = time.perf_counter()
         conn_dict = self.get_connected_platforms()
+        auth_done = time.perf_counter()
         if hasattr(self, "view_chat") and self.view_chat and hasattr(self.view_chat, "set_connected_platforms"):
             self.view_chat.set_connected_platforms(conn_dict)
         if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
@@ -1477,6 +1501,18 @@ class MainWindowCore(QMainWindow):
             self.view_timers.set_connected_platforms(conn_dict)
         if hasattr(self, "view_alerts") and self.view_alerts and hasattr(self.view_alerts, "set_connected_platforms"):
             self.view_alerts.set_connected_platforms(conn_dict)
+
+        finished = time.perf_counter()
+        total_ms = (finished - refresh_started) * 1000
+        if total_ms >= self._SLOW_STATUS_REFRESH_MS:
+            self.logger.info(
+                "[Perf/Integrations] Status refresh took %.2f ms (dashboard=%.2f, settings_view=%.2f, auth=%.2f, views=%.2f)",
+                total_ms,
+                (dashboard_done - refresh_started) * 1000,
+                (settings_view_done - dashboard_done) * 1000,
+                (auth_done - settings_view_done) * 1000,
+                (finished - auth_done) * 1000,
+            )
 
     def get_connected_platforms(self) -> dict[str, bool]:
         kick_auth = self.kick_auth_manager.is_authenticated() if hasattr(self, "kick_auth_manager") and self.kick_auth_manager else False
