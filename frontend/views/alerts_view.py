@@ -298,7 +298,10 @@ class AlertsView(BaseView):
         self.connect_platform_requested.emit("twitch")
 
     def set_connected_platforms(self, connected_platforms: Dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         self._update_platform_connection_ui()
 
     def _update_platform_connection_ui(self):

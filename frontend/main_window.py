@@ -55,7 +55,7 @@ class MainWindowCore(QMainWindow):
         ("Developer", "file-text-filled.svg", "bottom"),
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
-    _PREWARM_START_DELAY_MS = 1500
+    _PREWARM_START_DELAY_MS = 300
     _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):

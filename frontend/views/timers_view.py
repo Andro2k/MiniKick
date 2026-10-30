@@ -65,7 +65,10 @@ class TimersView(BaseView):
         self.main_layout.addWidget(self.table_card, stretch=1)
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         if hasattr(self, "_raw_timers") and self._raw_timers is not None:
             self.populate_table(self._raw_timers)
 

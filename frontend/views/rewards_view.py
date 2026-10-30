@@ -256,7 +256,10 @@ class RewardsView(BaseView):
         self._apply_filters()
 
     def set_connected_platforms(self, connected_platforms: dict):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         self._apply_filters()
 
     def _apply_filters(self):
