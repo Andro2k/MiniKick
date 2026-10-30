@@ -52,7 +52,7 @@ class SystemTrayManager(QSystemTrayIcon):
         self.menu.addSeparator()
 
         self.action_tts = QAction(
-            get_icon_colored("voice-cricle-filled.svg"),
+            get_icon_colored("megaphone-filled.svg"),
             self.i18n.get("main.tray.read_chat"),
             self.menu
         )

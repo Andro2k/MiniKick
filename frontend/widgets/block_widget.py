@@ -44,6 +44,9 @@ class SectionHeader(QWidget):
     def setText(self, text: str):
         self.lbl.setText(text)
 
+SETTING_TITLE_ROLE = "setting_title"
+SETTING_DESC_ROLE = "caption"
+
 class SettingRow(QWidget):
     def __init__(
         self,
@@ -54,6 +57,8 @@ class SettingRow(QWidget):
         icon_color: str = Palette.NEUTRAL_400,
         title_color: str = None,
         contents_margins: tuple = Size.Margin.MRG_LRG,
+        title_role: str = "h3",
+        desc_role: str = "body",
         parent=None
     ):
         super().__init__(parent)
@@ -71,14 +76,14 @@ class SettingRow(QWidget):
         text_layout.setSpacing(Size.SPACING_XS)
 
         lbl_title = QLabel(title_text, parent=self)
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", title_role)
         lbl_title.setWordWrap(True)
         if title_color:
             color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             lbl_title.setProperty("state", color_state)
 
         self.lbl_desc = QLabel(desc_text, parent=self)
-        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setProperty("role", desc_role)
         self.lbl_desc.setWordWrap(True)
 
         text_layout.addWidget(lbl_title)
@@ -87,6 +92,10 @@ class SettingRow(QWidget):
         layout.addLayout(text_layout, stretch=1)
         if right_widget:
             layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+
+    @classmethod
+    def minimal(cls, title_text: str, desc_text: str, right_widget: QWidget = None, **kwargs) -> "SettingRow":
+        return cls(title_text=title_text, desc_text=desc_text, right_widget=right_widget, title_role=SETTING_TITLE_ROLE, desc_role=SETTING_DESC_ROLE, **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
@@ -107,7 +116,9 @@ class SliderRow(QWidget):
         value_label: QLabel,
         icon_color: str = Palette.NEUTRAL_400,
         parent=None,
-        contents_margins: tuple = Size.Margin.MRG_LRG
+        contents_margins: tuple = Size.Margin.MRG_LRG,
+        title_role: str = "h3",
+        desc_role: str = "body"
     ):
         super().__init__(parent)
         main_layout = QHBoxLayout(self)
@@ -130,10 +141,10 @@ class SliderRow(QWidget):
         text_layout.setSpacing(Size.SPACING_XS)
 
         lbl_title = QLabel(title_text, parent=self)
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", title_role)
 
         self.lbl_desc = QLabel(desc_text, parent=self)
-        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setProperty("role", desc_role)
         self.lbl_desc.setWordWrap(True)
 
         text_layout.addWidget(lbl_title)
@@ -147,6 +158,10 @@ class SliderRow(QWidget):
         content_layout.addWidget(slider_widget)
 
         main_layout.addLayout(content_layout, stretch=1)
+
+    @classmethod
+    def minimal(cls, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, **kwargs) -> "SliderRow":
+        return cls("", title_text, desc_text, slider_widget, value_label, title_role=SETTING_TITLE_ROLE, desc_role=SETTING_DESC_ROLE, **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:

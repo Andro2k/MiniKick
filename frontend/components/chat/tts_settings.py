@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout, QComboBox
 from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader, create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
-from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored, BrandColors, Size
 
 class PlatformToggleItem(QWidget):
     def __init__(self, icon_name: str, brand_name: str, switch: ModernSwitch,
@@ -32,30 +32,20 @@ class PlatformToggleItem(QWidget):
             icon_lbl.setToolTip(tooltip)
 
 class VoiceSettingRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
+    def __init__(self, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
-                 action_button: QPushButton = None,
-                 icon_color=Palette.NEUTRAL_400, parent=None):
+                 action_button: QPushButton = None, parent=None):
         super().__init__(parent)
         self.switch = switch
         self.combo = combo
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_LRG, parent=self)
-        header_layout = create_row_layout(spacing=Size.SPACING_SM)
-
-        icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color))
+        main_layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_LRG, parent=self)
 
         lbl_title = QLabel(title_text, parent=self)
-        lbl_title.setProperty("role", "h3")
-
-        header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_layout.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_layout.addStretch()
-
-        main_layout.addLayout(header_layout)
+        lbl_title.setProperty("role", "setting_title")
+        main_layout.addWidget(lbl_title)
 
         controls_layout = create_row_layout(spacing=Size.SPACING_SM)
 
@@ -198,17 +188,17 @@ class ChatTtsSettingsPanel(QWidget):
         self.lbl_speed_perc.setProperty("role", "monospace")
 
         card_general = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
-        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=Size.Margin.MRG_LRG)
-        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=Size.Margin.MRG_LRG)
-        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=Size.Margin.MRG_LRG)
+        row_tts = SettingRow.minimal(self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
+        row_read_name = SettingRow.minimal(self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
+        row_cmd = SettingRow.minimal(self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=Size.Margin.MRG_LRG)
-        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_LRG)
-        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=Size.Margin.MRG_LRG)
+        row_prefix = SettingRow.minimal(self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+        row_volume = SliderRow.minimal(self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        row_speed = SliderRow.minimal(self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
 
         card_general.addWidget(row_tts)
         card_general.add_separator()
@@ -229,7 +219,6 @@ class ChatTtsSettingsPanel(QWidget):
         voices_card = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
 
         row_provider = VoiceSettingRow(
-            "globe-filled.svg",
             self.i18n.get("chat.settings.provider_title"),
             self.combo_provider,
             action_button=self.btn_manage_piper
@@ -256,7 +245,6 @@ class ChatTtsSettingsPanel(QWidget):
         self.sw_role_subscriber.setChecked(True)
 
         row_voice_general = VoiceSettingRow(
-            "users-filled.svg",
             self.i18n.get("chat.settings.voice_general_title"),
             self.combo_voice,
             switch=self.sw_role_everyone,
@@ -264,7 +252,6 @@ class ChatTtsSettingsPanel(QWidget):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_broadcaster = VoiceSettingRow(
-            "microphone-filled.svg",
             self.i18n.get("chat.roles.broadcaster_title"),
             self.combo_voice_broadcaster,
             switch=self.sw_role_broadcaster,
@@ -272,7 +259,6 @@ class ChatTtsSettingsPanel(QWidget):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_moderator = VoiceSettingRow(
-            "shield-user-filled.svg",
             self.i18n.get("chat.roles.moderator_title"),
             self.combo_voice_moderator,
             switch=self.sw_role_moderator,
@@ -280,7 +266,6 @@ class ChatTtsSettingsPanel(QWidget):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_vip = VoiceSettingRow(
-            "star-filled.svg",
             self.i18n.get("chat.roles.vip_title"),
             self.combo_voice_vip,
             switch=self.sw_role_vip,
@@ -288,7 +273,6 @@ class ChatTtsSettingsPanel(QWidget):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_subscriber = VoiceSettingRow(
-            "crown-filled.svg",
             self.i18n.get("chat.roles.subscriber_title"),
             self.combo_voice_subscriber,
             switch=self.sw_role_subscriber,
