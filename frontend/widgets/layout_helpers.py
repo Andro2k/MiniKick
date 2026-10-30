@@ -135,7 +135,9 @@ def create_text_label(
     return lbl
 
 
-def create_error_label(parent: QWidget | None = None) -> QLabel:
+def create_error_label(
+    parent: QWidget | None = None
+) -> QLabel:
     lbl = QLabel(parent) if parent else QLabel()
     lbl.setProperty("state", "error")
     lbl.setWordWrap(True)
@@ -143,7 +145,12 @@ def create_error_label(parent: QWidget | None = None) -> QLabel:
     return lbl
 
 
-def sync_platform_switch_state(switch, is_connected: bool, offline_tooltip: str = "", auto_check: bool = False):
+def sync_platform_switch_state(
+    switch, 
+    is_connected: bool, 
+    offline_tooltip: str = "", 
+    auto_check: bool = False
+):
     switch.setEnabled(is_connected)
     if auto_check:
         switch.setChecked(is_connected)
@@ -152,7 +159,12 @@ def sync_platform_switch_state(switch, is_connected: bool, offline_tooltip: str 
     switch.setToolTip(offline_tooltip if not is_connected else "")
 
 
-def sync_dual_platform_switches(switch_kick, switch_twitch, connected_platforms: dict[str, bool] | None, offline_tooltip: str = "", auto_check: bool = False):
+def sync_dual_platform_switches(
+    switch_kick, switch_twitch, 
+    connected_platforms: dict[str, bool] | None, 
+    offline_tooltip: str = "", 
+    auto_check: bool = False
+):
     conns = connected_platforms or {}
     kick_on = bool(conns.get("kick", False))
     twitch_on = bool(conns.get("twitch", False))
@@ -194,7 +206,10 @@ def create_platform_switches(
 
     return switches_row, switch_kick, switch_twitch
 
-def render_styled_frame_background(widget: QWidget) -> None:
+
+def render_styled_frame_background(
+    widget: QWidget
+) -> None:
     opt = QStyleOptionFrame()
     opt.initFrom(widget)
     p = QPainter(widget)
