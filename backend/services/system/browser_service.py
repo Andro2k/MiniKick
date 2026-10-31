@@ -7,7 +7,7 @@ import subprocess
 import sys
 import webbrowser
 from typing import Optional
-from backend.interfaces.i_settings import SettingsStorage
+from backend.interfaces.i_config_provider import IConfigProvider
 
 logger = logging.getLogger("minikick.services.browser")
 
@@ -15,7 +15,7 @@ DEFAULT_BROWSER_KEY = "default"
 SETTING_BROWSER_PATH = "app_browser_path"
 
 class BrowserService:
-    def __init__(self, settings_storage: Optional[SettingsStorage] = None):
+    def __init__(self, settings_storage: Optional[IConfigProvider] = None):
         self.storage = settings_storage
         self._installed_cache: list[dict[str, str]] | None = None
 

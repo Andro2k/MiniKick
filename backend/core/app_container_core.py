@@ -7,7 +7,8 @@ from backend.config import (
     KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
     TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI,
 )
-from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
+from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
+from backend.interfaces import IConfigProvider
 from backend.services.system import create_secret_cipher
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.utils.paths import resource_path
@@ -16,8 +17,9 @@ logger = logging.getLogger("minikick.core.app_container")
 
 
 class AppContainerCore:
-    def __init__(self, db_manager: DatabaseManager, i18n: TranslationService):
+    def __init__(self, db_manager: DatabaseManager, i18n: TranslationService, config_provider: IConfigProvider):
         self.db_manager = db_manager
+        self.config_provider = config_provider
         self.i18n = i18n
         self._is_shutdown = False
         self._music_provider = None
@@ -39,7 +41,8 @@ class AppContainerCore:
         if self._music_provider is None:
             from backend.providers.music import YouTubeMusicProvider
             self._music_provider = YouTubeMusicProvider(
-                self.i18n, music_storage=self.music_storage, db_manager=self.db_manager
+                self.i18n, music_storage=self.music_storage, db_manager=self.db_manager,
+                settings_storage=self.settings_storage,
             )
         return self._music_provider
 
@@ -83,7 +86,7 @@ class AppContainerCore:
         self.twitch_token_storage = EncryptedTokenStorage(
             SQLiteTokenStorage(db, provider="twitch"), self.secret_cipher
         )
-        self.settings_storage = SQLiteSettingsStorage(db)
+        self.settings_storage = self.config_provider
         self.rewards_storage = SQLiteRewardsStorage(db)
         self.spam_storage = SQLiteSpamStorage(db)
         self.timers_storage = SQLiteTimersStorage(db)

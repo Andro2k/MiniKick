@@ -23,15 +23,18 @@ def _release_search_worker(worker_ref: weakref.ReferenceType) -> None:
 _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database import SQLiteMusicStorage
+from backend.interfaces import IConfigProvider
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
     queue_updated = Signal()
 
-    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
+    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None,
+                 settings_storage: IConfigProvider | None = None):
         super().__init__()
         self.i18n = i18n
         self.db_manager = db_manager
+        self.settings_storage = settings_storage
         if music_storage:
             self.music_storage = music_storage
         elif db_manager:
@@ -74,10 +77,9 @@ class YouTubeMusicProvider(QObject):
         self._duck_factor = 0.30
         self.loudness_normalization_enabled = True
 
-        if self.db_manager:
+        if self.settings_storage:
             try:
-                from backend.database import SQLiteSettingsStorage
-                settings = SQLiteSettingsStorage(self.db_manager)
+                settings = self.settings_storage
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
                 self.loudness_normalization_enabled = settings.load_bool("music_loudness_normalization", True)
                 saved_vol = int(settings.load_string("music_volume", "100"))
@@ -344,10 +346,9 @@ class YouTubeMusicProvider(QObject):
     def set_loudness_normalization(self, enabled: bool) -> None:
         self.loudness_normalization_enabled = enabled
         self.audio_output.setVolume(self._calculate_effective_volume())
-        if self.db_manager:
+        if self.settings_storage:
             try:
-                from backend.database import SQLiteSettingsStorage
-                SQLiteSettingsStorage(self.db_manager).save_bool("music_loudness_normalization", enabled)
+                self.settings_storage.save_bool("music_loudness_normalization", enabled)
             except Exception as e:
                 logger.debug("[YouTubeMusicProvider] Could not persist loudness normalization: %s", e)
 

@@ -52,7 +52,9 @@ class MusicController(QObject):
         if not self.provider_factory:
             from backend.providers import YouTubeMusicProvider
             self.provider_factory = {
-                "youtube": lambda db: YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=db)
+                "youtube": lambda db: YouTubeMusicProvider(
+                    self.i18n, music_storage=self.music_storage, db_manager=db, settings_storage=self.settings_storage
+                )
             }
         self.music_provider = music_provider
         self.provider_type = "youtube"
