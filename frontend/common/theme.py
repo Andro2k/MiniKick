@@ -172,14 +172,11 @@ class Margin:
     SEC_BDG = (4, 4, 8, 4)
 
 class Padding:
-    PAD_MINI  = "2px 2px" 
     PAD_COMP  = "2px 6px"
     FLAT_MIN  = "2px 8px"
     ASYM_ONE  = "2px 20px 2px 10px"
 
-    PAD_TINY  = "4px 4px"
     PAD_BASE  = "4px 6px"
-
     PAD_CORE  = "6px 10px"
     PAD_WIDE  = "6px 14px"
 
@@ -451,7 +448,7 @@ QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWi
 QLabel[role="searchable_combo_empty"] {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_500}; font-size: {text2}px; padding: {Size.SPACING_XL}px {Size.SPACING_MD}px; border-bottom-left-radius: {Size.Radius.RAD_MED}px; border-bottom-right-radius: {Size.Radius.RAD_MED}px; }}
 
 /* Context Menus */
-QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_200}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; }}
+QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_200}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 QMenu::item {{ padding: {Padding.PAD_BASE}; margin: 2px; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
 QMenu::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-color: {Semantic.BORDER_SUBTLE_GHOST}; }}
@@ -617,9 +614,9 @@ QLabel[role="rank_number"][state="golden"] {{ color: {BrandColors.AMBER}; }}
 QLabel[role="rank_number"][state="silver"] {{ color: {Palette.NEUTRAL_400}; }}
 QLabel[role="rank_number"][state="bronze"] {{ color: {BrandColors.AMBER_DARK}; }}
 QLabel[role="rank_number"][state="normal"] {{ color: {Palette.NEUTRAL_500}; }}
-QLabel[role="status_pill"]                      {{ border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_MINI}; font-size: 12px; font-weight: 500; }}
-QLabel[role="status_pill"][state="online"]      {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; border: {Borders.BRD_FOCS}; font-weight: 600; }}
-QLabel[role="status_pill"][state="connecting"]  {{ background-color: {Semantic.AMBER_GLOW}; color: {BrandColors.AMBER}; border: {get_border(BrandColors.AMBER)}; font-weight: 600; }}
+QLabel[role="status_pill"]                      {{ border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; font-size: 12px; font-weight: 500; }}
+QLabel[role="status_pill"][state="online"]      {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; border: {Borders.BRD_FOCS}; }}
+QLabel[role="status_pill"][state="connecting"]  {{ background-color: {Semantic.AMBER_GLOW}; color: {BrandColors.AMBER}; border: {get_border(BrandColors.AMBER)}; }}
 QLabel[role="status_pill"][state="offline"]     {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_SOFT}; }}
 QLabel[role="badge_new"] {{ background-color: {BrandColors.ORANGE}; color: {Palette.NEUTRAL_000}; font-weight: 700; border-radius: {Size.Radius.RAD_MED}px; min-width: {Size.BADGE_MIN}px; max-width: {Size.BADGE_MIN}px; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MIN}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
 QLabel[role="badge_new"][state="collapsed"] {{ border-radius: {Size.Radius.RAD_MED}px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
@@ -726,8 +723,8 @@ QFrame[role="segmented_pagination"] QPushButton:disabled {{ background-color: tr
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: transparent; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; padding: {Padding.FLAT_MIN}; }}
 
 /* Calendar Pop-up (QCalendarWidget) */
-QWidget#qt_datetimedit_calendar {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_LRG}px; padding: {Padding.PAD_TINY}; }}
-QCalendarWidget {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; padding: {Padding.PAD_TINY}; }}
+QWidget#qt_datetimedit_calendar {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_LRG}px; padding: {Padding.PAD_BASE}; }}
+QCalendarWidget {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; padding: {Padding.PAD_BASE}; }}
 QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: {Palette.NEUTRAL_950}; border: none; min-height: 36px; }}
 QCalendarWidget QToolButton {{ background-color: transparent; color: {Palette.NEUTRAL_050}; font-weight: 500; font-size: {text1}px; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_XSM}px; padding: {Padding.PAD_BASE}; }}
 QCalendarWidget QToolButton:hover {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
@@ -735,7 +732,7 @@ QCalendarWidget QToolButton:pressed {{ background-color: {Palette.NEUTRAL_750}; 
 QCalendarWidget QToolButton#qt_calendar_prevmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_LF}"); icon-size: 16px; width: 24px; height: 24px; }}
 QCalendarWidget QToolButton#qt_calendar_nextmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_RT}"); icon-size: 16px; width: 24px; height: 24px; }}
 QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton#qt_calendar_yearbutton {{ color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_BASE}; }}
-QCalendarWidget QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; }}
+QCalendarWidget QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 QCalendarWidget QSpinBox {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; padding: {Padding.PAD_BASE}; font-weight: 500; }}
 QCalendarWidget QSpinBox:focus {{ border-color: {BrandColors.GREEN}; }}
 QCalendarWidget QTableView {{ background-color: {Palette.NEUTRAL_950}; border: none; gridline-color: transparent; selection-background-color: {Palette.NEUTRAL_050}; selection-color: {Palette.NEUTRAL_900}; outline: none; }}
@@ -743,18 +740,18 @@ QCalendarWidget QTableView QWidget {{ background-color: {Palette.NEUTRAL_950}; }
 QCalendarWidget QTableView:enabled {{ color: {Palette.NEUTRAL_400}; }}
 QCalendarWidget QTableView:disabled {{ color: {Palette.NEUTRAL_700}; }}
 QHeaderView, QCalendarWidget QHeaderView::section {{ background-color: transparent; color: {Palette.NEUTRAL_400}; font-size: {text2}px; font-weight: 500; padding: {Size.SPACING_XXS}px {Size.SPACING_NN}px; border: none; text-align: center; }}
-QCalendarWidget QTableView::item {{ border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; margin: 2px; }}
+QCalendarWidget QTableView::item {{ border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; margin: 2px; }}
 QCalendarWidget QTableView::item:hover {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-radius: {Size.Radius.RAD_MED}px; }}
 QCalendarWidget QTableView::item:selected {{ background-color: {Palette.NEUTRAL_050}; color: {Palette.NEUTRAL_900}; font-weight: 700; border-radius: {Size.Radius.RAD_MED}px; }}
 
 /* Autocomplete Pop-up (VariableTextEdit) */
-QListWidget[role="variable_autocomplete_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; outline: none; color: {Palette.NEUTRAL_050}; }}
+QListWidget[role="variable_autocomplete_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; outline: none; color: {Palette.NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item {{ height: 28px; padding: {Padding.PAD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-weight: 500; }}
 QListWidget[role="variable_autocomplete_popup"]::item:hover {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; font-weight: 600; }}
 
 /* Global Context Menus & Tooltips */
-QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; }}
+QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 QMenu::item {{ padding: {Padding.PAD_WIDE}; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; }}
 QMenu::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
 QMenu::separator {{ height: 1px; background-color: {Semantic.BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}

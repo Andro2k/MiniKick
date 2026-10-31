@@ -36,7 +36,7 @@ class PlatformStatusCard(QFrame):
         self._setup_ui(brand_name, icon_file)
 
     def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_XSM, parent=self)
+        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_XSM, parent=self)
         
         top_row = create_row_layout(spacing=Size.SPACING_NN)
 
@@ -82,13 +82,13 @@ class PlatformStatusCard(QFrame):
 
     def _apply_pill_style(self, state: str):
         if state == "online":
-            self.lbl_status_pill.setText(f"● {self.i18n.get('dashboard.platforms.status_online')}")
+            self.lbl_status_pill.setText(f" ● {self.i18n.get('dashboard.platforms.status_online')}")
             self.lbl_status_pill.setProperty("state", "online")
         elif state == "connecting":
-            self.lbl_status_pill.setText(f"○ {self.i18n.get('dashboard.platforms.status_connecting')}")
+            self.lbl_status_pill.setText(f" ○ {self.i18n.get('dashboard.platforms.status_connecting')}")
             self.lbl_status_pill.setProperty("state", "connecting")
         else:
-            self.lbl_status_pill.setText(f"⏻ {self.i18n.get('dashboard.platforms.status_offline')}")
+            self.lbl_status_pill.setText(f" ⏻ {self.i18n.get('dashboard.platforms.status_offline')}")
             self.lbl_status_pill.setProperty("state", "offline")
         self.lbl_status_pill.style().unpolish(self.lbl_status_pill)
         self.lbl_status_pill.style().polish(self.lbl_status_pill)
