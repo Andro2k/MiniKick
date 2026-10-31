@@ -1,11 +1,11 @@
 # frontend\widgets\category_search.py
 
-from frontend.common import BrandColors, get_pixmap_colored, get_icon_colored, Size
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy
-from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
-from .layout_helpers import render_styled_frame_background
-from .controls_widget import configure_icon_only_button
-from .style_utils import sync_focus_state
+from PySide6.QtCore import Qt, Signal, QTimer, QEvent
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QListWidgetItem, QSizePolicy, QWidget
+from frontend.common import get_pixmap_colored, Size
+from .action_line_edit import ActionLineEdit
+from .floating_list_popup import BaseFloatingListPopup
+from .stream_platform_widgets import platform_brand_pixmap
 
 class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
@@ -15,18 +15,14 @@ class CategoryItemWidget(QWidget):
         layout.setSpacing(Size.SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        plat_upper = platform.upper()
+        pixmap = platform_brand_pixmap(platform)
+        if pixmap is None:
+            pixmap = get_pixmap_colored("gamepad-filled.svg")
+
         self.icon_label = QLabel()
         self.icon_label.setFixedSize(16, 16)
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        if plat_upper == "KICK":
-            self.icon_label.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN))
-        elif plat_upper == "TWITCH":
-            self.icon_label.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE))
-        else:
-            self.icon_label.setPixmap(get_pixmap_colored("gamepad-filled.svg"))
-
+        self.icon_label.setPixmap(pixmap)
         layout.addWidget(self.icon_label)
 
         self.lbl_name = QLabel(name)
@@ -34,101 +30,62 @@ class CategoryItemWidget(QWidget):
         self.lbl_name.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout.addWidget(self.lbl_name)
 
-class CategorySuggestionsPopup(QFrame):
+class CategorySuggestionsPopup(BaseFloatingListPopup):
     category_selected = Signal(object)
 
+    _MIN_WIDTH = 260
+    _ANCHOR_GAP = 4
+    _WRAP_NAVIGATION = True
+    _ROW_HEIGHT = 50
+    _MAX_VISIBLE_ROWS = 6
+    _MAX_RESULTS = 50
+
     def __init__(self, target_input: QWidget, parent=None):
-        super().__init__(parent)
-        self.target_input = target_input
-        self.setProperty("role", "category_dropdown")
-        self.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        super().__init__(
+            target_input,
+            frame_role="category_dropdown",
+            list_role="category_list",
+            window_flags=Qt.WindowType.ToolTip | Qt.WindowType.WindowStaysOnTopHint,
+            parent=parent
+        )
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MRG_NON)
-        layout.setSpacing(Size.SPACING_NN)
-
-        self.list_widget = QListWidget(self)
-        self.list_widget.setProperty("role", "category_list")
-        self.list_widget.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.list_widget.itemClicked.connect(self._on_item_clicked)
-        layout.addWidget(self.list_widget)
-
-        self.target_input.installEventFilter(self)
-
-    def paintEvent(self, _event):
-        render_styled_frame_background(self)
+        self.attach_key_navigation(target_input)
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.KeyPress and self.isVisible():
-            key = event.key()
-            if key == Qt.Key.Key_Escape:
-                self.hide()
-                return True
-            elif key == Qt.Key.Key_Down:
-                cur = self.list_widget.currentRow()
-                if cur < self.list_widget.count() - 1:
-                    self.list_widget.setCurrentRow(cur + 1)
-                else:
-                    self.list_widget.setCurrentRow(0)
-                return True
-            elif key == Qt.Key.Key_Up:
-                cur = self.list_widget.currentRow()
-                if cur > 0:
-                    self.list_widget.setCurrentRow(cur - 1)
-                else:
-                    self.list_widget.setCurrentRow(self.list_widget.count() - 1)
-                return True
-            elif key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-                item = self.list_widget.currentItem()
-                if item:
-                    self._on_item_clicked(item)
-                    return True
-        elif event.type() == QEvent.Type.FocusOut:
+        if event.type() == QEvent.Type.FocusOut:
             QTimer.singleShot(150, self._check_hide_on_focus_lost)
         return super().eventFilter(obj, event)
 
     def _check_hide_on_focus_lost(self):
-        if not self.target_input.hasFocus() and not self.hasFocus() and not self.list_widget.hasFocus():
+        if not self.anchor.hasFocus() and not self.hasFocus() and not self.list_widget.hasFocus():
             self.hide()
 
     def show_results(self, platform: str, results: list[dict]):
         self.list_widget.clear()
-        if not results or not self.target_input.isVisible():
+        if not results or not self.anchor.isVisible():
             self.hide()
             return
 
-        for item_data in results[:50]:
+        for item_data in results[:self._MAX_RESULTS]:
             name = item_data.get("name", "")
             cat_id = item_data.get("id", "")
             plat = item_data.get("platform", platform)
 
             list_item = QListWidgetItem(self.list_widget)
-            payload = {
+            list_item.setData(Qt.ItemDataRole.UserRole, {
                 "platform": plat,
                 "id": cat_id,
                 "name": name,
                 "thumbnail": item_data.get("thumbnail", "")
-            }
-            list_item.setData(Qt.ItemDataRole.UserRole, payload)
+            })
 
-            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)       
+            custom_widget = CategoryItemWidget(plat, name, cat_id, parent=self.list_widget)
             list_item.setSizeHint(custom_widget.sizeHint())
             self.list_widget.setItemWidget(list_item, custom_widget)
 
-        global_pos = self.target_input.mapToGlobal(QPoint(0, self.target_input.height() + 4))
-        self.move(global_pos)
-        self.setFixedWidth(max(self.target_input.width(), 260))
-
-        visible_count = min(len(results), 6)
-        total_height = visible_count * 50
-        self.setFixedHeight(total_height)
-        self.show()
-        self.raise_()
+        self.setFixedHeight(min(len(results), self._MAX_VISIBLE_ROWS) * self._ROW_HEIGHT)
+        self.show_below_anchor()
 
     def _on_item_clicked(self, item: QListWidgetItem):
         data = item.data(Qt.ItemDataRole.UserRole)
@@ -136,40 +93,14 @@ class CategorySuggestionsPopup(QFrame):
         if data:
             self.category_selected.emit(data)
 
-class CategorySearchComboBox(QFrame):
+class CategorySearchComboBox(ActionLineEdit):
     category_selected = Signal(object)
     search_requested = Signal(str, str)
-    textChanged = Signal(str)
-    returnPressed = Signal()
 
     def __init__(self, placeholder: str = "", default_platform: str = "both", parent=None):
-        super().__init__(parent)
+        super().__init__(placeholder, search_when_empty=True, parent=parent)
         self.default_platform = default_platform
         self._selected_category_data = None
-        self.setProperty("role", "search_bar")
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*Size.Margin.MRG_NON)
-        layout.setSpacing(Size.SPACING_NN)
-
-        self._icon_search = get_icon_colored("search-filled.svg")
-        self._icon_delete = get_icon_colored("x-filled.svg")
-
-        self.txt_input = QLineEdit(self)
-        self.txt_input.setPlaceholderText(placeholder)
-        self.txt_input.setFrame(False)
-        self.txt_input.textChanged.connect(self._on_text_changed)
-        self.txt_input.returnPressed.connect(self.returnPressed.emit)
-        self.txt_input.installEventFilter(self)
-
-        self.btn_action = QPushButton(self)
-        self.btn_action.setIcon(self._icon_search)
-        configure_icon_only_button(self.btn_action)
-        self.btn_action.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_action.clicked.connect(self._on_action_clicked)
-
-        layout.addWidget(self.txt_input, stretch=1)
-        layout.addWidget(self.btn_action)
 
         self.popup = CategorySuggestionsPopup(self.txt_input, parent=self)
         self.popup.category_selected.connect(self._on_category_picked)
@@ -180,44 +111,32 @@ class CategorySearchComboBox(QFrame):
         self.search_timer.timeout.connect(self._emit_search)
 
     def _on_text_changed(self, text: str):
-        if text.strip():
-            self.btn_action.setIcon(self._icon_delete)
-            if len(text.strip()) >= 2:
-                self.search_timer.start()
-            else:
-                self.search_timer.stop()
-                self.popup.hide()
+        query = text.strip()
+        if len(query) >= 2:
+            self.search_timer.start()
         else:
-            self.btn_action.setIcon(self._icon_search)
             self.search_timer.stop()
             self.popup.hide()
-            self._selected_category_data = None
-
-        self.textChanged.emit(text)
-
-    def _on_action_clicked(self):
-        if self.txt_input.text().strip():
-            self.clear()
-            self.txt_input.setFocus()
-        else:
-            self._emit_search()
+            if not query:
+                self._selected_category_data = None
+        super()._on_text_changed(text)
 
     def _emit_search(self):
         query = self.txt_input.text().strip()
         if query:
             self.search_requested.emit(query, self.default_platform)
 
+    def _set_text_silently(self, text: str):
+        self.txt_input.blockSignals(True)
+        self.txt_input.setText(text)
+        self.txt_input.blockSignals(False)
+        self._sync_action_button()
+
     def _on_category_picked(self, data: dict):
         self.search_timer.stop()
         self._selected_category_data = data
-        name = data.get("name", "")
-
-        self.txt_input.blockSignals(True)
-        self.txt_input.setText(name)
-        self.txt_input.blockSignals(False)
-        self.btn_action.setIcon(self._icon_delete)
+        self._set_text_silently(data.get("name", ""))
         self.txt_input.setFocus()
-
         self.category_selected.emit(data)
 
     def set_results(self, platform: str, results: list[dict]):
@@ -230,40 +149,13 @@ class CategorySearchComboBox(QFrame):
             "id": cat_id,
             "platform": platform or self.default_platform
         }
-        self.txt_input.blockSignals(True)
-        self.txt_input.setText(name)
-        self.txt_input.blockSignals(False)
-        self.btn_action.setIcon(self._icon_delete if name else self._icon_search)
-
-    def text(self) -> str:
-        return self.txt_input.text()
-
-    def setText(self, text: str):
-        self.txt_input.setText(text)
-        self.btn_action.setIcon(self._icon_delete if text else self._icon_search)
-
-    def setPlaceholderText(self, text: str):
-        self.txt_input.setPlaceholderText(text)
+        self._set_text_silently(name)
 
     def clear(self):
         self._selected_category_data = None
-        self.txt_input.clear()
-        self.btn_action.setIcon(self._icon_search)
         self.popup.hide()
-
-    def setEnabled(self, enabled: bool):
-        super().setEnabled(enabled)
-        self.txt_input.setEnabled(enabled)
-        self.btn_action.setEnabled(enabled)
-
-    def setFocus(self):
-        self.txt_input.setFocus()
+        super().clear()
 
     def hideEvent(self, event):
         super().hideEvent(event)
         self.popup.hide()
-
-    def eventFilter(self, watched, event):
-        if watched == self.txt_input:
-            sync_focus_state(self, event.type())
-        return super().eventFilter(watched, event)

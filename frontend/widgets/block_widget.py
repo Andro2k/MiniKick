@@ -6,7 +6,8 @@ from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch, configure_icon_only_button
-from .layout_helpers import create_platform_switches, create_row_layout
+from .layout_helpers import create_row_layout
+from .stream_platform_widgets import create_platform_switches
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
