@@ -82,7 +82,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_kick_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_kick_t_header.setProperty("role", "caption")
         self.lbl_kick_title = QLabel("-")
-        self.lbl_kick_title.setProperty("role", "h3")
+        self.lbl_kick_title.setProperty("role", "setting_title")
         self.lbl_kick_title.setWordWrap(True)
         kick_title_layout.addWidget(lbl_kick_t_header)
         kick_title_layout.addWidget(self.lbl_kick_title)
@@ -186,7 +186,7 @@ class ScheduleQuickChangePanel(QWidget):
         change_card.addLayout(header_layout)
 
         form_layout = create_col_layout(spacing=Size.SPACING_MD)
-        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="h3", word_wrap=False)
+        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="setting_title", word_wrap=False)
         form_layout.addWidget(lbl_target)
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
@@ -196,7 +196,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addLayout(switches_row)
 
         lbl_title_field = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
-        lbl_title_field.setProperty("role", "h3")
+        lbl_title_field.setProperty("role", "setting_title")
         form_layout.addWidget(lbl_title_field)
 
         self.txt_title = QLineEdit(parent=self)
@@ -204,7 +204,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addWidget(self.txt_title)
 
         lbl_category = QLabel(self.i18n.get("stream_info.quick_change.category"))
-        lbl_category.setProperty("role", "h3")
+        lbl_category.setProperty("role", "setting_title")
         form_layout.addWidget(lbl_category)
 
         self.search_category = CategorySearchComboBox(

@@ -348,7 +348,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.slider_vol.setValue(100)
 
         self.lbl_vol_perc = QLabel("100%")
-        self.lbl_vol_perc.setProperty("role", "monospace")
+        self.lbl_vol_perc.setProperty("role", "caption")
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
 
         vol_row = SliderRow(

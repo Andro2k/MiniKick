@@ -10,6 +10,7 @@ from backend.config import (
 from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.interfaces import IConfigProvider
 from backend.services.system import create_secret_cipher
+from backend.services.system.db_maintenance_service import DatabaseMaintenance
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.utils.paths import resource_path
 
@@ -20,6 +21,7 @@ class AppContainerCore:
     def __init__(self, db_manager: DatabaseManager, i18n: TranslationService, config_provider: IConfigProvider):
         self.db_manager = db_manager
         self.config_provider = config_provider
+        self.db_maintenance = DatabaseMaintenance(db_manager)
         self.i18n = i18n
         self._is_shutdown = False
         self._music_provider = None

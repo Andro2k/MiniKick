@@ -297,15 +297,12 @@ QDialog {{ background-color: {Palette.NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* --- 2. Typography Scale --- */
-QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_400}; letter-spacing: 0.5px; }}
-QLabel[role="profile_name"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
 QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="monospace"]{{ font-size: {text2}px; color: {Palette.NEUTRAL_400}; }}
 QLabel[state="normal"]  {{ color: {Palette.NEUTRAL_400}; }}
 QLabel[state="white"]   {{ color: {Palette.NEUTRAL_050}; }}
 QLabel[state="error"]   {{ color: {BrandColors.RED}; }}
