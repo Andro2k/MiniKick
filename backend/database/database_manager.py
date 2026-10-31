@@ -305,16 +305,6 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS timer_execution_logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timer_id INTEGER NOT NULL,
-                    message_sent TEXT NOT NULL,
-                    platform TEXT DEFAULT 'all',
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(timer_id) REFERENCES chat_timers(id) ON DELETE CASCADE
-                )
-            """)
-            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS stream_schedules (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
@@ -420,8 +410,6 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_ts ON spam_violations(timestamp DESC)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_platform_ts ON spam_violations(platform, timestamp DESC)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_platform ON timer_execution_logs(platform)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status_id ON music_queue(provider, is_played, id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_platform ON reward_redemptions(platform)")
@@ -519,14 +507,6 @@ class DatabaseManager:
                 END;
             """)
             
-            cursor.execute("DROP TRIGGER IF EXISTS prune_timer_logs")
-            cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_timer_logs AFTER INSERT ON timer_execution_logs
-                BEGIN
-                    DELETE FROM timer_execution_logs WHERE id <= (NEW.id - 1000);
-                END;
-            """)
-            
             cursor.execute("DROP TRIGGER IF EXISTS prune_music_queue")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_music_queue AFTER INSERT ON music_queue
@@ -576,19 +556,6 @@ class DatabaseManager:
                 conn.commit()
         except Exception as e:
             logger.error("[DatabaseManager] Error logging spam violation: %s", e)
-
-    def log_timer_execution(self, timer_id: int, message_sent: str, platform: str = "all") -> None:
-        try:
-            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    "INSERT INTO timer_execution_logs (timer_id, message_sent, platform, timestamp) VALUES (?, ?, ?, ?)",
-                    (timer_id, message_sent, platform or "all", local_now)
-                )
-                conn.commit()
-        except Exception as e:
-            logger.error("[DatabaseManager] Error logging timer execution: %s", e)
 
     def log_reward_redemption(self, reward_name: str, username: str, platform: str = "kick") -> None:
         try:
@@ -784,20 +751,6 @@ class DatabaseManager:
         except Exception as e:
             logger.error("[DatabaseManager] Error saving channel profile for %s: %s", platform, e)
 
-    def load_channel_profile(self, platform: str) -> dict | None:
-        if not platform:
-            return None
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT raw_json FROM channel_profiles WHERE platform = ?", (platform.lower().strip(),))
-                row = cursor.fetchone()
-                if row and row[0]:
-                    return fast_loads(row[0])
-        except Exception as e:
-            logger.error("[DatabaseManager] Error loading channel profile for %s: %s", platform, e)
-        return None
-
     def load_all_channel_profiles(self) -> dict[str, dict]:
         results = {}
         try:
@@ -824,31 +777,6 @@ class DatabaseManager:
                 conn.commit()
         except Exception as e:
             logger.error("[DatabaseManager] Error deleting channel profile for %s: %s", platform, e)
-
-    def get_primary_identity(self) -> str:
-        try:
-            profiles = self.load_all_channel_profiles()
-            for plat in ("kick", "twitch", "tiktok", "youtube"):
-                if plat in profiles and profiles[plat]:
-                    uname = profiles[plat].get("username") or profiles[plat].get("login") or ""
-                    if uname and uname.strip():
-                        return uname.strip().lstrip("@")
-
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT key, value FROM settings WHERE key IN ('tiktok_target_channel', 'youtube_target_channel')")
-                settings_map = {k: v for k, v in cursor.fetchall()}
-
-                tt_target = settings_map.get("tiktok_target_channel", "")
-                if tt_target and tt_target.strip():
-                    return tt_target.strip().lstrip("@")
-
-                yt_target = settings_map.get("youtube_target_channel", "")
-                if yt_target and yt_target.strip():
-                    return yt_target.strip()
-        except Exception as e:
-            logger.error("[DatabaseManager] Error obteniendo identidad primaria: %s", e)
-        return ""
 
     def cleanup(self) -> None:
         try:

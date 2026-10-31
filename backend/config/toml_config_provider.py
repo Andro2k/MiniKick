@@ -19,6 +19,8 @@ from backend.interfaces.i_config_provider import ConfigValue, IConfigProvider
 
 logger = logging.getLogger("minikick.config.toml")
 
+CONFIG_FILE_NAME = "config.toml"
+
 _REPLACE_ATTEMPTS = 5
 _REPLACE_RETRY_DELAY_S = 0.02
 

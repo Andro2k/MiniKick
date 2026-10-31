@@ -60,8 +60,8 @@ class CrashHandler:
     @staticmethod
     def _get_initial_contact() -> str:
         try:
-            from backend.database import DatabaseManager
-            return DatabaseManager().get_primary_identity()
+            from backend.services.system.identity import resolve_primary_identity
+            return resolve_primary_identity()
         except Exception:
             return ""
 
