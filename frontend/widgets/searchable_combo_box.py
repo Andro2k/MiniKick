@@ -1,56 +1,27 @@
 # frontend\widgets\searchable_combo_box.py
 
 import time
-from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QApplication, QWidget
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QListWidgetItem, QLabel, QWidget
 from frontend.common import get_pixmap_colored, Size
+from .floating_list_popup import BaseFloatingListPopup
 from .no_wheel import NoWheelComboBox
 from .style_utils import set_state
 
-class _SearchLineEdit(QLineEdit):
-    def __init__(self, popup: "SearchableComboPopup", parent=None):
-        super().__init__(parent)
-        self._popup = popup
-
-    def keyPressEvent(self, event):
-        key = event.key()
-        if key == Qt.Key.Key_Down:
-            self._popup.navigate_list(1)
-            event.accept()
-            return
-        elif key == Qt.Key.Key_Up:
-            self._popup.navigate_list(-1)
-            event.accept()
-            return
-        elif key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self._popup.select_current_item()
-            event.accept()
-            return
-        elif key == Qt.Key.Key_Escape:
-            self._popup.combo.hidePopup()
-            event.accept()
-            return
-        super().keyPressEvent(event)
-
-class SearchableComboPopup(QFrame):
+class SearchableComboPopup(BaseFloatingListPopup):
     def __init__(self, combo: "SearchableComboBox", placeholder: str = "", empty_text: str = "", parent: QWidget = None):
-        super().__init__(parent, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        super().__init__(
+            combo,
+            frame_role="searchable_combo_popup",
+            list_role="searchable_combo_list",
+            window_flags=Qt.WindowType.Popup,
+            parent=parent
+        )
         self.combo = combo
         self.empty_text = empty_text
-        
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
 
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-        base_layout.setSpacing(0)
-
-        self.bg_frame = QFrame(self)
-        self.bg_frame.setProperty("role", "searchable_combo_popup")
-        base_layout.addWidget(self.bg_frame)
-
-        layout = QVBoxLayout(self.bg_frame)
-        layout.setContentsMargins(*Size.Margin.MRG_XXS)
-        layout.setSpacing(Size.SPACING_XS)
+        self.content_layout.setContentsMargins(*Size.Margin.MRG_XXS)
+        self.content_layout.setSpacing(Size.SPACING_XS)
 
         search_container = QFrame(self.bg_frame)
         search_container.setProperty("role", "searchable_combo_search_bar")
@@ -63,30 +34,22 @@ class SearchableComboPopup(QFrame):
         self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg"))
         search_layout.addWidget(self.lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
-        self.search_input = _SearchLineEdit(self, search_container)
+        self.search_input = QLineEdit(search_container)
         self.search_input.setProperty("role", "searchable_combo_input")
         self.search_input.setPlaceholderText(placeholder)
         self.search_input.textChanged.connect(self._on_search_text_changed)
+        self.attach_key_navigation(self.search_input)
         search_layout.addWidget(self.search_input)
+        self.content_layout.insertWidget(0, search_container)
 
-        layout.addWidget(search_container)
-
-        self.list_widget = QListWidget(self.bg_frame)
-        self.list_widget.setProperty("role", "searchable_combo_list")
-        self.list_widget.setFrameShape(QFrame.Shape.NoFrame)
         self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.list_widget.setUniformItemSizes(True)
         self.list_widget.setSpacing(Size.SPACING_XS)
-        self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.list_widget.itemClicked.connect(self._on_item_clicked)
-        layout.addWidget(self.list_widget)
 
         self.lbl_empty = QLabel(self.empty_text or "...", self.bg_frame)
         self.lbl_empty.setProperty("role", "searchable_combo_empty")
         self.lbl_empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_empty.setVisible(False)
-        layout.addWidget(self.lbl_empty)
-
+        self.content_layout.addWidget(self.lbl_empty)
 
     def sync_items(self):
         self.list_widget.clear()
@@ -122,8 +85,8 @@ class SearchableComboPopup(QFrame):
         self.lbl_empty.setVisible(False)
         self.list_widget.setVisible(True)
 
-        row_height = 34
-        max_height = 238
+        row_height = 36
+        max_height = 236
         min_height = 36
         target_height = min(max_height, max(min_height, visible_count * row_height + 4))
 
@@ -154,48 +117,14 @@ class SearchableComboPopup(QFrame):
 
         self._adjust_dimensions(visible_count)
 
-    def navigate_list(self, step: int):
-        count = self.list_widget.count()
-        if count == 0:
-            return
-
-        cur_row = self.list_widget.currentRow()
-        idx = cur_row + step
-        while 0 <= idx < count:
-            item = self.list_widget.item(idx)
-            if not item.isHidden():
-                self.list_widget.setCurrentRow(idx)
-                self.list_widget.scrollToItem(item)
-                break
-            idx += step
-
-    def select_current_item(self):
-        cur = self.list_widget.currentItem()
-        if cur and not cur.isHidden():
-            self._on_item_clicked(cur)
-
     def _on_item_clicked(self, item: QListWidgetItem):
         orig_index = item.data(Qt.ItemDataRole.UserRole + 1)
         if orig_index is not None and 0 <= orig_index < self.combo.count():
             self.combo.setCurrentIndex(orig_index)
         self.combo.hidePopup()
 
-    def show_at(self, combo: "SearchableComboBox"):
-        target_width = max(combo.width(), 240)
-        self.setFixedWidth(target_width)
-        self.adjustSize()
-
-        popup_height = self.sizeHint().height()
-        global_pos = combo.mapToGlobal(QPoint(0, combo.height() + 2))
-
-        screen = combo.screen() or QApplication.primaryScreen()
-        if screen:
-            screen_rect = screen.availableGeometry()
-            if global_pos.y() + popup_height > screen_rect.bottom():
-                global_pos = combo.mapToGlobal(QPoint(0, -popup_height - 2))
-
-        self.move(global_pos)
-        self.show()
+    def show_for_combo(self):
+        self.show_below_anchor()
         self.search_input.clear()
         self.search_input.setFocus()
 
@@ -220,7 +149,7 @@ class SearchableComboBox(NoWheelComboBox):
         self.update()
 
         self._popup.sync_items()
-        self._popup.show_at(self)
+        self._popup.show_for_combo()
 
     def hidePopup(self):
         if self._popup.isVisible():

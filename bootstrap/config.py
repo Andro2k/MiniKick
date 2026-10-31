@@ -3,12 +3,11 @@
 import logging
 from pathlib import Path
 
-from backend.config.toml_config_provider import TomlConfigProvider
+from backend.config.toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
 from backend.interfaces import IConfigProvider
 
 logger = logging.getLogger("minikick.bootstrap.config")
 
-CONFIG_FILE_NAME = "config.toml"
 _MIGRATION_MARKER = "settings_migrated_to_toml"
 
 

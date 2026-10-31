@@ -438,21 +438,20 @@ QComboBox QAbstractItemView::item   {{ font-size: {text1}px; border-radius: {Siz
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:focus, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
 
 /* Searchable ComboBox Popup */
-QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; }}
+QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="searchable_combo_search_bar"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}
-QLineEdit[role="searchable_combo_input"] {{ background-color: {Palette.NEUTRAL_900}; border: none; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 400; padding: {Padding.PAD_BASE}; }}
+QLineEdit[role="searchable_combo_input"] {{ background-color: {Palette.NEUTRAL_900}; border: none; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_BASE}; }}
 QLineEdit[role="searchable_combo_input"]:focus {{ background-color: transparent; }}
 QListWidget[role="searchable_combo_list"] {{ background-color: {Palette.NEUTRAL_900}; border: none; outline: none; icon-size: 64px 24px; }}
-QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 400; padding: {Padding.PAD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; border: none; outline: none; }}
+QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; border: none; outline: none; }}
 QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; outline: none; }}
-QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; margin: 2px 4px; border-radius: {Size.Radius.RAD_XXS}px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; border-radius: {Size.Radius.RAD_XXS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {Palette.NEUTRAL_700}; min-height: 20px; border-radius: {Size.Radius.RAD_XXS}px; }}
-QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical:hover {{ background: {Palette.NEUTRAL_900}; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}
 QLabel[role="searchable_combo_empty"] {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_500}; font-size: {text2}px; padding: {Size.SPACING_XL}px {Size.SPACING_MD}px; border-bottom-left-radius: {Size.Radius.RAD_MED}px; border-bottom-right-radius: {Size.Radius.RAD_MED}px; }}
 
 /* Context Menus */
-QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_200}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; }}
+QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_200}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_TINY}; }}
 QMenu::item {{ padding: {Padding.PAD_BASE}; margin: 2px; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
 QMenu::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-color: {Semantic.BORDER_SUBTLE_GHOST}; }}

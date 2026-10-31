@@ -239,8 +239,8 @@ class SettingsController(QObject):
         logger.info("[User Action] Opened Bug Report modal")
         initial_contact = ""
         try:
-            from backend.database import DatabaseManager
-            initial_contact = DatabaseManager().get_primary_identity()
+            from backend.services.system.identity import resolve_primary_identity
+            initial_contact = resolve_primary_identity()
         except Exception:
             pass
         self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
