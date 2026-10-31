@@ -4,7 +4,6 @@ from .database_manager import DatabaseManager
 from .cache_storage import MusicCacheManager
 from .tokens_storage import SQLiteTokenStorage
 from .encrypted_token_storage import EncryptedTokenStorage
-from .settings_storage import SQLiteSettingsStorage
 from .rewards_storage import SQLiteRewardsStorage
 from .commands_storage import SQLiteCommandsStorage
 from .spam_storage import SQLiteSpamStorage
@@ -21,7 +20,6 @@ __all__ = [
     "MusicCacheManager",
     "SQLiteTokenStorage",
     "EncryptedTokenStorage",
-    "SQLiteSettingsStorage",
     "SQLiteRewardsStorage",
     "SQLiteCommandsStorage",
     "SQLiteSpamStorage",

@@ -182,7 +182,7 @@ class ChatTtsSettingsPanel(QWidget):
         self.lbl_vol_perc.setProperty("role", "monospace")
 
         self.slider_speed = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
-        self.slider_speed.setRange(50, 150)
+        self.slider_speed.setRange(90, 130)
         self.slider_speed.setValue(100)
         self.lbl_speed_perc = QLabel("100%", parent=self)
         self.lbl_speed_perc.setProperty("role", "monospace")

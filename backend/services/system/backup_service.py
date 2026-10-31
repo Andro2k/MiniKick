@@ -5,7 +5,7 @@ from backend.utils.json_utils import fast_load, fast_dump
 import logging
 import os
 from datetime import datetime, timezone
-from backend.interfaces import SettingsStorage
+from backend.interfaces import IConfigProvider
 from backend.config import APP_VERSION
 
 logger = logging.getLogger("minikick.services.system.backup")
@@ -13,7 +13,7 @@ logger = logging.getLogger("minikick.services.system.backup")
 class BackupService:
     SENSITIVE_KEYS = {"overlay_session_token"}
 
-    def __init__(self, settings_storage: SettingsStorage, rewards_storage, commands_storage,
+    def __init__(self, settings_storage: IConfigProvider, rewards_storage, commands_storage,
                  spam_storage, timers_storage=None, schedule_storage=None,
                  alert_storage=None, widgets_storage=None):
         self.settings_storage = settings_storage
