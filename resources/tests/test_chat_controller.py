@@ -367,3 +367,24 @@ def test_chat_controller_mod_block_and_unblock(qapp, mock_dependencies):
     )
     controller._handle_plugin_ttsunblock(dto_unblock, prefix="!ttsunblock")
     assert "prohibited_term" not in controller.filter_handler.banned_words
+
+
+def test_set_tts_option_persists_one_setting_and_reloads(qapp, mock_dependencies):
+    d = mock_dependencies
+    controller = ChatController(
+        view=None,
+        service=d["service"],
+        command_service=d["command_service"],
+        spam_service=d["spam_service"],
+        i18n=d["i18n"],
+        toast_manager=d["toast"],
+        giphy_service=d["giphy_service"],
+    )
+    controller.load_initial_data = MagicMock()
+
+    controller.set_tts_option("provider", "web")
+
+    saved = d["service"].save_settings.call_args.args[0]
+    assert saved["provider"] == "web"
+    assert saved["enabled"] is True
+    controller.load_initial_data.assert_called_once_with()

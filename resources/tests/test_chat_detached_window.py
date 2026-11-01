@@ -106,7 +106,7 @@ def test_app_shutdown_closes_the_floating_chat(qapp):
     fake_window = SimpleNamespace(
         _is_shutting_down=False,
         _is_window_closing=False,
-        _dashboard_metrics_timer=SimpleNamespace(stop=lambda: None),
+        session_metrics=SimpleNamespace(stop=lambda: None),
         view_chat=view,
         logger=SimpleNamespace(info=lambda *a, **k: None),
         _stop_all_workers=lambda callback: None,

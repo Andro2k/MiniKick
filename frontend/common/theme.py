@@ -288,7 +288,7 @@ PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
 
 
-def _build_reset_and_typography_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
+def _build_reset_and_typography_qss(h2: int, h3: int, text1: int, text2: int) -> str:
     return f"""
 /* --- 1. Reset & Root Surfaces --- */
 * {{ font-family: {Typography.FONT_FAMILY}; font-size: {text1}px; color: {Palette.NEUTRAL_400}; }}
@@ -560,8 +560,8 @@ QWidget[role="splash_window"] {{ background-color: {Palette.NEUTRAL_950}; }}
 QFrame[role="banner_danger"]        {{ background-color: {Semantic.RED_GLOW}; border: {get_border(BrandColors.RED_DARK)}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="banner_warning"]       {{ background-color: {Semantic.AMBER_GLOW}; border: {get_border(BrandColors.AMBER_DARK)}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="banner_scope_card"]    {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
-QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.GREEN}; }}
-QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.PURPLE}; }}
+QFrame[role="banner_scope_card"][state="kick"]      {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.GREEN}; }}
+QFrame[role="banner_scope_card"][state="twitch"]    {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.PURPLE}; }}
 QFrame[role="danger_icon"]  {{ background-color: {BrandColors.RED}; border-radius: {Size.Radius.RAD_FUL}px; }}
 QFrame[role="warning_icon"] {{ background-color: {BrandColors.AMBER}; border-radius: {Size.Radius.RAD_FUL}px; }}
 QFrame[role="info_icon"]    {{ background-color: {BrandColors.BLUE}; border-radius: {Size.Radius.RAD_FUL}px; }}
@@ -758,14 +758,14 @@ QToolTip {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050
 
 @lru_cache(maxsize=16)
 def get_global_qss(base: int = 12, custom_qss: tuple[str, ...] = ()) -> str:
-    size_head1 = base + 12
+    # size_head1 = base + 12
     size_head2 = base + 9
     size_head3 = base + 3
     size_text1 = base
     size_text2 = max(10, base - 1)
 
     sections = [
-        _build_reset_and_typography_qss(size_head1, size_head2, size_head3, size_text1, size_text2),
+        _build_reset_and_typography_qss(size_head2, size_head3, size_text1, size_text2),
         _build_button_qss   (size_text1),
         _build_input_qss    (size_text1, size_text2),
         _build_surface_qss  (size_text1, size_text2),

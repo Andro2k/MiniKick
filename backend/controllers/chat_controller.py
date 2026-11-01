@@ -281,6 +281,12 @@ class ChatController(QObject):
         if self.view is not None:
             self._populate_view()
 
+    def set_tts_option(self, key: str, value) -> None:
+        settings = self.service.get_settings()
+        settings[key] = value
+        self.service.save_settings(settings)
+        self.load_initial_data()
+
     def _load_initial_data(self) -> None:
         self.load_initial_data()
 

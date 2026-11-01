@@ -9,7 +9,7 @@ from collections import deque
 from datetime import datetime
 from typing import Callable
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QSystemTrayIcon, QApplication
-from PySide6.QtCore import Qt, Slot, Signal, QEvent, QTimer, QByteArray, QThread
+from PySide6.QtCore import Slot, Signal, QTimer, QThread
 
 from backend.utils.perf import perf_phase
 from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
@@ -24,7 +24,11 @@ from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokCo
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.worker_shutdown import WorkerShutdownCoordinator
+from frontend.window.media_keys import MediaKeysHandler
+from frontend.window.session_metrics import SessionMetrics
+from frontend.window.updates import AutoUpdateCoordinator
+from frontend.window.window_state import WindowStateManager
+from frontend.worker_shutdown import WorkerShutdownCoordinator, is_worker_running
 
 from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
 
@@ -34,10 +38,9 @@ logger = logging.getLogger("minikick.core")
 class MainWindowCore(QMainWindow):
     shutdown_finished = Signal()
 
-    SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
-    SETTING_WINDOW_MAXIMIZED = "window_is_maximized"
-    SETTING_WINDOW_GEOMETRY = "window_geometry"
+    SETTING_WINDOW_MAXIMIZED = WindowStateManager.SETTING_WINDOW_MAXIMIZED
+    SETTING_WINDOW_GEOMETRY = WindowStateManager.SETTING_WINDOW_GEOMETRY
     SETTING_YOUTUBE_OFFLINE = "youtube_stream_offline"
     SETTING_TIKTOK_OFFLINE = "tiktok_stream_offline"
 
@@ -95,7 +98,6 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = False
         self._cleanup_complete = False
         self._quit_requested = False
-        self._was_maximized_before_tray = True
         self._media_keys_enabled = False
         self._kick_auth_start_pending = False
         self._kick_reauth_pending = False
@@ -105,8 +107,6 @@ class MainWindowCore(QMainWindow):
         self._twitch_chat_start_pending = False
         self._twitch_reward_start_pending = False
         self._timer_worker_start_generation = 0
-        self._auto_update_download_active = False
-        self._auto_update_info: dict = {}
 
     def _init_worker_state(self):
         self.kick_api_client = None
@@ -132,15 +132,10 @@ class MainWindowCore(QMainWindow):
         self._live_chat_generations = {"youtube": 0, "tiktok": 0}
 
     def _init_session_state(self):
-        self._cached_total_usages = None
-        self._cached_active_timers = None
-        self.session_metrics = {
-            "messages_processed": 0,
-            "commands_executed": 0,
-            "timers_sent": 0,
-            "spam_blocked": 0,
-        }
-        self.session_platform_messages = {"kick": 0, "twitch": 0, "youtube": 0, "tiktok": 0}
+        self.session_metrics = SessionMetrics(
+            lambda: self.container.db_manager.get_dashboard_analytics_summary(),
+            parent=self,
+        )
         self._recent_reward_redemptions = RecentRedemptionCache(maxlen=100)
 
     def _bind_container(self):
@@ -156,6 +151,7 @@ class MainWindowCore(QMainWindow):
         self.tts_manager = c.tts_manager
         self.overlay_server = c.overlay_server
         self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
+        self.window_state = WindowStateManager(self, self.settings_storage, self._notify_background)
 
     def _init_shutdown_support(self):
         self._retiring_workers: set = set()
@@ -164,19 +160,23 @@ class MainWindowCore(QMainWindow):
             self.logger,
             self._retiring_workers,
         )
-        self._dashboard_metrics_timer = QTimer(self)
-        self._dashboard_metrics_timer.setSingleShot(True)
-        self._dashboard_metrics_timer.setInterval(300)
-        self._dashboard_metrics_timer.timeout.connect(self._flush_dashboard_metrics_update)
 
     def _init_updater(self):
         self.logger.debug("[MainWindow] Checking background silent updates...")
         self.updater_controller = UpdaterController(self.updater_manager)
-        self.updater_controller.update_found_silent.connect(self._on_silent_update_found)
-        self.updater_controller.download_finished.connect(
-            self._on_auto_update_download_finished
+        self.auto_updates = AutoUpdateCoordinator(
+            parent=self,
+            updater_controller=self.updater_controller,
+            settings_service=self.settings_service,
+            sidebar=self.sidebar,
+            toast=self.toast,
+            i18n=self.i18n,
+            is_shutting_down=lambda: self._is_shutting_down,
+            request_quit=self._force_quit,
         )
-        self.updater_controller.error.connect(self._on_auto_update_error)
+        self.updater_controller.update_found_silent.connect(self.auto_updates.on_update_found)
+        self.updater_controller.download_finished.connect(self.auto_updates.on_download_finished)
+        self.updater_controller.error.connect(self.auto_updates.on_download_error)
         self.updater_controller.check_updates_silently()
 
 
@@ -278,6 +278,7 @@ class MainWindowCore(QMainWindow):
             music_storage=self.container.music_storage,
             music_provider=self.container.music_provider
         )
+        self.media_keys = MediaKeysHandler(self.music_controller)
         if hasattr(self.chat_service, "set_speech_callbacks"):
             self.chat_service.set_speech_callbacks(
                 on_started=lambda: self.music_controller.set_ducking(True),
@@ -349,7 +350,7 @@ class MainWindowCore(QMainWindow):
 
     def _setup_tray(self):
         self.tray_manager = SystemTrayManager(self.i18n, self)
-        self.tray_manager.restore_requested.connect(self._restore_from_tray)
+        self.tray_manager.restore_requested.connect(self.window_state.restore_from_tray)
         self.tray_manager.quit_requested.connect(self._force_quit)
         self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
         self.tray_manager.play_pause_requested.connect(self._handle_tray_play_pause)
@@ -378,7 +379,9 @@ class MainWindowCore(QMainWindow):
         self.music_controller.song_changed.connect(self._handle_tray_song_changed)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.widget_plugin_triggered.connect(self.widgets_controller.handle_widget_command)
-        self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
+        self.chat_controller.spam_blocked.connect(self.session_metrics.record_spam_blocked)
+        self.session_metrics.refresh_requested.connect(self._refresh_dashboard_view)
+        self.session_metrics.analytics_loaded.connect(self.dashboard_controller.update_analytics_summary)
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
@@ -613,53 +616,10 @@ class MainWindowCore(QMainWindow):
             self.logger.warning("[WhatsNew] Error handling remote highlights: %s", e)
 
     def restore_window_state(self):
-        geom_hex = self.settings_storage.load_string(self.SETTING_WINDOW_GEOMETRY, "")
-        if geom_hex:
-            try:
-                self.restoreGeometry(QByteArray.fromHex(geom_hex.encode("ascii")))
-            except (UnicodeError, ValueError, RuntimeError):
-                self.logger.exception("[MainWindow] Failed to restore window geometry.")
-
-        is_max = self.settings_storage.load_bool(self.SETTING_WINDOW_MAXIMIZED, True)
-        self._was_maximized_before_tray = is_max
-        if is_max:
-            self.showMaximized()
-        else:
-            self.show()
-
-    def _save_window_state(self):
-        try:
-            if self.isMinimized() and hasattr(self, "_was_maximized_before_tray"):
-                is_max = self._was_maximized_before_tray
-            else:
-                is_max = self.isMaximized()
-
-            self.settings_storage.save_bool(self.SETTING_WINDOW_MAXIMIZED, is_max)
-            if not is_max and not self.isMinimized():
-                geom_hex = bytes(self.saveGeometry()).hex()
-                self.settings_storage.save_string(self.SETTING_WINDOW_GEOMETRY, geom_hex)
-            self.logger.debug("[MainWindow] Saved window state: maximized=%s", is_max)
-        except Exception:
-            self.logger.exception("[MainWindow] Failed to save window state.")
-
-    @Slot()
-    def _restore_from_tray(self):
-        self.logger.info("[User Action] Window restored from system tray")
-        if getattr(self, "_was_maximized_before_tray", False):
-            self.showMaximized()
-        else:
-            self.showNormal()
-        self.activateWindow()
+        self.window_state.restore()
 
     def changeEvent(self, event):
-        if event.type() == QEvent.Type.WindowStateChange:
-            if self.isMinimized():
-                old_state = event.oldState()
-                self._was_maximized_before_tray = bool(old_state & Qt.WindowState.WindowMaximized)
-                if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
-                    self.logger.info("[User Action] Window minimized to system tray")
-                    self.hide()
-                    self._notify_background()
+        self.window_state.handle_state_change(event)
         super().changeEvent(event)
 
     def closeEvent(self, event):
@@ -667,10 +627,10 @@ class MainWindowCore(QMainWindow):
             event.accept()
             return
 
-        minimize_tray = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
+        minimize_tray = self.window_state.minimize_to_tray_enabled()
         self.logger.info("[User Action] Window close triggered (minimize_tray=%s)", minimize_tray)
         if minimize_tray:
-            self._save_window_state()
+            self.window_state.save()
             self.hide()
             self._notify_background()
             event.ignore()
@@ -691,47 +651,12 @@ class MainWindowCore(QMainWindow):
                 event.ignore()
 
     def nativeEvent(self, event_type, message):
-        if sys.platform == "win32" and (event_type == b"windows_generic_MSG" or event_type == "windows_generic_MSG"):
-            try:
-                from ctypes import wintypes
-                msg = wintypes.MSG.from_address(int(message))
-                if msg.message == 0x0319:
-                    app_cmd = (msg.lParam >> 16) & ~0xF000
-                    if app_cmd in (14, 46, 47):
-                        if hasattr(self, "music_controller") and self.music_controller:
-                            self.music_controller.handle_play_pause()
-                        return True, 1
-                    elif app_cmd == 11:
-                        if hasattr(self, "music_controller") and self.music_controller:
-                            self.music_controller.handle_skip()
-                        return True, 1
-                    elif app_cmd == 13:
-                        if hasattr(self, "music_controller") and self.music_controller:
-                            self.music_controller.handle_play_pause()
-                        return True, 1
-            except (OSError, OverflowError, TypeError, ValueError) as error:
-                self.logger.warning(
-                    "[MediaKeys] Failed to process native media-key event: %s",
-                    error,
-                    exc_info=True,
-                )
+        if self.media_keys.handle_native_event(event_type, message):
+            return True, 1
         return super().nativeEvent(event_type, message)
 
     def keyPressEvent(self, event):
-        key = event.key()
-        if key in (Qt.Key.Key_MediaTogglePlayPause, Qt.Key.Key_MediaPlay, Qt.Key.Key_MediaPause, Qt.Key.Key_Play, Qt.Key.Key_Pause):
-            if hasattr(self, "music_controller") and self.music_controller:
-                self.music_controller.handle_play_pause()
-            event.accept()
-            return
-        elif key == Qt.Key.Key_MediaNext:
-            if hasattr(self, "music_controller") and self.music_controller:
-                self.music_controller.handle_skip()
-            event.accept()
-            return
-        elif key == Qt.Key.Key_MediaStop:
-            if hasattr(self, "music_controller") and self.music_controller:
-                self.music_controller.handle_play_pause()
+        if self.media_keys.handle_key(event.key()):
             event.accept()
             return
         super().keyPressEvent(event)
@@ -811,7 +736,7 @@ class MainWindowCore(QMainWindow):
         )
 
     def _force_quit(self):
-        self._save_window_state()
+        self.window_state.save()
         self.hide()
         self._quit_requested = True
         self._cleanup()
@@ -821,7 +746,7 @@ class MainWindowCore(QMainWindow):
             return
         self._is_shutting_down = True
         self._is_window_closing = True
-        self._dashboard_metrics_timer.stop()
+        self.session_metrics.stop()
         if self.view_chat is not None:
             self.view_chat.close_floating_chat()
 
@@ -963,14 +888,7 @@ class MainWindowCore(QMainWindow):
         if on_finished is not None:
             on_finished()
 
-    @staticmethod
-    def _is_worker_running(worker) -> bool:
-        if worker is None:
-            return False
-        try:
-            return bool(worker.isRunning())
-        except (RuntimeError, AttributeError):
-            return False
+    _is_worker_running = staticmethod(is_worker_running)
 
     @Slot()
     def _handle_auth_process(self, force: bool = False):
@@ -1472,22 +1390,22 @@ class MainWindowCore(QMainWindow):
             self.dashboard_controller.set_kick_status(
                 connected=kick_connected,
                 channel=kick_user,
-                msg_count=self.session_platform_messages.get("kick", 0)
+                msg_count=self.session_metrics.platform_messages("kick")
             )
             self.dashboard_controller.set_twitch_status(
                 connected=twitch_connected,
                 channel=twitch_channel,
-                msg_count=self.session_platform_messages.get("twitch", 0)
+                msg_count=self.session_metrics.platform_messages("twitch")
             )
             self.dashboard_controller.set_youtube_status(
                 connected=youtube_connected,
                 channel=youtube_channel,
-                msg_count=self.session_platform_messages.get("youtube", 0)
+                msg_count=self.session_metrics.platform_messages("youtube")
             )
             self.dashboard_controller.set_tiktok_status(
                 connected=tiktok_connected,
                 channel=tiktok_channel,
-                msg_count=self.session_platform_messages.get("tiktok", 0)
+                msg_count=self.session_metrics.platform_messages("tiktok")
             )
 
         dashboard_done = time.perf_counter()
@@ -1987,8 +1905,6 @@ class MainWindowCore(QMainWindow):
             self.schedule_controller.fetch_current_info()
 
     def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
-        if hasattr(self, 'session_metrics') and "messages_processed" in self.session_metrics:
-            self.session_metrics["messages_processed"] += 1
         if isinstance(user_or_dto, ChatMessageDTO):
             dto = user_or_dto
             if not dto.timestamp:
@@ -2014,11 +1930,7 @@ class MainWindowCore(QMainWindow):
             elif platform == "twitch" and getattr(self, "_twitch_channel", "") and user_lower == self._twitch_channel.lower():
                 dto.avatar_url = getattr(self, "_twitch_avatar_url", "")
 
-        if hasattr(self, "session_platform_messages") and platform in self.session_platform_messages:
-            self.session_platform_messages[platform] += 1
-
-        if hasattr(self, "_dashboard_metrics_timer") and not self._dashboard_metrics_timer.isActive():
-            self._dashboard_metrics_timer.start(300)
+        self.session_metrics.record_message(platform)
 
         self.chat_controller.process_message(dto)
 
@@ -2040,10 +1952,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
-        settings = self.chat_service.get_settings()
-        settings["enabled"] = enabled
-        self.chat_service.save_settings(settings)
-        self.chat_controller.load_initial_data()
+        self.chat_controller.set_tts_option("enabled", enabled)
         estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
         msg_template = self.i18n.get("main.tray.tts_msg")
         self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
@@ -2066,17 +1975,11 @@ class MainWindowCore(QMainWindow):
 
     @Slot(bool)
     def _handle_tray_tts_use_command_toggle(self, enabled: bool):
-        settings = self.chat_service.get_settings()
-        settings["use_command"] = enabled
-        self.chat_service.save_settings(settings)
-        self.chat_controller.load_initial_data()
+        self.chat_controller.set_tts_option("use_command", enabled)
 
     @Slot(bool)
     def _handle_tray_tts_voice_type_change(self, is_web: bool):
-        settings = self.chat_service.get_settings()
-        settings["provider"] = "web" if is_web else "piper"
-        self.chat_service.save_settings(settings)
-        self.chat_controller.load_initial_data()
+        self.chat_controller.set_tts_option("provider", "web" if is_web else "piper")
 
     @Slot(bool)
     def _handle_chat_tts_state_changed(self, enabled: bool):
@@ -2095,163 +1998,27 @@ class MainWindowCore(QMainWindow):
         if app:
             self.setStyleSheet(get_global_qss(base_size))
 
-    @Slot(object)
-    def _on_silent_update_found(self, info):
-        version = ""
-        if isinstance(info, dict):
-            version = info.get("version", "")
-        elif isinstance(info, str):
-            version = info
-        self.sidebar.set_update_available(True, version=version)
-        self._download_update_if_enabled(info)
-
-    def _download_update_if_enabled(self, info: object) -> None:
-        if self._is_shutting_down:
-            return
-        if not self.settings_service.is_auto_update_download_enabled():
-            return
-        if not isinstance(info, dict):
-            self.logger.error(
-                "[Updater] Silent update result has an unsupported format: %s",
-                type(info).__name__,
-            )
-            return
-
-        download_url = info.get("download_url")
-        if not isinstance(download_url, str) or not download_url.strip():
-            self.logger.error(
-                "[Updater] Automatic download skipped because the release has no download URL."
-            )
-            return
-        if self._auto_update_download_active:
-            self.logger.debug("[Updater] Automatic update download is already in progress.")
-            return
-        if self._is_worker_running(self.updater_controller.download_worker):
-            self.logger.info(
-                "[Updater] Automatic download skipped because another update download is active."
-            )
-            return
-
-        self._auto_update_download_active = True
-        self._auto_update_info = info
-        try:
-            started = self.updater_controller.start_download(download_url.strip())
-        except RuntimeError:
-            self._auto_update_download_active = False
-            self.logger.exception("[Updater] Could not start automatic update download.")
-            return
-
-        if not started:
-            self._auto_update_download_active = False
-            return
-
-        self.toast.show_toast(
-            title=self.i18n.get("settings.system.auto_update_download_started_title"),
-            message=self.i18n.get("settings.system.auto_update_download_started_desc"),
-            state="info",
-            tag="auto_update_download",
-        )
-
-    @Slot(bool)
-    def _on_auto_update_download_finished(self, success: bool) -> None:
-        if not self._auto_update_download_active:
-            return
-
-        self._auto_update_download_active = False
-        if self._is_shutting_down:
-            return
-        version = str(self._auto_update_info.get("version", ""))
-        if not success:
-            self.toast.show_toast(
-                title=self.i18n.get("settings.system.auto_update_download_failed_title"),
-                message=self.i18n.get("dialogs.update.msg_unexpected_error"),
-                state="danger",
-                tag="auto_update_download",
-            )
-            return
-
-        dialog = ModernConfirmDialog(
-            self.i18n,
-            parent=self,
-            title_text=self.i18n.get("settings.system.auto_update_ready_title"),
-            body_text=self.i18n.get(
-                "settings.system.auto_update_ready_desc"
-            ).replace("{version}", version),
-        )
-        if dialog.exec() == dialog.DialogCode.Accepted:
-            self.updater_controller.install_update()
-            self._force_quit()
-            return
-
-        self.toast.show_toast(
-            title=self.i18n.get("settings.system.auto_update_download_complete_title"),
-            message=self.i18n.get(
-                "settings.system.auto_update_download_complete_desc"
-            ).replace("{version}", version),
-            state="success",
-            tag="auto_update_download",
-        )
-
-    @Slot(str)
-    def _on_auto_update_error(self, error_message: str) -> None:
-        if not self._auto_update_download_active:
-            return
-
-        self._auto_update_download_active = False
-        if self._is_shutting_down:
-            return
-        self.toast.show_toast(
-            title=self.i18n.get("settings.system.auto_update_download_failed_title"),
-            message=error_message,
-            state="danger",
-            tag="auto_update_download",
-        )
-
     @Slot()
     def handle_update_check(self):
         present_update_dialog(self.updater_controller, self, self.i18n, on_restart_callback=self._force_quit)
 
-    def _increment_metric(self, name: str):
-        if hasattr(self, 'session_metrics') and name in self.session_metrics:
-            self.session_metrics[name] += 1
-        if hasattr(self, "_dashboard_metrics_timer") and not self._dashboard_metrics_timer.isActive():
-            self._dashboard_metrics_timer.start(300)
-
-    @Slot()
-    def _flush_dashboard_metrics_update(self):
-        self._refresh_dashboard_view()
-
     def _refresh_dashboard_view(self) -> None:
-        if getattr(self, "_is_shutting_down", False):
+        if self._is_shutting_down:
             return
-        if hasattr(self, "view_dashboard") and self.view_dashboard and hasattr(self, "session_metrics"):
-            self.view_dashboard.update_session_metrics(
-                msg_count=self.session_metrics.get("messages_processed", 0),
-                cmd_count=self._cached_total_usages or 0,
-                timer_count=self._cached_active_timers or 0,
-                spam_count=self.session_metrics.get("spam_blocked", 0)
-            )
-        if hasattr(self, "dashboard_controller") and self.dashboard_controller and hasattr(self, "session_platform_messages"):
-            self.dashboard_controller.update_platform_messages(
-                kick=self.session_platform_messages.get("kick", 0),
-                twitch=self.session_platform_messages.get("twitch", 0),
-                youtube=self.session_platform_messages.get("youtube", 0),
-                tiktok=self.session_platform_messages.get("tiktok", 0)
-            )
+        metrics = self.session_metrics
+        self.view_dashboard.update_session_metrics(
+            msg_count=metrics.messages_processed,
+            cmd_count=metrics.total_usages,
+            timer_count=metrics.active_timers,
+            spam_count=metrics.spam_blocked,
+        )
+        self.dashboard_controller.update_platform_messages(
+            **{platform: metrics.platform_messages(platform) for platform in metrics.PLATFORMS}
+        )
 
     @Slot()
     def _update_dashboard_metrics(self, force_db_query=False):
         if self._is_shutting_down:
             return
-        if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
-            try:
-                analytics = self.container.db_manager.get_dashboard_analytics_summary()
-                self._cached_total_usages = analytics.get("total_command_usages", 0)
-                self._cached_active_timers = analytics.get("active_timers", 0)
-                if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-                    self.dashboard_controller.update_analytics_summary(analytics)
-            except Exception:
-                self.logger.exception("[Metrics] Error reading analytics.")
-                return
-
-        self._refresh_dashboard_view()
+        if self.session_metrics.refresh_analytics(force=force_db_query):
+            self._refresh_dashboard_view()
