@@ -171,7 +171,6 @@ class TimersView(BaseView):
                     text=self.i18n.get("common.row_menu.edit"),
                     icon_name="edit-filled.svg",
                     callback=lambda tid=timer_id: self.edit_requested.emit(tid),
-                    role="row_action_accent"
                 ),
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.delete"),

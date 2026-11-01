@@ -8,7 +8,7 @@ from collections import deque
 from datetime import datetime
 from functools import partial
 from typing import Callable
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QSystemTrayIcon, QApplication
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QApplication
 from PySide6.QtCore import Slot, Signal, QTimer, QThread
 
 from backend.utils.perf import perf_phase
@@ -24,12 +24,14 @@ from frontend.main_window_views import MainWindowViewFactory
 from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.window.media_keys import MediaKeysHandler
+from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.session_metrics import SessionMetrics
 from frontend.window.shutdown import ShutdownSequence
 from frontend.window.updates import AutoUpdateCoordinator
 from frontend.window.whats_new import WhatsNewPresenter
 from frontend.window.window_state import WindowStateManager
 from backend.connections import (
+    ConnectionHub,
     KickConnection,
     LiveChatConnection,
     TikTokConnection,
@@ -86,7 +88,6 @@ class MainWindowCore(QMainWindow):
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
     _PREWARM_START_DELAY_MS = 300
     _DB_MAINTENANCE_DELAY_MS = 10_000
-    _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
@@ -168,7 +169,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_manager = c.kick_auth_manager
         self.tts_manager = c.tts_manager
         self.overlay_server = c.overlay_server
-        self.window_state = WindowStateManager(self, self.settings_storage, self._notify_background)
+        self.window_state = WindowStateManager(self, self.settings_storage)
 
     def _init_shutdown_support(self):
         self._retiring_workers: set = set()
@@ -387,6 +388,33 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n,
             browser_service=self.container.browser_service
         )
+        self.connection_hub = ConnectionHub(
+            connections={
+                "kick": self.kick,
+                "twitch": self.twitch,
+                "youtube": self.youtube,
+                "tiktok": self.tiktok,
+            },
+            authenticated_providers={
+                "kick": self.kick_auth_manager.is_authenticated,
+                "twitch": self.container.twitch_auth_manager.is_authenticated,
+            },
+            parent=self,
+        )
+        self.integrations_status = IntegrationsStatusPresenter(
+            hub=self.connection_hub,
+            dashboard_controller=self.dashboard_controller,
+            session_metrics=self.session_metrics,
+            settings_view_provider=lambda: self.view_settings,
+            platform_views_provider=lambda: (
+                self.view_chat,
+                self.view_commands,
+                self.view_schedule,
+                self.view_rewards,
+                self.view_timers,
+                self.view_alerts,
+            ),
+        )
 
     def _start_background_workers(self):
         self._start_schedule_worker()
@@ -440,7 +468,6 @@ class MainWindowCore(QMainWindow):
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
         self.sidebar.update_requested.connect(self.handle_update_check)
-        self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._on_backup_restored)
         self.q_log_handler.emitter.log_received.connect(self.logs_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
@@ -626,7 +653,6 @@ class MainWindowCore(QMainWindow):
         if minimize_tray:
             self.window_state.save()
             self.hide()
-            self._notify_background()
             event.ignore()
         else:
             dialog = ModernConfirmDialog(
@@ -654,14 +680,6 @@ class MainWindowCore(QMainWindow):
             event.accept()
             return
         super().keyPressEvent(event)
-
-    def _notify_background(self):
-        self.tray_manager.showMessage(
-            self.i18n.get("main.tray.bg_title"),
-            self.i18n.get("main.tray.bg_desc"),
-            QSystemTrayIcon.MessageIcon.Information,
-            3000
-        )
 
     def _force_quit(self):
         self.window_state.save()
@@ -739,7 +757,6 @@ class MainWindowCore(QMainWindow):
     def _on_kick_connected(self, username: str, user_data: dict) -> None:
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
         self.dashboard_controller.handle_connection_success(user_data)
-        self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
         self.toast.show_toast(
@@ -868,7 +885,6 @@ class MainWindowCore(QMainWindow):
     def _on_twitch_connected(self, username: str, broadcaster_id: str, profile: dict) -> None:
         if broadcaster_id:
             self.spam_service.twitch_broadcaster_id = broadcaster_id
-        self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
         self.schedule_service.set_twitch_client(self.twitch.api, broadcaster_id)
@@ -903,7 +919,6 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.clear_channel_profile("twitch")
         self.rewards_controller.clear_platform_rewards("twitch")
         self._refresh_sidebar_profile()
-        self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("main.toast.twitch_disconnected_title"),
             message=self.container.i18n.get("main.toast.twitch_disconnected_msg"),
@@ -912,88 +927,10 @@ class MainWindowCore(QMainWindow):
         self._evaluate_all_scopes()
 
     def _update_integrations_status_ui(self):
-        kick_connected = self.kick.is_connected
-        kick_user = self.kick.username
-        twitch_connected = self.twitch.is_connected
-        twitch_channel = self.twitch.channel
-        youtube_connected = self.youtube.is_connected
-        youtube_channel = self.youtube.channel
-        tiktok_connected = self.tiktok.is_connected
-        tiktok_channel = self.tiktok.channel
-        refresh_started = time.perf_counter()
-
-        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            self.dashboard_controller.set_kick_status(
-                connected=kick_connected,
-                channel=kick_user,
-                msg_count=self.session_metrics.platform_messages("kick")
-            )
-            self.dashboard_controller.set_twitch_status(
-                connected=twitch_connected,
-                channel=twitch_channel,
-                msg_count=self.session_metrics.platform_messages("twitch")
-            )
-            self.dashboard_controller.set_youtube_status(
-                connected=youtube_connected,
-                channel=youtube_channel,
-                msg_count=self.session_metrics.platform_messages("youtube")
-            )
-            self.dashboard_controller.set_tiktok_status(
-                connected=tiktok_connected,
-                channel=tiktok_channel,
-                msg_count=self.session_metrics.platform_messages("tiktok")
-            )
-
-        dashboard_done = time.perf_counter()
-        if hasattr(self, "view_settings") and self.view_settings:
-            self.view_settings.set_integrations_status(
-                kick_connected=kick_connected,
-                kick_channel=kick_user,
-                twitch_connected=twitch_connected,
-                twitch_channel=twitch_channel,
-                youtube_connected=youtube_connected,
-                youtube_channel=youtube_channel,
-                tiktok_connected=tiktok_connected,
-                tiktok_channel=tiktok_channel
-            )
-
-        settings_view_done = time.perf_counter()
-        conn_dict = self.get_connected_platforms()
-        auth_done = time.perf_counter()
-        if hasattr(self, "view_chat") and self.view_chat and hasattr(self.view_chat, "set_connected_platforms"):
-            self.view_chat.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
-            self.view_commands.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_schedule") and self.view_schedule and hasattr(self.view_schedule, "set_connected_platforms"):
-            self.view_schedule.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_rewards") and self.view_rewards and hasattr(self.view_rewards, "set_connected_platforms"):
-            self.view_rewards.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
-            self.view_timers.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_alerts") and self.view_alerts and hasattr(self.view_alerts, "set_connected_platforms"):
-            self.view_alerts.set_connected_platforms(conn_dict)
-
-        finished = time.perf_counter()
-        total_ms = (finished - refresh_started) * 1000
-        if total_ms >= self._SLOW_STATUS_REFRESH_MS:
-            self.logger.info(
-                "[Perf/Integrations] Status refresh took %.2f ms (dashboard=%.2f, settings_view=%.2f, auth=%.2f, views=%.2f)",
-                total_ms,
-                (dashboard_done - refresh_started) * 1000,
-                (settings_view_done - dashboard_done) * 1000,
-                (auth_done - settings_view_done) * 1000,
-                (finished - auth_done) * 1000,
-            )
+        self.integrations_status.refresh()
 
     def get_connected_platforms(self) -> dict[str, bool]:
-        kick_auth = self.kick_auth_manager.is_authenticated() if hasattr(self, "kick_auth_manager") and self.kick_auth_manager else False
-        twitch_auth = self.container.twitch_auth_manager.is_authenticated() if hasattr(self.container, "twitch_auth_manager") and self.container.twitch_auth_manager else False
-        return {
-            "kick": kick_auth or self.kick.is_connected,
-            "twitch": twitch_auth or self.twitch.is_connected,
-            "youtube": self.youtube.is_connected,
-            "tiktok": self.tiktok.is_connected,
-        }
+        return self.connection_hub.get_connected_platforms()
 
     def _wire_kick(self) -> None:
         kick = self.kick
@@ -1015,7 +952,6 @@ class MainWindowCore(QMainWindow):
 
     def _wire_twitch(self) -> None:
         twitch = self.twitch
-        twitch.state_changed.connect(self._update_integrations_status_ui)
         twitch.message_received.connect(self._route_incoming_message)
         twitch.browser_auth_opening.connect(self._on_twitch_browser_auth_opening)
         twitch.auth_failed.connect(self._on_twitch_auth_failed)
@@ -1034,7 +970,6 @@ class MainWindowCore(QMainWindow):
         chat.connected.connect(partial(self._on_live_chat_connected, chat))
         chat.disconnected.connect(partial(self._on_live_chat_disconnected, chat))
         chat.error_reported.connect(self._on_live_chat_error)
-        chat.state_changed.connect(self._update_integrations_status_ui)
         chat.message_received.connect(self._route_incoming_message)
 
     def _on_live_chat_button_clicked(self, chat: LiveChatConnection) -> None:
@@ -1154,7 +1089,6 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.clear_channel_profile("kick")
         self.rewards_controller.clear_platform_rewards("kick")
         self._refresh_sidebar_profile()
-        self._update_integrations_status_ui()
         self._evaluate_all_scopes()
 
     @Slot(str)
@@ -1233,9 +1167,6 @@ class MainWindowCore(QMainWindow):
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
         self.chat_controller.set_tts_option("enabled", enabled)
-        estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
-        msg_template = self.i18n.get("main.tray.tts_msg")
-        self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()
     def _handle_tray_play_pause(self):

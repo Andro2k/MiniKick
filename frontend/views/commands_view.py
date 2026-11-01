@@ -305,7 +305,6 @@ class CommandView(BaseView):
                     text=self.i18n.get("common.row_menu.edit"),
                     icon_name="edit-filled.svg",
                     callback=lambda t=trigger_name: self.edit_requested.emit(t),
-                    role="row_action_accent"
                 ),
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.delete"),

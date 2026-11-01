@@ -2,7 +2,11 @@
 
 import pytest
 from unittest.mock import MagicMock, patch
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPixmap
+from PySide6.QtWidgets import QApplication, QDialog, QLabel, QWidget
+from frontend.common import BrandColors, get_assets_path, get_global_qss
+from frontend.dialogs.base_dialog import build_icon_badge
 from frontend.views.commands_view import CommandView
 from frontend.views.timers_view import TimersView
 from frontend.views.rewards_view import RewardsView
@@ -106,3 +110,30 @@ def test_piper_dialog_delete_confirmation_rejected(qapp, mock_i18n):
         dialog._delete_voice("es_ES-test-medium")
 
     mock_mgr.delete_voice.assert_not_called()
+
+
+def test_icon_badge_uses_theme_radius_and_transparent_glyph(qapp):
+    previous_stylesheet = qapp.styleSheet()
+    qapp.setStyleSheet(get_global_qss())
+    badge = build_icon_badge(
+        get_assets_path("icons/circle-info-filled.svg"),
+        BrandColors.RED,
+    )
+    parent = QWidget()
+    parent.setProperty("role", "splash_window")
+    parent.resize(60, 60)
+    badge.setParent(parent)
+    badge.move(10, 10)
+    try:
+        parent.ensurePolished()
+        rendered = QPixmap(parent.size())
+        rendered.fill(Qt.GlobalColor.transparent)
+        parent.render(rendered)
+
+        rendered_image = rendered.toImage()
+        assert rendered_image.pixelColor(10, 10) != QColor(BrandColors.RED)
+        assert rendered_image.pixelColor(12, 30) == QColor(BrandColors.RED)
+        assert badge.findChild(QLabel, "dialog_icon_badge_glyph") is not None
+    finally:
+        parent.deleteLater()
+        qapp.setStyleSheet(previous_stylesheet)

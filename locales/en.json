@@ -878,8 +878,6 @@
       "reward_title": "Reward Redeemed"
     },
     "tray": {
-      "bg_desc": "I will keep reading the chat for you. Double click to return.",
-      "bg_title": "MiniKick in background",
       "close_app": "Close MiniKick",
       "open_panel": "Open Panel",
       "pause": "Pause Music",
@@ -887,9 +885,6 @@
       "read_chat": "Read chat out loud",
       "skip": "Skip Track",
       "tooltip": "MiniKick v{version} | Active",
-      "tts_msg": "Chat reading: {estado}",
-      "tts_off": "Disabled",
-      "tts_on": "Enabled",
       "tts_use_command": "Require command for TTS",
       "tts_voice_type": "Use Web Voices (Premium)"
     },

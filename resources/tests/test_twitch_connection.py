@@ -253,7 +253,7 @@ def test_chat_error_stops_the_worker_and_reports(qapp):
 
     assert connection.is_connected is False
     assert workers[-1] is None
-    assert states == [()]
+    assert states == [(), (), ()]
     assert errors == [("socket closed",)]
     assert coordinator.calls[-1][0][0] == "Worker_Twitch_Chat_Socket"
 
@@ -268,7 +268,7 @@ def test_socket_loss_and_restore_toggle_the_connected_state(qapp):
     assert connection.is_connected is False
     worker.connection_restored.emit()
     assert connection.is_connected is True
-    assert len(states) == 2
+    assert len(states) == 3
 
 
 def test_disconnect_logs_out_and_clears_the_session(qapp):

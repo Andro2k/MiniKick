@@ -172,6 +172,7 @@ class Margin:
     SEC_BDG = (4, 4, 8, 4)
 
 class Padding:
+    PAD_MINI  = "2px 2px"
     PAD_COMP  = "2px 6px"
     FLAT_MIN  = "2px 8px"
     ASYM_ONE  = "2px 20px 2px 10px"
@@ -451,8 +452,8 @@ QMenu::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transpar
 QMenu::item:selected {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-color: {Semantic.BORDER_SUBTLE_GHOST}; }}
 QMenu::item:pressed {{ background-color: {Palette.NEUTRAL_750}; }}
 QMenu::icon {{ margin-left: 14px; }}
-QMenu[role="row_menu"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_COMP}; }}
-QMenu[role="row_menu"]::item {{ padding: 8px 18px 8px 8px; margin: 1px 0; border: none; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
+QMenu[role="row_menu"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_MINI}; }}
+QMenu[role="row_menu"]::item {{ padding: {Padding.PAD_BASE}; border: none; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
 QMenu[role="row_menu"]::item:selected {{ background-color: {Palette.NEUTRAL_850}; color: {Palette.NEUTRAL_050}; }}
 QMenu[role="row_menu"]::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transparent; }}
 QMenu[role="row_menu"]::item:default {{ color: {BrandColors.RED}; }}
@@ -572,14 +573,16 @@ QFrame[role="banner_warning"]       {{ background-color: {Semantic.AMBER_GLOW}; 
 QFrame[role="banner_scope_card"]    {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
 QFrame[role="banner_scope_card"][state="kick"]      {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.GREEN}; }}
 QFrame[role="banner_scope_card"][state="twitch"]    {{ background-color: {Palette.NEUTRAL_950}; border-color: {BrandColors.PURPLE}; }}
-QFrame[role="danger_icon"]  {{ background-color: {BrandColors.RED}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="warning_icon"] {{ background-color: {BrandColors.AMBER}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="info_icon"]    {{ background-color: {BrandColors.BLUE}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="accent_icon"]  {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="tiktok_icon"]  {{ background-color: {BrandColors.TIKTOK}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="youtube_icon"] {{ background-color: {BrandColors.YOUTUBE}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="twitch_icon"]  {{ background-color: {BrandColors.TWITCH}; border-radius: {Size.Radius.RAD_FUL}px; }}
-QFrame[role="black_icon"]   {{ background-color: {Palette.NEUTRAL_999}; border-radius: {Size.Radius.RAD_FUL}px; }}
+QFrame#dialog_icon_badge {{ border-radius: {Size.Radius.RAD_FUL}px; }}
+QLabel#dialog_icon_badge_glyph {{ background-color: transparent; border: none; }}
+QFrame[role="danger_icon"]  {{ background-color: {BrandColors.RED}; }}
+QFrame[role="warning_icon"] {{ background-color: {BrandColors.AMBER}; }}
+QFrame[role="info_icon"]    {{ background-color: {BrandColors.BLUE}; }}
+QFrame[role="accent_icon"]  {{ background-color: {BrandColors.GREEN}; }}
+QFrame[role="tiktok_icon"]  {{ background-color: {BrandColors.TIKTOK}; }}
+QFrame[role="youtube_icon"] {{ background-color: {BrandColors.YOUTUBE}; }}
+QFrame[role="twitch_icon"]  {{ background-color: {BrandColors.TWITCH}; }}
+QFrame[role="black_icon"]   {{ background-color: {Palette.NEUTRAL_999}; }}
 QFrame[role="divider"]      {{ background-color: {Palette.NEUTRAL_750}; min-height: 1px; max-height: 1px; border: none; margin: 0px; padding: {Size.SPACING_NN}px; }}
 
 QFrame[role="bot_tag"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}

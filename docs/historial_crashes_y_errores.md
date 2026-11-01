@@ -55,6 +55,7 @@
 | **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
 | **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
 | **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
+| **INC-046** | `AttributeError` al abrir Settings por callbacks de YouTube y TikTok inexistentes en `MainWindowCore` | Log de usuario `minikick.log` (2026-11-01, líneas 84-111) | v1.6.6 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.6 |
 
 ---
 
@@ -1113,3 +1114,25 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `resources/tools/build_manager.py`
 * **Solución Implementada**: PyInstaller ya no agrega walkthroughs como datos; el gestor limpia la salida previa y rechaza el bundle si reaparece `docs`; Inno Setup excluye `docs` incluso al compilarse directamente y elimina las carpetas heredadas `docs` y `_internal\docs` al actualizar una instalación previa. El modal consulta primero la release de GitHub correspondiente a la versión instalada y usa los highlights cacheados de esa versión si falla la red. La guía de desarrollo recomienda el gestor de compilación para garantizar la limpieza.
 * **Pruebas y Verificación**: Build PyInstaller completado; `dist\MiniKick` conserva `assets` y `locales` y no contiene `docs`. Las pruebas de notas remotas y de integración relacionadas aprobaron; `build_manager.py --check`, `py_compile` y `git diff --check` correctos. Inno Setup 7.1.0 compiló `Output\MiniKick_Installer_v1.6.6.exe` con las reglas de exclusión y limpieza (la instalación existente del usuario no fue modificada).
+
+---
+
+### INC-046: `AttributeError` al abrir Settings por callbacks de integración inexistentes
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (impedía abrir la vista Settings y generaba una excepción no manejada en el hilo GUI).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  File "frontend\main_window_views.py", line 162, in get_or_create
+    window._on_youtube_integration_button_clicked
+  AttributeError: 'MainWindowCore' object has no attribute '_on_youtube_integration_button_clicked'. Did you mean: '_on_twitch_integration_button_clicked'?
+  ```
+* **Causa Raíz**: La factoría de vistas conectaba los botones de YouTube y TikTok con handlers que no existen en `MainWindowCore`. Tras abstraer ambas conexiones, los flujos pasaron a usar `_on_live_chat_button_clicked(chat)`, pero las conexiones de señales de Settings conservaron los nombres de los handlers anteriores. La resolución del atributo fallaba durante la creación de Settings, incluso cuando el prewarmer intentaba anticiparla.
+* **Archivos y Módulos Modificados**:
+  - `frontend/main_window_views.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: Las señales de YouTube y TikTok ahora usan `functools.partial` para invocar el handler compartido con su instancia de conexión correspondiente.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que Settings se crea y que ambos botones encaminan la conexión correcta al handler compartido. El archivo completo pasó: 7 pruebas aprobadas.

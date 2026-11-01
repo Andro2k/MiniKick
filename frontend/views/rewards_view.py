@@ -448,7 +448,6 @@ class RewardsView(BaseView):
                         text=self.i18n.get("common.row_menu.edit"),
                         icon_name="edit-filled.svg",
                         callback=lambda k=key: self.edit_requested.emit(k),
-                        role="row_action_accent"
                     ),
                     RowMenuAction(
                         text=self.i18n.get("common.row_menu.duplicate"),

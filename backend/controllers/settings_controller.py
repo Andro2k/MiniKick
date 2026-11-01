@@ -11,7 +11,6 @@ class SettingsController(QObject):
     unlink_account_requested = Signal()
     check_update_requested = Signal()
     backup_restored = Signal()
-    notification_requested = Signal(str, str)
 
     def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None, i18n=None, browser_service=None):
         super().__init__()
@@ -215,11 +214,6 @@ class SettingsController(QObject):
                 state="info"
             )
             
-        self.notification_requested.emit(
-            i18n.get("settings.status.lang_changed"), 
-            i18n.get("settings.status.lang_changed_msg")
-        )
-
     @Slot(int)
     def handle_font_size(self, size: int):
         if size is None or size <= 0 or self.service.get_font_size() == size:

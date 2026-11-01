@@ -145,6 +145,7 @@ class TwitchConnection(QObject):
     def _on_auth_success(self, _tokens) -> None:
         self._auth_slot.detach()
         logger.info("[Twitch Auth] Success callback received.")
+        self.state_changed.emit()
         try:
             self.api = self._build_api()
             self.api_changed.emit(self.api)
@@ -154,7 +155,6 @@ class TwitchConnection(QObject):
             logger.exception("[Twitch Auth] Error initializing Twitch session.")
             self._is_connected = False
             self._channel = ""
-            self.state_changed.emit()
             self.auth_failed.emit(str(error))
 
     def _start_chat_worker(self, channel: str) -> None:
@@ -213,6 +213,7 @@ class TwitchConnection(QObject):
         self._is_connected = True
         if username:
             self._channel = username
+        self.state_changed.emit()
         self.connected.emit(username, broadcaster_id, profile)
 
         if broadcaster_id and self._auth_manager.is_authenticated():
@@ -274,4 +275,5 @@ class TwitchConnection(QObject):
         self._auth_manager.logout()
         self._is_connected = False
         self._channel = ""
+        self.state_changed.emit()
         self.disconnected.emit()

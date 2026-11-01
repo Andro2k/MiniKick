@@ -14,6 +14,7 @@ _STOP_WARNING_SECONDS = 10.0
 
 
 class KickConnection(QObject):
+    state_changed = Signal()
     connecting = Signal()
     error_reported = Signal(str)
     api_changed = Signal(object)
@@ -68,6 +69,10 @@ class KickConnection(QObject):
     @property
     def is_auth_running(self) -> bool:
         return self._auth_slot.is_running
+
+    @property
+    def channel(self) -> str:
+        return self.username
 
     def authenticate(self, *, force: bool = False) -> None:
         if self._auth_start_pending or self._disconnect_pending or self._is_shutting_down():
@@ -132,6 +137,7 @@ class KickConnection(QObject):
         return worker
 
     def _on_auth_success(self, _tokens) -> None:
+        self.state_changed.emit()
         self.api = self._build_api()
         self.api_changed.emit(self.api)
         self._chat_slot.start(self._build_chat_worker)
@@ -156,6 +162,7 @@ class KickConnection(QObject):
         self._is_connected = True
         self.username = username
         self.avatar_url = user_data.get("avatar_url") or user_data.get("profile_pic", "")
+        self.state_changed.emit()
         self.connected.emit(username, user_data)
         self._start_timers_worker(username.replace("_", "-").replace(" ", ""))
 
@@ -194,6 +201,7 @@ class KickConnection(QObject):
         self._auth_manager.logout()
         self._is_connected = False
         self.username = ""
+        self.state_changed.emit()
 
     def _finish_reauth(self) -> None:
         self._reauth_pending = False

@@ -2,8 +2,8 @@
 
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
-from PySide6.QtCore import Qt, QSize, QSettings, QEvent, Signal
-from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
+from PySide6.QtCore import Qt, QSize, QSettings, QEvent, Signal, QRectF
+from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent, QPainterPath, QRegion
 from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
@@ -434,13 +434,19 @@ def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", ic
     badge.setObjectName("dialog_icon_badge")
     badge.setFixedSize(box, box)
     badge.setProperty("role", icon_role or resolved_role)
-    badge.setStyleSheet(f"#dialog_icon_badge {{ border-radius: {box // 2}px; }}")
+    # Qt stylesheets do not clip a QFrame's background to border-radius.
+    radius = min(Size.Radius.RAD_FUL, box / 2)
+    shape = QPainterPath()
+    shape.addRoundedRect(QRectF(0, 0, box, box), radius, radius)
+    badge.setMask(QRegion(shape.toFillPolygon().toPolygon()))
+    badge.style().unpolish(badge)
+    badge.style().polish(badge)
     inner = QVBoxLayout(badge)
     inner.setContentsMargins(*Size.Margin.MRG_NON)
     inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     icon_lbl = QLabel()
-    icon_lbl.setStyleSheet("background: transparent; border: none;")
+    icon_lbl.setObjectName("dialog_icon_badge_glyph")
     pixmap = get_pixmap_colored(icon_path, color_str=icon_color or default_fg, size=glyph, dpr=dpr)
     if pixmap.isNull():
         pixmap = QIcon(icon_path).pixmap(QSize(glyph, glyph), dpr)
