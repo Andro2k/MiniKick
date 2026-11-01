@@ -42,6 +42,14 @@ def test_recent_redemptions_are_deduplicated_and_bounded():
     assert cache.contains_or_add("first") is False
 
 
+def test_startup_connection_toast_suppression_is_consumed_once():
+    window = SimpleNamespace(_startup_silent_connections={"kick", "twitch"})
+
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is True
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is False
+    assert MainWindowCore._consume_startup_silent_connection(window, "twitch") is True
+
+
 def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     import frontend.main_window_views as views_module
 

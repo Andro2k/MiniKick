@@ -125,6 +125,13 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = False
         self._cleanup_complete = False
         self._quit_requested = False
+        self._startup_silent_connections: set[str] = set()
+
+    def _consume_startup_silent_connection(self, platform: str) -> bool:
+        if platform not in self._startup_silent_connections:
+            return False
+        self._startup_silent_connections.discard(platform)
+        return True
 
     def _init_live_chat_connections(self):
         def build(connection_class):
@@ -542,7 +549,7 @@ class MainWindowCore(QMainWindow):
         if self.kick_auth_manager.is_authenticated():
             try:
                 self.logger.info("[AutoStart] Starting Kick integration...")
-                self._handle_auth_process()
+                self._handle_auth_process(startup=True)
             except Exception as e:
                 self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
 
@@ -561,6 +568,7 @@ class MainWindowCore(QMainWindow):
             return
         try:
             self.logger.info("[AutoStart] Starting Twitch integration...")
+            self._startup_silent_connections.add("twitch")
             self.twitch.resume_session()
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
@@ -576,6 +584,7 @@ class MainWindowCore(QMainWindow):
             return
         try:
             self.logger.info("[AutoStart] Starting %s integration (target='%s')...", chat.log_tag, target)
+            self._startup_silent_connections.add(chat.platform_id)
             chat.connect_channel(target, manual=False)
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting %s integration: %s", chat.log_tag, e)
@@ -730,7 +739,9 @@ class MainWindowCore(QMainWindow):
         self._stop_workers_parallel([slot.detach() for slot in slots], on_finished=on_finished)
 
     @Slot()
-    def _handle_auth_process(self, force: bool = False):
+    def _handle_auth_process(self, force: bool = False, *, startup: bool = False):
+        if not startup:
+            self._startup_silent_connections.discard("kick")
         if self.twitch.is_auth_running:
             self.toast.show_toast(
                 title=self.container.i18n.get("main.toast.auth_in_progress_title"),
@@ -738,6 +749,8 @@ class MainWindowCore(QMainWindow):
                 state="warning"
             )
             return
+        if startup:
+            self._startup_silent_connections.add("kick")
         self.kick.authenticate(force=force)
 
     def _on_kick_api_changed(self, api) -> None:
@@ -759,11 +772,12 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.handle_connection_success(user_data)
         self._refresh_sidebar_profile()
 
-        self.toast.show_toast(
-            title=self.i18n.get("main.toast.kick_connected_title"),
-            message=self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username),
-            state="success"
-        )
+        if not self._consume_startup_silent_connection("kick"):
+            self.toast.show_toast(
+                title=self.i18n.get("main.toast.kick_connected_title"),
+                message=self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username),
+                state="success"
+            )
         self._fetch_api_rewards()
 
     @Slot()
@@ -841,6 +855,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
+        self._startup_silent_connections.discard("twitch")
         if self.kick.is_auth_running or self.twitch.is_auth_running:
             self.toast.show_toast(
                 title=self.container.i18n.get("main.toast.auth_in_progress_title"),
@@ -899,11 +914,12 @@ class MainWindowCore(QMainWindow):
 
         self._evaluate_all_scopes()
 
-        self.toast.show_toast(
-            title=self.container.i18n.get("main.toast.twitch_connected_title"),
-            message=self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username),
-            state="success",
-        )
+        if not self._consume_startup_silent_connection("twitch"):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.twitch_connected_title"),
+                message=self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username),
+                state="success",
+            )
 
     def _refresh_sidebar_profile(self):
         online_str = self.i18n.get("common.status.online")
@@ -983,6 +999,7 @@ class MainWindowCore(QMainWindow):
                 body_text=self.i18n.get(unlink_desc_key),
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
+                self._startup_silent_connections.discard(chat.platform_id)
                 chat.disconnect_channel()
             return
 
@@ -991,6 +1008,7 @@ class MainWindowCore(QMainWindow):
             return
         target = "" if dialog.is_cleared() else dialog.get_target()
         if target:
+            self._startup_silent_connections.discard(chat.platform_id)
             chat.connect_channel(target)
         else:
             chat.forget_channel()
@@ -1000,6 +1018,8 @@ class MainWindowCore(QMainWindow):
         set_status(connected=False, connecting=True)
 
     def _on_live_chat_connected(self, chat: LiveChatConnection, display_name: str) -> None:
+        if self._consume_startup_silent_connection(chat.platform_id):
+            return
         title_key, message_key, _, _ = self._LIVE_CHAT_TOASTS[chat.platform_id]
         self.toast.show_toast(
             title=self.i18n.get(title_key),
