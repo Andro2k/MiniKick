@@ -39,7 +39,7 @@ class PiperVoicesDialog(ModernFramelessShell):
     def _setup_ui(self):
         root = QVBoxLayout(self.container)
         root.setContentsMargins(*Size.Margin.MRG_NON)
-        root.setSpacing(0)
+        root.setSpacing(Size.SPACING_NN)
 
         header = DialogHeader(
             self.i18n.get("piper_dialog.title"),

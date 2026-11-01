@@ -82,7 +82,7 @@ class DashboardChattersTable(ModernCard):
         self.banner_inactive.setProperty("role", "banner_warning")
         self.banner_inactive.setVisible(False)
         banner_layout = QHBoxLayout(self.banner_inactive)
-        banner_layout.setContentsMargins(12, 8, 12, 8)
+        banner_layout.setContentsMargins(*Size.Margin.MRG_MED)
         banner_layout.setSpacing(Size.SPACING_SM)
 
         lbl_banner_icon = QLabel(self.banner_inactive)
@@ -293,7 +293,7 @@ class DashboardChattersTable(ModernCard):
             share_pct = (count / calc_total * 100) if calc_total > 0 else 0.0
             share_widget = QWidget()
             share_layout = QHBoxLayout(share_widget)
-            share_layout.setContentsMargins(4, 2, 8, 2)
+            share_layout.setContentsMargins(*Size.Margin.SEC_BDG)
             share_layout.setSpacing(Size.SPACING_XS)
 
             pbar = QProgressBar(share_widget)

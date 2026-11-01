@@ -364,7 +364,7 @@ class DialogHeader(QFrame):
         super().__init__(parent)
         self.setProperty("role", "dialog_header")
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(20, 14, 12, 14)
+        lay.setContentsMargins(*Size.Margin.MRG_LRG)
         lay.setSpacing(Size.SPACING_LG)
 
         if icon_widget is not None:
@@ -453,7 +453,7 @@ def build_dialog_footer(parent: QWidget | None = None) -> tuple[QFrame, QHBoxLay
     footer = QFrame(parent)
     footer.setProperty("role", "dialog_footer")
     lay = QHBoxLayout(footer)
-    lay.setContentsMargins(20, 12, 20, 12)
+    lay.setContentsMargins(*Size.Margin.MRG_LRG)
     lay.setSpacing(Size.SPACING_LG)
     return footer, lay
 
@@ -488,7 +488,7 @@ class ModernModal(ModernFramelessShell):
 
         root = QVBoxLayout(self.container)
         root.setContentsMargins(*Size.Margin.MRG_NON)
-        root.setSpacing(0)
+        root.setSpacing(Size.SPACING_NN)
 
         icon_widget = build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color, dpr=self.devicePixelRatio()) if icon_path else None
         self.header = DialogHeader(title, subtitle, icon_widget, parent=self.container)
@@ -574,7 +574,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.panel_layout = QVBoxLayout(self.container)
         self.panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.panel_layout.setSpacing(0)
+        self.panel_layout.setSpacing(Size.SPACING_NN)
 
         self.header = DialogHeader(parent=self.container)
         self.header.close_requested.connect(self.reject)

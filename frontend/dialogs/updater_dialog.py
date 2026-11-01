@@ -74,6 +74,21 @@ class UpdateDialog(ModernModal):
         self.add_action_buttons(self.btn_secondary, self.btn_primary, stretch_center=False)
         self._primary_connection = None
 
+    def _refresh_presentation(self) -> None:
+        self.footer_layout.invalidate()
+        self.footer_layout.activate()
+        self.content_layout.invalidate()
+        self.content_layout.activate()
+        self.body.setMinimumHeight(0)
+        self.body.setMinimumHeight(self.body.sizeHint().height())
+        self.container.layout().activate()
+        self.container.adjustSize()
+        self.adjustSize()
+        self.container.repaint()
+        self.footer.repaint()
+        self.btn_secondary.repaint()
+        self.btn_primary.repaint()
+
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
@@ -93,6 +108,7 @@ class UpdateDialog(ModernModal):
         self._primary_connection = self.btn_primary.clicked.connect(self.download_requested.emit)
 
         self.btn_secondary.show()
+        self._refresh_presentation()
 
     def show_downloading(self):
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_default"))
@@ -106,13 +122,14 @@ class UpdateDialog(ModernModal):
         self.btn_primary.setEnabled(False)
         self.btn_primary.show()
         self.btn_secondary.hide()
+        self._refresh_presentation()
 
     def update_progress(self, percentage: int):
         self.progress_bar.setValue(percentage)
         self.lbl_prog_val.setText(f"{percentage}%")
 
     def show_complete(self):
-        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.KICK, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
         if self.header_icon:
             self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_050, 36).pixmap(36, 36))
 
@@ -132,6 +149,7 @@ class UpdateDialog(ModernModal):
         self._primary_connection = self.btn_primary.clicked.connect(self.restart_requested.emit)
 
         self.btn_secondary.show()
+        self._refresh_presentation()
 
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(Qt.GlobalColor.transparent))
@@ -145,6 +163,7 @@ class UpdateDialog(ModernModal):
         self.btn_primary.hide()
         self.btn_secondary.setText(self.i18n.get("dialogs.update.btn_close"))
         self.btn_secondary.show()
+        self._refresh_presentation()
 
     def show_error(self, message: str):
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 60))
@@ -157,3 +176,4 @@ class UpdateDialog(ModernModal):
 
         self.btn_primary.hide()
         self.btn_secondary.show()
+        self._refresh_presentation()

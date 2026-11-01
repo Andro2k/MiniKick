@@ -45,7 +45,7 @@ class SplashScreen(QWidget):
 
         card_layout = QVBoxLayout(self.card)
         card_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        card_layout.setSpacing(0)
+        card_layout.setSpacing(Size.SPACING_NN)
         card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         logo_row = QHBoxLayout()
