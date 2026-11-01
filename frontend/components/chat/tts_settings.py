@@ -179,13 +179,13 @@ class ChatTtsSettingsPanel(QWidget):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%", parent=self)
-        self.lbl_vol_perc.setProperty("role", "monospace")
+        self.lbl_vol_perc.setProperty("role", "caption")
 
         self.slider_speed = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_speed.setRange(90, 130)
         self.slider_speed.setValue(100)
         self.lbl_speed_perc = QLabel("100%", parent=self)
-        self.lbl_speed_perc.setProperty("role", "monospace")
+        self.lbl_speed_perc.setProperty("role", "caption")
 
         card_general = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
         row_tts = SettingRow.minimal(self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)

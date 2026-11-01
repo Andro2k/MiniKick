@@ -18,7 +18,7 @@ class ViewHeader(QFrame):
         layout.setSpacing(Size.SPACING_XS)
 
         title = QLabel(title_text, parent=self)
-        title.setProperty("role", "h1")
+        title.setProperty("role", "h2")
         if title_color:
             color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)

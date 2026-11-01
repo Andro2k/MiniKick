@@ -214,7 +214,7 @@ class Sidebar(QFrame):
         self.profile_text_layout.setSpacing(Size.SPACING_XS)
 
         self.profile_name_lbl = QLabel()
-        self.profile_name_lbl.setProperty("role", "profile_name")
+        self.profile_name_lbl.setProperty("role", "sidebar_section_header")
 
         self.profile_role_lbl = QLabel()
         self.profile_role_lbl.setProperty("role", "caption")

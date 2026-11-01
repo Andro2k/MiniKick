@@ -274,7 +274,7 @@ class CommandView(BaseView):
             badge = create_badge(badge_text, state="warning")
             layout.addWidget(badge)
             lbl_text = QLabel(raw_aliases)
-            lbl_text.setProperty("role", "monospace")
+            lbl_text.setProperty("role", "caption")
         else:
             lbl_text = QLabel(raw_aliases)
             lbl_text.setProperty("role", "body")

@@ -2,6 +2,7 @@
 
 import sys
 import html
+import threading
 import time
 import logging
 from collections import deque
@@ -56,6 +57,7 @@ class MainWindowCore(QMainWindow):
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
     _PREWARM_START_DELAY_MS = 300
+    _DB_MAINTENANCE_DELAY_MS = 10_000
     _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
@@ -537,6 +539,14 @@ class MainWindowCore(QMainWindow):
     def _schedule_startup_followups(self) -> None:
         QTimer.singleShot(750, self._check_whats_new_dialog)
         self._view_prewarmer.start(self._PREWARM_START_DELAY_MS)
+        QTimer.singleShot(self._DB_MAINTENANCE_DELAY_MS, self._start_database_maintenance)
+
+    def _start_database_maintenance(self) -> None:
+        if self._is_shutting_down:
+            return
+        threading.Thread(
+            target=self.container.db_maintenance.run, name="DatabaseMaintenance", daemon=True
+        ).start()
 
     def _seconds_since_navigation(self) -> float:
         if self._last_navigation_at is None:

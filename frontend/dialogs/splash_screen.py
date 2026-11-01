@@ -66,7 +66,7 @@ class SplashScreen(QWidget):
         title_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_title = QLabel(self.i18n.get("splash.title"), parent=self.card)
-        self.lbl_title.setProperty("role", "h1")
+        self.lbl_title.setProperty("role", "h2")
         title_row.addWidget(self.lbl_title)
 
         if self.app_version:
