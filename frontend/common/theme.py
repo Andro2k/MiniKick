@@ -288,7 +288,7 @@ PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
 
 
-def _build_reset_and_typography_qss(h2: int, h3: int, text1: int, text2: int) -> str:
+def _build_reset_and_typography_qss(h1: int, h2: int, text1: int, text2: int) -> str:
     return f"""
 /* --- 1. Reset & Root Surfaces --- */
 * {{ font-family: {Typography.FONT_FAMILY}; font-size: {text1}px; color: {Palette.NEUTRAL_400}; }}
@@ -297,8 +297,8 @@ QDialog {{ background-color: {Palette.NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* --- 2. Typography Scale --- */
+QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
 QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
 QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
 QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
@@ -649,18 +649,16 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::ad
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
 /* Progress Bars */
-QProgressBar                                        {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SOFT}; border-radius: {Size.Radius.RAD_XSM}px; height: 6px; text-align: center; }}
+QProgressBar                                        {{ background-color: {Palette.NEUTRAL_900}; border: none; border-radius: {Size.Radius.RAD_XSM}px; height: 3px; text-align: center; }}
 QProgressBar::chunk                                 {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_XSM}px; }}
 QProgressBar:disabled                               {{ background-color: {Semantic.WHITE_GLOW}; }}
 QProgressBar::chunk:disabled                        {{ background-color: {Palette.NEUTRAL_700}; }}
-QProgressBar[role="update_progress"]                {{ background-color: {Palette.NEUTRAL_950}; border: none; border-radius: {Size.Radius.RAD_XSM}px; }}
-QProgressBar[role="update_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_XSM}px; }}
-QProgressBar[role="wizard_progress"]                {{ background-color: {Palette.NEUTRAL_750}; border: none; border-radius: {Size.Radius.RAD_XSM}px; }}
-QProgressBar[role="wizard_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_XSM}px; }}
-QProgressBar[role="top_command_progress"]           {{ background-color: {Palette.NEUTRAL_750}; border: none; border-radius: {Size.Radius.RAD_XSM}px; height: 8px; }}
-QProgressBar[role="top_command_progress"]::chunk    {{ background-color: {BrandColors.BLUE}; border-radius: {Size.Radius.RAD_XSM}px; }}
-QProgressBar[role="splash_progress"]                {{ background-color: {Palette.NEUTRAL_900}; border: none; border-radius: {Size.Radius.RAD_XXS}px; height: 4px; text-align: center; }}
-QProgressBar[role="splash_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_XXS}px; }}
+QProgressBar[role="update_progress"]                {{ background-color: {Palette.NEUTRAL_950}; height: 8px; }}
+QProgressBar[role="wizard_progress"]                {{ background-color: {Palette.NEUTRAL_750}; }}
+QProgressBar[role="top_command_progress"]           {{ background-color: {Palette.NEUTRAL_750}; }}
+QProgressBar[role="top_command_progress"]::chunk    {{ background-color: {BrandColors.BLUE}; }}
+QProgressBar[role="splash_progress"]                {{ background-color: {Palette.NEUTRAL_900}; }}
+QProgressBar[role="splash_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; }}
 
 /* Tab Widget */
 QTabWidget::pane                    {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px;  padding: {Size.SPACING_NN}px; }}
@@ -760,7 +758,6 @@ QToolTip {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050
 
 @lru_cache(maxsize=16)
 def get_global_qss(base: int = 12, custom_qss: tuple[str, ...] = ()) -> str:
-    # size_head1 = base + 12
     size_head2 = base + 9
     size_head3 = base + 3
     size_text1 = base

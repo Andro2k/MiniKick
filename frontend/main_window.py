@@ -16,7 +16,7 @@ from backend.services import ChatMessageDTO, RewardsService, ChatService, Comman
 from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
-from frontend.common import get_global_qss, BrandColors
+from frontend.common import get_global_qss, BrandColors, Size
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import DashboardView
@@ -254,8 +254,8 @@ class MainWindowCore(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QHBoxLayout(self.central_widget)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.main_layout.setSpacing(Size.SPACING_NN)
 
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version, parent=self)
         for name, icon, pos in self._NAV_CONFIG:

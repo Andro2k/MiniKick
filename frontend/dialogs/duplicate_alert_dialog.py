@@ -38,7 +38,7 @@ class DuplicateAlertModal(ModernModal):
         lbl_src_tag = QLabel(self.i18n.get("alerts.dialogs.duplicate.source_label"), self)
         lbl_src_tag.setProperty("role", "caption")
         lbl_src_val = QLabel(self.i18n.get(f"alerts.events.{self.source_event}"), self)
-        lbl_src_val.setProperty("role", "h3")
+        lbl_src_val.setProperty("role", "h2")
 
         src_row.addWidget(lbl_src_tag)
         src_row.addWidget(lbl_src_val)
@@ -47,7 +47,7 @@ class DuplicateAlertModal(ModernModal):
         self.content_layout.addWidget(source_card)
 
         lbl_targets = QLabel(self.i18n.get("alerts.dialogs.duplicate.target_label"), self)
-        lbl_targets.setProperty("role", "h3")
+        lbl_targets.setProperty("role", "h2")
         self.content_layout.addWidget(lbl_targets)
 
         self.btn_group_target = QButtonGroup(self)

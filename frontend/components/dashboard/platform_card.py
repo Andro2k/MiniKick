@@ -41,7 +41,7 @@ class PlatformStatusCard(QFrame):
         top_row = create_row_layout(spacing=Size.SPACING_NN)
 
         self.lbl_brand = QLabel(brand_name, self)
-        self.lbl_brand.setProperty("role", "h3")
+        self.lbl_brand.setProperty("role", "h2")
 
         self.lbl_status_pill = QLabel(self.i18n.get("dashboard.platforms.status_offline"), self)
         self.lbl_status_pill.setAlignment(Qt.AlignmentFlag.AlignCenter)

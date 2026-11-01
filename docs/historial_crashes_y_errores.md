@@ -53,6 +53,7 @@
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
+| **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
 
 ---
 
@@ -1063,3 +1064,23 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `resources/tests/test_kick_ws_key_rotation.py`
 * **Solución Implementada**: Se inicializa `_retiring_poll_workers` como un conjunto por instancia. La prueba de regresión verifica que el worker activo permanece referenciado durante el retiro y que se elimina del conjunto al finalizar.
 * **Pruebas y Verificación**: `resources/tests/test_kick_ws_key_rotation.py` cubre el ciclo de retención y liberación del worker.
+
+---
+
+### INC-044: Texto residual en el pie del modal de actualización
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (defecto visual; el flujo de descarga e instalación no se interrumpía).
+* **Reportes Asociados**: Capturas compartidas por el usuario, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza / Síntoma**:
+  ```text
+  Al completar una descarga, el botón de acción cambiaba de ancho y posición, pero parte de su texto anterior permanecía visible hasta que el cursor pasaba sobre el modal.
+  ```
+* **Causa Raíz**: El modal conservaba el alto calculado al mostrarse inicialmente. Al habilitar la barra de progreso y cambiar el título por uno que ocupa dos líneas, el cuerpo recibía menos espacio que su `sizeHint`, comprimiendo y recortando los controles de progreso.
+* **Archivos y Módulos Modificados**:
+  - `frontend/dialogs/updater_dialog.py`
+  - `resources/tests/test_updater_dialog.py`
+* **Solución Implementada**: Tras cada cambio de estado, se recalcula el tamaño mínimo del cuerpo a partir del contenido visible, se reajustan el contenedor y el diálogo, y se repintan las superficies afectadas.
+* **Pruebas y Verificación**: `resources/tests/test_updater_dialog.py` comprueba que el cuerpo, la barra y su fila de texto reciben su altura requerida y no invaden el pie tras completar la descarga. La suite rápida de calidad detectó estilos inline preexistentes en `frontend/dialogs/base_dialog.py`; no se modificaron como parte de esta corrección.
+* **Walkthrough de Referencia**: No aplica.

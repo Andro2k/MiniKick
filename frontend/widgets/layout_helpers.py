@@ -46,7 +46,7 @@ def _assemble_field(
     box: QBoxLayout,
     widget: QWidget,
     label_text: str,
-    role: str = "h3",
+    role: str = "h2",
     label_first: bool = True,
     parent: QWidget | None = None
 ) -> tuple[QBoxLayout, QLabel]:
@@ -65,7 +65,7 @@ def _assemble_field(
 def create_labeled_field(
     label_text: str,
     widget: QWidget,
-    role: str = "h3",
+    role: str = "h2",
     spacing: int = Size.SPACING_XS,
     parent: QWidget | None = None
 ) -> tuple[QVBoxLayout, QLabel]:

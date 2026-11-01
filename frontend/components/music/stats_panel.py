@@ -29,13 +29,13 @@ class MusicStatsPanel(QWidget):
         icon_queue = QLabel()
         icon_queue.setPixmap(get_pixmap_colored("music-notes-filled.svg"))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
-        lbl_queue_title.setProperty("role", "h3")
+        lbl_queue_title.setProperty("role", "h2")
         queue_header.addWidget(icon_queue)
         queue_header.addWidget(lbl_queue_title)
         queue_header.addStretch()
 
         self.lbl_stat_queue_count = QLabel("0")
-        self.lbl_stat_queue_count.setProperty("role", "h2")
+        self.lbl_stat_queue_count.setProperty("role", "h1")
 
         lbl_queue_desc = QLabel(self.i18n.get("music.stats.queue_desc"))
         lbl_queue_desc.setProperty("role", "body")
@@ -52,13 +52,13 @@ class MusicStatsPanel(QWidget):
         icon_dur = QLabel()
         icon_dur.setPixmap(get_pixmap_colored("clock-filled.svg"))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
-        lbl_dur_title.setProperty("role", "h3")
+        lbl_dur_title.setProperty("role", "h2")
         dur_header.addWidget(icon_dur)
         dur_header.addWidget(lbl_dur_title)
         dur_header.addStretch()
 
         self.lbl_stat_duration_sum = QLabel("00:00:00")
-        self.lbl_stat_duration_sum.setProperty("role", "h2")
+        self.lbl_stat_duration_sum.setProperty("role", "h1")
 
         lbl_dur_desc = QLabel(self.i18n.get("music.stats.duration_desc"))
         lbl_dur_desc.setProperty("role", "body")
@@ -75,7 +75,7 @@ class MusicStatsPanel(QWidget):
         icon_cmd = QLabel()
         icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg"))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
-        lbl_cmd_title.setProperty("role", "h3")
+        lbl_cmd_title.setProperty("role", "h2")
         self.sw_music_service = ModernSwitch(parent=self)
         self.sw_music_service.setChecked(True)
         self.sw_music_service.toggled.connect(self._on_service_switch_toggled)
@@ -86,7 +86,7 @@ class MusicStatsPanel(QWidget):
         service_header.addWidget(self.sw_music_service)
 
         self.lbl_stat_service_value = QLabel(self.i18n.get("music.stats.service_active"))
-        self.lbl_stat_service_value.setProperty("role", "h2")
+        self.lbl_stat_service_value.setProperty("role", "h1")
 
         lbl_cmd_desc = QLabel(self.i18n.get("music.stats.cmd_desc"))
         lbl_cmd_desc.setProperty("role", "body")

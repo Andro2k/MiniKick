@@ -9,7 +9,6 @@ from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colo
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
 class ModernFramelessShell(QDialog):
-    # _icon_close = None
     RESIZE_MARGIN = 8
 
     def __init__(
@@ -95,8 +94,6 @@ class ModernFramelessShell(QDialog):
             self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_close_shell.setAutoDefault(False)
             self.btn_close_shell.setDefault(False)
-            # if ModernFramelessShell._icon_close is None:
-            #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
             self.btn_close_shell.setIcon(get_icon_colored("x-filled.svg"))
             from frontend.widgets.controls_widget import configure_icon_only_button
             configure_icon_only_button(self.btn_close_shell)
@@ -367,7 +364,7 @@ class DialogHeader(QFrame):
         super().__init__(parent)
         self.setProperty("role", "dialog_header")
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(20, 14, 12, 14)
+        lay.setContentsMargins(*Size.Margin.MRG_LRG)
         lay.setSpacing(Size.SPACING_LG)
 
         if icon_widget is not None:
@@ -376,7 +373,7 @@ class DialogHeader(QFrame):
         texts = QVBoxLayout()
         texts.setSpacing(Size.SPACING_XS)
         self.lbl_title = QLabel(title, self)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "h1")
         self.lbl_title.setWordWrap(True)
         self.lbl_subtitle = QLabel(subtitle, self)
         self.lbl_subtitle.setProperty("role", "caption")
@@ -391,8 +388,6 @@ class DialogHeader(QFrame):
         self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close.setAutoDefault(False)
         self.btn_close.setDefault(False)
-        # if ModernFramelessShell._icon_close is None:
-        #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
         self.btn_close.setIcon(get_icon_colored("x-filled.svg"))
         from frontend.widgets.controls_widget import configure_icon_only_button
         configure_icon_only_button(self.btn_close)
@@ -458,7 +453,7 @@ def build_dialog_footer(parent: QWidget | None = None) -> tuple[QFrame, QHBoxLay
     footer = QFrame(parent)
     footer.setProperty("role", "dialog_footer")
     lay = QHBoxLayout(footer)
-    lay.setContentsMargins(20, 12, 20, 12)
+    lay.setContentsMargins(*Size.Margin.MRG_LRG)
     lay.setSpacing(Size.SPACING_LG)
     return footer, lay
 
@@ -493,7 +488,7 @@ class ModernModal(ModernFramelessShell):
 
         root = QVBoxLayout(self.container)
         root.setContentsMargins(*Size.Margin.MRG_NON)
-        root.setSpacing(0)
+        root.setSpacing(Size.SPACING_NN)
 
         icon_widget = build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color, dpr=self.devicePixelRatio()) if icon_path else None
         self.header = DialogHeader(title, subtitle, icon_widget, parent=self.container)
@@ -579,7 +574,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.panel_layout = QVBoxLayout(self.container)
         self.panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.panel_layout.setSpacing(0)
+        self.panel_layout.setSpacing(Size.SPACING_NN)
 
         self.header = DialogHeader(parent=self.container)
         self.header.close_requested.connect(self.reject)
@@ -704,7 +699,6 @@ class ModernConfirmDialog(ModernModal):
         body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
-        # body_label.setMinimumHeight(60)
 
         self.content_layout.addWidget(body_label)
 

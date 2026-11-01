@@ -158,7 +158,7 @@ class ImportBackupModal(ModernModal):
             desc_text = "" if raw_desc == desc_key else raw_desc
 
             lbl_title = QLabel(title_text, card_sections)
-            lbl_title.setProperty("role", "h3")
+            lbl_title.setProperty("role", "h2")
 
             lbl_sub = QLabel(desc_text, card_sections)
             lbl_sub.setProperty("role", "caption")

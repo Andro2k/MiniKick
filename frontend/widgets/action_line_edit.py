@@ -17,9 +17,6 @@ class ActionLineEdit(QFrame):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
         self._search_when_empty = search_when_empty
-        # self._icon_search = get_icon_colored("search-filled.svg")
-        # self._icon_delete = get_icon_colored("x-filled.svg")
-
         self.txt_input = QLineEdit(self)
         self.txt_input.setFrame(False)
         self.txt_input.setPlaceholderText(placeholder)

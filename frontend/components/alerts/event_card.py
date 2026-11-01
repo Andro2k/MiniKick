@@ -89,7 +89,7 @@ class AlertEventCard(QWidget):
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
 
         lbl_header_title = QLabel(f"{platform_name} • {event_name}", parent=self)
-        lbl_header_title.setProperty("role", "h3")
+        lbl_header_title.setProperty("role", "h2")
 
         self.badge_offline = create_badge(self.i18n.get("alerts.status.disconnected"), state="warning")
         self.badge_offline.setVisible(False)
@@ -630,7 +630,7 @@ class AlertEventCard(QWidget):
         lbl_sec_prev_icon = QLabel(parent=self)
         lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg"))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
-        lbl_sec_prev_title.setProperty("role", "h3")
+        lbl_sec_prev_title.setProperty("role", "h2")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
         sec_prev_header.addWidget(lbl_sec_prev_title)
         sec_prev_header.addStretch()

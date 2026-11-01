@@ -32,7 +32,7 @@ class ScheduleFormPanel(QWidget):
         header_layout = QHBoxLayout()
         header_layout.setSpacing(Size.SPACING_MD)
         self.lbl_title = QLabel(self.i18n.get("stream_info.schedule_dialog.title_new"))
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", "h2")
         header_layout.addWidget(self.lbl_title)
         header_layout.addStretch()
         card.addLayout(header_layout)
@@ -49,7 +49,7 @@ class ScheduleFormPanel(QWidget):
             parent=self
         )
         form_layout.addLayout(name_field)
-        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h3", parent=self))
+        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h2", parent=self))
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
             spacing=Size.SPACING_LG,

@@ -18,7 +18,7 @@ class ViewHeader(QFrame):
         layout.setSpacing(Size.SPACING_XS)
 
         title = QLabel(title_text, parent=self)
-        title.setProperty("role", "h2")
+        title.setProperty("role", "h1")
         if title_color:
             color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)
@@ -39,7 +39,7 @@ class SectionHeader(QWidget):
         layout.setContentsMargins(*margins)
         layout.setSpacing(Size.SPACING_NN)
         self.lbl = QLabel(text, parent=self)
-        self.lbl.setProperty("role", "h3")
+        self.lbl.setProperty("role", "h2")
         layout.addWidget(self.lbl)
 
     def setText(self, text: str):
@@ -55,7 +55,7 @@ class SettingRow(QWidget):
         icon_color: str = Palette.NEUTRAL_400,
         title_color: str = None,
         contents_margins: tuple = Size.Margin.MRG_LRG,
-        title_role: str = "h3",
+        title_role: str = "h2",
         desc_role: str = "body",
         parent=None
     ):
@@ -115,7 +115,7 @@ class SliderRow(QWidget):
         icon_color: str = Palette.NEUTRAL_400,
         parent=None,
         contents_margins: tuple = Size.Margin.MRG_LRG,
-        title_role: str = "h3",
+        title_role: str = "h2",
         desc_role: str = "body"
     ):
         super().__init__(parent)
@@ -183,7 +183,7 @@ class StatCard(QFrame):
         icon_lbl.setPixmap(get_pixmap_colored(icon_name))
 
         self.lbl_title = QLabel(title_text, parent=self)
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", "h2")
 
         header_layout.addWidget(icon_lbl)
         header_layout.addWidget(self.lbl_title)
@@ -298,8 +298,6 @@ class ExpandableCard(QFrame):
         self.main_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.main_layout.setSpacing(Size.SPACING_NN)
 
-        # self._icon_up = get_icon_colored("chevron-up-filled.svg")
-        # self._icon_down = get_icon_colored("chevron-down-filled.svg")
         self._is_expanded = False
 
         self.header_widget = QWidget(self)

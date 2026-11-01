@@ -223,8 +223,8 @@ class VariableTextEdit(QTextEdit):
         self.popup_window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         
         layout = QVBoxLayout(self.popup_window)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
+        layout.setSpacing(Size.SPACING_NN)
 
         self.popup = QListWidget(self.popup_window)
         self.popup.setProperty("role", "variable_autocomplete_popup")

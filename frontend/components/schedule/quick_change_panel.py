@@ -19,7 +19,6 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        # self._icon_refresh = get_icon_colored("refresh-filled.svg")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -38,7 +37,7 @@ class ScheduleQuickChangePanel(QWidget):
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
-        lbl_status_title.setProperty("role", "h3")
+        lbl_status_title.setProperty("role", "h2")
         status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
@@ -127,7 +126,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_twitch_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_twitch_t_header.setProperty("role", "caption")
         self.lbl_twitch_title = QLabel("-")
-        self.lbl_twitch_title.setProperty("role", "h3")
+        self.lbl_twitch_title.setProperty("role", "h2")
         self.lbl_twitch_title.setWordWrap(True)
         twitch_title_layout.addWidget(lbl_twitch_t_header)
         twitch_title_layout.addWidget(self.lbl_twitch_title)
@@ -180,7 +179,7 @@ class ScheduleQuickChangePanel(QWidget):
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
         change_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
         header_layout = create_row_layout(spacing=Size.SPACING_MD)
-        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h3", word_wrap=False)
+        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h2", word_wrap=False)
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)

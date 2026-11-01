@@ -18,7 +18,7 @@ class ImageDropzone(QFrame):
         self.setProperty("role", "card")
         self.setAcceptDrops(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(140)
+        self.setFixedHeight(160)
         self._setup_ui()
 
     def _setup_ui(self):
