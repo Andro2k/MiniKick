@@ -141,9 +141,7 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
 
 def _message_routing_window():
     return SimpleNamespace(
-        session_metrics={"messages_processed": 0},
-        session_platform_messages={"kick": 0, "twitch": 0, "youtube": 0, "tiktok": 0},
-        _dashboard_metrics_timer=MagicMock(),
+        session_metrics=MagicMock(),
         chat_controller=MagicMock()
     )
 

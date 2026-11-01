@@ -1,4 +1,4 @@
-# frontend\worker_shutdown.py\\
+# backend\connections\worker_shutdown.py
 
 from __future__ import annotations
 import time
@@ -6,6 +6,15 @@ import warnings
 from dataclasses import dataclass
 from typing import Callable, Iterable
 from PySide6.QtCore import QObject, QThread, QTimer
+
+
+def is_worker_running(worker) -> bool:
+    if worker is None:
+        return False
+    try:
+        return bool(worker.isRunning())
+    except (RuntimeError, AttributeError):
+        return False
 
 
 @dataclass

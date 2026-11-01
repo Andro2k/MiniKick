@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from backend.handlers import QLogHandler
 from bootstrap.services import StartupServices
 from frontend.main_window import MainWindowCore
+from frontend.window.window_state import WindowStateManager
 
 @pytest.fixture(scope="module")
 def qapp():
@@ -38,6 +39,10 @@ class MockSettingsStorage:
 
     def save_string(self, key, value):
         self._data[key] = value
+
+def _use_storage(window, storage):
+    window.window_state = WindowStateManager(window, storage, window._notify_background)
+
 
 @pytest.fixture
 def managed_window(qapp):
@@ -75,7 +80,7 @@ def managed_window(qapp):
 
 def test_window_state_default_maximized(qapp, managed_window, monkeypatch):
     window = managed_window()
-    window.settings_storage = MockSettingsStorage()
+    _use_storage(window, MockSettingsStorage())
 
     show_max_called = []
     monkeypatch.setattr(window, "showMaximized", lambda: show_max_called.append(True))
@@ -84,7 +89,7 @@ def test_window_state_default_maximized(qapp, managed_window, monkeypatch):
     window.restore_window_state()
 
     assert show_max_called == [True]
-    assert window._was_maximized_before_tray is True
+    assert window.window_state.was_maximized_before_tray is True
 
 def test_window_state_normal_geometry_restored(qapp, managed_window, monkeypatch):
     window = managed_window()
@@ -92,7 +97,7 @@ def test_window_state_normal_geometry_restored(qapp, managed_window, monkeypatch
     storage.save_bool(MainWindowCore.SETTING_WINDOW_MAXIMIZED, False)
     dummy_geom = bytes(QByteArray(b"\x01\x02\x03\x04")).hex()
     storage.save_string(MainWindowCore.SETTING_WINDOW_GEOMETRY, dummy_geom)
-    window.settings_storage = storage
+    _use_storage(window, storage)
 
     show_normal_called = []
     restore_geom_called = []
@@ -104,43 +109,43 @@ def test_window_state_normal_geometry_restored(qapp, managed_window, monkeypatch
 
     assert show_normal_called == [True]
     assert len(restore_geom_called) == 1
-    assert window._was_maximized_before_tray is False
+    assert window.window_state.was_maximized_before_tray is False
 
 def test_save_window_state_when_maximized(qapp, managed_window, monkeypatch):
     window = managed_window()
     storage = MockSettingsStorage()
-    window.settings_storage = storage
+    _use_storage(window, storage)
 
     monkeypatch.setattr(window, "isMinimized", lambda: False)
     monkeypatch.setattr(window, "isMaximized", lambda: True)
 
-    window._save_window_state()
+    window.window_state.save()
 
     assert storage.load_bool(MainWindowCore.SETTING_WINDOW_MAXIMIZED, False) is True
 
 def test_save_window_state_when_normal(qapp, managed_window, monkeypatch):
     window = managed_window()
     storage = MockSettingsStorage()
-    window.settings_storage = storage
+    _use_storage(window, storage)
 
     monkeypatch.setattr(window, "isMinimized", lambda: False)
     monkeypatch.setattr(window, "isMaximized", lambda: False)
     monkeypatch.setattr(window, "saveGeometry", lambda: QByteArray(b"geom_bytes"))
 
-    window._save_window_state()
+    window.window_state.save()
 
     assert storage.load_bool(MainWindowCore.SETTING_WINDOW_MAXIMIZED, True) is False
     assert storage.load_string(MainWindowCore.SETTING_WINDOW_GEOMETRY, "") == bytes(QByteArray(b"geom_bytes")).hex()
 
 def test_restore_from_tray_preserves_maximized(qapp, managed_window, monkeypatch):
     window = managed_window()
-    window._was_maximized_before_tray = True
+    window.window_state.was_maximized_before_tray = True
 
     show_max_called = []
     monkeypatch.setattr(window, "showMaximized", lambda: show_max_called.append(True))
     monkeypatch.setattr(window, "showNormal", lambda: None)
     monkeypatch.setattr(window, "activateWindow", lambda: None)
 
-    window._restore_from_tray()
+    window.window_state.restore_from_tray()
 
     assert show_max_called == [True]

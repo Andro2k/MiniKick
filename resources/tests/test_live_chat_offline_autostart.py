@@ -46,7 +46,7 @@ def _window(settings_storage, i18n):
         _safe_stop_worker=Mock(),
         _update_integrations_status_ui=Mock(),
         _route_incoming_message=Mock(),
-        _is_window_closing=False,
+        _is_shutting_down=False,
         _live_chat_generations={"youtube": 0, "tiktok": 0},
     )
 
