@@ -50,10 +50,17 @@ class WhatsNewPresenter:
         try:
             if not self._service.should_show_modal():
                 return
+            self.fetch_remote_if_needed()
+        except Exception as e:
+            logger.error("[WhatsNew] Error checking release notes: %s", e)
+
+    def _show_dialog_if_needed(self) -> None:
+        if self._is_shutting_down() or not self._service.should_show_modal():
+            return
+        try:
             is_first = self._service.is_first_launch()
             highlights = self._service.get_highlights()
             if not highlights:
-                self.fetch_remote_if_needed()
                 return
             dialog = WhatsNewDialog(
                 i18n=self._i18n,
@@ -78,15 +85,25 @@ class WhatsNewPresenter:
         try:
             self._service.set_highlights(highlights)
             self.init_badges()
-            if self._service.should_show_modal():
-                self.check_dialog()
+            self._show_dialog_if_needed()
         except Exception as e:
             logger.warning("[WhatsNew] Error handling remote highlights: %s", e)
+
+    def on_remote_error(self, message: str) -> None:
+        if self._is_shutting_down():
+            return
+        logger.warning("[WhatsNew] GitHub release notes unavailable; using cached highlights if available: %s", message)
+        try:
+            self.init_badges()
+            self._show_dialog_if_needed()
+        except Exception as e:
+            logger.warning("[WhatsNew] Error showing cached release notes: %s", e)
 
     def _create_worker(self) -> QThread:
         from backend.workers import WhatsNewWorker
 
         worker = WhatsNewWorker(self._app_version, parent=self._parent)
         worker.highlights_fetched.connect(self.on_remote_fetched)
+        worker.error_occurred.connect(self.on_remote_error)
         worker.finished.connect(worker.deleteLater)
         return worker

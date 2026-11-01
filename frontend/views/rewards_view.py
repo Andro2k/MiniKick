@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
-from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
+from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton, RowMenuAction
 from frontend.common import get_pixmap_colored, get_icon_colored, Palette, Semantic, BrandColors, Size
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -240,7 +240,7 @@ class RewardsView(BaseView):
         self.table_rewards.setColumnWidth(2, 95)
         self.table_rewards.setColumnWidth(4, 115)
         self.table_rewards.setColumnWidth(5, 85)
-        self.table_rewards.setColumnWidth(6, 175)
+        self.table_rewards.setColumnWidth(6, 80)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
 
@@ -435,30 +435,33 @@ class RewardsView(BaseView):
             self.table_rewards.setItem(row, 5, item_vol)
 
             cell = TableActionCell()
-            play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
-            cell.add_button(
-                icon_name="play-filled.svg",
-                role="row_action" if is_valid_file else "row_action_danger",
-                tooltip=play_tooltip,
-                callback=lambda checked=False, k=key: self.preview_requested.emit(k)
-            )
-            cell.add_button(
-                icon_name="edit-filled.svg",
-                role="row_action_accent",
-                tooltip=self.i18n.get("rewards.table.tooltip_edit"),
-                callback=lambda checked=False, k=key: self.edit_requested.emit(k)
-            )
-            cell.add_button(
-                icon_name="copy-filled.svg",
-                role="row_action",
-                tooltip=self.i18n.get("rewards.table.tooltip_duplicate"),
-                callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
-            )
-            cell.add_button(
-                icon_name="trash-filled.svg",
-                role="row_action_danger",
-                tooltip=self.i18n.get("rewards.table.tooltip_delete"),
-                callback=lambda checked=False, k=key, t=reward_name: self._confirm_delete_reward(k, t)
+            cell.add_menu(
+                [
+                    RowMenuAction(
+                        text=self.i18n.get("common.row_menu.play"),
+                        icon_name="play-filled.svg",
+                        callback=lambda k=key: self.preview_requested.emit(k),
+                        enabled=is_valid_file,
+                        tooltip="" if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
+                    ),
+                    RowMenuAction(
+                        text=self.i18n.get("common.row_menu.edit"),
+                        icon_name="edit-filled.svg",
+                        callback=lambda k=key: self.edit_requested.emit(k),
+                    ),
+                    RowMenuAction(
+                        text=self.i18n.get("common.row_menu.duplicate"),
+                        icon_name="copy-filled.svg",
+                        callback=lambda k=key: self.duplicate_requested.emit(k)
+                    ),
+                    RowMenuAction(
+                        text=self.i18n.get("common.row_menu.delete"),
+                        icon_name="trash-filled.svg",
+                        callback=lambda k=key, t=reward_name: self._confirm_delete_reward(k, t),
+                        role="row_action_danger"
+                    ),
+                ],
+                tooltip=self.i18n.get("common.row_menu.more")
             )
 
             self.table_rewards.setCellWidget(row, 6, cell)

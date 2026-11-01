@@ -1,7 +1,6 @@
 # frontend\window\window_state.py
 
 import logging
-from typing import Callable
 
 from PySide6.QtCore import QByteArray, QEvent, Qt
 from PySide6.QtWidgets import QMainWindow
@@ -20,11 +19,9 @@ class WindowStateManager:
         self,
         window: QMainWindow,
         config: IConfigProvider,
-        on_hidden_to_tray: Callable[[], None],
     ) -> None:
         self._window = window
         self._config = config
-        self._on_hidden_to_tray = on_hidden_to_tray
         self.was_maximized_before_tray = True
 
     def minimize_to_tray_enabled(self) -> bool:
@@ -76,4 +73,3 @@ class WindowStateManager:
         if self.minimize_to_tray_enabled():
             logger.info("[User Action] Window minimized to system tray")
             self._window.hide()
-            self._on_hidden_to_tray()

@@ -185,9 +185,11 @@ uv run pytest resources/tests
 # 5. Ejecutar la auditoría maestra de calidad (11 herramientas)
 uv run python resources/tools/project_quality_suite.py --all
 
-# 6. Compilar el ejecutable de producción
-uv run pyinstaller --clean --noconfirm MiniKick.spec
+# 6. Compilar el ejecutable de producción (limpia la salida anterior y valida que no incluya docs)
+uv run python resources/tools/build_manager.py --build
 ```
+
+Para generar también el instalador con Inno Setup, ejecuta `uv run python resources/tools/build_manager.py --package`.
 
 > [!TIP]
 > Si experimentas algún comportamiento inesperado de red o desconexión, consulta la vista interna **Desarrollador -> Logs** de la aplicación o revisa el archivo de registro en `%LOCALAPPDATA%\.Minikick\logs\minikick.log`.

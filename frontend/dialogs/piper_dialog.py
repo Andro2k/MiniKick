@@ -44,7 +44,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         header = DialogHeader(
             self.i18n.get("piper_dialog.title"),
             self.i18n.get("piper_dialog.subtitle"),
-            build_icon_badge(get_assets_path("icons/megaphone-filled.svg"), BrandColors.GREEN, dpr=self.devicePixelRatio()),
+            # build_icon_badge(get_assets_path("icons/megaphone-filled.svg"), BrandColors.GREEN, dpr=self.devicePixelRatio()),
             parent=self.container
         )
         header.close_requested.connect(self.reject)

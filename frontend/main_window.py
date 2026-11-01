@@ -7,15 +7,14 @@ import logging
 from collections import deque
 from datetime import datetime
 from functools import partial
-from typing import Callable, Iterable
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QSystemTrayIcon, QApplication
+from typing import Callable
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QApplication
 from PySide6.QtCore import Slot, Signal, QTimer, QThread
 
 from backend.utils.perf import perf_phase
 from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
 from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
-from backend.providers import KickAPIClient, TwitchAPIClient
-from backend.workers import KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
+from backend.workers import ScheduleWorker, GlobalMediaWorker
 from frontend.common import get_global_qss, BrandColors, Size
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
@@ -25,18 +24,21 @@ from frontend.main_window_views import MainWindowViewFactory
 from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.window.media_keys import MediaKeysHandler
+from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.session_metrics import SessionMetrics
 from frontend.window.shutdown import ShutdownSequence
 from frontend.window.updates import AutoUpdateCoordinator
 from frontend.window.whats_new import WhatsNewPresenter
 from frontend.window.window_state import WindowStateManager
 from backend.connections import (
+    ConnectionHub,
+    KickConnection,
     LiveChatConnection,
     TikTokConnection,
+    TwitchConnection,
     WorkerShutdownCoordinator,
     WorkerSlot,
     YouTubeConnection,
-    is_worker_running,
 )
 
 from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
@@ -65,24 +67,6 @@ class MainWindowCore(QMainWindow):
         ("Settings", "gear-filled.svg", "bottom"),
         ("Developer", "file-text-filled.svg", "bottom"),
     )
-    _KICK_WORKER_ATTRS = ("kick_chat_worker", "kick_auth_worker", "fetch_rewards_worker", "timers_worker")
-    _TWITCH_WORKER_ATTRS = (
-        "twitch_chat_worker",
-        "twitch_auth_worker",
-        "twitch_reward_worker",
-        "fetch_twitch_rewards_worker",
-    )
-    _WORKER_THREAD_NAMES = {
-        "kick_chat_worker": "Worker_Kick_Chat_Socket",
-        "kick_auth_worker": "Worker_Kick_Auth",
-        "fetch_rewards_worker": "Worker_Fetch_Rewards",
-        "timers_worker": "Worker_Timers",
-        "twitch_chat_worker": "Worker_Twitch_Chat_Socket",
-        "twitch_auth_worker": "Worker_Twitch_Auth",
-        "twitch_reward_worker": "Worker_Twitch_Reward_EventSub",
-        "fetch_twitch_rewards_worker": "Worker_Fetch_Twitch_Rewards",
-        "schedule_worker": "Worker_Stream_Schedule",
-    }
     _LIVE_CHAT_DIALOGS = {
         "youtube": (YouTubeConnectDialog, "dialogs.unlink_youtube.title", "dialogs.unlink_youtube.desc"),
         "tiktok": (TikTokConnectDialog, "dialogs.unlink_tiktok.title", "dialogs.unlink_tiktok.desc"),
@@ -104,7 +88,6 @@ class MainWindowCore(QMainWindow):
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
     _PREWARM_START_DELAY_MS = 300
     _DB_MAINTENANCE_DELAY_MS = 10_000
-    _SLOW_STATUS_REFRESH_MS = 50.0
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
@@ -118,11 +101,11 @@ class MainWindowCore(QMainWindow):
         self.app_version = app_version
 
         self._init_flags()
-        self._init_worker_state()
         self._init_session_state()
         self._bind_container()
         self._init_shutdown_support()
         self._init_live_chat_connections()
+        self._init_twitch_connection()
         self.setWindowTitle(self.i18n.get("main.window.title").replace("{version}", app_version))
 
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
@@ -142,24 +125,13 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = False
         self._cleanup_complete = False
         self._quit_requested = False
-        self._kick_auth_start_pending = False
-        self._kick_reauth_pending = False
-        self._kick_disconnect_pending = False
-        self._twitch_auth_start_pending = False
-        self._twitch_disconnect_pending = False
-        self._twitch_chat_start_pending = False
-        self._twitch_reward_start_pending = False
-        self._timer_worker_start_generation = 0
+        self._startup_silent_connections: set[str] = set()
 
-    def _init_worker_state(self):
-        self.kick_api_client = None
-        self.kick_chat_worker = None
-        self.kick_auth_worker = None
-        self.fetch_rewards_worker = None
-        self.timers_worker = None
-        self.schedule_worker = None
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
+    def _consume_startup_silent_connection(self, platform: str) -> bool:
+        if platform not in self._startup_silent_connections:
+            return False
+        self._startup_silent_connections.discard(platform)
+        return True
 
     def _init_live_chat_connections(self):
         def build(connection_class):
@@ -174,6 +146,16 @@ class MainWindowCore(QMainWindow):
         self.youtube = build(YouTubeConnection)
         self.tiktok = build(TikTokConnection)
         self.live_chats = (self.youtube, self.tiktok)
+
+    def _init_twitch_connection(self):
+        self.twitch = TwitchConnection(
+            auth_manager=self.container.twitch_auth_manager,
+            client_id=TWITCH_CLIENT_ID,
+            i18n=self.i18n,
+            coordinator=self._worker_shutdown_coordinator,
+            is_shutting_down=lambda: self._is_shutting_down,
+            parent=self,
+        )
 
     def _init_session_state(self):
         self.session_metrics = SessionMetrics(
@@ -194,7 +176,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_manager = c.kick_auth_manager
         self.tts_manager = c.tts_manager
         self.overlay_server = c.overlay_server
-        self.window_state = WindowStateManager(self, self.settings_storage, self._notify_background)
+        self.window_state = WindowStateManager(self, self.settings_storage)
 
     def _init_shutdown_support(self):
         self._retiring_workers: set = set()
@@ -272,6 +254,16 @@ class MainWindowCore(QMainWindow):
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
+        self.kick = KickConnection(
+            auth_manager=self.kick_auth_manager,
+            i18n=self.i18n,
+            timer_service=self.timer_service,
+            pusher=KICK_PUSHER,
+            coordinator=self._worker_shutdown_coordinator,
+            is_shutting_down=lambda: self._is_shutting_down,
+            parent=self,
+        )
+        self._schedule_slot = WorkerSlot("Worker_Stream_Schedule", self._worker_shutdown_coordinator)
         self.log_service = LogService(log_storage=self.container.system_log_storage)
         self.schedule_service = self.container.schedule_service
 
@@ -403,6 +395,33 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n,
             browser_service=self.container.browser_service
         )
+        self.connection_hub = ConnectionHub(
+            connections={
+                "kick": self.kick,
+                "twitch": self.twitch,
+                "youtube": self.youtube,
+                "tiktok": self.tiktok,
+            },
+            authenticated_providers={
+                "kick": self.kick_auth_manager.is_authenticated,
+                "twitch": self.container.twitch_auth_manager.is_authenticated,
+            },
+            parent=self,
+        )
+        self.integrations_status = IntegrationsStatusPresenter(
+            hub=self.connection_hub,
+            dashboard_controller=self.dashboard_controller,
+            session_metrics=self.session_metrics,
+            settings_view_provider=lambda: self.view_settings,
+            platform_views_provider=lambda: (
+                self.view_chat,
+                self.view_commands,
+                self.view_schedule,
+                self.view_rewards,
+                self.view_timers,
+                self.view_alerts,
+            ),
+        )
 
     def _start_background_workers(self):
         self._start_schedule_worker()
@@ -435,6 +454,8 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.tiktok_connect_requested.connect(partial(self._on_live_chat_button_clicked, self.tiktok))
         self._wire_live_chat(self.youtube)
         self._wire_live_chat(self.tiktok)
+        self._wire_twitch()
+        self._wire_kick()
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.dashboard_controller.reauth_kick_requested.connect(self._handle_reauth_kick)
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
@@ -454,7 +475,6 @@ class MainWindowCore(QMainWindow):
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
         self.sidebar.update_requested.connect(self.handle_update_check)
-        self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._on_backup_restored)
         self.q_log_handler.emitter.log_received.connect(self.logs_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
@@ -529,13 +549,13 @@ class MainWindowCore(QMainWindow):
         if self.kick_auth_manager.is_authenticated():
             try:
                 self.logger.info("[AutoStart] Starting Kick integration...")
-                self._handle_auth_process()
+                self._handle_auth_process(startup=True)
             except Exception as e:
                 self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
 
         twitch_tokens = self.container.twitch_token_storage.load()
         if twitch_tokens and twitch_tokens.get("access_token"):
-            QTimer.singleShot(1200, lambda: self._autostart_twitch(twitch_tokens))
+            QTimer.singleShot(1200, self._autostart_twitch)
 
     def _schedule_live_chat_autostarts(self) -> None:
         for chat, delay_ms in ((self.youtube, 2400), (self.tiktok, 3600)):
@@ -543,12 +563,13 @@ class MainWindowCore(QMainWindow):
             if target:
                 QTimer.singleShot(delay_ms, lambda c=chat, t=target: self._autostart_live_chat(c, t))
 
-    def _autostart_twitch(self, twitch_tokens: dict):
+    def _autostart_twitch(self):
         if self._is_shutting_down:
             return
         try:
             self.logger.info("[AutoStart] Starting Twitch integration...")
-            self._on_twitch_auth_success(twitch_tokens)
+            self._startup_silent_connections.add("twitch")
+            self.twitch.resume_session()
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
 
@@ -563,6 +584,7 @@ class MainWindowCore(QMainWindow):
             return
         try:
             self.logger.info("[AutoStart] Starting %s integration (target='%s')...", chat.log_tag, target)
+            self._startup_silent_connections.add(chat.platform_id)
             chat.connect_channel(target, manual=False)
         except Exception as e:
             self.logger.error("[AutoStart] Error auto-starting %s integration: %s", chat.log_tag, e)
@@ -640,7 +662,6 @@ class MainWindowCore(QMainWindow):
         if minimize_tray:
             self.window_state.save()
             self.hide()
-            self._notify_background()
             event.ignore()
         else:
             dialog = ModernConfirmDialog(
@@ -668,36 +689,6 @@ class MainWindowCore(QMainWindow):
             event.accept()
             return
         super().keyPressEvent(event)
-
-    def _safe_stop_worker(
-        self,
-        worker_attr_name: str,
-        timeout_ms: int = 1500,
-        on_finished: Callable[[], None] | None = None,
-    ) -> None:
-        worker = getattr(self, worker_attr_name, None)
-        if not worker:
-            self._worker_shutdown_coordinator.stop_workers(
-                (),
-                on_finished=on_finished,
-                warning_after_seconds=max(timeout_ms, 0) / 1000,
-            )
-            return
-
-        setattr(self, worker_attr_name, None)
-        self._worker_shutdown_coordinator.stop_workers(
-            [(worker_attr_name, worker)],
-            on_finished=on_finished,
-            warning_after_seconds=max(timeout_ms, 0) / 1000,
-        )
-
-    def _notify_background(self):
-        self.tray_manager.showMessage(
-            self.i18n.get("main.tray.bg_title"),
-            self.i18n.get("main.tray.bg_desc"),
-            QSystemTrayIcon.MessageIcon.Information,
-            3000
-        )
 
     def _force_quit(self):
         self.window_state.save()
@@ -733,152 +724,67 @@ class MainWindowCore(QMainWindow):
             warning_after_seconds=max(warning_after_ms, 0) / 1000,
         )
 
-    def _detach_workers(self, attrs: Iterable[str]) -> list[tuple[str, QThread | None]]:
-        workers = [(self._WORKER_THREAD_NAMES[attr], getattr(self, attr, None)) for attr in attrs]
-        for attr in attrs:
-            setattr(self, attr, None)
-        return workers
-
-    def _stop_workers_by_attr(
-        self,
-        attrs: tuple[str, ...],
-        on_finished: Callable[[], None] | None = None,
-    ) -> None:
-        self._stop_workers_parallel(self._detach_workers(attrs), on_finished=on_finished)
-
-    def _stop_kick_connection_workers(
-        self,
-        on_finished: Callable[[], None] | None = None,
-    ) -> None:
-        self._timer_worker_start_generation += 1
-        self._stop_workers_by_attr(self._KICK_WORKER_ATTRS, on_finished)
-
-    def _stop_twitch_connection_workers(
-        self,
-        on_finished: Callable[[], None] | None = None,
-    ) -> None:
-        self._stop_workers_by_attr(self._TWITCH_WORKER_ATTRS, on_finished)
-
     def _stop_all_workers(
         self,
         on_finished: Callable[[], None] | None = None,
     ) -> None:
-        workers = self._detach_workers(tuple(self._WORKER_THREAD_NAMES))
-        slots = (self.media_keys.slot, self.whats_new.slot, *(chat.slot for chat in self.live_chats))
-        workers.extend(slot.detach() for slot in slots)
-        self._stop_workers_parallel(workers, on_finished=on_finished)
-
-    _is_worker_running = staticmethod(is_worker_running)
+        slots = (
+            self.media_keys.slot,
+            self.whats_new.slot,
+            *(chat.slot for chat in self.live_chats),
+            *self.twitch.slots,
+            *self.kick.slots,
+            self._schedule_slot,
+        )
+        self._stop_workers_parallel([slot.detach() for slot in slots], on_finished=on_finished)
 
     @Slot()
-    def _handle_auth_process(self, force: bool = False):
-        if self._is_worker_running(getattr(self, "twitch_auth_worker", None)):
+    def _handle_auth_process(self, force: bool = False, *, startup: bool = False):
+        if not startup:
+            self._startup_silent_connections.discard("kick")
+        if self.twitch.is_auth_running:
             self.toast.show_toast(
                 title=self.container.i18n.get("main.toast.auth_in_progress_title"),
                 message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
                 state="warning"
             )
             return
+        if startup:
+            self._startup_silent_connections.add("kick")
+        self.kick.authenticate(force=force)
 
-        if (
-            self._kick_auth_start_pending
-            or self._kick_disconnect_pending
-            or self._is_shutting_down
-        ):
-            return
-        self._kick_auth_start_pending = True
-        self._stop_kick_connection_workers(
-            on_finished=lambda: self._start_kick_auth_worker(force)
-        )
-
-    def _start_kick_auth_worker(self, force: bool) -> None:
-        self._kick_auth_start_pending = False
-        if self._is_shutting_down:
-            return
-
-        self.dashboard_controller.handle_connecting_state()
-
-        self.kick_auth_worker = KickAuthWorker(self.i18n, self.kick_auth_manager, force=force)
-        self.kick_auth_worker.auth_success.connect(self._on_auth_success)
-        self.kick_auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
-        self.kick_auth_worker.finished.connect(lambda: setattr(self, 'kick_auth_worker', None))
-        self.kick_auth_worker.finished.connect(self.kick_auth_worker.deleteLater)
-        self.kick_auth_worker.start()
-
-    def _on_auth_success(self, _tokens):
-        self.kick_api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
+    def _on_kick_api_changed(self, api) -> None:
         self._evaluate_all_scopes()
 
-        self.command_service.api_client = self.kick_api_client
-        self.spam_service.api_client = self.kick_api_client
-        self.timer_service.api_client = self.kick_api_client
+        self.command_service.api_client = api
+        self.spam_service.api_client = api
+        self.timer_service.api_client = api
 
         self.command_service.reload_cache()
         self.spam_service.reload_filters()
 
-        self.schedule_service.set_kick_client(self.kick_api_client)
+        self.schedule_service.set_kick_client(api)
         self._start_schedule_worker()
-        if hasattr(self, "schedule_controller") and self.schedule_controller:
-            self.schedule_controller.fetch_current_info()
+        self.schedule_controller.fetch_current_info()
 
-        self.kick_chat_worker = KickChatWorker(self.i18n, self.kick_api_client, KICK_PUSHER.cluster, KICK_PUSHER.keys)
-        self.kick_chat_worker.connection_success.connect(self._on_web_socket_connected)
-        self.kick_chat_worker.message_received.connect(self._route_incoming_message)
-        self.kick_chat_worker.poll_updated.connect(self._on_poll_updated)
-        self.kick_chat_worker.poll_deleted.connect(self._on_poll_deleted)
-        self.kick_chat_worker.pinned_created.connect(self._on_pinned_created)
-        self.kick_chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
-        self.kick_chat_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
-        self.kick_chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
-
-        self.kick_chat_worker.start()
-        self.kick_auth_worker = None
-
-    def _on_web_socket_connected(self, user_data):
+    def _on_kick_connected(self, username: str, user_data: dict) -> None:
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
         self.dashboard_controller.handle_connection_success(user_data)
-
-        username = user_data.get("username", "Kick")
-        self._kick_connected = True
-        self._kick_username = username
-        self._kick_avatar_url = user_data.get("avatar_url") or user_data.get("profile_pic", "")
-        self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
-        title = self.i18n.get("main.toast.kick_connected_title")
-        msg = self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username)
-        self.toast.show_toast(
-            title=title,
-            message=msg,
-            state="success"
-        )
-
-        slug = username.replace("_", "-").replace(" ", "")
-        self._start_timers_worker(slug)
+        if not self._consume_startup_silent_connection("kick"):
+            self.toast.show_toast(
+                title=self.i18n.get("main.toast.kick_connected_title"),
+                message=self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username),
+                state="success"
+            )
         self._fetch_api_rewards()
 
     @Slot()
     def _fetch_api_rewards(self):
-        if self.kick_auth_manager.is_authenticated():
-            if not self._is_worker_running(getattr(self, 'fetch_rewards_worker', None)):
-                try:
-                    api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
-                    self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick")
-                    self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
-                    self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
-                    self.fetch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_rewards_worker', None))
-                    self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
-                    self.fetch_rewards_worker.start()
-                except Exception as error:
-                    err_template = self.i18n.get("main.logs.api_error_setup")
-                    self.logger.exception(
-                        err_template.replace("{error}", str(error))
-                    )
-        else:
-            self.logger.debug("Kick auth not active, skipping Kick rewards fetch")
-
+        self.kick.fetch_rewards()
         if self.container.twitch_auth_manager.is_authenticated():
-            self._fetch_twitch_rewards()
+            self.twitch.fetch_rewards()
 
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
@@ -942,409 +848,144 @@ class MainWindowCore(QMainWindow):
         if hasattr(self.container, "alert_service") and self.container.alert_service:
             self.container.alert_service.process_event(alert_event)
 
-    def _start_timers_worker(self, channel_slug: str):
-        if self._kick_disconnect_pending or self._kick_reauth_pending:
-            return
-        self._timer_worker_start_generation += 1
-        generation = self._timer_worker_start_generation
-        self._safe_stop_worker(
-            "timers_worker",
-            on_finished=lambda: self._create_timers_worker(
-                channel_slug,
-                generation,
-            ),
-        )
-
-    def _create_timers_worker(self, channel_slug: str, generation: int) -> None:
-        if generation != self._timer_worker_start_generation:
-            return
-        if self._is_shutting_down:
-            return
-        api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
-        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug)
-        self.timers_worker.post_message_requested.connect(self._send_timer_message)
-        self.timers_worker.start()
-
     @Slot(str, bool, bool)
     def _send_timer_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
-        if not message:
-            return
-        if hasattr(self, "command_service") and self.command_service:
+        if message:
             self.command_service.post_chat_message(message, apply_kick=apply_kick, apply_twitch=apply_twitch)
-        elif apply_kick and hasattr(self, "kick_chat_worker") and self.kick_chat_worker:
-            self.kick_chat_worker.send_message(message)
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
-        if self._is_worker_running(getattr(self, "kick_auth_worker", None)):
-            self.toast.show_toast(
-                title=self.container.i18n.get("main.toast.auth_in_progress_title"),
-                message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
-                state="warning"
-            )
-            return
-
-        if self._is_worker_running(getattr(self, "twitch_auth_worker", None)):
+        self._startup_silent_connections.discard("twitch")
+        if self.kick.is_auth_running or self.twitch.is_auth_running:
             self.toast.show_toast(
                 title=self.container.i18n.get("main.toast.auth_in_progress_title"),
                 message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
                 state="warning",
             )
             return
+        self.twitch.authenticate(force=force)
 
-        if (
-            self._twitch_auth_start_pending
-            or self._twitch_disconnect_pending
-            or self._is_shutting_down
-        ):
-            return
-        self._twitch_auth_start_pending = True
-        self._stop_twitch_connection_workers(
-            on_finished=lambda: self._start_twitch_auth_worker(force)
+    def _on_twitch_browser_auth_opening(self) -> None:
+        self.toast.show_toast(
+            title=self.container.i18n.get("main.toast.twitch_auth_title"),
+            message=self.container.i18n.get("main.toast.twitch_auth_opening"),
+            state="info",
         )
 
-    def _start_twitch_auth_worker(self, force: bool) -> None:
-        self._twitch_auth_start_pending = False
+    def _on_twitch_auth_failed(self, error: str) -> None:
         if self._is_shutting_down:
             return
-
-        if not force and self.container.twitch_auth_manager.has_missing_scopes():
-            force = True
-        needs_browser = force or not self.container.twitch_auth_manager.is_authenticated()
-        if needs_browser:
-            title = self.container.i18n.get("main.toast.twitch_auth_title")
-            msg = self.container.i18n.get("main.toast.twitch_auth_opening")
-            self.toast.show_toast(
-                title=title,
-                message=msg,
-                state="info"
-            )
-        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force)
-        self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
-        self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
-        self.twitch_auth_worker.finished.connect(lambda: setattr(self, 'twitch_auth_worker', None))
-        self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
-        self.twitch_auth_worker.start()
-
-    def _on_twitch_auth_error(self, err: str):
-        self.twitch_auth_worker = None
-        self._twitch_connected = False
-        self._twitch_channel = ""
-        self._update_integrations_status_ui()
-        logger.error("[TwitchAuth] Authentication error: %s", err)
-        if self._is_shutting_down:
-            return
-        err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
-        self.toast.show_toast(title=err_title, message=str(err), state="danger")
-
-    def _on_twitch_auth_success(self, _tokens):
-        self.twitch_auth_worker = None
-        logger.info("[Twitch Auth] Success callback received.")
-        try:
-            twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
-            self.spam_service.twitch_api = twitch_api
-            self._start_twitch_chat_worker(channel="")
-            self._evaluate_all_scopes()
-        except Exception as error:
-            self.logger.exception("[Twitch Auth] Error initializing Twitch session.")
-            self._twitch_connected = False
-            self._twitch_channel = ""
-            self._update_integrations_status_ui()
-            if hasattr(self, "toast") and self.toast and not self._is_shutting_down:
-                err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
-                self.toast.show_toast(
-                    title=err_title,
-                    message=str(error),
-                    state="danger",
-                )
-
-    def _start_twitch_chat_worker(self, channel: str):
-        if self._twitch_chat_start_pending or self._is_shutting_down:
-            return
-        self._twitch_chat_start_pending = True
-        self._safe_stop_worker(
-            "twitch_chat_worker",
-            on_finished=lambda: self._create_twitch_chat_worker(channel),
+        self.toast.show_toast(
+            title=self.container.i18n.get("main.toast.twitch_auth_error_title"),
+            message=error,
+            state="danger",
         )
 
-    def _create_twitch_chat_worker(self, channel: str) -> None:
-        self._twitch_chat_start_pending = False
+    def _on_twitch_api_changed(self, api) -> None:
+        self.spam_service.twitch_api = api
+
+    def _on_twitch_chat_worker_changed(self, worker) -> None:
+        self.command_service.twitch_worker = worker
+        self.spam_service.twitch_worker = worker
+
+    def _on_twitch_error(self, error_msg: str) -> None:
         if self._is_shutting_down:
             return
-        self.twitch_chat_worker = TwitchChatWorker(
-            channel_name=channel,
-            oauth_token="",
-            bot_nick="",
-            api_client=self.spam_service.twitch_api,
-            i18n=self.container.i18n
+        self.toast.show_toast(
+            title=self.container.i18n.get("common.status.error"),
+            message=error_msg,
+            state="danger",
         )
 
-        self.command_service.twitch_worker = self.twitch_chat_worker
-        self.spam_service.twitch_worker = self.twitch_chat_worker
-        self.twitch_chat_worker.connection_success.connect(self._on_twitch_connected)
-        self.twitch_chat_worker.connection_lost.connect(self._on_twitch_socket_lost)
-        self.twitch_chat_worker.connection_restored.connect(self._on_twitch_socket_restored)
-        self.twitch_chat_worker.error_occurred.connect(self._on_twitch_error)
-        self.twitch_chat_worker.message_received.connect(self._route_incoming_message)
-        self.twitch_chat_worker.start()
-
-    def _on_twitch_error(self, error_msg: str):
-        self._twitch_connected = False
-        self._safe_stop_worker("twitch_chat_worker")
-        self.command_service.twitch_worker = None
-        self.spam_service.twitch_worker = None
-        self._update_integrations_status_ui()
-        if hasattr(self, "toast") and self.toast and not self._is_shutting_down:
-            self.toast.show_toast(
-                title=self.container.i18n.get("common.status.error"),
-                message=error_msg,
-                state="danger"
-            )
-
-    def _on_twitch_connected(self, user_data=None):
-        if isinstance(user_data, dict):
-            username = user_data.get("username", "")
-            broadcaster_id = user_data.get("broadcaster_id", "")
-            self._twitch_avatar_url = user_data.get("avatar_url", "")
-        elif isinstance(user_data, str):
-            username = user_data
-            broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
-        else:
-            username = getattr(self, "_twitch_channel", "")
-            broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
-
+    def _on_twitch_connected(self, username: str, broadcaster_id: str, profile: dict) -> None:
         if broadcaster_id:
             self.spam_service.twitch_broadcaster_id = broadcaster_id
-        self._twitch_connected = True
-        if username:
-            self._twitch_channel = username
-        self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
-        self.schedule_service.set_twitch_client(self.spam_service.twitch_api, broadcaster_id)
-        if hasattr(self, "schedule_controller") and self.schedule_controller:
-            self.schedule_controller.fetch_current_info()
-
-        if hasattr(self, "rewards_controller") and self.rewards_controller:
-            self.rewards_controller.set_twitch_context(
-                self.container.twitch_auth_manager,
-                self.spam_service.twitch_api,
-                broadcaster_id
-            )
-
-        if broadcaster_id and self.container.twitch_auth_manager.is_authenticated():
-            self._start_twitch_reward_worker(broadcaster_id)
-            self._fetch_twitch_rewards(broadcaster_id)
-        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            if isinstance(user_data, dict) and user_data:
-                self.dashboard_controller.set_channel_profile("twitch", user_data)
+        self.schedule_service.set_twitch_client(self.twitch.api, broadcaster_id)
+        self.schedule_controller.fetch_current_info()
+        self.rewards_controller.set_twitch_context(
+            self.container.twitch_auth_manager,
+            self.twitch.api,
+            broadcaster_id,
+        )
+        if profile:
+            self.dashboard_controller.set_channel_profile("twitch", profile)
 
         self._evaluate_all_scopes()
 
-        title = self.container.i18n.get("main.toast.twitch_connected_title")
-        msg = self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username)
-        self.toast.show_toast(
-            title=title,
-            message=msg,
-            state="success"
-        )
-
-    def _start_twitch_reward_worker(self, broadcaster_id: str) -> None:
-        if self._twitch_reward_start_pending or self._is_shutting_down:
-            return
-        self._twitch_reward_start_pending = True
-        self._safe_stop_worker(
-            "twitch_reward_worker",
-            on_finished=lambda: self._create_twitch_reward_worker(broadcaster_id),
-        )
-
-    def _create_twitch_reward_worker(self, broadcaster_id: str) -> None:
-        self._twitch_reward_start_pending = False
-        if self._is_shutting_down:
-            return
-        self.twitch_reward_worker = TwitchRewardWorker(
-            self.container.i18n,
-            self.container.twitch_auth_manager,
-            TWITCH_CLIENT_ID,
-            broadcaster_id
-        )
-        self.twitch_reward_worker.reward_redeemed.connect(
-            lambda user, reward, message: self._on_reward_redeemed(
-                user, reward, message, platform="twitch"
+        if not self._consume_startup_silent_connection("twitch"):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.twitch_connected_title"),
+                message=self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username),
+                state="success",
             )
-        )
-        self.twitch_reward_worker.alert_received.connect(self._handle_incoming_alert)
-        self.twitch_reward_worker.start()
-
-    @Slot()
-    def _fetch_twitch_rewards(self, broadcaster_id: str = ""):
-        b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
-        if not self.container.twitch_auth_manager.is_authenticated():
-            return
-
-        if self._is_worker_running(getattr(self, 'fetch_twitch_rewards_worker', None)):
-            return
-
-        try:
-            twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
-            self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch")
-            self.fetch_twitch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
-            self.fetch_twitch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_twitch_rewards_worker', None))
-            self.fetch_twitch_rewards_worker.finished.connect(self.fetch_twitch_rewards_worker.deleteLater)
-            self.fetch_twitch_rewards_worker.start()
-        except Exception:
-            self.logger.exception("[Main] Error launching Twitch rewards fetcher.")
-
-    def _on_twitch_socket_lost(self):
-        self._twitch_connected = False
-        self.logger.warning("[Twitch] Connection lost for channel '%s'.", getattr(self, '_twitch_channel', '?'))
-        self._update_integrations_status_ui()
-
-    def _on_twitch_socket_restored(self):
-        self._twitch_connected = True
-        self.logger.info("[Twitch] Connection restored for channel '%s'.", getattr(self, '_twitch_channel', '?'))
-        self._update_integrations_status_ui()
 
     def _refresh_sidebar_profile(self):
         online_str = self.i18n.get("common.status.online")
-        if getattr(self, "_kick_connected", False) and getattr(self, "_kick_username", ""):
-            self.sidebar.update_profile_info(self._kick_username, online_str)
-        elif getattr(self, "_twitch_connected", False) and getattr(self, "_twitch_channel", ""):
-            self.sidebar.update_profile_info(self._twitch_channel, online_str)
+        if self.kick.is_connected and self.kick.username:
+            self.sidebar.update_profile_info(self.kick.username, online_str)
+        elif self.twitch.is_connected and self.twitch.channel:
+            self.sidebar.update_profile_info(self.twitch.channel, online_str)
         else:
             self.sidebar.reset_profile_info()
 
-    @Slot()
-    def _handle_twitch_disconnect(self):
-        if self._twitch_disconnect_pending or self._twitch_auth_start_pending:
-            return
-        self._twitch_disconnect_pending = True
-        self.logger.info("[User Action] Twitch account unlinked successfully")
-        self._stop_twitch_connection_workers(
-            on_finished=self._finish_twitch_disconnect
-        )
-
-    def _finish_twitch_disconnect(self) -> None:
-        self._twitch_disconnect_pending = False
-        if self._is_shutting_down:
-            return
-
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
-        self.twitch_reward_worker = None
-        self.fetch_twitch_rewards_worker = None
-        self.command_service.twitch_worker = None
-        self.spam_service.twitch_api = None
-        self.spam_service.twitch_worker = None
+    def _on_twitch_disconnected(self) -> None:
         self.spam_service.twitch_broadcaster_id = ""
-        self.container.twitch_auth_manager.logout()
-        self._twitch_connected = False
-        self._twitch_channel = ""
-        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            self.dashboard_controller.clear_channel_profile("twitch")
-        if hasattr(self, "rewards_controller") and self.rewards_controller:
-            self.rewards_controller.clear_platform_rewards("twitch")
+        self.dashboard_controller.clear_channel_profile("twitch")
+        self.rewards_controller.clear_platform_rewards("twitch")
         self._refresh_sidebar_profile()
-        self._update_integrations_status_ui()
-        title_disc = self.container.i18n.get("main.toast.twitch_disconnected_title")
-        msg_disc = self.container.i18n.get("main.toast.twitch_disconnected_msg")
         self.toast.show_toast(
-            title=title_disc,
-            message=msg_disc,
-            state="info"
+            title=self.container.i18n.get("main.toast.twitch_disconnected_title"),
+            message=self.container.i18n.get("main.toast.twitch_disconnected_msg"),
+            state="info",
         )
         self._evaluate_all_scopes()
 
     def _update_integrations_status_ui(self):
-        kick_connected = getattr(self, "_kick_connected", False)
-        kick_user = getattr(self, "_kick_username", "")
-        twitch_connected = getattr(self, "_twitch_connected", False)
-        twitch_channel = getattr(self, "_twitch_channel", "")
-        youtube_connected = self.youtube.is_connected
-        youtube_channel = self.youtube.channel
-        tiktok_connected = self.tiktok.is_connected
-        tiktok_channel = self.tiktok.channel
-        refresh_started = time.perf_counter()
-
-        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            self.dashboard_controller.set_kick_status(
-                connected=kick_connected,
-                channel=kick_user,
-                msg_count=self.session_metrics.platform_messages("kick")
-            )
-            self.dashboard_controller.set_twitch_status(
-                connected=twitch_connected,
-                channel=twitch_channel,
-                msg_count=self.session_metrics.platform_messages("twitch")
-            )
-            self.dashboard_controller.set_youtube_status(
-                connected=youtube_connected,
-                channel=youtube_channel,
-                msg_count=self.session_metrics.platform_messages("youtube")
-            )
-            self.dashboard_controller.set_tiktok_status(
-                connected=tiktok_connected,
-                channel=tiktok_channel,
-                msg_count=self.session_metrics.platform_messages("tiktok")
-            )
-
-        dashboard_done = time.perf_counter()
-        if hasattr(self, "view_settings") and self.view_settings:
-            self.view_settings.set_integrations_status(
-                kick_connected=kick_connected,
-                kick_channel=kick_user,
-                twitch_connected=twitch_connected,
-                twitch_channel=twitch_channel,
-                youtube_connected=youtube_connected,
-                youtube_channel=youtube_channel,
-                tiktok_connected=tiktok_connected,
-                tiktok_channel=tiktok_channel
-            )
-
-        settings_view_done = time.perf_counter()
-        conn_dict = self.get_connected_platforms()
-        auth_done = time.perf_counter()
-        if hasattr(self, "view_chat") and self.view_chat and hasattr(self.view_chat, "set_connected_platforms"):
-            self.view_chat.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
-            self.view_commands.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_schedule") and self.view_schedule and hasattr(self.view_schedule, "set_connected_platforms"):
-            self.view_schedule.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_rewards") and self.view_rewards and hasattr(self.view_rewards, "set_connected_platforms"):
-            self.view_rewards.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
-            self.view_timers.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_alerts") and self.view_alerts and hasattr(self.view_alerts, "set_connected_platforms"):
-            self.view_alerts.set_connected_platforms(conn_dict)
-
-        finished = time.perf_counter()
-        total_ms = (finished - refresh_started) * 1000
-        if total_ms >= self._SLOW_STATUS_REFRESH_MS:
-            self.logger.info(
-                "[Perf/Integrations] Status refresh took %.2f ms (dashboard=%.2f, settings_view=%.2f, auth=%.2f, views=%.2f)",
-                total_ms,
-                (dashboard_done - refresh_started) * 1000,
-                (settings_view_done - dashboard_done) * 1000,
-                (auth_done - settings_view_done) * 1000,
-                (finished - auth_done) * 1000,
-            )
+        self.integrations_status.refresh()
 
     def get_connected_platforms(self) -> dict[str, bool]:
-        kick_auth = self.kick_auth_manager.is_authenticated() if hasattr(self, "kick_auth_manager") and self.kick_auth_manager else False
-        twitch_auth = self.container.twitch_auth_manager.is_authenticated() if hasattr(self.container, "twitch_auth_manager") and self.container.twitch_auth_manager else False
-        return {
-            "kick": kick_auth or getattr(self, "_kick_connected", False),
-            "twitch": twitch_auth or getattr(self, "_twitch_connected", False),
-            "youtube": self.youtube.is_connected,
-            "tiktok": self.tiktok.is_connected,
-        }
+        return self.connection_hub.get_connected_platforms()
+
+    def _wire_kick(self) -> None:
+        kick = self.kick
+        kick.connecting.connect(self.dashboard_controller.handle_connecting_state)
+        kick.error_reported.connect(self.dashboard_controller.handle_error_state)
+        kick.api_changed.connect(self._on_kick_api_changed)
+        kick.connected.connect(self._on_kick_connected)
+        kick.disconnected.connect(self._on_kick_disconnected)
+        kick.reauth_ready.connect(self._on_kick_reauth_ready)
+        kick.message_received.connect(self._route_incoming_message)
+        kick.poll_updated.connect(self._on_poll_updated)
+        kick.poll_deleted.connect(self._on_poll_deleted)
+        kick.pinned_created.connect(self._on_pinned_created)
+        kick.pinned_deleted.connect(self._on_pinned_deleted)
+        kick.reward_redeemed.connect(partial(self._on_reward_redeemed, platform="kick"))
+        kick.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
+        kick.rewards_error.connect(self._handle_rewards_error)
+        kick.timer_message_requested.connect(self._send_timer_message)
+
+    def _wire_twitch(self) -> None:
+        twitch = self.twitch
+        twitch.message_received.connect(self._route_incoming_message)
+        twitch.browser_auth_opening.connect(self._on_twitch_browser_auth_opening)
+        twitch.auth_failed.connect(self._on_twitch_auth_failed)
+        twitch.session_started.connect(self._evaluate_all_scopes)
+        twitch.api_changed.connect(self._on_twitch_api_changed)
+        twitch.chat_worker_changed.connect(self._on_twitch_chat_worker_changed)
+        twitch.connected.connect(self._on_twitch_connected)
+        twitch.error_reported.connect(self._on_twitch_error)
+        twitch.disconnected.connect(self._on_twitch_disconnected)
+        twitch.reward_redeemed.connect(partial(self._on_reward_redeemed, platform="twitch"))
+        twitch.alert_received.connect(self._handle_incoming_alert)
+        twitch.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
 
     def _wire_live_chat(self, chat: LiveChatConnection) -> None:
         chat.connecting.connect(partial(self._on_live_chat_connecting, chat))
         chat.connected.connect(partial(self._on_live_chat_connected, chat))
         chat.disconnected.connect(partial(self._on_live_chat_disconnected, chat))
         chat.error_reported.connect(self._on_live_chat_error)
-        chat.state_changed.connect(self._update_integrations_status_ui)
         chat.message_received.connect(self._route_incoming_message)
 
     def _on_live_chat_button_clicked(self, chat: LiveChatConnection) -> None:
@@ -1358,6 +999,7 @@ class MainWindowCore(QMainWindow):
                 body_text=self.i18n.get(unlink_desc_key),
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
+                self._startup_silent_connections.discard(chat.platform_id)
                 chat.disconnect_channel()
             return
 
@@ -1366,6 +1008,7 @@ class MainWindowCore(QMainWindow):
             return
         target = "" if dialog.is_cleared() else dialog.get_target()
         if target:
+            self._startup_silent_connections.discard(chat.platform_id)
             chat.connect_channel(target)
         else:
             chat.forget_channel()
@@ -1375,6 +1018,8 @@ class MainWindowCore(QMainWindow):
         set_status(connected=False, connecting=True)
 
     def _on_live_chat_connected(self, chat: LiveChatConnection, display_name: str) -> None:
+        if self._consume_startup_silent_connection(chat.platform_id):
+            return
         title_key, message_key, _, _ = self._LIVE_CHAT_TOASTS[chat.platform_id]
         self.toast.show_toast(
             title=self.i18n.get(title_key),
@@ -1399,7 +1044,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _on_twitch_integration_button_clicked(self):
-        if getattr(self, "_twitch_connected", False):
+        if self.twitch.is_connected:
             self.logger.info("[User Action] Requested unlinking Twitch account")
             dialog = ModernConfirmDialog(
                 self.i18n,
@@ -1408,7 +1053,7 @@ class MainWindowCore(QMainWindow):
                 body_text=self.i18n.get("dialogs.unlink_twitch.desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
-                self._handle_twitch_disconnect()
+                self.twitch.disconnect_account()
         else:
             self._handle_twitch_auth_process(force=False)
 
@@ -1429,21 +1074,9 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_reauth_kick(self):
-        if self._kick_reauth_pending or self._is_shutting_down:
-            return
-        self._kick_reauth_pending = True
-        self.logger.info("[User Action] Requested renewal of Kick permissions")
-        self._stop_kick_connection_workers(
-            on_finished=self._finish_kick_reauth
-        )
+        self.kick.reauthenticate()
 
-    def _finish_kick_reauth(self) -> None:
-        self._kick_reauth_pending = False
-        if self._is_shutting_down:
-            return
-        self.kick_auth_manager.logout()
-        self._kick_connected = False
-        self._kick_username = ""
+    def _on_kick_reauth_ready(self) -> None:
         self.dashboard_controller.reset_to_disconnected()
         self._handle_auth_process(force=True)
 
@@ -1454,47 +1087,28 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_unlink_account(self):
-        if getattr(self, "_kick_connected", False):
-            self.logger.info("[User Action] Requested unlinking Kick account")
-            dialog = ModernConfirmDialog(
-                self.i18n,
-                self,
-                title_text=self.i18n.get("dialogs.unlink.title"),
-                body_text=self.i18n.get("dialogs.unlink.desc")
-            )
-
-            if dialog.exec() == dialog.DialogCode.Accepted:
-                if self._kick_disconnect_pending:
-                    return
-                self._kick_disconnect_pending = True
-                self.logger.info("[User Action] Kick account unlinked successfully")
-                self.toast.show_toast(
-                    title=self.i18n.get("main.toast.kick_disconnected_title"),
-                    message=self.i18n.get("main.toast.kick_disconnected_msg"),
-                    state="info"
-                )
-                self._stop_kick_connection_workers(
-                    on_finished=self._finish_kick_disconnect
-                )
-        else:
+        if not self.kick.is_connected:
             self._handle_auth_process()
-
-    def _finish_kick_disconnect(self) -> None:
-        self._kick_disconnect_pending = False
-        if self._is_shutting_down:
             return
 
-        self.kick_chat_worker = None
-        self.timers_worker = None
-        self.kick_auth_manager.logout()
-        self._kick_connected = False
-        self._kick_username = ""
-        if self.dashboard_controller:
-            self.dashboard_controller.clear_channel_profile("kick")
-        if self.rewards_controller:
-            self.rewards_controller.clear_platform_rewards("kick")
+        self.logger.info("[User Action] Requested unlinking Kick account")
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            self,
+            title_text=self.i18n.get("dialogs.unlink.title"),
+            body_text=self.i18n.get("dialogs.unlink.desc")
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted and self.kick.disconnect_account():
+            self.toast.show_toast(
+                title=self.i18n.get("main.toast.kick_disconnected_title"),
+                message=self.i18n.get("main.toast.kick_disconnected_msg"),
+                state="info"
+            )
+
+    def _on_kick_disconnected(self) -> None:
+        self.dashboard_controller.clear_channel_profile("kick")
+        self.rewards_controller.clear_platform_rewards("kick")
         self._refresh_sidebar_profile()
-        self._update_integrations_status_ui()
         self._evaluate_all_scopes()
 
     @Slot(str)
@@ -1505,11 +1119,12 @@ class MainWindowCore(QMainWindow):
             self._handle_twitch_auth_process(force=False)
 
     def _start_schedule_worker(self):
-        current_worker = getattr(self, "schedule_worker", None)
-        if current_worker is None or not current_worker.isRunning():
-            self.schedule_worker = ScheduleWorker(self.schedule_service)
-            self.schedule_worker.schedule_triggered.connect(self._on_schedule_triggered)
-            self.schedule_worker.start()
+        self._schedule_slot.start(self._build_schedule_worker)
+
+    def _build_schedule_worker(self) -> ScheduleWorker:
+        worker = ScheduleWorker(self.schedule_service)
+        worker.schedule_triggered.connect(self._on_schedule_triggered)
+        return worker
 
     def _on_schedule_triggered(self, schedule: dict, _result: dict):
         name = schedule.get("name", "")
@@ -1544,10 +1159,10 @@ class MainWindowCore(QMainWindow):
 
         if not getattr(dto, "avatar_url", ""):
             user_lower = str(dto.user).lower()
-            if platform == "kick" and getattr(self, "_kick_username", "") and user_lower == self._kick_username.lower():
-                dto.avatar_url = getattr(self, "_kick_avatar_url", "")
-            elif platform == "twitch" and getattr(self, "_twitch_channel", "") and user_lower == self._twitch_channel.lower():
-                dto.avatar_url = getattr(self, "_twitch_avatar_url", "")
+            if platform == "kick" and self.kick.username and user_lower == self.kick.username.lower():
+                dto.avatar_url = self.kick.avatar_url
+            elif platform == "twitch" and self.twitch.channel and user_lower == self.twitch.channel.lower():
+                dto.avatar_url = self.twitch.avatar_url
 
         self.session_metrics.record_message(platform)
 
@@ -1572,9 +1187,6 @@ class MainWindowCore(QMainWindow):
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
         self.chat_controller.set_tts_option("enabled", enabled)
-        estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
-        msg_template = self.i18n.get("main.tray.tts_msg")
-        self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()
     def _handle_tray_play_pause(self):

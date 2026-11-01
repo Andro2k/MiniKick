@@ -41,7 +41,7 @@ class MockSettingsStorage:
         self._data[key] = value
 
 def _use_storage(window, storage):
-    window.window_state = WindowStateManager(window, storage, window._notify_background)
+    window.window_state = WindowStateManager(window, storage)
 
 
 @pytest.fixture

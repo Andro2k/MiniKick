@@ -433,8 +433,6 @@
       "regex_prefix": "RegEx",
       "search_placeholder": "Search linked command...",
       "title": "Linked Commands",
-      "tooltip_delete": "Permanently delete command",
-      "tooltip_edit": "Modify command settings",
       "type_custom": "Custom",
       "type_plugin": "Plugin",
       "warning_legacy_format": "Command has non-standard format (contains spaces or uppercase). Edit it to normalize."
@@ -465,6 +463,13 @@
     "follower": "Follower",
     "no_results": "No results found",
     "no_results_filter": "No results found matching the applied filters.",
+    "row_menu": {
+      "more": "More actions",
+      "play": "Test in OBS",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
+    },
     "status": {
       "error": "Error",
       "offline": "Offline",
@@ -873,8 +878,6 @@
       "reward_title": "Reward Redeemed"
     },
     "tray": {
-      "bg_desc": "I will keep reading the chat for you. Double click to return.",
-      "bg_title": "MiniKick in background",
       "close_app": "Close MiniKick",
       "open_panel": "Open Panel",
       "pause": "Pause Music",
@@ -882,9 +885,6 @@
       "read_chat": "Read chat out loud",
       "skip": "Skip Track",
       "tooltip": "MiniKick v{version} | Active",
-      "tts_msg": "Chat reading: {estado}",
-      "tts_off": "Disabled",
-      "tts_on": "Enabled",
       "tts_use_command": "Require command for TTS",
       "tts_voice_type": "Use Web Voices (Premium)"
     },
@@ -1066,9 +1066,6 @@
     "param_noise_w_scale": "Pacing / Cadence (Noise W)",
     "param_noise_w_scale_desc": "Controls rhythmic variation and pause duration between words (Recommended: 0.80).",
     "search_placeholder": "Search voice or accent...",
-    "status_downloading": "Downloading...",
-    "status_installed": "Installed",
-    "status_not_installed": "Available",
     "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
     "synthesis_desc": "Fine-tune intonation, expressiveness, and cadence for the VITS neural acoustic generator.",
     "synthesis_title": "Acoustic & Synthesis Settings",
@@ -1192,10 +1189,6 @@
       "status_unlinked_tag": "Unlinked",
       "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
       "title": "Linked Rewards",
-      "tooltip_delete": "Delete Reward",
-      "tooltip_duplicate": "Duplicate Reward (other platform or new)",
-      "tooltip_edit": "Modify settings",
-      "tooltip_play": "Test in OBS",
       "tooltip_play_missing": "Cannot play: media file not found",
       "unknown_file": "Unknown"
     }
@@ -1555,8 +1548,6 @@
       "col_platforms": "Platforms",
       "platform_both": "Both",
       "search_placeholder": "Search timer...",
-      "tooltip_delete": "Permanently delete timer",
-      "tooltip_edit": "Edit timer",
       "unit_lines": "Lines",
       "unit_minutes": "Minutes"
     }

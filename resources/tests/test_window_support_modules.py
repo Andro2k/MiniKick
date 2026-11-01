@@ -175,3 +175,16 @@ def test_shutdown_sequence_runs_steps_in_order_and_survives_failures():
 
     assert calls == ["workers", "release-1", "release-2", "close-1", "complete"]
     logger.exception.assert_called_once_with("[Shutdown] Failed to %s.", "release two")
+
+
+def test_worker_slot_forget_only_clears_the_matching_worker():
+    slot = WorkerSlot("Worker_Test", MagicMock())
+    first, second = MagicMock(), MagicMock()
+    slot.start(lambda: first)
+
+    slot.forget(second)
+    assert slot.detach() == ("Worker_Test", first)
+
+    slot.start(lambda: second)
+    slot.forget(second)
+    assert slot.detach() == ("Worker_Test", None)

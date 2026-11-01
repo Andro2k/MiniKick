@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib
 import logging
 import time
+from functools import partial
 from typing import TYPE_CHECKING
 from PySide6.QtWidgets import QWidget
 
@@ -159,10 +160,10 @@ class MainWindowViewFactory:
                 window._on_twitch_integration_button_clicked
             )
             window.view_settings.youtube_integration_clicked.connect(
-                window._on_youtube_integration_button_clicked
+                partial(window._on_live_chat_button_clicked, window.youtube)
             )
             window.view_settings.tiktok_integration_clicked.connect(
-                window._on_tiktok_integration_button_clicked
+                partial(window._on_live_chat_button_clicked, window.tiktok)
             )
             window.settings_controller.attach_view(window.view_settings)
             window._update_integrations_status_ui()

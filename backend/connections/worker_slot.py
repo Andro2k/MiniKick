@@ -24,6 +24,10 @@ class WorkerSlot:
         self._worker.start()
         return True
 
+    def forget(self, worker: QThread) -> None:
+        if self._worker is worker:
+            self._worker = None
+
     def detach(self) -> tuple[str, QThread | None]:
         worker, self._worker = self._worker, None
         return self.name, worker

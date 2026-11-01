@@ -42,6 +42,14 @@ def test_recent_redemptions_are_deduplicated_and_bounded():
     assert cache.contains_or_add("first") is False
 
 
+def test_startup_connection_toast_suppression_is_consumed_once():
+    window = SimpleNamespace(_startup_silent_connections={"kick", "twitch"})
+
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is True
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is False
+    assert MainWindowCore._consume_startup_silent_connection(window, "twitch") is True
+
+
 def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     import frontend.main_window_views as views_module
 
@@ -67,6 +75,40 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     chat_view_class.assert_called_once_with(window.i18n, parent=content_stack)
     content_stack.addWidget.assert_called_once_with(view)
     window.chat_controller.attach_view.assert_called_once_with(view)
+
+
+def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monkeypatch):
+    import frontend.main_window_views as views_module
+
+    view = MagicMock()
+    settings_view_class = MagicMock(return_value=view)
+    monkeypatch.setattr(
+        views_module,
+        "_load_view_class",
+        MagicMock(return_value=settings_view_class),
+    )
+    window = SimpleNamespace(
+        _instantiated_views={},
+        content_stack=MagicMock(),
+        i18n=MagicMock(),
+        youtube=MagicMock(name="youtube"),
+        tiktok=MagicMock(name="tiktok"),
+        _on_twitch_integration_button_clicked=MagicMock(),
+        _on_live_chat_button_clicked=MagicMock(),
+        settings_controller=MagicMock(),
+        _update_integrations_status_ui=MagicMock(),
+    )
+    factory = MainWindowViewFactory(window)
+
+    assert factory.get_or_create("Settings") is view
+
+    view.youtube_integration_clicked.connect.call_args.args[0]()
+    view.tiktok_integration_clicked.connect.call_args.args[0]()
+
+    window._on_live_chat_button_clicked.assert_any_call(window.youtube)
+    window._on_live_chat_button_clicked.assert_any_call(window.tiktok)
+    settings_view_class.assert_called_once_with(window.i18n, parent=window.content_stack)
+    window.settings_controller.attach_view.assert_called_once_with(view)
 
 
 def test_views_package_defers_importing_unselected_views():
@@ -153,6 +195,7 @@ def test_whats_new_fetch_replaces_already_deleted_worker(monkeypatch):
 
     replacement = SimpleNamespace(
         highlights_fetched=MagicMock(),
+        error_occurred=MagicMock(),
         finished=MagicMock(),
         deleteLater=MagicMock(),
         start=MagicMock(),
