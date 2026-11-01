@@ -43,8 +43,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         )
         self._is_video = False
 
-        self._icon_refresh = get_icon_colored("refresh-filled.svg")
-        self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
+        # self._icon_refresh = get_icon_colored("refresh-filled.svg")
+        # self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
 
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
@@ -271,7 +271,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             row1.addWidget(self.combo_rewards, stretch=1)
 
             self.btn_refresh = ModernButton("", role="action_outlined")
-            self.btn_refresh.setIcon(self._icon_refresh)
+            self.btn_refresh.setIcon(get_icon_colored("refresh-filled.svg"))
             self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
             self.btn_refresh.clicked.connect(self._request_refresh)
             row1.addWidget(self.btn_refresh)
@@ -370,7 +370,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         v_layout.addLayout(row_rnd)
 
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
-        self.btn_visual.setIcon(self._icon_map_pin)
+        self.btn_visual.setIcon(get_icon_colored("crosshairs-filled.svg"))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         v_layout.addWidget(self.btn_visual)
 

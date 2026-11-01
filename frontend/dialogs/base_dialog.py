@@ -9,7 +9,7 @@ from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colo
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
 class ModernFramelessShell(QDialog):
-    _icon_close = None
+    # _icon_close = None
     RESIZE_MARGIN = 8
 
     def __init__(
@@ -95,9 +95,9 @@ class ModernFramelessShell(QDialog):
             self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_close_shell.setAutoDefault(False)
             self.btn_close_shell.setDefault(False)
-            if ModernFramelessShell._icon_close is None:
-                ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
-            self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
+            # if ModernFramelessShell._icon_close is None:
+            #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
+            self.btn_close_shell.setIcon(get_icon_colored("x-filled.svg"))
             from frontend.widgets.controls_widget import configure_icon_only_button
             configure_icon_only_button(self.btn_close_shell)
             self.btn_close_shell.clicked.connect(self.reject)
@@ -391,9 +391,9 @@ class DialogHeader(QFrame):
         self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close.setAutoDefault(False)
         self.btn_close.setDefault(False)
-        if ModernFramelessShell._icon_close is None:
-            ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
-        self.btn_close.setIcon(ModernFramelessShell._icon_close)
+        # if ModernFramelessShell._icon_close is None:
+        #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
+        self.btn_close.setIcon(get_icon_colored("x-filled.svg"))
         from frontend.widgets.controls_widget import configure_icon_only_button
         configure_icon_only_button(self.btn_close)
         self.btn_close.clicked.connect(self.close_requested)
@@ -704,7 +704,7 @@ class ModernConfirmDialog(ModernModal):
         body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
-        body_label.setMinimumHeight(60)
+        # body_label.setMinimumHeight(60)
 
         self.content_layout.addWidget(body_label)
 

@@ -17,8 +17,8 @@ class ActionLineEdit(QFrame):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
         self._search_when_empty = search_when_empty
-        self._icon_search = get_icon_colored("search-filled.svg")
-        self._icon_delete = get_icon_colored("x-filled.svg")
+        # self._icon_search = get_icon_colored("search-filled.svg")
+        # self._icon_delete = get_icon_colored("x-filled.svg")
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setFrame(False)
@@ -42,7 +42,7 @@ class ActionLineEdit(QFrame):
 
     def _sync_action_button(self) -> None:
         shows_search = self._search_when_empty and not self._has_text()
-        self.btn_action.setIcon(self._icon_search if shows_search else self._icon_delete)
+        self.btn_action.setIcon(get_icon_colored("search-filled.svg") if shows_search else get_icon_colored("x-filled.svg"))
         usable = (self._has_text() or self._search_when_empty) and not self.txt_input.isReadOnly()
         self.btn_action.setVisible(usable)
         self.btn_action.setEnabled(usable)

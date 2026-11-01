@@ -99,12 +99,12 @@ class MusicQueuePanel(QWidget):
         self.i18n = i18n
         self._current_queue_signature = None
 
-        self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED)
-        self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050)
-        self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK)
-        self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
-        self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED)
-        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
+        # self._icon_delete = get_icon_colored("trash-filled.svg", BrandColors.RED)
+        # self._icon_grip = get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050)
+        # self._icon_kick = get_icon_colored("brand-kick.svg", BrandColors.KICK)
+        # self._icon_twitch = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
+        # self._icon_youtube = get_icon_colored("brand-youtube.svg", BrandColors.RED)
+        # self._icon_tiktok = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
 
         self._setup_ui()
 
@@ -183,7 +183,7 @@ class MusicQueuePanel(QWidget):
 
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
-        btn_delete.setIcon(self._icon_delete)
+        btn_delete.setIcon(get_icon_colored("trash-filled.svg", BrandColors.RED))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
         configure_icon_only_button(btn_delete, size=Size.ICON_SMALL)
@@ -249,7 +249,7 @@ class MusicQueuePanel(QWidget):
             self.queue_table.setRowCount(len(queue_items))
             for idx, song in enumerate(queue_items):
                 item_num = self._create_table_item(f"  {idx + 1}", Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, Qt.GlobalColor.gray)
-                item_num.setIcon(self._icon_grip)
+                item_num.setIcon(get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050))
                 self.queue_table.setItem(idx, 0, item_num)
 
                 title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
@@ -264,16 +264,16 @@ class MusicQueuePanel(QWidget):
 
                 if platform == "twitch":
                     req_color = QColor(BrandColors.TWITCH_LIGHT)
-                    req_icon = self._icon_twitch
+                    req_icon = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
                 elif platform == "youtube":
                     req_color = QColor(BrandColors.RED)
-                    req_icon = self._icon_youtube
+                    req_icon = get_icon_colored("brand-youtube.svg", BrandColors.RED)
                 elif platform == "tiktok":
                     req_color = QColor(BrandColors.TIKTOK)
-                    req_icon = self._icon_tiktok
+                    req_icon = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
                 elif requester:
                     req_color = QColor(BrandColors.KICK)
-                    req_icon = self._icon_kick
+                    req_icon = get_icon_colored("brand-kick.svg", BrandColors.KICK)
                 else:
                     req_color = None
                     req_icon = None

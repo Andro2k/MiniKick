@@ -31,7 +31,6 @@
       "browse": "Examinar...",
       "discard_tooltip": "Descartar cambios no guardados",
       "duplicate_tooltip": "Copiar ajustes visuales, multimedia y de sonido a otra alerta",
-      "save_short": "Guardar",
       "test": "Probar Alerta",
       "test_sent": "Alerta de prueba enviada a OBS.",
       "test_short": "Probar"

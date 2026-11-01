@@ -134,7 +134,7 @@ class AlertEventCard(QWidget):
         self.btn_test.clicked.connect(self._on_test_clicked)
 
         self.btn_save = ModernButton(
-            text=self.i18n.get("alerts.buttons.save_short"),
+            text=self.i18n.get("common.buttons.save"),
             role=btn_role,
             icon_name="check-filled.svg",
             parent=self
