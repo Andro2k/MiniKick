@@ -137,7 +137,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         parent_layout.addWidget(txt_desc)
 
         lbl_col = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_color_label"))
-        lbl_col.setProperty("role", "h3")
+        lbl_col.setProperty("role", "h2")
         parent_layout.addWidget(lbl_col)
         parent_layout.addWidget(self._build_color_picker())
         user_input_widget = self._build_user_input_row()
@@ -166,7 +166,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             layout.addWidget(no_plat_box)
 
         lbl_plat = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.platform_label"))
-        lbl_plat.setProperty("role", "h3")
+        lbl_plat.setProperty("role", "h2")
         layout.addWidget(lbl_plat)
 
         plat_row = QHBoxLayout()

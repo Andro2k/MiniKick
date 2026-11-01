@@ -36,7 +36,7 @@ class ModernToast(QFrame):
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.lbl_title = QLabel(title, self)
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", "h2")
         text_layout.addWidget(self.lbl_title)
 
         self.lbl_msg = QLabel(message or "", self)

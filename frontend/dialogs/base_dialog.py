@@ -373,7 +373,7 @@ class DialogHeader(QFrame):
         texts = QVBoxLayout()
         texts.setSpacing(Size.SPACING_XS)
         self.lbl_title = QLabel(title, self)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "h1")
         self.lbl_title.setWordWrap(True)
         self.lbl_subtitle = QLabel(subtitle, self)
         self.lbl_subtitle.setProperty("role", "caption")

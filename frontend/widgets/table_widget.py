@@ -79,7 +79,7 @@ class ModernTableCard(QFrame):
 
             if title_text:
                 self.lbl_title = QLabel(title_text, self.header_top_widget)
-                self.lbl_title.setProperty("role", "h3")
+                self.lbl_title.setProperty("role", "h2")
                 self.header_top_layout.insertWidget(0, self.lbl_title)
 
             if search_placeholder:
@@ -275,7 +275,7 @@ class ModernTableCard(QFrame):
         )
 
         lbl_title = QLabel(title)
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h1")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_desc = QLabel(desc)

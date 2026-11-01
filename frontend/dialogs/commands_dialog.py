@@ -37,7 +37,7 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.setSpacing(Size.SPACING_LG)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
-        lbl_trigger.setProperty("role", "h3")
+        lbl_trigger.setProperty("role", "h2")
         self.txt_trigger = QLineEdit()
         self.txt_trigger.setPlaceholderText(self.i18n.get("command.dialog.trigger_placeholder"))
         self.txt_trigger.textEdited.connect(self._on_trigger_edited)
@@ -49,7 +49,7 @@ class CommandConfigWizard(ModernWizardPanel):
 
         lbl_response_layout = QHBoxLayout()
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
-        lbl_response.setProperty("role", "h3")
+        lbl_response.setProperty("role", "h2")
 
         self.badge_plugin = create_badge(self.i18n.get("command.dialog.plugin_tag"), state="plugin")
         self.badge_plugin.setVisible(False)
@@ -72,7 +72,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.spin_cooldown.setRange(0, 300)
         self.spin_cooldown.setValue(5)
         self.spin_cooldown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        col_cooldown, _ = create_labeled_field(self.i18n.get("command.dialog.cooldown_label"), self.spin_cooldown, role="h3")
+        col_cooldown, _ = create_labeled_field(self.i18n.get("command.dialog.cooldown_label"), self.spin_cooldown, role="h2")
         row_configs.addLayout(col_cooldown, stretch=1)
 
         self.combo_perm = NoWheelComboBox()
@@ -82,7 +82,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_moderator"), "moderator")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_broadcaster"), "broadcaster")
         self.combo_perm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        col_perm, _ = create_labeled_field(self.i18n.get("command.dialog.permission_label"), self.combo_perm, role="h3")
+        col_perm, _ = create_labeled_field(self.i18n.get("command.dialog.permission_label"), self.combo_perm, role="h2")
         row_configs.addLayout(col_perm, stretch=1)
 
         basic_layout.addLayout(row_configs)
@@ -98,7 +98,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout = create_col_layout(spacing=Size.SPACING_LG, margins=Size.Margin.MRG_NON, parent=left_col)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
-        lbl_aliases.setProperty("role", "h3")
+        lbl_aliases.setProperty("role", "h2")
         self.txt_aliases = QLineEdit()
         self.txt_aliases.setPlaceholderText(self.i18n.get("command.dialog.aliases_placeholder"))
         adv_layout.addWidget(lbl_aliases)
@@ -107,7 +107,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addSpacing(Size.SPACING_SM)
 
         lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
-        lbl_platforms.setProperty("role", "h3")
+        lbl_platforms.setProperty("role", "h2")
         adv_layout.addWidget(lbl_platforms)
 
         kick_on = self.connected_platforms.get("kick", False)
@@ -152,7 +152,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(self.chk_regex)
 
         lbl_regex = QLabel(self.i18n.get("command.dialog.regex_label"))
-        lbl_regex.setProperty("role", "h3")
+        lbl_regex.setProperty("role", "h2")
         self.txt_regex = VariableTextEdit(
             autocomplete_data={"\\": [
                 "\\w (Letras/Dígitos)", "\\d (Dígitos)", "\\s (Espacios)", "\\b (Límite de palabra)",

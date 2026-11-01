@@ -106,7 +106,7 @@ class MusicPlayerSettingsPanel(QWidget):
         info_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
-        self.lbl_song_title.setProperty("role", "h3")
+        self.lbl_song_title.setProperty("role", "h2")
         self.lbl_song_title.setWordWrap(True)
 
         self.lbl_song_artist = QLabel("-")
@@ -202,7 +202,7 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.setContentsMargins(*Size.Margin.MRG_NON)
         url_info.setSpacing(Size.SPACING_XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", "h2")
         lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)

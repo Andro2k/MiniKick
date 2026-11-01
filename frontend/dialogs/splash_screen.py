@@ -66,7 +66,7 @@ class SplashScreen(QWidget):
         title_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_title = QLabel(self.i18n.get("splash.title"), parent=self.card)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "h1")
         title_row.addWidget(self.lbl_title)
 
         if self.app_version:
@@ -90,7 +90,6 @@ class SplashScreen(QWidget):
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setFixedHeight(4)
         self.progress_bar.setFixedWidth(340)
 
         progress_row = QHBoxLayout()

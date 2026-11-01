@@ -40,7 +40,7 @@ class DashboardChattersTable(ModernCard):
         title_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_title = QLabel(self.i18n.get("dashboard.chatters.title"), self)
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", "h2")
 
         self.lbl_subtitle = QLabel(self.i18n.get("dashboard.chatters.subtitle"), self)
         self.lbl_subtitle.setProperty("role", "caption")
@@ -151,7 +151,7 @@ class DashboardChattersTable(ModernCard):
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_title = QLabel(self.i18n.get("dashboard.chatters.empty_title"), self.empty_widget)
-        self.lbl_empty_title.setProperty("role", "h3")
+        self.lbl_empty_title.setProperty("role", "h2")
         self.lbl_empty_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_desc = QLabel(self.i18n.get("dashboard.chatters.empty_desc"), self.empty_widget)

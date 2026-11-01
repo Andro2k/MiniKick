@@ -52,7 +52,7 @@ class Sidebar(QFrame):
         self.logo_btn.setProperty("role", "btn_ghost")
 
         self.title_label = QLabel("MiniKick")
-        self.title_label.setProperty("role", "h3")
+        self.title_label.setProperty("role", "h2")
 
         self.expanded_spacer = QWidget()
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -176,7 +176,7 @@ class Sidebar(QFrame):
         card_layout.addLayout(top_row)
 
         self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
-        self.lbl_update_title.setProperty("role", "h3")
+        self.lbl_update_title.setProperty("role", "h2")
         self.lbl_update_title.setWordWrap(True)
         card_layout.addWidget(self.lbl_update_title)
 
