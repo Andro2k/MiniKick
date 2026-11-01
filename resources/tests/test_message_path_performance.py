@@ -142,7 +142,9 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
 def _message_routing_window():
     return SimpleNamespace(
         session_metrics=MagicMock(),
-        chat_controller=MagicMock()
+        chat_controller=MagicMock(),
+        kick=SimpleNamespace(username="", avatar_url=""),
+        twitch=SimpleNamespace(channel="", avatar_url=""),
     )
 
 
