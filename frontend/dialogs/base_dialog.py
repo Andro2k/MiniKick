@@ -85,11 +85,7 @@ class ModernFramelessShell(QDialog):
                 self.container.setFixedHeight(init_h)
             self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
 
-        self.glow = QGraphicsDropShadowEffect(self)
-        self.glow.setBlurRadius(30)
-        self.glow.setOffset(0, 0)
-        self.glow.setColor(QColor(Qt.GlobalColor.transparent))
-        self.container.setGraphicsEffect(self.glow)
+        self.glow = None
 
         self.main_layout.addWidget(self.container)
 
@@ -172,7 +168,16 @@ class ModernFramelessShell(QDialog):
         self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
-        self.glow.setColor(glow_color if glow_color else QColor(Qt.GlobalColor.transparent))
+        if glow_color is not None and glow_color.alpha() > 0:
+            if self.glow is None:
+                self.glow = QGraphicsDropShadowEffect(self)
+                self.glow.setBlurRadius(30)
+                self.glow.setOffset(0, 0)
+                self.container.setGraphicsEffect(self.glow)
+            self.glow.setColor(glow_color)
+        elif self.glow is not None:
+            self.container.setGraphicsEffect(None)
+            self.glow = None
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -370,10 +375,10 @@ class DialogHeader(QFrame):
 
         texts = QVBoxLayout()
         texts.setSpacing(Size.SPACING_XS)
-        self.lbl_title = QLabel(title)
+        self.lbl_title = QLabel(title, self)
         self.lbl_title.setProperty("role", "h2")
         self.lbl_title.setWordWrap(True)
-        self.lbl_subtitle = QLabel(subtitle)
+        self.lbl_subtitle = QLabel(subtitle, self)
         self.lbl_subtitle.setProperty("role", "caption")
         self.lbl_subtitle.setWordWrap(True)
         self.lbl_subtitle.setVisible(bool(subtitle))
@@ -381,7 +386,7 @@ class DialogHeader(QFrame):
         texts.addWidget(self.lbl_subtitle)
         lay.addLayout(texts, stretch=1)
 
-        self.btn_close = QPushButton()
+        self.btn_close = QPushButton(self)
         self.btn_close.setProperty("role", "btn_ghost")
         self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close.setAutoDefault(False)
@@ -394,12 +399,26 @@ class DialogHeader(QFrame):
         self.btn_close.clicked.connect(self.close_requested)
         lay.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignTop)
 
+    def _refresh_layout(self):
+        self.layout().invalidate()
+        self.updateGeometry()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_layout()
+
+    def reserve_subtitle_lines(self, lines: int):
+        self.lbl_subtitle.ensurePolished()
+        self.lbl_subtitle.setMinimumHeight(self.lbl_subtitle.fontMetrics().lineSpacing() * lines)
+
     def set_title(self, text: str):
         self.lbl_title.setText(text)
+        self._refresh_layout()
 
     def set_subtitle(self, text: str):
         self.lbl_subtitle.setText(text)
         self.lbl_subtitle.setVisible(bool(text))
+        self._refresh_layout()
 
 
 def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", icon_color: str = "",
@@ -564,6 +583,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.header = DialogHeader(parent=self.container)
         self.header.close_requested.connect(self.reject)
+        self.header.reserve_subtitle_lines(2)
         self.lbl_title = self.header.lbl_title
         self.lbl_subtitle = self.header.lbl_subtitle
         self.panel_layout.addWidget(self.header)
