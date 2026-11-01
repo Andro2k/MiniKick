@@ -2,8 +2,12 @@
 
 import logging
 import sys
+from typing import Callable
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread
+
+from backend.connections import WorkerSlot
+from backend.interfaces import IConfigProvider
 
 logger = logging.getLogger("minikick.core")
 
@@ -31,8 +35,23 @@ _WINDOWS_MSG_EVENT_TYPES = (b"windows_generic_MSG", "windows_generic_MSG")
 
 
 class MediaKeysHandler:
-    def __init__(self, music_controller) -> None:
+    SETTING_GLOBAL_KEYS = "music_global_media_keys"
+
+    def __init__(
+        self,
+        music_controller,
+        config: IConfigProvider,
+        slot: WorkerSlot,
+        worker_factory: Callable[[], QThread],
+        is_shutting_down: Callable[[], bool],
+    ) -> None:
         self._music_controller = music_controller
+        self._config = config
+        self._worker_factory = worker_factory
+        self._is_shutting_down = is_shutting_down
+        self.slot = slot
+        self._global_keys_enabled = False
+        self._start_pending = False
 
     def handle_key(self, key: int) -> bool:
         action = _QT_MEDIA_KEYS.get(key)
@@ -62,3 +81,38 @@ class MediaKeysHandler:
                 exc_info=True,
             )
             return False
+
+    def setup_global_keys(self) -> None:
+        if sys.platform != "win32":
+            return
+        self._global_keys_enabled = self._config.load_bool(self.SETTING_GLOBAL_KEYS, True)
+        if self._global_keys_enabled:
+            self._start_global_worker()
+        self._music_controller.media_keys_state_changed.connect(self._on_global_keys_changed)
+
+    def _on_global_keys_changed(self, enabled: bool) -> None:
+        self._global_keys_enabled = enabled
+        if enabled:
+            self._start_global_worker()
+        else:
+            self.slot.stop()
+
+    def _start_global_worker(self) -> None:
+        self._global_keys_enabled = True
+        if self.slot.is_running or self._start_pending or self._is_shutting_down():
+            return
+        self._start_pending = True
+        self.slot.stop(on_finished=self._create_global_worker)
+
+    def _create_global_worker(self) -> None:
+        self._start_pending = False
+        if self._is_shutting_down() or not self._global_keys_enabled:
+            return
+        self.slot.start(self._build_global_worker)
+
+    def _build_global_worker(self) -> QThread:
+        worker = self._worker_factory()
+        worker.play_pause_pressed.connect(self._music_controller.handle_play_pause)
+        worker.skip_pressed.connect(self._music_controller.handle_skip)
+        worker.stop_pressed.connect(self._music_controller.handle_play_pause)
+        return worker

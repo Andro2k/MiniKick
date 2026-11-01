@@ -7,7 +7,7 @@ from PySide6.QtCore import QObject, Slot
 from PySide6.QtWidgets import QWidget
 
 from frontend.dialogs import ModernConfirmDialog
-from frontend.worker_shutdown import is_worker_running
+from backend.connections import is_worker_running
 
 logger = logging.getLogger("minikick.core")
 

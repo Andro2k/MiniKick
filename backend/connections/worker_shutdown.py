@@ -1,4 +1,4 @@
-# frontend\worker_shutdown.py\\
+# backend\connections\worker_shutdown.py
 
 from __future__ import annotations
 import time

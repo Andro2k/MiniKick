@@ -1,6 +1,7 @@
 # resources\tests\test_chat_detached_window.py
 
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 from PySide6.QtWidgets import QMainWindow, QSizeGrip
 from PySide6.QtCore import Qt
@@ -105,16 +106,15 @@ def test_app_shutdown_closes_the_floating_chat(qapp):
     host, view, floating = _detached_chat(qapp)
     fake_window = SimpleNamespace(
         _is_shutting_down=False,
-        _is_window_closing=False,
         session_metrics=SimpleNamespace(stop=lambda: None),
         view_chat=view,
-        logger=SimpleNamespace(info=lambda *a, **k: None),
-        _stop_all_workers=lambda callback: None,
-        _finish_cleanup=lambda: None,
+        _shutdown_sequence=SimpleNamespace(run=MagicMock()),
     )
 
     MainWindowCore._cleanup(fake_window)
     qapp.processEvents()
+
+    fake_window._shutdown_sequence.run.assert_called_once_with()
 
     assert view._floating_chat_dialog is None
     assert not isValid(floating) or not floating.isVisible()

@@ -14,7 +14,8 @@ from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
 from frontend.main_window import MainWindowCore
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.worker_shutdown import WorkerShutdownCoordinator
+from frontend.window.whats_new import WhatsNewPresenter
+from backend.connections import WorkerShutdownCoordinator, WorkerSlot
 
 
 class _CooperativeWorker(QThread):
@@ -158,18 +159,21 @@ def test_whats_new_fetch_replaces_already_deleted_worker(monkeypatch):
     )
     worker_factory = MagicMock(return_value=replacement)
     monkeypatch.setattr(backend.workers, "WhatsNewWorker", worker_factory)
-    
-    window = SimpleNamespace(
-        _is_shutting_down=False,
-        _is_window_closing=False,
-        _whats_new_worker=stale_worker,
-        _is_worker_running=MainWindowCore._is_worker_running,
+
+    slot = WorkerSlot("Worker_Whats_New", MagicMock())
+    slot.start(lambda: stale_worker)
+    presenter = WhatsNewPresenter(
+        parent="window",
+        service=MagicMock(),
+        sidebar=MagicMock(),
+        i18n=MagicMock(),
         app_version="1.6.5",
-        _on_remote_whats_new_fetched=MagicMock(),
+        slot=slot,
+        is_shutting_down=lambda: False,
     )
 
-    MainWindowCore._fetch_remote_whats_new_if_needed(window)
+    presenter.fetch_remote_if_needed()
 
-    worker_factory.assert_called_once_with("1.6.5", parent=window)
+    worker_factory.assert_called_once_with("1.6.5", parent="window")
     replacement.start.assert_called_once_with()
-    assert window._whats_new_worker is replacement
+    assert slot.detach() == ("Worker_Whats_New", replacement)
