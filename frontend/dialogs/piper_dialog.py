@@ -3,17 +3,17 @@
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt, Signal, Slot
-from .base_dialog import ModernFramelessShell
+from .base_dialog import ModernFramelessShell, DialogHeader, build_icon_badge, build_dialog_footer
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
-from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, get_assets_path, BrandColors, Size
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
     voices_updated = Signal()
 
     def __init__(self, i18n, tts_service, parent=None, manager=None, worker_class=None):
-        super().__init__(width=680, parent=parent)
+        super().__init__(width=680, floating_close=False, parent=parent)
         self.i18n = i18n
         self.tts_service = tts_service
         if manager is None:
@@ -37,32 +37,24 @@ class PiperVoicesDialog(ModernFramelessShell):
         self._load_synthesis_params()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self.container)
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(*Size.Margin.MRG_NON)
+        root.setSpacing(0)
+
+        header = DialogHeader(
+            self.i18n.get("piper_dialog.title"),
+            self.i18n.get("piper_dialog.subtitle"),
+            build_icon_badge(get_assets_path("icons/megaphone-filled.svg"), BrandColors.GREEN, dpr=self.devicePixelRatio()),
+            parent=self.container
+        )
+        header.close_requested.connect(self.reject)
+        root.addWidget(header)
+
+        body = QWidget(self.container)
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(*Size.Margin.MRG_XLG)
         layout.setSpacing(Size.SPACING_MD)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(Size.SPACING_MD)
-
-        icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(get_pixmap_colored("megaphone-filled.svg", BrandColors.GREEN, size=24))
-        header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-
-        title_layout = QVBoxLayout()
-        title_layout.setSpacing(Size.SPACING_XS)
-
-        lbl_title = QLabel(self.i18n.get("piper_dialog.title"), self)
-        lbl_title.setProperty("role", "h2")
-
-        lbl_subtitle = QLabel(self.i18n.get("piper_dialog.subtitle"), self)
-        lbl_subtitle.setProperty("role", "caption")
-        lbl_subtitle.setWordWrap(True)
-
-        title_layout.addWidget(lbl_title)
-        title_layout.addWidget(lbl_subtitle)
-        header_layout.addLayout(title_layout, stretch=1)
-
-        layout.addLayout(header_layout)
+        root.addWidget(body, stretch=1)
 
         self.synthesis_card = ExpandableCard(
             title=self.i18n.get("piper_dialog.synthesis_title"),
@@ -220,7 +212,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll, stretch=1)
 
-        footer_layout = QHBoxLayout()
+        footer, footer_layout = build_dialog_footer(self.container)
         self.lbl_installed_count = QLabel(self)
         self.lbl_installed_count.setProperty("role", "caption")
         footer_layout.addWidget(self.lbl_installed_count, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -232,7 +224,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         btn_close.clicked.connect(self.accept)
         footer_layout.addWidget(btn_close)
 
-        layout.addLayout(footer_layout)
+        root.addWidget(footer)
         self._update_installed_count()
 
     def _on_tab_toggled(self, tab_id: str, checked: bool):

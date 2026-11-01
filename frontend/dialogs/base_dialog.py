@@ -401,6 +401,49 @@ class DialogHeader(QFrame):
         self.lbl_subtitle.setText(text)
         self.lbl_subtitle.setVisible(bool(text))
 
+
+def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", icon_color: str = "",
+                     box: int = 40, glyph: int = 24, dpr: float = 1.0) -> QFrame:
+    role_dispatch = {
+        BrandColors.RED: ("danger_icon", Palette.NEUTRAL_050),
+        BrandColors.AMBER: ("warning_icon", Palette.NEUTRAL_999),
+        BrandColors.BLUE: ("info_icon", Palette.NEUTRAL_050),
+        BrandColors.GREEN: ("accent_icon", Palette.NEUTRAL_999),
+        BrandColors.TWITCH: ("twitch_icon", Palette.NEUTRAL_050),
+        BrandColors.YOUTUBE: ("youtube_icon", Palette.NEUTRAL_050),
+        BrandColors.TIKTOK: ("tiktok_icon", Palette.NEUTRAL_999),
+        Palette.NEUTRAL_999: ("black_icon", Palette.NEUTRAL_050),
+    }
+    resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", Palette.NEUTRAL_999))
+
+    badge = QFrame()
+    badge.setObjectName("dialog_icon_badge")
+    badge.setFixedSize(box, box)
+    badge.setProperty("role", icon_role or resolved_role)
+    badge.setStyleSheet(f"#dialog_icon_badge {{ border-radius: {box // 2}px; }}")
+    inner = QVBoxLayout(badge)
+    inner.setContentsMargins(*Size.Margin.MRG_NON)
+    inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    icon_lbl = QLabel()
+    icon_lbl.setStyleSheet("background: transparent; border: none;")
+    pixmap = get_pixmap_colored(icon_path, color_str=icon_color or default_fg, size=glyph, dpr=dpr)
+    if pixmap.isNull():
+        pixmap = QIcon(icon_path).pixmap(QSize(glyph, glyph), dpr)
+    icon_lbl.setPixmap(pixmap)
+    inner.addWidget(icon_lbl)
+    return badge
+
+
+def build_dialog_footer(parent: QWidget | None = None) -> tuple[QFrame, QHBoxLayout]:
+    footer = QFrame(parent)
+    footer.setProperty("role", "dialog_footer")
+    lay = QHBoxLayout(footer)
+    lay.setContentsMargins(20, 12, 20, 12)
+    lay.setSpacing(Size.SPACING_LG)
+    return footer, lay
+
+
 class ModernModal(ModernFramelessShell):
     def __init__(
         self,
@@ -433,10 +476,10 @@ class ModernModal(ModernFramelessShell):
         root.setContentsMargins(*Size.Margin.MRG_NON)
         root.setSpacing(0)
 
-        icon_widget = self._build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color) if icon_path else None
+        icon_widget = build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color, dpr=self.devicePixelRatio()) if icon_path else None
         self.header = DialogHeader(title, subtitle, icon_widget, parent=self.container)
         self.header.close_requested.connect(self.reject)
-        self.title_lbl = self.header.lbl_title  # compatibilidad: updater/release_notes usan title_lbl.setText
+        self.title_lbl = self.header.lbl_title
         root.addWidget(self.header)
 
         self.body = QWidget(self.container)
@@ -445,47 +488,9 @@ class ModernModal(ModernFramelessShell):
         self.content_layout.setSpacing(Size.SPACING_LG)
         root.addWidget(self.body, stretch=1)
 
-        self.footer = QFrame(self.container)
-        self.footer.setProperty("role", "dialog_footer")
-        self.footer_layout = QHBoxLayout(self.footer)
-        self.footer_layout.setContentsMargins(20, 12, 20, 12)
-        self.footer_layout.setSpacing(Size.SPACING_LG)
+        self.footer, self.footer_layout = build_dialog_footer(self.container)
         self.footer.hide()
         root.addWidget(self.footer)
-
-    def _build_icon_badge(self, icon_path: str, bg_color: str, icon_role: str = "", icon_color: str = "") -> QFrame:
-        role_dispatch = {
-            BrandColors.RED: ("danger_icon", Palette.NEUTRAL_050),
-            BrandColors.AMBER: ("warning_icon", Palette.NEUTRAL_999),
-            BrandColors.BLUE: ("info_icon", Palette.NEUTRAL_050),
-            BrandColors.GREEN: ("accent_icon", Palette.NEUTRAL_999),
-            BrandColors.TWITCH: ("twitch_icon", Palette.NEUTRAL_050),
-            BrandColors.YOUTUBE: ("youtube_icon", Palette.NEUTRAL_050),
-            BrandColors.TIKTOK: ("tiktok_icon", Palette.NEUTRAL_999),
-            Palette.NEUTRAL_999: ("black_icon", Palette.NEUTRAL_050),
-        }
-        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", Palette.NEUTRAL_999))
-        final_role = icon_role or resolved_role
-        final_fg = icon_color or default_fg
-
-        badge = QFrame()
-        badge.setFixedSize(*self.BADGE_BOX)
-        badge.setProperty("role", final_role)
-        inner = QVBoxLayout(badge)
-        inner.setContentsMargins(*Size.Margin.MRG_NON)
-        inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        icon_lbl = QLabel()
-        dpr = self.devicePixelRatio()
-        pixmap = get_pixmap_colored(icon_path, color_str=final_fg, size=self.BADGE_GLYPH, dpr=dpr)
-        if pixmap.isNull():
-            pixmap = QIcon(icon_path).pixmap(QSize(self.BADGE_GLYPH, self.BADGE_GLYPH), dpr)
-        icon_lbl.setPixmap(pixmap)
-        inner.addWidget(icon_lbl)
-        return badge
-
-    BADGE_BOX = (40, 40)
-    BADGE_GLYPH = 24
 
     def add_action_buttons(self, btn_left: QPushButton, btn_right: QPushButton, stretch_center: bool = False):
         if btn_left:
@@ -544,6 +549,7 @@ class ModernWizardPanel(ModernFramelessShell):
             min_width=min_width,
             min_height=min_height,
             dialog_key=dialog_key,
+            floating_close=False,
             parent=parent
         )
         self.title_steps = title_steps
@@ -553,31 +559,26 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
 
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(*Size.Margin.MRG_XLG)
-        self.panel_layout.setSpacing(Size.SPACING_LG)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.panel_layout.setSpacing(0)
 
-        self.lbl_step_num = QLabel()
-        self.lbl_step_num.setProperty("role", "caption")
-        self.panel_layout.addWidget(self.lbl_step_num)
+        self.header = DialogHeader(parent=self.container)
+        self.header.close_requested.connect(self.reject)
+        self.lbl_title = self.header.lbl_title
+        self.lbl_subtitle = self.header.lbl_subtitle
+        self.panel_layout.addWidget(self.header)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setRange(0, self.total_steps)
         self.progress_bar.setValue(0)
+        self.progress_bar.setFixedHeight(3)
         self.progress_bar.setProperty("role", "wizard_progress")
         self.panel_layout.addWidget(self.progress_bar)
-        self.panel_layout.addSpacing(Size.SPACING_XS)
 
-        self.lbl_title = QLabel()
-        self.lbl_title.setProperty("role", "h2")
-        self.lbl_title.setWordWrap(True)
-        self.panel_layout.addWidget(self.lbl_title)
-
-        self.lbl_subtitle = QLabel()
-        self.lbl_subtitle.setProperty("role", "body")
-        self.lbl_subtitle.setWordWrap(True)
-        self.panel_layout.addWidget(self.lbl_subtitle)
-
+        body = QWidget(self.container)
+        body_layout = QVBoxLayout(body)
+        body_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.main_content = QStackedWidget()
         self.scroll_content = QScrollArea(self)
         self.scroll_content.setWidgetResizable(True)
@@ -585,10 +586,13 @@ class ModernWizardPanel(ModernFramelessShell):
         self.scroll_content.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_content.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll_content.setWidget(self.main_content)
-        self.panel_layout.addWidget(self.scroll_content, stretch=1)
+        body_layout.addWidget(self.scroll_content)
+        self.panel_layout.addWidget(body, stretch=1)
 
-        self.btn_layout = QHBoxLayout()
-        self.btn_layout.setSpacing(Size.SPACING_MD)
+        self.footer, self.btn_layout = build_dialog_footer(self.container)
+        self.lbl_step_num = QLabel()
+        self.lbl_step_num.setProperty("role", "caption")
+        self.btn_layout.addWidget(self.lbl_step_num)
         self.btn_layout.addStretch()
 
         self.btn_back = QPushButton()
@@ -607,7 +611,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.btn_layout.addWidget(self.btn_back)
         self.btn_layout.addWidget(self.btn_next)
-        self.panel_layout.addLayout(self.btn_layout)
+        self.panel_layout.addWidget(self.footer)
 
     def add_page(self, widget: QWidget):
         self.main_content.addWidget(widget)
@@ -622,9 +626,9 @@ class ModernWizardPanel(ModernFramelessShell):
             self.progress_bar.setValue(self.current_step + 1)
 
             if 0 <= self.current_step < len(self.title_steps):
-                self.lbl_title.setText(str(self.title_steps[self.current_step]))
+                self.header.set_title(str(self.title_steps[self.current_step]))
             if 0 <= self.current_step < len(self.subtitle_steps):
-                self.lbl_subtitle.setText(str(self.subtitle_steps[self.current_step]))
+                self.header.set_subtitle(str(self.subtitle_steps[self.current_step]))
             if 0 <= self.current_step < self.main_content.count():
                 self.main_content.setCurrentIndex(self.current_step)
 
