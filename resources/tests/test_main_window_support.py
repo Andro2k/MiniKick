@@ -153,6 +153,7 @@ def test_whats_new_fetch_replaces_already_deleted_worker(monkeypatch):
 
     replacement = SimpleNamespace(
         highlights_fetched=MagicMock(),
+        error_occurred=MagicMock(),
         finished=MagicMock(),
         deleteLater=MagicMock(),
         start=MagicMock(),

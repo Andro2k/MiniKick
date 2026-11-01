@@ -19,6 +19,7 @@ kick_api_config*.json
 *.log
 *.iss
 *.spec
+!MiniKick.spec
 *.txt
 !requirements.txt
 !requirements-build.txt

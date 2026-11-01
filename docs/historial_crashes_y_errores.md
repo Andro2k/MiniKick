@@ -54,6 +54,7 @@
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
 | **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
+| **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
 
 ---
 
@@ -1084,3 +1085,31 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solución Implementada**: Tras cada cambio de estado, se recalcula el tamaño mínimo del cuerpo a partir del contenido visible, se reajustan el contenedor y el diálogo, y se repintan las superficies afectadas.
 * **Pruebas y Verificación**: `resources/tests/test_updater_dialog.py` comprueba que el cuerpo, la barra y su fila de texto reciben su altura requerida y no invaden el pie tras completar la descarga. La suite rápida de calidad detectó estilos inline preexistentes en `frontend/dialogs/base_dialog.py`; no se modificaron como parte de esta corrección.
 * **Walkthrough de Referencia**: No aplica.
+
+---
+
+### INC-045: Documentación de walkthroughs incluida en el instalador exportado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (archivos de documentación innecesarios aumentaban el tamaño de la instalación; la aplicación seguía funcionando).
+* **Reportes Asociados**: Inspección solicitada por el usuario en `C:\Users\TheAn\AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs`.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza / Síntoma**:
+  ```text
+  La instalación PyInstaller contenía docs\walkthroughs aunque esos archivos no son necesarios para ejecutar MiniKick.
+  ```
+* **Causa Raíz**: La distribución Inno Setup copiaba recursivamente todo `dist\MiniKick`, y la compilación no tenía una exclusión de documentación ni una validación de la salida. Además, las notas locales se consultaban desde `docs\walkthroughs` pese a que ya existía una fuente remota de GitHub Releases.
+* **Relación con INC-017**: La decisión anterior de incluir walkthroughs para mostrar novedades sin conexión queda sustituida; el bundle ahora consulta GitHub y conserva únicamente los highlights de esa versión como fallback local.
+* **Archivos y Módulos Modificados**:
+  - `.gitignore`
+  - `MiniKick.spec`
+  - `README.md`
+  - `backend/services/system/whats_new_service.py`
+  - `backend/services/system/updater_service.py`
+  - `frontend/window/whats_new.py`
+  - `instalador.iss`
+  - `resources/tests/test_main_window_support.py`
+  - `resources/tests/test_whats_new_remote.py`
+  - `resources/tools/build_manager.py`
+* **Solución Implementada**: PyInstaller ya no agrega walkthroughs como datos; el gestor limpia la salida previa y rechaza el bundle si reaparece `docs`; Inno Setup excluye `docs` incluso al compilarse directamente y elimina las carpetas heredadas `docs` y `_internal\docs` al actualizar una instalación previa. El modal consulta primero la release de GitHub correspondiente a la versión instalada y usa los highlights cacheados de esa versión si falla la red. La guía de desarrollo recomienda el gestor de compilación para garantizar la limpieza.
+* **Pruebas y Verificación**: Build PyInstaller completado; `dist\MiniKick` conserva `assets` y `locales` y no contiene `docs`. Las pruebas de notas remotas y de integración relacionadas aprobaron; `build_manager.py --check`, `py_compile` y `git diff --check` correctos. Inno Setup 7.1.0 compiló `Output\MiniKick_Installer_v1.6.6.exe` con las reglas de exclusión y limpieza (la instalación existente del usuario no fue modificada).

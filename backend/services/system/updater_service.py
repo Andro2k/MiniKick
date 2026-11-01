@@ -80,19 +80,17 @@ class GithubUpdateProvider:
         if not clean_ver:
             return self.fetch_latest_release()
 
-        release = self.fetch_release_by_tag(f"v{clean_ver}")
-        if release:
-            return release
-
-        release = self.fetch_release_by_tag(clean_ver)
-        if release:
-            return release
+        for tag in (f"v{clean_ver}", clean_ver):
+            release = self.fetch_release_by_tag(tag)
+            if release:
+                release_tag = release.get("tag_name", "").strip().lstrip("vV")
+                if release_tag == clean_ver:
+                    return release
 
         latest = self.fetch_latest_release()
         if latest and latest.get("tag_name", "").strip().lstrip("vV") == clean_ver:
             return latest
-
-        return latest
+        return None
 
     def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
         try:
