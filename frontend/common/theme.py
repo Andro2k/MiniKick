@@ -547,6 +547,8 @@ QFrame[role="dashboard_distribution_panel"] {{ background-color: {Palette.NEUTRA
 QLabel[role="dashboard_channel_name"] {{ color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: 700; }}
 QLabel[role="dashboard_channel_description"] {{ color: {Palette.NEUTRAL_400}; font-size: 12px; }}
 QFrame[role="dialog"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
+QFrame[role="dialog_header"] {{ background-color: transparent; border: none; border-bottom: {Borders.BRD_BASE}; }}
+QFrame[role="dialog_footer"] {{ background-color: transparent; border: none; border-top: {Borders.BRD_BASE}; }}
 QFrame[role="dialog"][state="accent"] {{ border-color: {BrandColors.GREEN}; }}
 QFrame[role="dialog"][state="success"] {{ border-color: {BrandColors.GREEN}; }}
 QFrame[role="dialog"][state="danger"] {{ border-color: {BrandColors.RED}; }}

@@ -17,7 +17,7 @@ class BotMutePanel(QWidget):
         super().__init__(parent)
         self.setProperty("role", "tab_panel")
         self.i18n = i18n
-        self._trash_icon_cache = {}
+        # self._trash_icon_cache = {}
         self._setup_ui()
 
     def addWidget(self, widget, *args, **kwargs):
@@ -165,10 +165,10 @@ class BotMutePanel(QWidget):
             icon_size = max(16, int(font_height * 0.75))
             btn_size = Size.ICON_SMALL
 
-            if icon_size not in self._trash_icon_cache:
-                self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
+            # if icon_size not in self._trash_icon_cache:
+            #     self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
 
-            btn_delete.setIcon(self._trash_icon_cache[icon_size])
+            btn_delete.setIcon(get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size))
             configure_icon_only_button(btn_delete, size=btn_size)
 
             text_width = fm.horizontalAdvance(lbl_name.text())

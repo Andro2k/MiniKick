@@ -2,14 +2,14 @@
 
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
-from PySide6.QtCore import Qt, QSize, QSettings, QEvent
+from PySide6.QtCore import Qt, QSize, QSettings, QEvent, Signal
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
 class ModernFramelessShell(QDialog):
-    _icon_close = None
+    # _icon_close = None
     RESIZE_MARGIN = 8
 
     def __init__(
@@ -20,6 +20,7 @@ class ModernFramelessShell(QDialog):
         min_width: int = 380,
         min_height: int = 320,
         dialog_key: str | None = None,
+        floating_close: bool = True,
         parent=None
     ):
         super().__init__(parent)
@@ -84,27 +85,24 @@ class ModernFramelessShell(QDialog):
                 self.container.setFixedHeight(init_h)
             self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
 
-        self.glow = QGraphicsDropShadowEffect(self)
-        self.glow.setBlurRadius(30)
-        self.glow.setOffset(0, 0)
-        self.glow.setColor(QColor(Qt.GlobalColor.transparent))
-        self.container.setGraphicsEffect(self.glow)
+        self.glow = None
 
         self.main_layout.addWidget(self.container)
 
-        self.btn_close_shell = QPushButton(self.container)
-        self.btn_close_shell.setProperty("role", "btn_ghost")
-        self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close_shell.setAutoDefault(False)
-        self.btn_close_shell.setDefault(False)
-        if ModernFramelessShell._icon_close is None:
-            ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
-        self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
-        from frontend.widgets.controls_widget import configure_icon_only_button
-        configure_icon_only_button(self.btn_close_shell)
-        self.btn_close_shell.clicked.connect(self.reject)
-        self.btn_close_shell.move(init_w - 36, 8)
-        self.btn_close_shell.raise_()
+        if floating_close:
+            self.btn_close_shell = QPushButton(self.container)
+            self.btn_close_shell.setProperty("role", "btn_ghost")
+            self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_close_shell.setAutoDefault(False)
+            self.btn_close_shell.setDefault(False)
+            # if ModernFramelessShell._icon_close is None:
+            #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
+            self.btn_close_shell.setIcon(get_icon_colored("x-filled.svg"))
+            from frontend.widgets.controls_widget import configure_icon_only_button
+            configure_icon_only_button(self.btn_close_shell)
+            self.btn_close_shell.clicked.connect(self.reject)
+            self.btn_close_shell.move(init_w - 36, 8)
+            self.btn_close_shell.raise_()
 
     def set_dialog_dimensions(self, width: int, height: int):
         self._has_custom_size = True
@@ -170,7 +168,16 @@ class ModernFramelessShell(QDialog):
         self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
-        self.glow.setColor(glow_color if glow_color else QColor(Qt.GlobalColor.transparent))
+        if glow_color is not None and glow_color.alpha() > 0:
+            if self.glow is None:
+                self.glow = QGraphicsDropShadowEffect(self)
+                self.glow.setBlurRadius(30)
+                self.glow.setOffset(0, 0)
+                self.container.setGraphicsEffect(self.glow)
+            self.glow.setColor(glow_color)
+        elif self.glow is not None:
+            self.container.setGraphicsEffect(None)
+            self.glow = None
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -353,6 +360,109 @@ class ModernFramelessShell(QDialog):
         if hasattr(self, 'container'):
             self.container.unsetCursor()
 
+class DialogHeader(QFrame):
+    close_requested = Signal()
+
+    def __init__(self, title: str = "", subtitle: str = "", icon_widget: QWidget | None = None, parent=None):
+        super().__init__(parent)
+        self.setProperty("role", "dialog_header")
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(20, 14, 12, 14)
+        lay.setSpacing(Size.SPACING_LG)
+
+        if icon_widget is not None:
+            lay.addWidget(icon_widget, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        texts = QVBoxLayout()
+        texts.setSpacing(Size.SPACING_XS)
+        self.lbl_title = QLabel(title, self)
+        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setWordWrap(True)
+        self.lbl_subtitle = QLabel(subtitle, self)
+        self.lbl_subtitle.setProperty("role", "caption")
+        self.lbl_subtitle.setWordWrap(True)
+        self.lbl_subtitle.setVisible(bool(subtitle))
+        texts.addWidget(self.lbl_title)
+        texts.addWidget(self.lbl_subtitle)
+        lay.addLayout(texts, stretch=1)
+
+        self.btn_close = QPushButton(self)
+        self.btn_close.setProperty("role", "btn_ghost")
+        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_close.setAutoDefault(False)
+        self.btn_close.setDefault(False)
+        # if ModernFramelessShell._icon_close is None:
+        #     ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg")
+        self.btn_close.setIcon(get_icon_colored("x-filled.svg"))
+        from frontend.widgets.controls_widget import configure_icon_only_button
+        configure_icon_only_button(self.btn_close)
+        self.btn_close.clicked.connect(self.close_requested)
+        lay.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def _refresh_layout(self):
+        self.layout().invalidate()
+        self.updateGeometry()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_layout()
+
+    def reserve_subtitle_lines(self, lines: int):
+        self.lbl_subtitle.ensurePolished()
+        self.lbl_subtitle.setMinimumHeight(self.lbl_subtitle.fontMetrics().lineSpacing() * lines)
+
+    def set_title(self, text: str):
+        self.lbl_title.setText(text)
+        self._refresh_layout()
+
+    def set_subtitle(self, text: str):
+        self.lbl_subtitle.setText(text)
+        self.lbl_subtitle.setVisible(bool(text))
+        self._refresh_layout()
+
+
+def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", icon_color: str = "",
+                     box: int = 40, glyph: int = 24, dpr: float = 1.0) -> QFrame:
+    role_dispatch = {
+        BrandColors.RED: ("danger_icon", Palette.NEUTRAL_050),
+        BrandColors.AMBER: ("warning_icon", Palette.NEUTRAL_999),
+        BrandColors.BLUE: ("info_icon", Palette.NEUTRAL_050),
+        BrandColors.GREEN: ("accent_icon", Palette.NEUTRAL_999),
+        BrandColors.TWITCH: ("twitch_icon", Palette.NEUTRAL_050),
+        BrandColors.YOUTUBE: ("youtube_icon", Palette.NEUTRAL_050),
+        BrandColors.TIKTOK: ("tiktok_icon", Palette.NEUTRAL_999),
+        Palette.NEUTRAL_999: ("black_icon", Palette.NEUTRAL_050),
+    }
+    resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", Palette.NEUTRAL_999))
+
+    badge = QFrame()
+    badge.setObjectName("dialog_icon_badge")
+    badge.setFixedSize(box, box)
+    badge.setProperty("role", icon_role or resolved_role)
+    badge.setStyleSheet(f"#dialog_icon_badge {{ border-radius: {box // 2}px; }}")
+    inner = QVBoxLayout(badge)
+    inner.setContentsMargins(*Size.Margin.MRG_NON)
+    inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    icon_lbl = QLabel()
+    icon_lbl.setStyleSheet("background: transparent; border: none;")
+    pixmap = get_pixmap_colored(icon_path, color_str=icon_color or default_fg, size=glyph, dpr=dpr)
+    if pixmap.isNull():
+        pixmap = QIcon(icon_path).pixmap(QSize(glyph, glyph), dpr)
+    icon_lbl.setPixmap(pixmap)
+    inner.addWidget(icon_lbl)
+    return badge
+
+
+def build_dialog_footer(parent: QWidget | None = None) -> tuple[QFrame, QHBoxLayout]:
+    footer = QFrame(parent)
+    footer.setProperty("role", "dialog_footer")
+    lay = QHBoxLayout(footer)
+    lay.setContentsMargins(20, 12, 20, 12)
+    lay.setSpacing(Size.SPACING_LG)
+    return footer, lay
+
+
 class ModernModal(ModernFramelessShell):
     def __init__(
         self,
@@ -367,6 +477,7 @@ class ModernModal(ModernFramelessShell):
         min_width: int = 380,
         min_height: int = 320,
         dialog_key: str | None = None,
+        subtitle: str = "",
         parent=None
     ):
         super().__init__(
@@ -376,79 +487,42 @@ class ModernModal(ModernFramelessShell):
             min_width=min_width,
             min_height=min_height,
             dialog_key=dialog_key,
+            floating_close=False,
             parent=parent
         )
 
-        self.content_layout = QVBoxLayout(self.container)
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(*Size.Margin.MRG_NON)
+        root.setSpacing(0)
+
+        icon_widget = build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color, dpr=self.devicePixelRatio()) if icon_path else None
+        self.header = DialogHeader(title, subtitle, icon_widget, parent=self.container)
+        self.header.close_requested.connect(self.reject)
+        self.title_lbl = self.header.lbl_title
+        root.addWidget(self.header)
+
+        self.body = QWidget(self.container)
+        self.content_layout = QVBoxLayout(self.body)
         self.content_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.content_layout.setSpacing(Size.SPACING_LG)
+        root.addWidget(self.body, stretch=1)
 
-        if icon_path:
-            self._setup_header(icon_path, icon_bg_color, icon_role=icon_role, icon_color=icon_color)
-
-        if title:
-            self.title_lbl = QLabel(title)
-            self.title_lbl.setProperty("role", "h2")
-            self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.title_lbl.setWordWrap(True)
-            self.content_layout.addWidget(self.title_lbl)
-
-    def _setup_header(self, icon_path: str, bg_color: str, icon_role: str = "", icon_color: str = ""):
-        icon_wrapper = QHBoxLayout()
-        icon_wrapper.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        icon_container = QFrame()
-        icon_container.setFixedSize(52, 52)
-
-        role_dispatch = {
-            BrandColors.RED: ("danger_icon", Palette.NEUTRAL_050),
-            BrandColors.AMBER: ("warning_icon", Palette.NEUTRAL_999),
-            BrandColors.BLUE: ("info_icon", Palette.NEUTRAL_050),
-            BrandColors.GREEN: ("accent_icon", Palette.NEUTRAL_999),
-            BrandColors.TWITCH: ("twitch_icon", Palette.NEUTRAL_050),
-            BrandColors.YOUTUBE: ("youtube_icon", Palette.NEUTRAL_050),
-            BrandColors.TIKTOK: ("tiktok_icon", Palette.NEUTRAL_999),
-            Palette.NEUTRAL_999: ("black_icon", Palette.NEUTRAL_050),
-        }
-
-        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", Palette.NEUTRAL_999))
-        final_role = icon_role or resolved_role
-        final_fg = icon_color or default_fg
-
-        icon_container.setProperty("role", final_role)
-
-        icon_inner_layout = QVBoxLayout(icon_container)
-        icon_inner_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        icon_lbl = QLabel()
-        dpr = self.devicePixelRatio()
-        pixmap = get_pixmap_colored(icon_path, color_str=final_fg, size=36, dpr=dpr)
-        if pixmap.isNull():
-            pixmap = QIcon(icon_path).pixmap(QSize(36, 36), dpr)
-        icon_lbl.setPixmap(pixmap)
-        icon_inner_layout.addWidget(icon_lbl)
-
-        icon_wrapper.addWidget(icon_container)
-        self.content_layout.addLayout(icon_wrapper)
+        self.footer, self.footer_layout = build_dialog_footer(self.container)
+        self.footer.hide()
+        root.addWidget(self.footer)
 
     def add_action_buttons(self, btn_left: QPushButton, btn_right: QPushButton, stretch_center: bool = False):
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(Size.SPACING_LG)
-
         if btn_left:
             btn_left.setAutoDefault(False)
             btn_left.setDefault(False)
-            btn_layout.addWidget(btn_left)
+            self.footer_layout.addWidget(btn_left)
         if stretch_center:
-            btn_layout.addStretch()
+            self.footer_layout.addStretch()
         if btn_right:
             btn_right.setAutoDefault(False)
             btn_right.setDefault(False)
-            btn_layout.addWidget(btn_right)
-
-        self.content_layout.addSpacing(Size.SPACING_MD)
-        self.content_layout.addLayout(btn_layout)
+            self.footer_layout.addWidget(btn_right)
+        self.footer.show()
 
     def create_action_row(
         self,
@@ -460,28 +534,18 @@ class ModernModal(ModernFramelessShell):
         spacing: int = Size.SPACING_MD
     ):
         from frontend.widgets import ModernButton
-        actions_row = QHBoxLayout()
-        actions_row.setSpacing(spacing)
+        self.footer_layout.setSpacing(spacing)
 
-        btn_cancel = ModernButton(
-            text=cancel_text,
-            role="action_outlined",
-            parent=self
-        )
+        btn_cancel = ModernButton(text=cancel_text, role="action_outlined", parent=self)
         btn_cancel.clicked.connect(on_cancel or self.reject)
 
-        btn_confirm = ModernButton(
-            text=confirm_text,
-            role="action_outlined",
-            icon_name=confirm_icon,
-            parent=self
-        )
+        btn_confirm = ModernButton(text=confirm_text, role="action_outlined", icon_name=confirm_icon, parent=self)
         btn_confirm.clicked.connect(on_confirm or self.accept)
 
-        actions_row.addWidget(btn_cancel)
-        actions_row.addWidget(btn_confirm)
-        self.content_layout.addLayout(actions_row)
-        return actions_row, btn_cancel, btn_confirm
+        self.footer_layout.addWidget(btn_cancel)
+        self.footer_layout.addWidget(btn_confirm)
+        self.footer.show()
+        return self.footer_layout, btn_cancel, btn_confirm
 
 class ModernWizardPanel(ModernFramelessShell):
     def __init__(
@@ -504,6 +568,7 @@ class ModernWizardPanel(ModernFramelessShell):
             min_width=min_width,
             min_height=min_height,
             dialog_key=dialog_key,
+            floating_close=False,
             parent=parent
         )
         self.title_steps = title_steps
@@ -513,31 +578,27 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
 
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(*Size.Margin.MRG_XLG)
-        self.panel_layout.setSpacing(Size.SPACING_LG)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        self.panel_layout.setSpacing(0)
 
-        self.lbl_step_num = QLabel()
-        self.lbl_step_num.setProperty("role", "caption")
-        self.panel_layout.addWidget(self.lbl_step_num)
+        self.header = DialogHeader(parent=self.container)
+        self.header.close_requested.connect(self.reject)
+        self.header.reserve_subtitle_lines(2)
+        self.lbl_title = self.header.lbl_title
+        self.lbl_subtitle = self.header.lbl_subtitle
+        self.panel_layout.addWidget(self.header)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setRange(0, self.total_steps)
         self.progress_bar.setValue(0)
+        self.progress_bar.setFixedHeight(3)
         self.progress_bar.setProperty("role", "wizard_progress")
         self.panel_layout.addWidget(self.progress_bar)
-        self.panel_layout.addSpacing(Size.SPACING_XS)
 
-        self.lbl_title = QLabel()
-        self.lbl_title.setProperty("role", "h2")
-        self.lbl_title.setWordWrap(True)
-        self.panel_layout.addWidget(self.lbl_title)
-
-        self.lbl_subtitle = QLabel()
-        self.lbl_subtitle.setProperty("role", "body")
-        self.lbl_subtitle.setWordWrap(True)
-        self.panel_layout.addWidget(self.lbl_subtitle)
-
+        body = QWidget(self.container)
+        body_layout = QVBoxLayout(body)
+        body_layout.setContentsMargins(*Size.Margin.MRG_XLG)
         self.main_content = QStackedWidget()
         self.scroll_content = QScrollArea(self)
         self.scroll_content.setWidgetResizable(True)
@@ -545,10 +606,13 @@ class ModernWizardPanel(ModernFramelessShell):
         self.scroll_content.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_content.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll_content.setWidget(self.main_content)
-        self.panel_layout.addWidget(self.scroll_content, stretch=1)
+        body_layout.addWidget(self.scroll_content)
+        self.panel_layout.addWidget(body, stretch=1)
 
-        self.btn_layout = QHBoxLayout()
-        self.btn_layout.setSpacing(Size.SPACING_MD)
+        self.footer, self.btn_layout = build_dialog_footer(self.container)
+        self.lbl_step_num = QLabel()
+        self.lbl_step_num.setProperty("role", "caption")
+        self.btn_layout.addWidget(self.lbl_step_num)
         self.btn_layout.addStretch()
 
         self.btn_back = QPushButton()
@@ -567,7 +631,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.btn_layout.addWidget(self.btn_back)
         self.btn_layout.addWidget(self.btn_next)
-        self.panel_layout.addLayout(self.btn_layout)
+        self.panel_layout.addWidget(self.footer)
 
     def add_page(self, widget: QWidget):
         self.main_content.addWidget(widget)
@@ -582,9 +646,9 @@ class ModernWizardPanel(ModernFramelessShell):
             self.progress_bar.setValue(self.current_step + 1)
 
             if 0 <= self.current_step < len(self.title_steps):
-                self.lbl_title.setText(str(self.title_steps[self.current_step]))
+                self.header.set_title(str(self.title_steps[self.current_step]))
             if 0 <= self.current_step < len(self.subtitle_steps):
-                self.lbl_subtitle.setText(str(self.subtitle_steps[self.current_step]))
+                self.header.set_subtitle(str(self.subtitle_steps[self.current_step]))
             if 0 <= self.current_step < self.main_content.count():
                 self.main_content.setCurrentIndex(self.current_step)
 
@@ -640,7 +704,7 @@ class ModernConfirmDialog(ModernModal):
         body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
-        body_label.setMinimumHeight(60)
+        # body_label.setMinimumHeight(60)
 
         self.content_layout.addWidget(body_label)
 

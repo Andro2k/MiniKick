@@ -31,7 +31,6 @@
       "browse": "Browse...",
       "discard_tooltip": "Discard unsaved changes",
       "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
-      "save_short": "Save",
       "test": "Test Alert",
       "test_sent": "Test alert sent to OBS.",
       "test_short": "Test"

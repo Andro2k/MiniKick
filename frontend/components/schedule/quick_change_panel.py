@@ -19,7 +19,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh-filled.svg")
+        # self._icon_refresh = get_icon_colored("refresh-filled.svg")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -44,7 +44,7 @@ class ScheduleQuickChangePanel(QWidget):
 
         self.btn_refresh = QPushButton()
         self.btn_refresh.setProperty("role", "action_outlined")
-        self.btn_refresh.setIcon(self._icon_refresh)
+        self.btn_refresh.setIcon(get_icon_colored("refresh-filled.svg"))
         configure_icon_only_button(self.btn_refresh)
         self.btn_refresh.setToolTip(self.i18n.get("stream_info.status.refresh_tooltip"))
         self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
