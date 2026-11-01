@@ -95,7 +95,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row = create_row_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=container)
 
         lbl_sw = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_user_input_label"))
-        lbl_sw.setProperty("role", "h3")
+        lbl_sw.setProperty("role", "setting_title")
 
         self.chk_user_input = ModernSwitch()
 
@@ -107,7 +107,7 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _setup_reward_form_rows(self, parent_layout: QVBoxLayout, is_edit: bool = False, existing_reward: str = ""):
         lbl_title_key = "rewards.dialogs.wizard.step1.edit_title_label" if is_edit else "rewards.dialogs.wizard.step1.new_title_label"
         lbl_title = QLabel(self.i18n.get(lbl_title_key))
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", "setting_title")
         parent_layout.addWidget(lbl_title)
 
         txt_title = QLineEdit()
@@ -121,7 +121,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         parent_layout.addWidget(txt_title)
 
         lbl_cost = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_cost_label"))
-        lbl_cost.setProperty("role", "h3")
+        lbl_cost.setProperty("role", "setting_title")
         parent_layout.addWidget(lbl_cost)
 
         spin_cost = QSpinBox()
@@ -131,7 +131,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         parent_layout.addWidget(spin_cost)
 
         lbl_desc = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_desc_label"))
-        lbl_desc.setProperty("role", "h3")
+        lbl_desc.setProperty("role", "setting_title")
         parent_layout.addWidget(lbl_desc)
 
         txt_desc = QLineEdit()
@@ -233,7 +233,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                     widget.setEnabled(False)
         else:
             lbl_mode = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.mode_select"))
-            lbl_mode.setProperty("role", "h3")
+            lbl_mode.setProperty("role", "setting_title")
             layout.addWidget(lbl_mode)
 
             mode_row = QHBoxLayout()
@@ -257,7 +257,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             v_existing.setSpacing(Size.SPACING_MD)
 
             lbl_ex = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
-            lbl_ex.setProperty("role", "h3")
+            lbl_ex.setProperty("role", "setting_title")
             v_existing.addWidget(lbl_ex)
 
             row1 = QHBoxLayout()
@@ -295,7 +295,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         layout.addSpacing(Size.SPACING_XS)
         lbl2 = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.file_label"))
-        lbl2.setProperty("role", "h3")
+        lbl2.setProperty("role", "setting_title")
         layout.addWidget(lbl2)
 
         row2 = QHBoxLayout()
@@ -351,13 +351,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.lbl_vol_perc.setProperty("role", "caption")
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
 
-        vol_row = SliderRow(
-            icon_name="volume-up-filled.svg",
-            title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
-            desc_text="",
-            slider_widget=self.slider_vol,
-            value_label=self.lbl_vol_perc
-        )
+        vol_row = SliderRow.minimal(self.i18n.get("rewards.dialogs.wizard.step2.volume"), "", self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_NON)
         layout.addWidget(vol_row)
 
         self.video_container = QWidget()
@@ -367,7 +361,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         row_rnd = QHBoxLayout()
         lbl_rnd = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.random_pos"))
-        lbl_rnd.setProperty("role", "h3")
+        lbl_rnd.setProperty("role", "setting_title")
         self.chk_random_pos = ModernSwitch()
         self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
         row_rnd.addWidget(lbl_rnd)
@@ -384,18 +378,18 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
-        col_x, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_x"), self.spin_x, role="h3")
+        col_x, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_x"), self.spin_x, role="setting_title")
         row_xy.addLayout(col_x, stretch=1)
 
         self.spin_y = QSpinBox()
         self.spin_y.setRange(-5000, 5000)
-        col_y, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_y"), self.spin_y, role="h3")
+        col_y, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_y"), self.spin_y, role="setting_title")
         row_xy.addLayout(col_y, stretch=1)
 
         v_layout.addLayout(row_xy)
 
         lbl_scale = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.scale"))
-        lbl_scale.setProperty("role", "h3")
+        lbl_scale.setProperty("role", "setting_title")
         v_layout.addWidget(lbl_scale)
         self.spin_scale = QDoubleSpinBox()
         self.spin_scale.setRange(0.1, 2.0)
