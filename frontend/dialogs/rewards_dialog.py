@@ -43,9 +43,6 @@ class RewardsConfigWizard(ModernWizardPanel):
         )
         self._is_video = False
 
-        # self._icon_refresh = get_icon_colored("refresh-filled.svg")
-        # self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
-
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
         if self.is_duplicate_mode:

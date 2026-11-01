@@ -41,9 +41,6 @@ class TimerConfigWizard(ModernWizardPanel):
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
 
-        # self._icon_edit = get_icon_colored("edit-filled.svg")
-        # self._icon_trash = get_icon_colored("trash-filled.svg")
-
         self._setup_ui()
         if self.existing_config:
             self._load_existing()

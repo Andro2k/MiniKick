@@ -298,8 +298,6 @@ class ExpandableCard(QFrame):
         self.main_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.main_layout.setSpacing(Size.SPACING_NN)
 
-        # self._icon_up = get_icon_colored("chevron-up-filled.svg")
-        # self._icon_down = get_icon_colored("chevron-down-filled.svg")
         self._is_expanded = False
 
         self.header_widget = QWidget(self)

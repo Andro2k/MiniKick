@@ -760,7 +760,6 @@ QToolTip {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050
 
 @lru_cache(maxsize=16)
 def get_global_qss(base: int = 12, custom_qss: tuple[str, ...] = ()) -> str:
-    # size_head1 = base + 12
     size_head2 = base + 9
     size_head3 = base + 3
     size_text1 = base
