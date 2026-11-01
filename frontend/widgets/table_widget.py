@@ -9,6 +9,7 @@ from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
 from frontend.common import get_pixmap_colored, get_assets_path, BrandColors, Size
+from .row_action_menu import RowActionMenu, RowMenuAction
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -440,6 +441,14 @@ class TableActionCell(QWidget):
         self.layout.addWidget(sw)
         self.layout.addSpacing(Size.SPACING_NN)
         return sw
+
+    def add_menu(self, actions: list[RowMenuAction], tooltip: str = "") -> ModernButton:
+        btn = ModernButton("", role="btn_ghost", icon_name="dots-horizontal-filled.svg", parent=self)
+        configure_icon_only_button(btn, Size.ICON_SMALL)
+        btn.setToolTip(tooltip)
+        btn.clicked.connect(lambda checked=False: RowActionMenu.open_below(btn, actions))
+        self.layout.addWidget(btn)
+        return btn
 
     def add_button(self, icon_name: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role, icon_name=icon_name, parent=self)

@@ -33,7 +33,6 @@ DEFAULT_DICTIONARY = {
       "browse": "Browse...",
       "discard_tooltip": "Discard unsaved changes",
       "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
-      "save_short": "Save",
       "test": "Test Alert",
       "test_sent": "Test alert sent to OBS.",
       "test_short": "Test"
@@ -436,8 +435,6 @@ DEFAULT_DICTIONARY = {
       "regex_prefix": "RegEx",
       "search_placeholder": "Search linked command...",
       "title": "Linked Commands",
-      "tooltip_delete": "Permanently delete command",
-      "tooltip_edit": "Modify command settings",
       "type_custom": "Custom",
       "type_plugin": "Plugin",
       "warning_legacy_format": "Command has non-standard format (contains spaces or uppercase). Edit it to normalize."
@@ -468,6 +465,13 @@ DEFAULT_DICTIONARY = {
     "follower": "Follower",
     "no_results": "No results found",
     "no_results_filter": "No results found matching the applied filters.",
+    "row_menu": {
+      "more": "More actions",
+      "play": "Test in OBS",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
+    },
     "status": {
       "error": "Error",
       "offline": "Offline",
@@ -1195,10 +1199,6 @@ DEFAULT_DICTIONARY = {
       "status_unlinked_tag": "Unlinked",
       "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
       "title": "Linked Rewards",
-      "tooltip_delete": "Delete Reward",
-      "tooltip_duplicate": "Duplicate Reward (other platform or new)",
-      "tooltip_edit": "Modify settings",
-      "tooltip_play": "Test in OBS",
       "tooltip_play_missing": "Cannot play: media file not found",
       "unknown_file": "Unknown"
     }
@@ -1558,8 +1558,6 @@ DEFAULT_DICTIONARY = {
       "col_platforms": "Platforms",
       "platform_both": "Both",
       "search_placeholder": "Search timer...",
-      "tooltip_delete": "Permanently delete timer",
-      "tooltip_edit": "Edit timer",
       "unit_lines": "Lines",
       "unit_minutes": "Minutes"
     }
@@ -1569,7 +1567,6 @@ DEFAULT_DICTIONARY = {
       "tooltip": "New in this update!"
     },
     "dialog": {
-      "btn_got_it": "Got it!",
       "btn_start": "Start Exploring",
       "subtitle_update": "Discover the latest features and optimizations designed to level up your stream.",
       "subtitle_welcome": "Your unified all-in-one assistant for Kick, Twitch, YouTube, and TikTok.",

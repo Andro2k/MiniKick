@@ -6,6 +6,7 @@ from .color_picker import ModernColorPicker
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table_widget import ModernTable, ModernTableCard, TableActionCell, PlatformBadgeCell
+from .row_action_menu import RowActionMenu, RowMenuAction
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .clearable_line_edit import ClearableLineEdit
@@ -21,6 +22,8 @@ from .action_line_edit import ActionLineEdit
 from .floating_list_popup import BaseFloatingListPopup
 
 __all__ = [
+    "RowActionMenu",
+    "RowMenuAction",
     "create_card_frame",
     "create_row_layout",
     "create_col_layout",

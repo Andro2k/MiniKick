@@ -451,6 +451,14 @@ QMenu::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transpar
 QMenu::item:selected {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-color: {Semantic.BORDER_SUBTLE_GHOST}; }}
 QMenu::item:pressed {{ background-color: {Palette.NEUTRAL_750}; }}
 QMenu::icon {{ margin-left: 14px; }}
+QMenu[role="row_menu"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_COMP}; }}
+QMenu[role="row_menu"]::item {{ padding: 8px 18px 8px 8px; margin: 1px 0; border: none; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
+QMenu[role="row_menu"]::item:selected {{ background-color: {Palette.NEUTRAL_850}; color: {Palette.NEUTRAL_050}; }}
+QMenu[role="row_menu"]::item:disabled {{ color: {Palette.NEUTRAL_500}; background-color: transparent; }}
+QMenu[role="row_menu"]::item:default {{ color: {BrandColors.RED}; }}
+QMenu[role="row_menu"]::item:default:selected {{ background-color: {rgba(BrandColors.RED, 0.14)}; color: {BrandColors.RED}; }}
+QMenu[role="row_menu"]::separator {{ height: 1px; background-color: {Semantic.BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}
+QMenu[role="row_menu"]::icon {{ margin-left: 8px; }}
 QMenu::indicator {{ width: 16px; height: 16px; left: 8px; }}
 QMenu::indicator:checked {{ image: url("{PATH_ICON_CHECK_GREEN}"); }}
 QMenu::indicator:unchecked {{ image: none; }}

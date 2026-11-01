@@ -433,8 +433,6 @@
       "regex_prefix": "RegEx",
       "search_placeholder": "Buscar comando vinculado...",
       "title": "Comandos Vinculados",
-      "tooltip_delete": "Eliminar comando permanentemente",
-      "tooltip_edit": "Modificar configuración del comando",
       "type_custom": "Personalizado",
       "type_plugin": "Plugin",
       "warning_legacy_format": "Comando con formato no estándar (contiene espacios o mayúsculas). Edítalo para normalizarlo."
@@ -465,6 +463,13 @@
     "follower": "Seguidor",
     "no_results": "No se encontraron resultados",
     "no_results_filter": "No se encontraron resultados que coincidan con los filtros aplicados.",
+    "row_menu": {
+      "more": "Más acciones",
+      "play": "Probar en OBS",
+      "edit": "Editar",
+      "duplicate": "Duplicar",
+      "delete": "Eliminar"
+    },
     "status": {
       "error": "Error",
       "offline": "Desconectado",
@@ -1192,10 +1197,6 @@
       "status_unlinked_tag": "Desvinculada",
       "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
       "title": "Recompensas Vinculadas",
-      "tooltip_delete": "Eliminar Recompensa",
-      "tooltip_duplicate": "Duplicar Recompensa (otra plataforma o nueva)",
-      "tooltip_edit": "Modificar ajustes",
-      "tooltip_play": "Probar en OBS",
       "tooltip_play_missing": "No se puede reproducir: archivo multimedia no encontrado",
       "unknown_file": "Desconocido"
     }
@@ -1555,8 +1556,6 @@
       "col_platforms": "Plataformas",
       "platform_both": "Ambos",
       "search_placeholder": "Buscar temporizador...",
-      "tooltip_delete": "Eliminar temporizador permanentemente",
-      "tooltip_edit": "Editar temporizador",
       "unit_lines": "Líneas",
       "unit_minutes": "Minutos"
     }

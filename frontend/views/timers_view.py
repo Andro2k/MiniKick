@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, RowMenuAction
 from frontend.common import Palette, Size
 
 class TimersView(BaseView):
@@ -60,7 +60,7 @@ class TimersView(BaseView):
         h_header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
 
-        self.table.setColumnWidth(6, 130)
+        self.table.setColumnWidth(6, 96)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
 
@@ -164,19 +164,23 @@ class TimersView(BaseView):
             callback=lambda checked, tid=timer_id: self.status_toggled.emit(tid, checked)
         )
 
-        cell.add_button(
-            icon_name="edit-filled.svg",
-            role="row_action_accent",
-            tooltip=self.i18n.get("timer.table.tooltip_edit"),
-            callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
-        )
-
         timer_name = timer_data.get("name", "")
-        cell.add_button(
-            icon_name="trash-filled.svg",
-            role="row_action_danger",
-            tooltip=self.i18n.get("timer.table.tooltip_delete"),
-            callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
+        cell.add_menu(
+            [
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.edit"),
+                    icon_name="edit-filled.svg",
+                    callback=lambda tid=timer_id: self.edit_requested.emit(tid),
+                    role="row_action_accent"
+                ),
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.delete"),
+                    icon_name="trash-filled.svg",
+                    callback=lambda tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname),
+                    role="row_action_danger"
+                ),
+            ],
+            tooltip=self.i18n.get("common.row_menu.more")
         )
 
         return cell

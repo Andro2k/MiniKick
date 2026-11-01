@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell, RowMenuAction
 from frontend.common import get_pixmap_colored, is_complete_valid_trigger, BrandColors, Size
 
 class CommandView(BaseView):
@@ -116,7 +116,7 @@ class CommandView(BaseView):
         self.table.setColumnWidth(0, 190)
         self.table.setColumnWidth(1, 140)
         self.table.setColumnWidth(2, 140)
-        self.table.setColumnWidth(5, 130)
+        self.table.setColumnWidth(5, 96)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
 
@@ -299,18 +299,22 @@ class CommandView(BaseView):
             callback=_on_toggled
         )
 
-        cell.add_button(
-            icon_name="edit-filled.svg",
-            role="row_action_accent",
-            tooltip=self.i18n.get("command.table.tooltip_edit"),
-            callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
-        )
-
-        cell.add_button(
-            icon_name="trash-filled.svg",
-            role="row_action_danger",
-            tooltip=self.i18n.get("command.table.tooltip_delete"),
-            callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
+        cell.add_menu(
+            [
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.edit"),
+                    icon_name="edit-filled.svg",
+                    callback=lambda t=trigger_name: self.edit_requested.emit(t),
+                    role="row_action_accent"
+                ),
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.delete"),
+                    icon_name="trash-filled.svg",
+                    callback=lambda t=trigger_name: self._confirm_delete_command(t),
+                    role="row_action_danger"
+                ),
+            ],
+            tooltip=self.i18n.get("common.row_menu.more")
         )
 
         return cell
