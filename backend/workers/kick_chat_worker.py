@@ -5,7 +5,7 @@ import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient, KickWebSocketManager
 from backend.services.chat import ChatMessageDTO
-from backend.utils.worker_utils import ExponentialBackoff, cooperative_sleep
+from backend.utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.kick_chat")
 

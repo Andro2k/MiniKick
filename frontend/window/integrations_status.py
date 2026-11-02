@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable, Sequence
 from typing import Protocol
 
-from backend.connections.hub import ConnectionHub, IntegrationStatus
+from backend.connections import ConnectionHub, IntegrationStatus
 from frontend.window.session_metrics import SessionMetrics
 
 logger = logging.getLogger("minikick.core")

@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from backend.config.toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
+from backend.config import CONFIG_FILE_NAME, TomlConfigProvider
 from backend.interfaces import IConfigProvider
 
 logger = logging.getLogger("minikick.bootstrap.config")

@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchSocketManager
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
-from backend.utils.worker_utils import ExponentialBackoff, cooperative_sleep
+from backend.utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.twitch_chat")
 

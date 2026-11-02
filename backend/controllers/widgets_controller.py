@@ -8,7 +8,7 @@ import time
 from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
-from backend.utils.emote_parser import extract_emotes
+from backend.utils import extract_emotes
 
 logger = logging.getLogger("minikick.controllers.widgets")
 

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from frontend.common import get_icon_colored, BrandColors, Size
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import configure_icon_only_button
 
 class ImageDropzone(QFrame):
     image_selected = Signal(str)

@@ -2,8 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, QFrame, QPushButton, QListWidgetItem, QVBoxLayout
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
-from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader, configure_icon_only_button
 from frontend.common import get_icon_colored, BrandColors, Size
 
 class BotMutePanel(QWidget):

@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Mapping
 
-from backend.config.toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
+from backend.config import CONFIG_FILE_NAME, TomlConfigProvider
 from backend.interfaces import IConfigProvider
 
 _PROFILE_PLATFORMS = ("kick", "twitch", "tiktok", "youtube")

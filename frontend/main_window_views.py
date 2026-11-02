@@ -41,16 +41,7 @@ def _load_view_class(name: str):
     return view_class
 
 if TYPE_CHECKING:
-    from frontend.views.alerts_view import AlertsView
-    from frontend.views.chat_view import ChatView
-    from frontend.views.commands_view import CommandView
-    from frontend.views.logs_view import LogView
-    from frontend.views.music_view import MusicView
-    from frontend.views.rewards_view import RewardsView
-    from frontend.views.schedule_view import ScheduleView
-    from frontend.views.settings_view import SettingsView
-    from frontend.views.timers_view import TimersView
-    from frontend.views.widgets_view import WidgetsView
+    from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, TimersView, WidgetsView
     from frontend.main_window import MainWindowCore
 
     _VIEW_CLASS_TYPES = (

@@ -26,7 +26,7 @@ class StartupServices:
         return load_translator(self.create_config(db_manager))
 
     def create_container(self, db_manager, i18n):
-        from backend.core.app_container_core import AppContainerCore
+        from backend.core import AppContainerCore
         return AppContainerCore(db_manager=db_manager, i18n=i18n, config_provider=self.create_config(db_manager))
 
     def create_instance_guard(self):

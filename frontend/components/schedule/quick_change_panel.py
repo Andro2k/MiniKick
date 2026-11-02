@@ -2,9 +2,8 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches
+from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches, configure_icon_only_button
 from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
-from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ScheduleQuickChangePanel(QWidget):
     refresh_info_requested = Signal()

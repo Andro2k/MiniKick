@@ -5,8 +5,7 @@ import datetime
 import logging
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from backend.handlers import TTSVoiceHandler, ChatFilterHandler, CommandHelpFormatter
-from backend.services import MessagePipeline, ChatMessageDTO
-from backend.services.chat.giphy_service import GiphyService
+from backend.services import MessagePipeline, ChatMessageDTO, GiphyService
 
 logger = logging.getLogger("minikick.controllers.chat")
 

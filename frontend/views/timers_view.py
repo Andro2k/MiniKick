@@ -3,7 +3,8 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, RowMenuAction
+from frontend.views.base_view import BaseView
+from frontend.widgets import ModernTableCard, TableActionCell, create_badge, RowMenuAction
 from frontend.common import Palette, Size
 
 class TimersView(BaseView):

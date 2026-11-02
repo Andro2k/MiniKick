@@ -10,7 +10,7 @@ import websocket
 
 from backend.models import AlertEvent, AlertType
 from backend.services.system import TranslationService
-from backend.utils.json_utils import fast_loads
+from backend.utils import fast_loads
 from .base_chat_provider import BaseChatSocketProvider
 
 logger = logging.getLogger("minikick.providers.twitch_eventsub")

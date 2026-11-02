@@ -8,8 +8,8 @@ import logging
 from typing import Dict, List, Optional
 from PySide6.QtCore import QUrl, QEventLoop
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from backend.services.chat.piper_manager import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
-from backend.utils.text_utils import is_speakable_text
+from backend.services.chat import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
+from backend.utils import is_speakable_text
 
 logger = logging.getLogger("minikick.providers.piper_provider")
 
@@ -110,7 +110,7 @@ class PiperTTSProvider:
 
     @staticmethod
     def _prepare_compatible_config(json_path: str) -> str:
-        from backend.utils.json_utils import fast_load, fast_dump
+        from backend.utils import fast_load, fast_dump
         try:
             with open(json_path, "r", encoding="utf-8") as f:
                 cfg = fast_load(f)

@@ -4,8 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QH
 from PySide6.QtCore import Signal, Qt, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
-from frontend.widgets import ModernTable, ModernTableCard
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_button
 
 class DragDropQueueTable(ModernTable):
     row_moved = Signal(int, int)

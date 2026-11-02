@@ -25,6 +25,7 @@ _EXPORTS = {
     "ImportBackupModal": ".import_backup_dialog",
     "WhatsNewDialog": ".whats_new_dialog",
     "SplashScreen": ".splash_screen",
+    "present_update_dialog": ".update_flow",
 }
 
 __all__ = list(_EXPORTS)
@@ -58,6 +59,7 @@ if TYPE_CHECKING:
     from .splash_screen import SplashScreen
     from .tiktok_dialog import TikTokConnectDialog
     from .timers_dialog import TimerConfigWizard
+    from .update_flow import present_update_dialog
     from .updater_dialog import UpdateDialog
     from .whats_new_dialog import WhatsNewDialog
     from .youtube_dialog import YouTubeConnectDialog

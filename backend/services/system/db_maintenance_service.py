@@ -5,7 +5,7 @@ import os
 import tempfile
 from dataclasses import dataclass, field
 
-from backend.database.database_manager import DatabaseManager
+from backend.database import DatabaseManager
 
 logger = logging.getLogger("minikick.services.db_maintenance")
 

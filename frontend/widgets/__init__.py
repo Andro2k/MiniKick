@@ -80,9 +80,3 @@ __all__ = [
     "SearchableComboPopup",
 ]
 
-
-def __getattr__(name: str):
-    if name == "BaseView":
-        from frontend.views.base_view import BaseView
-        return BaseView
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -4,22 +4,17 @@ import logging
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QApplication
 from PySide6.QtCore import Slot, Signal, QTimer
 
-from backend.utils.perf import perf_phase
+from backend.utils import perf_phase
 from backend.services import WhatsNewService
 from backend.controllers import UpdaterController
 from frontend.common import get_global_qss, Size
-from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager
 from frontend.views import DashboardView
-from frontend.dialogs import ModernConfirmDialog
+from frontend.dialogs import ModernConfirmDialog, present_update_dialog
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.window.session_metrics import SessionMetrics
-from frontend.window.shutdown import MainWindowShutdown
-from frontend.window.updates import AutoUpdateCoordinator
-from frontend.window.whats_new import WhatsNewPresenter
-from frontend.window.window_state import WindowStateManager
+from frontend.window import SessionMetrics, MainWindowShutdown, AutoUpdateCoordinator, WhatsNewPresenter, WindowStateManager, MainWindowComposition, NavigationCoordinator, MainWindowStartup, TrayPresenter, MainWindowWiring
 from backend.connections import (
     WorkerSlot,
     TikTokConnection,
@@ -28,11 +23,6 @@ from backend.connections import (
 )
 
 from backend.config import TWITCH_CLIENT_ID
-from frontend.window.composition import MainWindowComposition
-from frontend.window.navigation import NavigationCoordinator
-from frontend.window.startup import MainWindowStartup
-from frontend.window.tray import TrayPresenter
-from frontend.window.wiring import MainWindowWiring
 
 logger = logging.getLogger("minikick.core")
 

@@ -8,6 +8,7 @@ _EXPORTS = {
     "BugReportWorker": ".bug_report_worker",
     "CrashReportWorker": ".crash_report_worker",
     "KickChatWorker": ".kick_chat_worker",
+    "KickPollSyncWorker": ".kick_chat_worker",
     "TwitchChatWorker": ".twitch_chat_worker",
     "YouTubeChatWorker": ".youtube_chat_worker",
     "TikTokChatWorker": ".tiktok_chat_worker",
@@ -43,7 +44,7 @@ if TYPE_CHECKING:
     from .twitch_auth_worker import TwitchAuthWorker
     from .bug_report_worker import BugReportWorker
     from .crash_report_worker import CrashReportWorker
-    from .kick_chat_worker import KickChatWorker
+    from .kick_chat_worker import KickChatWorker, KickPollSyncWorker
     from .twitch_chat_worker import TwitchChatWorker
     from .youtube_chat_worker import YouTubeChatWorker
     from .tiktok_chat_worker import TikTokChatWorker

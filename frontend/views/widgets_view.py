@@ -3,7 +3,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QVBoxLayout
 from frontend.common import Size
-from frontend.widgets import BaseView
+from frontend.views.base_view import BaseView
 from frontend.components.widgets import WidgetCard
 
 class WidgetsView(BaseView):

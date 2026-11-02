@@ -96,7 +96,7 @@ class ModernFramelessShell(QDialog):
             self.btn_close_shell.setAutoDefault(False)
             self.btn_close_shell.setDefault(False)
             self.btn_close_shell.setIcon(get_icon_colored("x-filled.svg"))
-            from frontend.widgets.controls_widget import configure_icon_only_button
+            from frontend.widgets import configure_icon_only_button
             configure_icon_only_button(self.btn_close_shell)
             self.btn_close_shell.clicked.connect(self.reject)
             self.btn_close_shell.move(init_w - 36, 8)
@@ -390,7 +390,7 @@ class DialogHeader(QFrame):
         self.btn_close.setAutoDefault(False)
         self.btn_close.setDefault(False)
         self.btn_close.setIcon(get_icon_colored("x-filled.svg"))
-        from frontend.widgets.controls_widget import configure_icon_only_button
+        from frontend.widgets import configure_icon_only_button
         configure_icon_only_button(self.btn_close)
         self.btn_close.clicked.connect(self.close_requested)
         lay.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignTop)

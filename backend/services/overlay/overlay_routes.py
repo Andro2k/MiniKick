@@ -3,7 +3,7 @@
 import base64
 import hashlib
 import hmac
-from backend.utils.json_utils import fast_loads, fast_dumps
+from backend.utils import fast_loads, fast_dumps, resource_path as get_resource_path
 import logging
 import mimetypes
 import os
@@ -12,7 +12,6 @@ import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse, unquote
 from .overlay_ws_client import WebSocketClient
-from backend.utils.paths import resource_path as get_resource_path
 
 logger = logging.getLogger("minikick.services.overlay.routes")
 

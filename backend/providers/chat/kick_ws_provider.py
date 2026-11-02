@@ -5,7 +5,7 @@ import socket
 import threading
 import time
 from datetime import datetime, timezone
-from backend.utils.json_utils import parse_kick_payload, fast_dumps
+from backend.utils import parse_kick_payload, fast_dumps
 from collections import deque
 import websocket
 from typing import Callable

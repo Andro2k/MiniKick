@@ -4,7 +4,8 @@ from typing import Dict, Tuple
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
-from frontend.widgets import BaseView, ModernButton, ModernCard
+from frontend.views.base_view import BaseView
+from frontend.widgets import ModernButton, ModernCard
 from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.components.alerts import ResponsiveStackedWidget, AlertVariantsTabBar, AlertVariantTabPill, AlertEventCard, AlertsOverlayCard
 from frontend.dialogs import DuplicateAlertModal

@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
 from PySide6.QtCore import Qt, Signal
 from frontend.common import get_icon_colored, Size
-from frontend.widgets import create_col_layout, create_row_layout
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import create_col_layout, create_row_layout, configure_icon_only_button
 
 class PiperVoiceItemWidget(QWidget):
     download_requested = Signal(str)

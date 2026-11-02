@@ -1,7 +1,7 @@
 # backend\database\database_manager.py
 
 import os
-from backend.utils.json_utils import fast_loads, fast_dumps
+from backend.utils import fast_loads, fast_dumps
 import time
 import sqlite3
 import logging

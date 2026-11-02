@@ -2,7 +2,7 @@
 
 import logging
 import os
-from backend.utils.paths import resource_path
+from backend.utils import resource_path
 
 logger = logging.getLogger("minikick.paths")
 

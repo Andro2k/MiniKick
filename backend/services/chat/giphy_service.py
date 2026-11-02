@@ -5,12 +5,9 @@ import urllib.parse
 import urllib.request
 import logging
 from typing import Optional
-from backend.utils.json_utils import fast_loads
+from backend.utils import fast_loads
 
-try:
-    from backend.config.api_keys import GIPHY_API_KEY as DEFAULT_GIPHY_API_KEY
-except Exception:
-    DEFAULT_GIPHY_API_KEY = ""
+from backend.config import GIPHY_API_KEY as DEFAULT_GIPHY_API_KEY
 
 logger = logging.getLogger("minikick.services.chat.giphy")
 
