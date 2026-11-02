@@ -18,7 +18,7 @@ def _sanitize_filename_component(text: str, default: str = "anonymous") -> str:
     return cleaned or default
 
 class CrashReportWorker(QThread):
-    finished = Signal(bool, str)
+    report_completed = Signal(bool, str)
 
     def __init__(self, traceback_text: str, contact: str, description: str, i18n, parent=None):
         super().__init__(parent)
@@ -31,7 +31,7 @@ class CrashReportWorker(QThread):
     def run(self):
         if not DISCORD_WEBHOOK_URL:
             err_msg = self._get_text("crash.err_no_webhook")
-            self.finished.emit(False, err_msg)
+            self.report_completed.emit(False, err_msg)
             return
 
         try:
@@ -114,13 +114,13 @@ class CrashReportWorker(QThread):
                 resp = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=15)
 
             if resp.status_code in (200, 204):
-                self.finished.emit(True, "")
+                self.report_completed.emit(True, "")
             else:
-                self.finished.emit(False, f"Discord status: {resp.status_code}")
+                self.report_completed.emit(False, f"Discord status: {resp.status_code}")
 
         except Exception as e:
             err_tmpl = self._get_text("crash.err_send")
-            self.finished.emit(False, err_tmpl.replace("{error}", str(e)))
+            self.report_completed.emit(False, err_tmpl.replace("{error}", str(e)))
 
     def _get_text(self, key: str) -> str:
         if self.i18n:

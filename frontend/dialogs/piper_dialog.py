@@ -3,17 +3,17 @@
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt, Signal, Slot
-from .base_dialog import ModernFramelessShell
+from .base_dialog import ModernFramelessShell, DialogHeader, build_dialog_footer
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, Size
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
     voices_updated = Signal()
 
     def __init__(self, i18n, tts_service, parent=None, manager=None, worker_class=None):
-        super().__init__(width=680, parent=parent)
+        super().__init__(width=680, floating_close=False, parent=parent)
         self.i18n = i18n
         self.tts_service = tts_service
         if manager is None:
@@ -37,32 +37,23 @@ class PiperVoicesDialog(ModernFramelessShell):
         self._load_synthesis_params()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self.container)
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(*Size.Margin.MRG_NON)
+        root.setSpacing(Size.SPACING_NN)
+
+        header = DialogHeader(
+            self.i18n.get("piper_dialog.title"),
+            self.i18n.get("piper_dialog.subtitle"),
+            parent=self.container
+        )
+        header.close_requested.connect(self.reject)
+        root.addWidget(header)
+
+        body = QWidget(self.container)
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(*Size.Margin.MRG_XLG)
         layout.setSpacing(Size.SPACING_MD)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(Size.SPACING_MD)
-
-        icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(get_pixmap_colored("microphone-filled.svg", BrandColors.GREEN, size=24))
-        header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-
-        title_layout = QVBoxLayout()
-        title_layout.setSpacing(Size.SPACING_XS)
-
-        lbl_title = QLabel(self.i18n.get("piper_dialog.title"), self)
-        lbl_title.setProperty("role", "h2")
-
-        lbl_subtitle = QLabel(self.i18n.get("piper_dialog.subtitle"), self)
-        lbl_subtitle.setProperty("role", "caption")
-        lbl_subtitle.setWordWrap(True)
-
-        title_layout.addWidget(lbl_title)
-        title_layout.addWidget(lbl_subtitle)
-        header_layout.addLayout(title_layout, stretch=1)
-
-        layout.addLayout(header_layout)
+        root.addWidget(body, stretch=1)
 
         self.synthesis_card = ExpandableCard(
             title=self.i18n.get("piper_dialog.synthesis_title"),
@@ -125,7 +116,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), params_container)
         self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         actions_layout.addWidget(self.btn_import)
@@ -168,7 +159,6 @@ class PiperVoicesDialog(ModernFramelessShell):
             btn.setProperty("role", "segmented_item")
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setFixedHeight(28)
             if tab_id == "all":
                 btn.setChecked(True)
             btn.toggled.connect(lambda checked, tid=tab_id: self._on_tab_toggled(tid, checked))
@@ -182,12 +172,11 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedSize(220, 32)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        search_layout.setContentsMargins(*Size.Margin.MRG_HSM)
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)
-        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", Palette.NEUTRAL_400, size=16))
-        lbl_search_icon.setFixedSize(16, 16)
+        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg"))
         search_layout.addWidget(lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = QLineEdit(search_container)
@@ -222,7 +211,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll, stretch=1)
 
-        footer_layout = QHBoxLayout()
+        footer, footer_layout = build_dialog_footer(self.container)
         self.lbl_installed_count = QLabel(self)
         self.lbl_installed_count.setProperty("role", "caption")
         footer_layout.addWidget(self.lbl_installed_count, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -234,7 +223,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         btn_close.clicked.connect(self.accept)
         footer_layout.addWidget(btn_close)
 
-        layout.addLayout(footer_layout)
+        root.addWidget(footer)
         self._update_installed_count()
 
     def _on_tab_toggled(self, tab_id: str, checked: bool):

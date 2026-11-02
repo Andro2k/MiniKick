@@ -12,7 +12,7 @@ from backend.database.database_manager import DatabaseManager
 from backend.database.widgets_storage import SQLiteWidgetsStorage
 from backend.services.system.widgets_service import WidgetService
 from backend.controllers.widgets_controller import WidgetsController
-from frontend.main_window import MainWindowCore
+from frontend.window.messages import ChatMessageRouter
 
 
 def test_log_level_defaults_to_info(monkeypatch):
@@ -115,21 +115,16 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
 
     load_calls = {"n": 0}
 
-    class _FakeSettingsStorage:
-        def load_string(self, key, default=""):
-            load_calls["n"] += 1
-            return "Nightbot,@StreamElements"
-
-    class _FakeSpamService:
-        def __init__(self):
-            self.storage = _FakeSettingsStorage()
+    def _fake_provider():
+        load_calls["n"] += 1
+        return {"nightbot", "streamelements"}
 
     controller = WidgetsController(
         view=None,
         widget_service=service,
         command_service=cmd_service,
         overlay_server=MagicMock(),
-        spam_service=_FakeSpamService()
+        ignored_users_provider=_fake_provider
     )
 
     first = controller._get_ignored_bots()
@@ -146,39 +141,82 @@ def test_widgets_controller_caches_ignored_bots(temp_db, qapp):
 
 def _message_routing_window():
     return SimpleNamespace(
-        session_metrics={"messages_processed": 0},
-        session_platform_messages={"kick": 0, "twitch": 0, "youtube": 0, "tiktok": 0},
-        _dashboard_metrics_timer=MagicMock(),
-        chat_controller=MagicMock()
+        session_metrics=MagicMock(),
+        chat_controller=MagicMock(),
+        kick=SimpleNamespace(username="", avatar_url=""),
+        twitch=SimpleNamespace(channel="", avatar_url=""),
+    )
+
+def _message_router(window):
+    return ChatMessageRouter(
+        process_message=window.chat_controller.process_message,
+        record_message=window.session_metrics.record_message,
+        profile_provider=lambda _platform: ("", ""),
     )
 
 
 def test_message_route_skips_clock_lookup_when_dto_has_timestamp(monkeypatch):
-    import frontend.main_window as main_window_module
+    import frontend.window.messages as messages_module
 
     now = MagicMock(side_effect=AssertionError("timestamp should be reused"))
-    monkeypatch.setattr(main_window_module, "datetime", SimpleNamespace(now=now))
+    monkeypatch.setattr(messages_module, "datetime", SimpleNamespace(now=now))
     window = _message_routing_window()
     dto = ChatMessageDTO("viewer", "hello", [], "", "message-1", 1, timestamp="12:30")
 
-    MainWindowCore._route_incoming_message(window, dto)
+    _message_router(window).route(dto)
 
     now.assert_not_called()
     assert dto.timestamp == "12:30"
     window.chat_controller.process_message.assert_called_once_with(dto)
+    window.session_metrics.record_message.assert_called_once_with("kick")
 
 
 def test_message_route_generates_timestamp_only_when_missing(monkeypatch):
-    import frontend.main_window as main_window_module
+    import frontend.window.messages as messages_module
 
     now = MagicMock()
     now.return_value.strftime.return_value = "12:31"
-    monkeypatch.setattr(main_window_module, "datetime", SimpleNamespace(now=now))
+    monkeypatch.setattr(messages_module, "datetime", SimpleNamespace(now=now))
     window = _message_routing_window()
     dto = ChatMessageDTO("viewer", "hello", [], "", "message-2", 1)
 
-    MainWindowCore._route_incoming_message(window, dto)
+    _message_router(window).route(dto)
 
     now.assert_called_once_with()
     assert dto.timestamp == "12:31"
     window.chat_controller.process_message.assert_called_once_with(dto)
+
+
+def test_message_route_uses_platform_profile_and_keeps_existing_avatar():
+    window = _message_routing_window()
+    profiles = {
+        "kick": ("kickchannel", "kick-avatar"),
+        "twitch": ("twitchchannel", "twitch-avatar"),
+    }
+    router = ChatMessageRouter(
+        process_message=window.chat_controller.process_message,
+        record_message=window.session_metrics.record_message,
+        profile_provider=profiles.__getitem__,
+    )
+    dto = ChatMessageDTO(
+        "TWITCHCHANNEL",
+        "hello",
+        [],
+        "",
+        "message-3",
+        1,
+        timestamp="12:32",
+        platform="twitch",
+    )
+
+    router.route(dto)
+
+    assert dto.avatar_url == "twitch-avatar"
+    window.session_metrics.record_message.assert_called_once_with("twitch")
+    window.chat_controller.process_message.assert_called_once_with(dto)
+
+    dto.avatar_url = "provided-avatar"
+    router.route(dto)
+
+    assert dto.avatar_url == "provided-avatar"
+    assert window.session_metrics.record_message.call_count == 2

@@ -97,7 +97,7 @@ class DashboardView(BaseView):
         welcome_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_welcome_title = QLabel(self.i18n.get("dashboard.welcome.title"), self.welcome_card)
-        self.lbl_welcome_title.setProperty("role", "h2")
+        self.lbl_welcome_title.setProperty("role", "h1")
         welcome_layout.addWidget(self.lbl_welcome_title)
 
         self.lbl_welcome_subtitle = QLabel(self.i18n.get("dashboard.welcome.subtitle"), self.welcome_card)
@@ -125,7 +125,6 @@ class DashboardView(BaseView):
             "",
             role="action_outlined",
             icon_name="repeat-filled.svg",
-            icon_size=16,
             parent=self.avatar_container,
         )
         self.btn_switch_channel.setFixedSize(30, 30)
@@ -155,7 +154,6 @@ class DashboardView(BaseView):
             "",
             role="btn_ghost",
             icon_name="link-filled.svg",
-            icon_size=16,
             parent=self.distribution_panel,
         )
         self.btn_open_channel.setToolTip(self.i18n.get("dashboard.profile.open_channel"))
@@ -287,7 +285,7 @@ class DashboardView(BaseView):
         self.top_commands_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
-        lbl_top_cmds.setProperty("role", "h3")
+        lbl_top_cmds.setProperty("role", "h2")
         self.top_commands_card.addWidget(lbl_top_cmds)
 
         self.top_commands_container = QVBoxLayout()
@@ -301,24 +299,24 @@ class DashboardView(BaseView):
         self.modules_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_modules_title = QLabel(self.i18n.get("dashboard.analytics.modules_summary_title"))
-        lbl_modules_title.setProperty("role", "h3")
+        lbl_modules_title.setProperty("role", "h2")
         self.modules_card.addWidget(lbl_modules_title)
 
         self.modules_grid = QGridLayout()
         self.modules_grid.setSpacing(Size.SPACING_SM)
 
         self.lbl_active_cmds_val = QLabel("0")
-        self.lbl_active_cmds_val.setProperty("role", "h2")
+        self.lbl_active_cmds_val.setProperty("role", "h1")
         lbl_active_cmds_text = QLabel(self.i18n.get("dashboard.analytics.active_commands"))
         lbl_active_cmds_text.setProperty("role", "caption")
 
         self.lbl_active_timers_val = QLabel("0")
-        self.lbl_active_timers_val.setProperty("role", "h2")
+        self.lbl_active_timers_val.setProperty("role", "h1")
         lbl_active_timers_text = QLabel(self.i18n.get("dashboard.analytics.active_timers"))
         lbl_active_timers_text.setProperty("role", "caption")
 
         self.lbl_active_rewards_val = QLabel("0")
-        self.lbl_active_rewards_val.setProperty("role", "h2")
+        self.lbl_active_rewards_val.setProperty("role", "h1")
         lbl_active_rewards_text = QLabel(self.i18n.get("dashboard.analytics.active_rewards"))
         lbl_active_rewards_text.setProperty("role", "caption")
 

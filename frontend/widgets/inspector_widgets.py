@@ -6,7 +6,7 @@ from typing import Optional
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
 
-from frontend.common import get_pixmap_colored, Palette, Size
+from frontend.common import get_pixmap_colored, Size
 
 class InspectorPropertyRow(QWidget):
     def __init__(
@@ -28,8 +28,7 @@ class InspectorPropertyRow(QWidget):
 
         if icon_name:
             self.lbl_icon = QLabel(self)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
-            self.lbl_icon.setFixedSize(16, 16)
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name))
             self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(self.lbl_icon)
 

@@ -1,9 +1,9 @@
 [project]
 name = "MiniKick"
-version = "1.6.5"
+version = "1.6.6"
 description = "El centro de control definitivo, modular y ligero para streamers en Kick.com"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 dependencies = [
     "requests",
     "websocket-client",
@@ -20,6 +20,10 @@ dependencies = [
     "msgspec>=0.21.1",
     "orjson>=3.12.0",
     "tiktoklive>=7.0.0",
+    "tomli-w>=1.0.0",
+    "tomli>=2.0.1; python_version < '3.11'",
+    "tomli>=2.5.0",
+    "questionary>=2.1.1",
 ]
 
 [tool.pytest.ini_options]

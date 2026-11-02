@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QWidget
-from frontend.common import Palette, Semantic, get_pixmap_colored
+from frontend.common import Palette, get_pixmap_colored
 
 
 class PlatformDistributionRing(QWidget):
@@ -12,9 +12,7 @@ class PlatformDistributionRing(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._segments: list[tuple[int, str]] = []
-        self._fallback_avatar = get_pixmap_colored(
-            "user-filled.svg", Palette.NEUTRAL_400, self.DEFAULT_AVATAR_SIZE
-        )
+        self._fallback_avatar = get_pixmap_colored("user-filled.svg", size=self.DEFAULT_AVATAR_SIZE)
         self._avatar = self._fallback_avatar
         self._avatar_size = self.DEFAULT_AVATAR_SIZE
         self.setFixedSize(176, 176)
@@ -35,7 +33,7 @@ class PlatformDistributionRing(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = QRectF(9, 9, self.width() - 18, self.height() - 18)
         ring_width = 10
-        painter.setPen(QPen(QColor(Semantic.NEUTRAL_750), ring_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        painter.setPen(QPen(QColor(Palette.NEUTRAL_750), ring_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         painter.drawArc(rect, 0, 360 * 16)
 
         total = sum(count for count, _ in self._segments)

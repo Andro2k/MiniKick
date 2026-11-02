@@ -31,7 +31,7 @@ class WhatsNewDialog(ModernModal):
             clean_ver = self.app_version.lstrip("vV") if self.app_version else ""
             dialog_title = title_tpl.replace("{version}", clean_ver)
             self._subtitle_text = self.i18n.get("whats_new.dialog.subtitle_update")
-            self._btn_text = self.i18n.get("whats_new.dialog.btn_got_it")
+            self._btn_text = self.i18n.get("common.buttons.understood")
 
         super().__init__(
             title=dialog_title,
@@ -76,7 +76,6 @@ class WhatsNewDialog(ModernModal):
             icon_color=Palette.NEUTRAL_050,
             parent=self.container
         )
-        btn_action.setFixedHeight(40)
         btn_action.clicked.connect(self.accept)
         self.content_layout.addWidget(btn_action)
 
@@ -102,7 +101,7 @@ class WhatsNewDialog(ModernModal):
         desc_text = item.get("desc") or (self.i18n.get(desc_key) if desc_key else "")
 
         lbl_title = QLabel(title_text, parent=card)
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", "h2")
 
         lbl_desc = QLabel(desc_text, parent=card)
         lbl_desc.setProperty("role", "caption")

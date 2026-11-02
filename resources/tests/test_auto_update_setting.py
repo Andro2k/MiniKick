@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QWidget
 
 from backend.services.system.settings_service import SettingsService
-from frontend.main_window import MainWindowCore
+from frontend.window.updates import AutoUpdateCoordinator
 from frontend.views.settings_view import SettingsView
 from backend.services.system import TranslationService
 
@@ -45,89 +45,74 @@ def test_settings_view_auto_update_switch_emits_and_restores_state(qapp):
     assert changed == [False]
 
 
-def _auto_update_window(enabled=True):
-    window = SimpleNamespace(
-        settings_service=SimpleNamespace(
-            is_auto_update_download_enabled=lambda: enabled
-        ),
-        updater_controller=SimpleNamespace(
-            download_worker=None,
-            start_download=MagicMock(return_value=True),
-            install_update=MagicMock(),
-        ),
-        sidebar=SimpleNamespace(set_update_available=MagicMock()),
-        toast=SimpleNamespace(show_toast=MagicMock()),
+def _auto_update_coordinator(enabled=True):
+    updater = SimpleNamespace(
+        download_worker=None,
+        start_download=MagicMock(return_value=True),
+        install_update=MagicMock(),
+    )
+    sidebar = SimpleNamespace(set_update_available=MagicMock())
+    toast = SimpleNamespace(show_toast=MagicMock())
+    request_quit = MagicMock()
+    coordinator = AutoUpdateCoordinator(
+        parent=QWidget(),
+        updater_controller=updater,
+        settings_service=SimpleNamespace(is_auto_update_download_enabled=lambda: enabled),
+        sidebar=sidebar,
+        toast=toast,
         i18n=TranslationService(default_lang="es"),
-        logger=MagicMock(),
-        _is_worker_running=MainWindowCore._is_worker_running,
-        _is_shutting_down=False,
-        _auto_update_download_active=False,
-        _auto_update_info={},
-        _force_quit=MagicMock(),
+        is_shutting_down=lambda: False,
+        request_quit=request_quit,
     )
-    window._download_update_if_enabled = lambda info: (
-        MainWindowCore._download_update_if_enabled(window, info)
-    )
-    return window
+    return coordinator, updater, toast, request_quit
 
 
-def test_silent_update_starts_download_only_when_preference_enabled():
-    window = _auto_update_window()
+def test_silent_update_starts_download_only_when_preference_enabled(qapp):
+    coordinator, updater, _toast, _quit = _auto_update_coordinator()
     update_info = {
         "version": "2.0.0",
         "download_url": "https://example.invalid/update.exe",
     }
 
-    MainWindowCore._on_silent_update_found(window, update_info)
+    coordinator.on_update_found(update_info)
 
-    window.updater_controller.start_download.assert_called_once_with(
-        update_info["download_url"]
-    )
-    assert window._auto_update_download_active is True
+    updater.start_download.assert_called_once_with(update_info["download_url"])
+    assert coordinator.download_active is True
 
-    manual_window = _auto_update_window(enabled=False)
-    MainWindowCore._on_silent_update_found(manual_window, update_info)
-    manual_window.updater_controller.start_download.assert_not_called()
+    manual, manual_updater, _toast, _quit = _auto_update_coordinator(enabled=False)
+    manual.on_update_found(update_info)
+    manual_updater.start_download.assert_not_called()
 
 
-def test_auto_download_completion_requires_install_confirmation(monkeypatch):
-    import frontend.main_window as main_window_module
+def _confirm_dialog(monkeypatch, result):
+    import frontend.window.updates as updates_module
 
-    window = _auto_update_window()
-    window._auto_update_download_active = True
-    window._auto_update_info = {"version": "2.0.0"}
     dialog = MagicMock()
     dialog.DialogCode = QDialog.DialogCode
-    dialog.exec.return_value = QDialog.DialogCode.Rejected
-    monkeypatch.setattr(
-        main_window_module,
-        "ModernConfirmDialog",
-        MagicMock(return_value=dialog),
-    )
-
-    MainWindowCore._on_auto_update_download_finished(window, True)
-
-    window.updater_controller.install_update.assert_not_called()
-    window._force_quit.assert_not_called()
-    window.toast.show_toast.assert_called_once()
+    dialog.exec.return_value = result
+    monkeypatch.setattr(updates_module, "ModernConfirmDialog", MagicMock(return_value=dialog))
 
 
-def test_auto_download_completion_can_install_when_confirmed(monkeypatch):
-    import frontend.main_window as main_window_module
+def test_auto_download_completion_requires_install_confirmation(qapp, monkeypatch):
+    coordinator, updater, toast, request_quit = _auto_update_coordinator()
+    coordinator.download_active = True
+    coordinator._info = {"version": "2.0.0"}
+    _confirm_dialog(monkeypatch, QDialog.DialogCode.Rejected)
 
-    window = _auto_update_window()
-    window._auto_update_download_active = True
-    window._auto_update_info = {"version": "2.0.0"}
-    dialog = MagicMock()
-    dialog.DialogCode = QDialog.DialogCode
-    dialog.exec.return_value = QDialog.DialogCode.Accepted
-    monkeypatch.setattr(
-        main_window_module,
-        "ModernConfirmDialog",
-        MagicMock(return_value=dialog),
-    )
+    coordinator.on_download_finished(True)
 
-    MainWindowCore._on_auto_update_download_finished(window, True)
+    updater.install_update.assert_not_called()
+    request_quit.assert_not_called()
+    toast.show_toast.assert_called_once()
 
-    window.updater_controller.install_update.assert_called_once_with()
-    window._force_quit.assert_called_once_with()
+
+def test_auto_download_completion_can_install_when_confirmed(qapp, monkeypatch):
+    coordinator, updater, _toast, request_quit = _auto_update_coordinator()
+    coordinator.download_active = True
+    coordinator._info = {"version": "2.0.0"}
+    _confirm_dialog(monkeypatch, QDialog.DialogCode.Accepted)
+
+    coordinator.on_download_finished(True)
+
+    updater.install_update.assert_called_once_with()
+    request_quit.assert_called_once_with()

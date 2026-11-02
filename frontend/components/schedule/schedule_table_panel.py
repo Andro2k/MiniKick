@@ -2,9 +2,9 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import ModernTableCard, TableActionCell
+from frontend.widgets import ModernTableCard, TableActionCell, RowMenuAction
 from frontend.dialogs import ModernConfirmDialog
-from frontend.common import Palette, Size
+from frontend.common import Size
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()
@@ -142,20 +142,21 @@ class ScheduleTablePanel(QWidget):
             callback=lambda checked, s_id=sched_id: self.toggle_schedule_requested.emit(s_id, checked)
         )
 
-        cell.add_button(
-            icon_name="edit-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_accent_solid",
-            tooltip=self.i18n.get("stream_info.schedule_dialog.title_edit"),
-            callback=lambda _, s=sched: self.edit_schedule_clicked.emit(s)
-        )
-
-        cell.add_button(
-            icon_name="trash-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_danger_solid",
-            tooltip=self.i18n.get("stream_info.confirm_delete.title"),
-            callback=lambda _, s_id=sched_id: self._confirm_delete_schedule(s_id)
+        cell.add_menu(
+            [
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.edit"),
+                    icon_name="edit-filled.svg",
+                    callback=lambda s=sched: self.edit_schedule_clicked.emit(s),
+                ),
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.delete"),
+                    icon_name="trash-filled.svg",
+                    callback=lambda s_id=sched_id: self._confirm_delete_schedule(s_id),
+                    role="row_action_danger"
+                ),
+            ],
+            tooltip=self.i18n.get("common.row_menu.more")
         )
 
         return cell

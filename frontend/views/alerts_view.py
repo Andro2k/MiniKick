@@ -105,7 +105,7 @@ class AlertsView(BaseView):
         notice_text_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
-        self.lbl_notice_title.setProperty("role", "h3")
+        self.lbl_notice_title.setProperty("role", "h2")
         self.lbl_notice_title.setProperty("state", "warning")
 
         self.lbl_notice_msg = QLabel(parent=self)
@@ -118,8 +118,7 @@ class AlertsView(BaseView):
         self.btn_notice_connect = ModernButton(
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
-            icon_name="plug-filled.svg",
-            icon_size=16,
+            icon_name="brand-twitch.svg",
             parent=self
         )
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)
@@ -299,7 +298,10 @@ class AlertsView(BaseView):
         self.connect_platform_requested.emit("twitch")
 
     def set_connected_platforms(self, connected_platforms: Dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         self._update_platform_connection_ui()
 
     def _update_platform_connection_ui(self):
@@ -346,9 +348,9 @@ class AlertsView(BaseView):
                 if hasattr(self, 'notice_banner'):
                     self.notice_banner.card_layout.invalidate()
                     self.notice_banner.updateGeometry()
-                if hasattr(self, 'scroll_content'):
-                    self.scroll_content.layout().invalidate()
-                    self.scroll_content.updateGeometry()
+                if hasattr(self, 'content_column'):
+                    self.content_column.layout().invalidate()
+                    self.content_column.updateGeometry()
 
         target_direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:

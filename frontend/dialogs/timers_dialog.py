@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
 from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox, create_card_frame, create_col_layout, create_switch_field, create_text_label, create_labeled_field
-from frontend.common import get_icon_colored, Palette, Size
+from frontend.common import get_icon_colored, Size
 
 logger = logging.getLogger("minikick.dialogs.timer_dialog")
 
@@ -30,19 +30,16 @@ class TimerConfigWizard(ModernWizardPanel):
             subtitle_steps=subtitle_steps,
             i18n=i18n,
             width=750,
-            height=700,
+            height=750,
             resizable=True,
             min_width=750,
-            min_height=700,
+            min_height=750,
             dialog_key="timer_config_wizard",
             parent=parent
         )
         self.existing_config = existing_config
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
-
-        self._icon_edit = get_icon_colored("edit-filled.svg", Palette.NEUTRAL_050, 16)
-        self._icon_trash = get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, 16)
 
         self._setup_ui()
         if self.existing_config:
@@ -98,15 +95,15 @@ class TimerConfigWizard(ModernWizardPanel):
         name_field, _ = create_labeled_field(
             self.i18n.get("timer.dialog.name_label"),
             self.txt_name,
-            role="h3",
+            role="h2",
             parent=self
         )
         top_layout.addLayout(name_field)
 
-        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.platform_label"), role="h3", parent=self))
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.platform_label"), role="h2", parent=self))
         top_layout.addLayout(self._build_platform_switches_row())
 
-        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.intervals_label"), role="h3", parent=self))
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.intervals_label"), role="h2", parent=self))
 
         row_online = QHBoxLayout()
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval"))
@@ -160,7 +157,7 @@ class TimerConfigWizard(ModernWizardPanel):
         basic_main_layout.addWidget(top_card)
 
         bottom_card, bottom_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
-        bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h3", parent=self))
+        bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h2", parent=self))
 
         lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="caption", parent=self)
         lbl_msgs_desc.setWordWrap(True)
@@ -193,7 +190,7 @@ class TimerConfigWizard(ModernWizardPanel):
         lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="body", parent=self)
         lbl_help_desc.setWordWrap(True)
 
-        help_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.help_title"), role="h3", parent=self))
+        help_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.help_title"), role="h2", parent=self))
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
@@ -204,7 +201,7 @@ class TimerConfigWizard(ModernWizardPanel):
         kw_field, _ = create_labeled_field(
             self.i18n.get("timer.dialog.keywords_label"),
             self.txt_keywords,
-            role="h3",
+            role="h2",
             parent=self
         )
         filt_layout.addLayout(kw_field)
@@ -215,7 +212,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
         filt_layout.addSpacing(Size.SPACING_MD)
 
-        filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="h3", parent=self))
+        filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="h2", parent=self))
 
         self.search_category = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
@@ -271,13 +268,13 @@ class TimerConfigWizard(ModernWizardPanel):
         row_layout.addWidget(txt)
 
         btn_edit = ModernButton("", role="action_accent_solid")
-        btn_edit.setIcon(self._icon_edit)
+        btn_edit.setIcon(get_icon_colored("edit-filled.svg"))
         btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_edit.clicked.connect(lambda: self._open_message_editor(txt))
         row_layout.addWidget(btn_edit)
 
         btn_del = ModernButton("", role="action_danger_solid")
-        btn_del.setIcon(self._icon_trash)
+        btn_del.setIcon(get_icon_colored("trash-filled.svg"))
         btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_del.clicked.connect(lambda: self._remove_message_field(row))
         row_layout.addWidget(btn_del)

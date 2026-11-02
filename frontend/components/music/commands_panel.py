@@ -9,13 +9,13 @@ class MusicCommandsPanel(QWidget):
     command_toggled = Signal(str, bool)
 
     _COMMANDS_CONFIG = [
-        ("!sr", "plus-filled.svg", "music.cmds.sr_label", "music.cmds.sr_desc", "sw_sr"),
-        ("!skip", "skip-next-filled.svg", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
-        ("!song", "circle-info-filled.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
-        ("!pause", "pause-filled.svg", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
-        ("!resume", "play-filled.svg", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
-        ("!playlist", "playlist-filled.svg", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),
-        ("!vol", "volume-up-filled.svg", "music.cmds.vol_label", "music.cmds.vol_desc", "sw_volume"),
+        ("!sr", "music.cmds.sr_label", "music.cmds.sr_desc", "sw_sr"),
+        ("!skip", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
+        ("!song", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
+        ("!pause", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
+        ("!resume", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
+        ("!playlist", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),
+        ("!vol", "music.cmds.vol_label", "music.cmds.vol_desc", "sw_volume"),
     ]
 
     def __init__(self, i18n, parent=None):
@@ -37,14 +37,14 @@ class MusicCommandsPanel(QWidget):
         self.card_cmds = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
         self.card_cmds.setEnabled(False)
 
-        for i, (cmd, icon, lbl_key, desc_key, attr_name) in enumerate(self._COMMANDS_CONFIG):
+        for i, (cmd, lbl_key, desc_key, attr_name) in enumerate(self._COMMANDS_CONFIG):
             if i > 0:
                 self.card_cmds.add_separator()
             sw = ModernSwitch(parent=self)
             sw.toggled.connect(lambda val, c=cmd: self.command_toggled.emit(c, val))
             self.switches[cmd] = sw
             setattr(self, attr_name, sw)
-            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw, contents_margins=Size.Margin.MRG_LRG)
+            row = SettingRow.minimal(self.i18n.get(lbl_key), self.i18n.get(desc_key), sw)
             self.card_cmds.addWidget(row)
 
         self.panel_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)

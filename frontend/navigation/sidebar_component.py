@@ -52,15 +52,14 @@ class Sidebar(QFrame):
         self.logo_btn.setProperty("role", "btn_ghost")
 
         self.title_label = QLabel("MiniKick")
-        self.title_label.setProperty("role", "h3")
+        self.title_label.setProperty("role", "h2")
 
         self.expanded_spacer = QWidget()
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24))
-        self.btn_toggle.setIconSize(QSize(24, 24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", size=24))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -93,7 +92,7 @@ class Sidebar(QFrame):
 
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text.upper() if navigate_text else "")
-        self.lbl_navigate_header.setProperty("role", "sidebar_section_header")
+        self.lbl_navigate_header.setProperty("role", "caption")
         scroll_layout.addWidget(self.lbl_navigate_header)
 
         self.top_nav_layout = QVBoxLayout()
@@ -104,7 +103,7 @@ class Sidebar(QFrame):
 
         more_text = self.i18n.get("main.sidebar.section.more")
         self.lbl_more_header = QLabel(more_text.upper() if more_text else "")
-        self.lbl_more_header.setProperty("role", "sidebar_section_header")
+        self.lbl_more_header.setProperty("role", "caption")
         scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
@@ -121,8 +120,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_outlined")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_collapsed_update.setIconSize(QSize(16, 16))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg"))
         configure_icon_only_button(self.btn_collapsed_update)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
@@ -159,7 +157,7 @@ class Sidebar(QFrame):
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_card_icon = QLabel()
-        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN, 16))
+        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", BrandColors.GREEN))
         lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_box_layout.addWidget(lbl_card_icon)
 
@@ -168,8 +166,7 @@ class Sidebar(QFrame):
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
-        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_dismiss_update.setIconSize(QSize(16, 16))
+        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg"))
         configure_icon_only_button(self.btn_dismiss_update)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
@@ -179,7 +176,7 @@ class Sidebar(QFrame):
         card_layout.addLayout(top_row)
 
         self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
-        self.lbl_update_title.setProperty("role", "h3")
+        self.lbl_update_title.setProperty("role", "h2")
         self.lbl_update_title.setWordWrap(True)
         card_layout.addWidget(self.lbl_update_title)
 
@@ -190,8 +187,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_outlined")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_update_action.setIconSize(QSize(16, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)
         card_layout.addWidget(self.btn_update_action)
@@ -218,10 +214,10 @@ class Sidebar(QFrame):
         self.profile_text_layout.setSpacing(Size.SPACING_XS)
 
         self.profile_name_lbl = QLabel()
-        self.profile_name_lbl.setProperty("role", "profile_name")
+        self.profile_name_lbl.setProperty("role", "sidebar_section_header")
 
         self.profile_role_lbl = QLabel()
-        self.profile_role_lbl.setProperty("role", "profile_role")
+        self.profile_role_lbl.setProperty("role", "caption")
 
         self.profile_text_layout.addWidget(self.profile_name_lbl)
         self.profile_text_layout.addWidget(self.profile_role_lbl)
@@ -275,7 +271,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", Palette.NEUTRAL_050, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", size=24, dpr=dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)
@@ -346,7 +342,6 @@ class Sidebar(QFrame):
         btn.setProperty("icon_inactive", icon_inactive)
 
         btn.setIcon(icon_active if is_active else icon_inactive)
-        btn.setIconSize(QSize(16, 16))
         btn.setFixedHeight(36)
         btn.setToolTip("" if self.is_expanded else display_name)
 
@@ -439,7 +434,6 @@ class Sidebar(QFrame):
 
         icon = self._icon_collapse if self.is_expanded else self._icon_expand
         self.btn_toggle.setIcon(icon)
-        self.btn_toggle.setIconSize(QSize(24, 24))
 
         if hasattr(self, "anim") and self.anim.state() == QPropertyAnimation.State.Running:
             self.anim.stop()

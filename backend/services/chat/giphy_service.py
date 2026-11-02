@@ -1,4 +1,4 @@
-# backend/services/chat/giphy_service.py
+# backend\services\chat\giphy_service.py
 
 import re
 import urllib.parse

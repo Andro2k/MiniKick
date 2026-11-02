@@ -2,8 +2,8 @@
 
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
-from PySide6.QtCore import Signal, Qt, QSize, QTimer
-from frontend.common import get_icon_colored, get_pixmap, Palette, BrandColors, Size
+from PySide6.QtCore import Signal, Qt, QTimer
+from frontend.common import get_icon_colored, get_pixmap, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout, create_text_label
 from .music_mockup import MusicOverlayMockupWidget
 
@@ -86,28 +86,9 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.setSpacing(Size.SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self._setup_status_card()
         self._setup_now_playing_card()
         self._setup_volume_card()
         self._setup_overlay_url_card()
-
-    def _setup_status_card(self):
-        card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
-
-        status_layout = QHBoxLayout()
-        status_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        status_layout.setSpacing(Size.SPACING_MD)
-
-        self.lbl_auth_status = QLabel(self.i18n.get("music.status.youtube_active"))
-        self.lbl_auth_status.setProperty("role", "h3")
-
-        provider_info = QVBoxLayout()
-        provider_info.setContentsMargins(*Size.Margin.MRG_NON)
-        provider_info.addWidget(self.lbl_auth_status)
-
-        status_layout.addLayout(provider_info, stretch=1)
-        card.addLayout(status_layout)
-        self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
         self.card_player = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD, orientation="vertical")
@@ -125,7 +106,7 @@ class MusicPlayerSettingsPanel(QWidget):
         info_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
-        self.lbl_song_title.setProperty("role", "h3")
+        self.lbl_song_title.setProperty("role", "h2")
         self.lbl_song_title.setWordWrap(True)
 
         self.lbl_song_artist = QLabel("-")
@@ -144,14 +125,10 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setContentsMargins(*Size.Margin.MRG_NON)
         controls_layout.setSpacing(Size.SPACING_SM)
 
-        self.btn_play_pause = ModernButton("", role="action_outlined", parent=self)
-        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_play_pause.setIconSize(QSize(16, 16))
+        self.btn_play_pause = ModernButton("", role="action_outlined", icon_name="play-filled.svg", parent=self)
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
 
-        self.btn_skip = ModernButton("", role="action_outlined", parent=self)
-        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_050, 16))
-        self.btn_skip.setIconSize(QSize(16, 16))
+        self.btn_skip = ModernButton("", role="action_outlined", icon_name="skip-next-filled.svg", parent=self)
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
         controls_layout.addWidget(self.btn_play_pause)
@@ -205,14 +182,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "body")
 
-        self.row_vol = SliderRow(
-            icon_name="volume-up-filled.svg",
-            title_text=self.i18n.get("music.player.volume_title"),
-            desc_text=self.i18n.get("music.player.volume_desc"),
-            slider_widget=self.slider_vol,
-            value_label=self.lbl_vol_perc,
-            contents_margins=Size.Margin.MRG_NON
-        )
+        self.row_vol = SliderRow.minimal(self.i18n.get("music.player.volume_title"), self.i18n.get("music.player.volume_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_NON)
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
         self.card_volume.addWidget(self.row_vol)
         self.panel_layout.addWidget(self.card_volume, alignment=Qt.AlignmentFlag.AlignTop)
@@ -232,7 +202,7 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.setContentsMargins(*Size.Margin.MRG_NON)
         url_info.setSpacing(Size.SPACING_XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", "h2")
         lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)
@@ -313,10 +283,6 @@ class MusicPlayerSettingsPanel(QWidget):
         self.btn_copy_music_url.setText(original_text)
         self.btn_copy_music_url.setEnabled(True)
 
-    def set_auth_state(self, connected: bool, label_key: str = ""):
-        self._cached_auth_state = (connected, label_key)
-        self.lbl_auth_status.setText(self.i18n.get("music.status.youtube_active"))
-
     _format_time = staticmethod(_format_time)
 
     def _on_scrubber_pressed(self):
@@ -384,7 +350,7 @@ class MusicPlayerSettingsPanel(QWidget):
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")
-            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_050, 16))
+            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg"))
             self._is_playing = False
             self._duration_ms = 0
             self._current_progress_ms = 0
@@ -420,7 +386,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_requester.setText(req_text)
 
         icon_name = "pause-filled.svg" if is_playing else "play-filled.svg"
-        self.btn_play_pause.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 16))
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name))
 
         self._duration_ms = duration
         self._current_progress_ms = progress

@@ -89,7 +89,7 @@ class AlertEventCard(QWidget):
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
 
         lbl_header_title = QLabel(f"{platform_name} • {event_name}", parent=self)
-        lbl_header_title.setProperty("role", "h3")
+        lbl_header_title.setProperty("role", "h2")
 
         self.badge_offline = create_badge(self.i18n.get("alerts.status.disconnected"), state="warning")
         self.badge_offline.setVisible(False)
@@ -109,7 +109,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -120,7 +119,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -130,17 +128,15 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
         self.btn_test.clicked.connect(self._on_test_clicked)
 
         self.btn_save = ModernButton(
-            text=self.i18n.get("alerts.buttons.save_short"),
+            text=self.i18n.get("common.buttons.save"),
             role=btn_role,
             icon_name="check-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -554,7 +550,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=16,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -583,7 +578,6 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=16,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -634,9 +628,9 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*Size.Margin.MRG_MED)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", Palette.NEUTRAL_400, size=16))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg"))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
-        lbl_sec_prev_title.setProperty("role", "h3")
+        lbl_sec_prev_title.setProperty("role", "h2")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
         sec_prev_header.addWidget(lbl_sec_prev_title)
         sec_prev_header.addStretch()

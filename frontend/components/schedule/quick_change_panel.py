@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches
-from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
 from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ScheduleQuickChangePanel(QWidget):
@@ -19,7 +19,6 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh-filled.svg", Palette.NEUTRAL_050, 16)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -38,13 +37,13 @@ class ScheduleQuickChangePanel(QWidget):
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
-        lbl_status_title.setProperty("role", "h3")
+        lbl_status_title.setProperty("role", "h2")
         status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
         self.btn_refresh = QPushButton()
         self.btn_refresh.setProperty("role", "action_outlined")
-        self.btn_refresh.setIcon(self._icon_refresh)
+        self.btn_refresh.setIcon(get_icon_colored("refresh-filled.svg"))
         configure_icon_only_button(self.btn_refresh)
         self.btn_refresh.setToolTip(self.i18n.get("stream_info.status.refresh_tooltip"))
         self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -62,7 +61,7 @@ class ScheduleQuickChangePanel(QWidget):
         kick_header.setSpacing(Size.SPACING_MD)
 
         icon_kick = QLabel()
-        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN, size=16))
+        icon_kick.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN))
         lbl_kick_badge = QLabel("KICK")
         lbl_kick_badge.setProperty("role", "badge_kick")
         self.lbl_kick_status = QLabel(self.i18n.get("stream_info.status.loading"))
@@ -82,7 +81,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_kick_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_kick_t_header.setProperty("role", "caption")
         self.lbl_kick_title = QLabel("-")
-        self.lbl_kick_title.setProperty("role", "h3")
+        self.lbl_kick_title.setProperty("role", "setting_title")
         self.lbl_kick_title.setWordWrap(True)
         kick_title_layout.addWidget(lbl_kick_t_header)
         kick_title_layout.addWidget(self.lbl_kick_title)
@@ -107,7 +106,7 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_header.setSpacing(Size.SPACING_MD)
 
         icon_twitch = QLabel()
-        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE, size=16))
+        icon_twitch.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.PURPLE))
         lbl_twitch_badge = QLabel("TWITCH")
         lbl_twitch_badge.setProperty("role", "badge_twitch")
         self.lbl_twitch_status = QLabel(self.i18n.get("stream_info.status.loading"))
@@ -127,7 +126,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_twitch_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
         lbl_twitch_t_header.setProperty("role", "caption")
         self.lbl_twitch_title = QLabel("-")
-        self.lbl_twitch_title.setProperty("role", "h3")
+        self.lbl_twitch_title.setProperty("role", "h2")
         self.lbl_twitch_title.setWordWrap(True)
         twitch_title_layout.addWidget(lbl_twitch_t_header)
         twitch_title_layout.addWidget(self.lbl_twitch_title)
@@ -180,13 +179,13 @@ class ScheduleQuickChangePanel(QWidget):
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
         change_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
         header_layout = create_row_layout(spacing=Size.SPACING_MD)
-        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h3", word_wrap=False)
+        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h2", word_wrap=False)
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)
 
         form_layout = create_col_layout(spacing=Size.SPACING_MD)
-        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="h3", word_wrap=False)
+        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="setting_title", word_wrap=False)
         form_layout.addWidget(lbl_target)
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
@@ -196,7 +195,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addLayout(switches_row)
 
         lbl_title_field = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
-        lbl_title_field.setProperty("role", "h3")
+        lbl_title_field.setProperty("role", "setting_title")
         form_layout.addWidget(lbl_title_field)
 
         self.txt_title = QLineEdit(parent=self)
@@ -204,7 +203,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addWidget(self.txt_title)
 
         lbl_category = QLabel(self.i18n.get("stream_info.quick_change.category"))
-        lbl_category.setProperty("role", "h3")
+        lbl_category.setProperty("role", "setting_title")
         form_layout.addWidget(lbl_category)
 
         self.search_category = CategorySearchComboBox(

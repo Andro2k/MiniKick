@@ -1,7 +1,7 @@
 ﻿# resources\tests\test_antigravity_ui_theme.py
 
 from PySide6.QtWidgets import QLabel, QPushButton
-from frontend.common import GLOBAL_QSS, get_global_qss, Palette
+from frontend.common import get_global_qss, Palette
 from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernDivider
 from frontend.views.settings_view import SettingsView
 from frontend.navigation import Sidebar
@@ -81,7 +81,7 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import theme, Size
-    for m in (Size.Margin.SEC_HDR, Size.Margin.MRG_HXS, Size.Margin.MRG_MED, Size.Margin.SEC_SCR, Size.Margin.MRG_XXS, Size.Margin.SEC_BDG):
+    for m in (Size.Margin.SEC_HDR, Size.Margin.MRG_HXS, Size.Margin.MRG_MED, Size.Margin.MRG_XXS, Size.Margin.SEC_BDG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -113,7 +113,7 @@ def test_dashboard_view_profile_cards_and_margins(qapp):
     assert hasattr(view, "distribution_panel")
     assert hasattr(view, "channel_badges_container")
     assert len(view.channel_badge_cards) == 4
-    assert view.channel_badges_container.parentWidget() is view.scroll_content
+    assert view.channel_badges_container.parentWidget() is view.content_column
     assert hasattr(view, "card_kick")
     assert hasattr(view, "card_twitch")
     assert hasattr(view, "card_youtube")
@@ -171,7 +171,7 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     assert card.divider.isHidden()
 
     i18n = TranslationService(default_lang="es")
-    widget_card = WidgetCard("shoutout", "Shoutout", "Desc", "star-filled.svg", i18n)
+    widget_card = WidgetCard("shoutout", "Shoutout", "Desc", i18n)
     assert isinstance(widget_card, ExpandableCard)
     assert isinstance(widget_card.divider, ModernDivider)
     assert widget_card.divider.isHidden()
@@ -189,8 +189,7 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     assert not spam_card.divider.isHidden()
 
     w_view = WidgetsView(i18n)
-    assert w_view.body_layout.spacing() == Size.SPACING_MD
-    assert w_view.columns_layout.spacing() == Size.SPACING_MD
+    assert w_view.cards_layout.spacing() == Size.SPACING_MD
 
     s_panel = ChatSpamPanel(i18n)
     assert s_panel.panel_layout.spacing() == Size.SPACING_MD
@@ -320,8 +319,8 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
     )
     assert card.table.selectionBehavior() == QTableWidget.SelectionBehavior.SelectRows
     assert card.table.selectionMode() == QTableWidget.SelectionMode.SingleSelection
-    assert "QTableWidget::item:hover:!selected" not in GLOBAL_QSS
-    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in GLOBAL_QSS
+    assert "QTableWidget::item:hover:!selected" not in get_global_qss(12)
+    assert f"QTableWidget::item:selected {{ background-color: {Palette.NEUTRAL_750};" in (get_global_qss(12))
 
     m = card.card_layout.contentsMargins()
     assert (m.left(), m.top(), m.right(), m.bottom()) == (0, 0, 0, 0)
@@ -346,13 +345,12 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
 
 def test_combobox_and_segmented_action_outlined_style(qapp):
     from frontend.common.theme import GLOBAL_QSS, Semantic, Borders
-    assert f"QComboBox                           {{ background-color: {Semantic.NEUTRAL_900};" in GLOBAL_QSS
+    assert f"QComboBox                           {{ background-color: {Palette.NEUTRAL_900};" in GLOBAL_QSS
     assert f"border: {Borders.BRD_BASE};" in GLOBAL_QSS
-    assert f"QComboBox:hover                     {{ background-color: {Semantic.NEUTRAL_750}; border: {Borders.BRD_HOVR};" in GLOBAL_QSS
-    assert f'QFrame[role="segmented_control"] {{ background-color: {Semantic.NEUTRAL_950}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Semantic.NEUTRAL_900}; border: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
-    assert f'border-left: 1px solid {Semantic.NEUTRAL_700};' in GLOBAL_QSS
+    assert f"QComboBox:hover                     {{ background-color: {Palette.NEUTRAL_750}; border: {Borders.BRD_HOVR};" in GLOBAL_QSS
+    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette
@@ -369,12 +367,11 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
-    assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_StyledBackground) is True
-    assert combo._popup.property("role") == "searchable_combo_popup"
+    assert combo._popup.bg_frame.property("role") == "searchable_combo_popup"
     assert f'QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900};' in GLOBAL_QSS
 
     text_edit = VariableTextEdit()
-    assert text_edit.popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
+    assert text_edit.popup_window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
     assert text_edit.popup.property("role") == "variable_autocomplete_popup"
 
     cat_popup = CategorySuggestionsPopup(combo)

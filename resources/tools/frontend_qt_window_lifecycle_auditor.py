@@ -1,4 +1,4 @@
-# resources/tools/frontend_qt_window_lifecycle_auditor.py
+# resources\tools\frontend_qt_window_lifecycle_auditor.py\
 
 import argparse
 import ast

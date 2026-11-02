@@ -2,13 +2,14 @@
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy
-from PySide6.QtCore import Qt, QSize, Signal, QEvent
-from .controls_widget import ModernButton, ModernSwitch
+from PySide6.QtCore import Qt, Signal, QEvent
+from .controls_widget import ModernButton, ModernSwitch, configure_icon_only_button
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
-from frontend.common import get_icon_colored, get_pixmap_colored, get_assets_path, BrandColors, Size
+from frontend.common import get_pixmap_colored, get_assets_path, BrandColors, Size
+from .row_action_menu import RowActionMenu, RowMenuAction
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -79,7 +80,7 @@ class ModernTableCard(QFrame):
 
             if title_text:
                 self.lbl_title = QLabel(title_text, self.header_top_widget)
-                self.lbl_title.setProperty("role", "h3")
+                self.lbl_title.setProperty("role", "h2")
                 self.header_top_layout.insertWidget(0, self.lbl_title)
 
             if search_placeholder:
@@ -89,7 +90,7 @@ class ModernTableCard(QFrame):
             if add_button_text:
                 self.btn_add = ModernButton(add_button_text, role="action_outlined", parent=self.header_top_widget)
                 if add_button_icon:
-                    self.btn_add.set_icon(add_button_icon, size=16)
+                    self.btn_add.set_icon(add_button_icon)
                 self.header_controls_layout.addWidget(self.btn_add)
 
         self.stack = QStackedWidget(self)
@@ -133,7 +134,7 @@ class ModernTableCard(QFrame):
         self.lbl_no_results.setWordWrap(True)
 
         self.btn_clear_filters = ModernButton("", role="action_outlined", parent=self.no_results_overlay)
-        self.btn_clear_filters.set_icon("filter-filled.svg", size=16)
+        self.btn_clear_filters.set_icon("filter-filled.svg")
         self.btn_clear_filters.clicked.connect(self.clear_filters)
 
         self.no_results_layout.addStretch(1)
@@ -203,15 +204,6 @@ class ModernTableCard(QFrame):
             btn.setMinimumHeight(30)
             self.header_actions_widget.show()
             self.reflow_header_actions()
-
-    def set_action_buttons(self, buttons: list[ModernButton]):
-        self._ensure_header()
-        self.action_buttons = list(buttons)
-        for btn in self.action_buttons:
-            btn.setParent(self.header_actions_widget)
-            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.setMinimumHeight(30)
-        self.reflow_header_actions()
 
     def reflow_header_actions(self, available_width: int | None = None):
         if not hasattr(self, "header_actions_layout") or self.header_actions_layout is None:
@@ -284,7 +276,7 @@ class ModernTableCard(QFrame):
         )
 
         lbl_title = QLabel(title)
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h1")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_desc = QLabel(desc)
@@ -295,7 +287,7 @@ class ModernTableCard(QFrame):
 
         self.btn_empty_action = ModernButton(button_text, role="action_outlined")
         if button_icon:
-            self.btn_empty_action.set_icon(button_icon, size=16)
+            self.btn_empty_action.set_icon(button_icon)
         self.btn_empty_action.clicked.connect(on_button_clicked)
 
         layout.addStretch(1)
@@ -439,7 +431,7 @@ class TableActionCell(QWidget):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.layout.setSpacing(Size.SPACING_SM)
+        self.layout.setSpacing(Size.SPACING_XS)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def add_switch(self, checked: bool, callback) -> ModernSwitch:
@@ -447,13 +439,20 @@ class TableActionCell(QWidget):
         sw.setChecked(checked)
         sw.toggled.connect(callback)
         self.layout.addWidget(sw)
-        self.layout.addSpacing(Size.SPACING_XS)
+        self.layout.addSpacing(Size.SPACING_NN)
         return sw
 
-    def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
-        btn = ModernButton("", role=role, parent=self)
-        btn.setIcon(get_icon_colored(icon_name, color, size=16))
-        btn.setIconSize(QSize(16, 16))
+    def add_menu(self, actions: list[RowMenuAction], tooltip: str = "") -> ModernButton:
+        btn = ModernButton("", role="btn_ghost", icon_name="dots-horizontal-filled.svg", parent=self)
+        configure_icon_only_button(btn, Size.ICON_SMALL)
+        btn.setToolTip(tooltip)
+        btn.clicked.connect(lambda checked=False: RowActionMenu.open_below(btn, actions))
+        self.layout.addWidget(btn)
+        return btn
+
+    def add_button(self, icon_name: str, role: str, tooltip: str, callback) -> ModernButton:
+        btn = ModernButton("", role=role, icon_name=icon_name, parent=self)
+        configure_icon_only_button(btn, Size.ICON_SMALL)
         btn.setToolTip(tooltip)
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)
@@ -493,7 +492,7 @@ class PlatformBadgeCell(QWidget):
             if p_key in plat_configs:
                 icon_file, color, name = plat_configs[p_key]
                 lbl_icon = QLabel(self)
-                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color, 16))
+                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color))
                 lbl_icon.setToolTip(name)
                 self.layout.addWidget(lbl_icon)
 

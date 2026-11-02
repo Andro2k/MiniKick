@@ -1,10 +1,11 @@
 # frontend\widgets\controls.py
 
 import re
-from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEdit, QListWidget, QSpinBox
+from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEdit, QListWidget, QSpinBox, QVBoxLayout, QWidget
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QLinearGradient, QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon
-from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, Semantic, BrandColors, SwitchTheme, Size
+from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, Semantic, BrandColors, SwitchTheme, Size, ROW_ACTION_COLORS
+from .style_utils import repolish
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
@@ -15,19 +16,18 @@ def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICO
         button.setFixedSize(size)
     else:
         button.setFixedSize(size, size)
-    button.style().unpolish(button)
-    button.style().polish(button)
+    repolish(button)
 
 
 class ModernButton(QPushButton):
     def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "",
-                 icon_color: str | None = None, icon_size: int = 16, parent=None):
+                 icon_color: str | None = None, parent=None):
         super().__init__(text, parent)
         self._role = role
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         if icon_name:
-            self.set_icon(icon_name, color=icon_color, size=icon_size)
+            self.set_icon(icon_name, color=icon_color)
 
     def setIcon(self, icon: QIcon):
         super().setIcon(icon)
@@ -48,18 +48,23 @@ class ModernButton(QPushButton):
             "action_accent_solid": Palette.NEUTRAL_050,
             "btn_ghost": Palette.NEUTRAL_400,
             "nav_button": Palette.NEUTRAL_400,
+            **ROW_ACTION_COLORS,
         }
         return role_map.get(role, Palette.NEUTRAL_050)
 
-    def set_icon(self, icon_name: str, color: str | None = None, size: int = 16):
+    def set_icon(self, icon_name: str, color: str | None = None):
         if not icon_name:
             self.setIcon(QIcon())
             return
+            
+        if isinstance(color, int):
+            color = None
+            
         if color is None:
             current_role = self.property("role") or self._role
             color = self._resolve_role_color(current_role)
-        self.setIcon(get_icon_colored(icon_name, color, size))
-        self.setIconSize(QSize(size, size))
+            
+        self.setIcon(get_icon_colored(icon_name, color_str=color))
 
 class ModernSwitch(QAbstractButton):
     def __init__(self, parent=None):
@@ -72,7 +77,7 @@ class ModernSwitch(QAbstractButton):
         self._padding = 3.0
 
     def sizeHint(self) -> QSize:
-        return QSize(44, 22)
+        return QSize(48, 24)
 
     def focusInEvent(self, event):
         super().focusInEvent(event)
@@ -109,8 +114,8 @@ class ModernSwitch(QAbstractButton):
             track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
             border_color = QColor(Palette.NEUTRAL_750)
         elif is_checked:
-            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_0))
-            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_ON_1))
+            track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_00))
+            track_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_TRACK_ON_01))
             border_color = QColor(BrandColors.GREEN) if has_focus else QColor(BrandColors.KICK_BORDER)
         else:
             track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_DIS_0))
@@ -142,7 +147,7 @@ class ModernSwitch(QAbstractButton):
             thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_OFF_1))
         elif is_checked:
             thumb_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_000))
-            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_ON_1))
+            thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_ON_01))
         else:
             thumb_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_0))
             thumb_grad.setColorAt(1.0, QColor(SwitchTheme.SWITCH_THUMB_DIS_1))
@@ -210,28 +215,34 @@ class VariableTextEdit(QTextEdit):
             self.autocomplete_data = autocomplete_data
 
         self.trigger_chars = list(self.autocomplete_data.keys())
-        self.current_trigger = None
 
         bg_qcolor = QColor(highlight_bg) if highlight_bg else None
         self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
 
-        self.popup = QListWidget(self)
+        self.popup_window = QWidget(self, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.popup_window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        
+        layout = QVBoxLayout(self.popup_window)
+        layout.setContentsMargins(*Size.Margin.MRG_NON)
+        layout.setSpacing(Size.SPACING_NN)
+
+        self.popup = QListWidget(self.popup_window)
         self.popup.setProperty("role", "variable_autocomplete_popup")
-        self.popup.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-        self.popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.popup.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.popup.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.popup.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.popup.itemActivated.connect(self._insert_selected)
         self.popup.itemClicked.connect(self._insert_selected)
+        
+        layout.addWidget(self.popup)
 
     def keyPressEvent(self, event: QKeyEvent):
-        if self.popup.isVisible():
+        if self.popup_window.isVisible():
             if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
                 self._insert_selected()
                 return
             elif event.key() == Qt.Key.Key_Escape:
-                self.popup.hide()
+                self.popup_window.hide()
                 return
             elif event.key() == Qt.Key.Key_Up:
                 row = (self.popup.currentRow() - 1) % self.popup.count()
@@ -255,7 +266,6 @@ class VariableTextEdit(QTextEdit):
             self._show_popup(event.text())
 
     def _show_popup(self, trigger: str):
-        self.current_trigger = trigger
         items = self.autocomplete_data.get(trigger, [])
         if not items:
             return
@@ -269,8 +279,8 @@ class VariableTextEdit(QTextEdit):
         max_len = max(len(item) for item in items)
         popup_width = max(130, max_len * 8 + 32)
 
-        self.popup.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(160, len(items) * 30 + 12))
-        self.popup.show()
+        self.popup_window.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(160, len(items) * 30 + 12))
+        self.popup_window.show()
 
     def _insert_selected(self):
         selected_item = self.popup.currentItem()
@@ -280,7 +290,7 @@ class VariableTextEdit(QTextEdit):
             cursor.deletePreviousChar()
             cursor.insertText(var_text)
             self.setTextCursor(cursor)
-        self.popup.hide()
+        self.popup_window.hide()
 
     def _handle_backspace(self) -> bool:
         cursor = self.textCursor()

@@ -16,7 +16,7 @@ class ReleaseNotesDialog(ModernModal):
             title=self.i18n.get("dialogs.release_notes.title"),
             icon_path=get_assets_path("icons/file-text-filled.svg"),
             icon_bg_color=BrandColors.GREEN,
-            width=700,
+            width=900,
             parent=parent
         )
         self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
@@ -40,16 +40,12 @@ class ReleaseNotesDialog(ModernModal):
         meta_layout.setSpacing(Size.SPACING_MD)
         meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.lbl_tag_badge = QLabel("", parent=self.meta_container)
-        self.lbl_tag_badge.setProperty("role", "badge_kick")
-
         self.lbl_published = QLabel("", parent=self.meta_container)
         self.lbl_published.setProperty("role", "caption")
 
         self.lbl_author = QLabel("", parent=self.meta_container)
         self.lbl_author.setProperty("role", "caption")
 
-        meta_layout.addWidget(self.lbl_tag_badge)
         meta_layout.addWidget(self.lbl_published)
         meta_layout.addWidget(self.lbl_author)
 
@@ -117,8 +113,7 @@ class ReleaseNotesDialog(ModernModal):
         self._worker.start()
 
     def _on_release_fetched(self, data: dict):
-        tag_name = data.get("tag_name", "")
-        release_name = data.get("name", "") or tag_name
+        release_name = data.get("name", "")
         published_raw = data.get("published_at", "")
         published_date = published_raw.split("T")[0] if "T" in published_raw else published_raw
         author_raw = data.get("author", "")
@@ -128,10 +123,6 @@ class ReleaseNotesDialog(ModernModal):
 
         if release_name:
             self.title_lbl.setText(release_name)
-
-        if tag_name:
-            self.lbl_tag_badge.setText(tag_name)
-            self.lbl_tag_badge.show()
 
         if published_date:
             pub_text = self.i18n.get("dialogs.release_notes.lbl_published").replace("{date}", published_date)

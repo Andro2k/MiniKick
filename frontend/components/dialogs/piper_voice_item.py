@@ -1,8 +1,8 @@
 # frontend\components\dialogs\piper_voice_item.py
 
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
-from PySide6.QtCore import Qt, QSize, Signal
-from frontend.common import get_icon_colored, Palette, Size
+from PySide6.QtCore import Qt, Signal
+from frontend.common import get_icon_colored, Size
 from frontend.widgets import create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -50,14 +50,8 @@ class PiperVoiceItemWidget(QWidget):
         header_layout.addWidget(self.badge_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
         header_layout.addLayout(info_layout, stretch=1)
 
-        self.lbl_status = QLabel(self)
-        self.lbl_status.setProperty("role", "caption")
-        self.update_status(self.is_installed)
-        header_layout.addWidget(self.lbl_status, alignment=Qt.AlignmentFlag.AlignVCenter)
-
         self.btn_test = QPushButton(self)
-        self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_test.setIconSize(QSize(16, 16))
+        self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg"))
         configure_icon_only_button(self.btn_test)
         self.btn_test.setProperty("role", "action_outlined")
         self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
@@ -67,8 +61,7 @@ class PiperVoiceItemWidget(QWidget):
         header_layout.addWidget(self.btn_test)
 
         self.btn_delete = QPushButton(self)
-        self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", Palette.NEUTRAL_050, size=16))
-        self.btn_delete.setIconSize(QSize(16, 16))
+        self.btn_delete.setIcon(get_icon_colored("trash-filled.svg"))
         configure_icon_only_button(self.btn_delete)
         self.btn_delete.setProperty("role", "action_danger_solid")
         self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))
@@ -78,10 +71,9 @@ class PiperVoiceItemWidget(QWidget):
         header_layout.addWidget(self.btn_delete)
 
         self.btn_download = QPushButton(self)
-        self.btn_download.setFixedHeight(30)
         self.btn_download.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
         self.btn_download.setProperty("role", "action_outlined")
         self.btn_download.clicked.connect(lambda: self.download_requested.emit(self.voice_id))
         self.btn_download.setVisible(not self.is_installed and self._can_download())
@@ -90,7 +82,6 @@ class PiperVoiceItemWidget(QWidget):
         main_layout.addLayout(header_layout)
 
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFixedHeight(4)
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
@@ -118,24 +109,12 @@ class PiperVoiceItemWidget(QWidget):
 
     def update_status(self, is_installed: bool):
         self.is_installed = is_installed
-        if is_installed:
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_installed"))
-            self.lbl_status.setProperty("state", "success")
-        else:
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_not_installed"))
-            self.lbl_status.setProperty("state", "neutral")
-        self.lbl_status.style().unpolish(self.lbl_status)
-        self.lbl_status.style().polish(self.lbl_status)
-
-        if hasattr(self, "btn_test"):
-            self.btn_test.setVisible(is_installed)
-        if hasattr(self, "btn_delete"):
-            self.btn_delete.setVisible(is_installed and not self.is_default)
-        if hasattr(self, "btn_download"):
-            self.btn_download.setVisible(not is_installed and self._can_download())
-            self.btn_download.setEnabled(True)
-            self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+        self.btn_test.setVisible(is_installed)
+        self.btn_delete.setVisible(is_installed and not self.is_default)
+        self.btn_download.setVisible(not is_installed and self._can_download())
+        self.btn_download.setEnabled(True)
+        self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
+        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
 
     def set_downloading(self, downloading: bool, percent: int = 0):
         self.progress_bar.setVisible(downloading)
@@ -143,11 +122,7 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_download.setEnabled(not downloading)
         if downloading:
             self.btn_download.setText(f"{percent}%")
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_downloading"))
-            self.lbl_status.setProperty("state", "info")
-            self.lbl_status.style().unpolish(self.lbl_status)
-            self.lbl_status.style().polish(self.lbl_status)
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
         else:
             self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=16))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))

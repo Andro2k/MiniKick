@@ -3,13 +3,12 @@
 import asyncio
 import logging
 import os
-import re
 import tempfile
 import threading
 import time
-import edge_tts
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput, QMediaDevices
 from PySide6.QtCore import QUrl, QEventLoop
+from backend.utils.text_utils import is_speakable_text
 
 logger = logging.getLogger("minikick.providers.web_tts")
 
@@ -70,15 +69,6 @@ class WebTTSProvider:
             self._player.setAudioOutput(self._audio_output)
         return self._player, self._audio_output
 
-    @staticmethod
-    def _is_speakable_text(text: str) -> bool:
-        if not text or not text.strip():
-            return False
-        cleaned = re.sub(r'https?://\S+|www\.\S+', '', text).strip()
-        if not cleaned:
-            return False
-        return any(c.isalnum() for c in cleaned)
-
     def _run_event_loop(self):
         import sys
         if sys.platform == "win32":
@@ -134,7 +124,7 @@ class WebTTSProvider:
         pass
 
     def prepare(self, text: str, voice_id: str = None) -> None:
-        if not self._is_speakable_text(text):
+        if not is_speakable_text(text):
             logger.debug(f"[Web TTS] Skipping prepare: no speakable content in '{text[:25]}...'")
             return
         voice = self._resolve_valid_voice(voice_id)
@@ -153,6 +143,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
+                import edge_tts
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 elapsed = time.perf_counter() - start_t
@@ -181,7 +172,7 @@ class WebTTSProvider:
         return ""
 
     def speak(self, text: str, voice_id: str = None) -> None:
-        if not self._is_speakable_text(text):
+        if not is_speakable_text(text):
             logger.debug(f"[Web TTS] Skipping speak: no speakable content in '{text[:25]}...'")
             return
         start_t = time.perf_counter()
@@ -219,6 +210,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
+                import edge_tts
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 t_dl_end = time.perf_counter() - t_dl_start
@@ -342,6 +334,7 @@ class WebTTSProvider:
 
     def get_available_voices(self) -> list[dict]:
         try:
+            import edge_tts
             voices = asyncio.run(edge_tts.list_voices())
             filtered = [
                 {"id": v["ShortName"], "name": v["FriendlyName"]}

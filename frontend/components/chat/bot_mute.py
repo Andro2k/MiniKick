@@ -17,7 +17,6 @@ class BotMutePanel(QWidget):
         super().__init__(parent)
         self.setProperty("role", "tab_panel")
         self.i18n = i18n
-        self._trash_icon_cache = {}
         self._setup_ui()
 
     def addWidget(self, widget, *args, **kwargs):
@@ -43,20 +42,8 @@ class BotMutePanel(QWidget):
         self.sw_cmd_block = ModernSwitch(self)
         self.sw_cmd_block.setChecked(True)
 
-        row_cmd_mute = SettingRow(
-            "shield-user-filled.svg",
-            self.i18n.get("chat.mod_commands.mute_cmd_title"),
-            self.i18n.get("chat.mod_commands.mute_cmd_desc"),
-            self.sw_cmd_mute,
-            contents_margins=Size.Margin.MRG_LRG
-        )
-        row_cmd_block = SettingRow(
-            "shield-filled.svg",
-            self.i18n.get("chat.mod_commands.block_cmd_title"),
-            self.i18n.get("chat.mod_commands.block_cmd_desc"),
-            self.sw_cmd_block,
-            contents_margins=Size.Margin.MRG_LRG
-        )
+        row_cmd_mute = SettingRow.minimal(self.i18n.get("chat.mod_commands.mute_cmd_title"), self.i18n.get("chat.mod_commands.mute_cmd_desc"), self.sw_cmd_mute)
+        row_cmd_block = SettingRow.minimal(self.i18n.get("chat.mod_commands.block_cmd_title"), self.i18n.get("chat.mod_commands.block_cmd_desc"), self.sw_cmd_block)
         commands_card.addWidget(row_cmd_mute)
         commands_card.add_separator()
         commands_card.addWidget(row_cmd_block)
@@ -77,7 +64,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
 
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_bot.set_icon("plus-filled.svg", size=16)
+        self.btn_add_bot.set_icon("plus-filled.svg")
 
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -108,7 +95,7 @@ class BotMutePanel(QWidget):
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
 
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_word.set_icon("plus-filled.svg", size=16)
+        self.btn_add_word.set_icon("plus-filled.svg")
 
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
@@ -177,11 +164,7 @@ class BotMutePanel(QWidget):
             icon_size = max(16, int(font_height * 0.75))
             btn_size = Size.ICON_SMALL
 
-            if icon_size not in self._trash_icon_cache:
-                self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size)
-
-            btn_delete.setIcon(self._trash_icon_cache[icon_size])
-            btn_delete.setIconSize(QSize(icon_size, icon_size))
+            btn_delete.setIcon(get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size))
             configure_icon_only_button(btn_delete, size=btn_size)
 
             text_width = fm.horizontalAdvance(lbl_name.text())

@@ -61,7 +61,7 @@ class ChatDisplayPanel(ModernCard):
 
         header_layout = QHBoxLayout()
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
-        lbl_chat_title.setProperty("role", "h3")
+        lbl_chat_title.setProperty("role", "h2")
 
         self.btn_detach = QPushButton(self.i18n.get("chat.display.detach"))
         self.btn_detach.setProperty("role", "action_outlined")

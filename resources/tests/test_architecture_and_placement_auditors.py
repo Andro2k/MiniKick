@@ -1,8 +1,10 @@
 # resources\tests\test_architecture_and_placement_auditors.py
 
+from resources.tools.project_architecture_boundary_auditor import audit_architecture_boundaries
+from resources.tools.project_file_placement_auditor import FOLDER_PURITY_RULES, REVERSE_PLACEMENT_RULES, audit_file_placements
+from resources.tools.project_architecture_boundary_auditor import ArchitectureASTVisitor
 import ast
-from resources.tools.architecture_boundary_auditor import ArchitectureASTVisitor, audit_architecture_boundaries
-from resources.tools.file_placement_auditor import audit_file_placements, FOLDER_PURITY_RULES, REVERSE_PLACEMENT_RULES
+
 import fnmatch
 
 

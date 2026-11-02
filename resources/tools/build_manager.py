@@ -124,10 +124,42 @@ def upgrade_dependencies():
         return False
     return run_cmd(["uv", "sync"], "Instalando paquetes actualizados (uv sync)")
 
+def _find_bundled_docs(output_dir):
+    docs_paths = (
+        os.path.join(output_dir, "docs"),
+        os.path.join(output_dir, "_internal", "docs"),
+    )
+    return next((path for path in docs_paths if os.path.exists(path)), None)
+
 def build_executable():
     print("\n--- Compilación de Ejecutable con PyInstaller ---")
+    if not os.path.isfile(SPEC_PATH):
+        print(f"[ERROR] No se encontró la especificación de PyInstaller: {SPEC_PATH}")
+        return False
+
     generate_version_info()
-    return run_cmd(["uv", "run", "python", "-m", "PyInstaller", "--clean", "--noconfirm", "MiniKick.spec"], "Compilando MiniKick con PyInstaller")
+    dist_root = os.path.abspath(os.path.join(BASE_DIR, "dist"))
+    output_dir = os.path.abspath(os.path.join(dist_root, "MiniKick"))
+    if os.path.dirname(output_dir) != dist_root or os.path.basename(output_dir) != "MiniKick":
+        print(f"[ERROR] Ruta de salida de PyInstaller no válida: {output_dir}")
+        return False
+    if os.path.isdir(output_dir):
+        try:
+            shutil.rmtree(output_dir)
+        except OSError as e:
+            print(f"[ERROR] No se pudo limpiar la salida anterior {output_dir}: {e}")
+            return False
+
+    if not run_cmd(
+        ["uv", "run", "python", "-m", "PyInstaller", "--clean", "--noconfirm", "MiniKick.spec"],
+        "Compilando MiniKick con PyInstaller",
+    ):
+        return False
+    included_docs = _find_bundled_docs(output_dir)
+    if included_docs:
+        print(f"[ERROR] El paquete contiene documentación que no debe distribuirse: {included_docs}")
+        return False
+    return True
 
 def compile_installer():
     print("\n--- Compilación del instalador Inno Setup ---")
@@ -153,6 +185,10 @@ def compile_installer():
         return False
     if not os.path.isfile(executable):
         print("[ERROR] Falta dist/MiniKick/MiniKick.exe. Ejecuta primero la compilación PyInstaller.")
+        return False
+    included_docs = _find_bundled_docs(os.path.join(BASE_DIR, "dist", "MiniKick"))
+    if included_docs:
+        print(f"[ERROR] El paquete contiene documentación que no debe instalarse: {included_docs}")
         return False
     if not run_cmd([iscc_path, installer_script], "Compilando instalador MiniKick"):
         return False
@@ -332,7 +368,7 @@ def main():
     elif args.upgrade:
         upgrade_dependencies()
     elif args.build:
-        build_executable()
+        sys.exit(0 if build_executable() else 1)
     elif args.installer:
         sys.exit(0 if compile_installer() else 1)
     elif args.package:

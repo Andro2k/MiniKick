@@ -1,4 +1,4 @@
-# resources/tools/kick_toolkit.py
+# resources\tools\kick_toolkit.py\
 
 import os
 import sys

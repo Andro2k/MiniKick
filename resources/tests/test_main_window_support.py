@@ -9,12 +9,13 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from PySide6.QtCore import QEvent, QEventLoop, QObject, QThread, QTimer
+from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
 
 from frontend.main_window import MainWindowCore
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.worker_shutdown import WorkerShutdownCoordinator
+from frontend.window.whats_new import WhatsNewPresenter
+from backend.connections import WorkerShutdownCoordinator, WorkerSlot
 
 
 class _CooperativeWorker(QThread):
@@ -39,6 +40,27 @@ def test_recent_redemptions_are_deduplicated_and_bounded():
     assert cache.contains_or_add("second") is False
     assert cache.contains_or_add("third") is False
     assert cache.contains_or_add("first") is False
+
+
+def test_startup_connection_toast_suppression_is_consumed_once():
+    window = SimpleNamespace(_startup_silent_connections={"kick", "twitch"})
+
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is True
+    assert MainWindowCore._consume_startup_silent_connection(window, "kick") is False
+    assert MainWindowCore._consume_startup_silent_connection(window, "twitch") is True
+
+
+def test_window_runtime_flags_are_initialized_in_one_place():
+    window = SimpleNamespace()
+
+    MainWindowCore._init_flags(window)
+
+    assert window._is_shutting_down is False
+    assert window._cleanup_complete is False
+    assert window._quit_requested is False
+    assert window._startup_silent_connections == set()
+    assert window._applied_font_size is None
+    assert not hasattr(window, "_is_window_closing")
 
 
 def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
@@ -66,6 +88,42 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     chat_view_class.assert_called_once_with(window.i18n, parent=content_stack)
     content_stack.addWidget.assert_called_once_with(view)
     window.chat_controller.attach_view.assert_called_once_with(view)
+
+
+def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monkeypatch):
+    import frontend.main_window_views as views_module
+
+    view = MagicMock()
+    settings_view_class = MagicMock(return_value=view)
+    monkeypatch.setattr(
+        views_module,
+        "_load_view_class",
+        MagicMock(return_value=settings_view_class),
+    )
+    window = SimpleNamespace(
+        _instantiated_views={},
+        content_stack=MagicMock(),
+        i18n=MagicMock(),
+        youtube=MagicMock(name="youtube"),
+        tiktok=MagicMock(name="tiktok"),
+        platform_connections=SimpleNamespace(
+            on_twitch_integration_button_clicked=MagicMock(),
+            on_live_chat_button_clicked=MagicMock(),
+            update_integrations_status_ui=MagicMock(),
+        ),
+        settings_controller=MagicMock(),
+    )
+    factory = MainWindowViewFactory(window)
+
+    assert factory.get_or_create("Settings") is view
+
+    view.youtube_integration_clicked.connect.call_args.args[0]()
+    view.tiktok_integration_clicked.connect.call_args.args[0]()
+
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.youtube)
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.tiktok)
+    settings_view_class.assert_called_once_with(window.i18n, parent=window.content_stack)
+    window.settings_controller.attach_view.assert_called_once_with(view)
 
 
 def test_views_package_defers_importing_unselected_views():
@@ -152,24 +210,28 @@ def test_whats_new_fetch_replaces_already_deleted_worker(monkeypatch):
 
     replacement = SimpleNamespace(
         highlights_fetched=MagicMock(),
+        error_occurred=MagicMock(),
         finished=MagicMock(),
         deleteLater=MagicMock(),
         start=MagicMock(),
     )
     worker_factory = MagicMock(return_value=replacement)
     monkeypatch.setattr(backend.workers, "WhatsNewWorker", worker_factory)
-    
-    window = SimpleNamespace(
-        _is_shutting_down=False,
-        _is_window_closing=False,
-        _whats_new_worker=stale_worker,
-        _is_worker_running=MainWindowCore._is_worker_running,
+
+    slot = WorkerSlot("Worker_Whats_New", MagicMock())
+    slot.start(lambda: stale_worker)
+    presenter = WhatsNewPresenter(
+        parent="window",
+        service=MagicMock(),
+        sidebar=MagicMock(),
+        i18n=MagicMock(),
         app_version="1.6.5",
-        _on_remote_whats_new_fetched=MagicMock(),
+        slot=slot,
+        is_shutting_down=lambda: False,
     )
 
-    MainWindowCore._fetch_remote_whats_new_if_needed(window)
+    presenter.fetch_remote_if_needed()
 
-    worker_factory.assert_called_once_with("1.6.5", parent=window)
+    worker_factory.assert_called_once_with("1.6.5", parent="window")
     replacement.start.assert_called_once_with()
-    assert window._whats_new_worker is replacement
+    assert slot.detach() == ("Worker_Whats_New", replacement)

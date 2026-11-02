@@ -3,6 +3,7 @@
 import sys
 import ctypes
 import logging
+import threading
 from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger("minikick.workers.media_keys")
@@ -42,7 +43,7 @@ class GlobalMediaWorker(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Global_Media_Keys")
-        self._running = False
+        self._stop_requested = threading.Event()
         self._hook = None
         self._hook_proc_ref = None
         self._thread_id = None
@@ -77,7 +78,19 @@ class GlobalMediaWorker(QThread):
         user32.UnhookWindowsHookEx.argtypes = [ctypes.c_void_p]
         user32.UnhookWindowsHookEx.restype = ctypes.wintypes.BOOL
 
-        self._running = True
+        user32.PeekMessageW.argtypes = [
+            ctypes.POINTER(ctypes.wintypes.MSG),
+            ctypes.wintypes.HWND,
+            ctypes.wintypes.UINT,
+            ctypes.wintypes.UINT,
+            ctypes.wintypes.UINT,
+        ]
+        user32.PeekMessageW.restype = ctypes.wintypes.BOOL
+        msg = ctypes.wintypes.MSG()
+        user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 0)
+        if self._stop_requested.is_set():
+            return
+
         self._thread_id = kernel32.GetCurrentThreadId()
 
         def hook_proc(nCode, wParam, lParam):
@@ -107,29 +120,45 @@ class GlobalMediaWorker(QThread):
         if not self._hook:
             err = kernel32.GetLastError()
             logger.warning("[GlobalMediaWorker] Failed to install Windows keyboard hook. Win32 Error: %s", err)
+            self._thread_id = None
             return
 
         logger.info("[GlobalMediaWorker] Global media keys hook installed successfully (Hook: %s).", self._hook)
 
         try:
-            msg = ctypes.wintypes.MSG()
-            while self._running:
+            while not self._stop_requested.is_set():
                 b_ret = user32.GetMessageW(ctypes.byref(msg), None, 0, 0)
-                if b_ret <= 0 or not self._running:
+                if b_ret <= 0 or self._stop_requested.is_set():
                     break
                 user32.TranslateMessage(ctypes.byref(msg))
                 user32.DispatchMessageW(ctypes.byref(msg))
         finally:
+            self._thread_id = None
             if self._hook:
                 user32.UnhookWindowsHookEx(self._hook)
                 self._hook = None
                 logger.info("[GlobalMediaWorker] Global media keys hook uninstalled cleanly.")
 
     def stop(self):
-        self._running = False
-        if sys.platform == "win32" and self._thread_id:
+        self._stop_requested.set()
+        thread_id = self._thread_id
+        if sys.platform == "win32" and thread_id:
             try:
-                ctypes.windll.user32.PostThreadMessageW(self._thread_id, WM_QUIT, 0, 0)
+                user32 = ctypes.windll.user32
+                user32.PostThreadMessageW.argtypes = [
+                    ctypes.wintypes.DWORD,
+                    ctypes.wintypes.UINT,
+                    ctypes.wintypes.WPARAM,
+                    ctypes.wintypes.LPARAM,
+                ]
+                user32.PostThreadMessageW.restype = ctypes.wintypes.BOOL
+                if not user32.PostThreadMessageW(thread_id, WM_QUIT, 0, 0):
+                    error_code = ctypes.windll.kernel32.GetLastError()
+                    logger.warning(
+                        "[GlobalMediaWorker] Failed to post shutdown message to thread %s. Win32 Error: %s",
+                        thread_id,
+                        error_code,
+                    )
             except Exception as e:
                 logger.debug("[GlobalMediaWorker] PostThreadMessage error: %s", e)
         self.quit()

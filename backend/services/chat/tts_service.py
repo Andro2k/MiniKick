@@ -25,6 +25,7 @@ class TTSManager:
         self.on_speech_started = None
         self.on_speech_finished = None
         self._is_speaking = False       
+        self._is_shutdown = False
         self._downloader_thread = threading.Thread(target=self._downloader_worker, daemon=True)
         self._downloader_thread.start()
         self._thread = threading.Thread(target=self._worker, daemon=True)
@@ -90,7 +91,9 @@ class TTSManager:
                 provider.set_audio_device(device_id)
 
     def say(self, text: str, voice_id: str = None) -> None:
-        if text and text.strip():
+        if self._is_shutdown:
+            logger.warning("[TTS Manager] Ignoring speech request after shutdown.")
+        elif text and text.strip():
             clean_t = text.strip()
             self.text_queue.put((clean_t, voice_id))
             logger.debug("[TTS Manager] Enqueued text (qsize=%d): '%s' (voice=%s)", self.text_queue.qsize(), clean_t[:35], voice_id or "default")
@@ -132,14 +135,23 @@ class TTSManager:
                     logger.debug("[TTS Manager] on_speech_finished on stop error: %s", fin_err)
 
     def shutdown(self) -> None:
-        self.stop()
+        if self._is_shutdown:
+            return
+        self._is_shutdown = True
+        try:
+            self.stop()
+        except Exception:
+            logger.exception("[TTS Manager] Failed to stop active speech during shutdown.")
         self.text_queue.put(None)
-        for prov in self._providers.values():
+        for prov in list(self._providers.values()):
             if hasattr(prov, "shutdown"):
                 try:
                     prov.shutdown()
                 except Exception:
-                    pass
+                    logger.exception(
+                        "[TTS Manager] Failed to shut down provider %s.",
+                        type(prov).__name__,
+                    )
 
     def _downloader_worker(self) -> None:
         while True:

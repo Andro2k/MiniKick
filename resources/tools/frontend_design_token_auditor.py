@@ -1,4 +1,4 @@
-# resources/tools/frontend_design_token_auditor.py
+# resources\tools\frontend_design_token_auditor.py\
 
 import os
 import re

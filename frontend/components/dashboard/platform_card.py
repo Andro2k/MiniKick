@@ -37,10 +37,11 @@ class PlatformStatusCard(QFrame):
 
     def _setup_ui(self, brand_name: str, icon_file: str):
         layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_XSM, parent=self)
-        top_row = create_row_layout(spacing=Size.SPACING_XS)
+        
+        top_row = create_row_layout(spacing=Size.SPACING_NN)
 
         self.lbl_brand = QLabel(brand_name, self)
-        self.lbl_brand.setProperty("role", "h3")
+        self.lbl_brand.setProperty("role", "h2")
 
         self.lbl_status_pill = QLabel(self.i18n.get("dashboard.platforms.status_offline"), self)
         self.lbl_status_pill.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -75,21 +76,19 @@ class PlatformStatusCard(QFrame):
             self.i18n.get(btn_key),
             role=self.button_role,
             icon_name=icon_file,
-            icon_size=16,
             parent=self,
         )
-        self.btn_action.setFixedHeight(28)
         layout.addWidget(self.btn_action)
 
     def _apply_pill_style(self, state: str):
         if state == "online":
-            self.lbl_status_pill.setText(f"● {self.i18n.get('dashboard.platforms.status_online')}")
+            self.lbl_status_pill.setText(f" ● {self.i18n.get('dashboard.platforms.status_online')}")
             self.lbl_status_pill.setProperty("state", "online")
         elif state == "connecting":
-            self.lbl_status_pill.setText(f"◌ {self.i18n.get('dashboard.platforms.status_connecting')}")
+            self.lbl_status_pill.setText(f" ○ {self.i18n.get('dashboard.platforms.status_connecting')}")
             self.lbl_status_pill.setProperty("state", "connecting")
         else:
-            self.lbl_status_pill.setText(f"○ {self.i18n.get('dashboard.platforms.status_offline')}")
+            self.lbl_status_pill.setText(f" ⏻ {self.i18n.get('dashboard.platforms.status_offline')}")
             self.lbl_status_pill.setProperty("state", "offline")
         self.lbl_status_pill.style().unpolish(self.lbl_status_pill)
         self.lbl_status_pill.style().polish(self.lbl_status_pill)

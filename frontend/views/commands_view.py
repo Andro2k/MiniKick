@@ -2,8 +2,8 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
-from frontend.common import get_pixmap_colored, is_complete_valid_trigger, Palette, BrandColors, Size
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell, RowMenuAction
+from frontend.common import get_pixmap_colored, is_complete_valid_trigger, BrandColors, Size
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -116,7 +116,7 @@ class CommandView(BaseView):
         self.table.setColumnWidth(0, 190)
         self.table.setColumnWidth(1, 140)
         self.table.setColumnWidth(2, 140)
-        self.table.setColumnWidth(5, 130)
+        self.table.setColumnWidth(5, 96)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
 
@@ -202,7 +202,7 @@ class CommandView(BaseView):
     def _create_cell_container(spacing=Size.SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(*Size.Margin.MRG_HMD)
+        layout.setContentsMargins(*Size.Margin.MRG_HSM)
         layout.setSpacing(spacing)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         return container, layout
@@ -216,7 +216,7 @@ class CommandView(BaseView):
 
         if not is_complete_valid_trigger(trigger_val):
             warn_icon = QLabel()
-            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
+            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER))
             warn_icon.setToolTip(self.i18n.get("command.table.warning_legacy_format"))
             layout.addWidget(warn_icon)
 
@@ -235,7 +235,10 @@ class CommandView(BaseView):
         return create_badge(self.i18n.get(i18n_key), state=raw_perm)
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == getattr(self, "connected_platforms", None):
+            return
+        self.connected_platforms = new_state
         if self._raw_commands:
             self.populate_table(self._raw_commands)
 
@@ -271,7 +274,7 @@ class CommandView(BaseView):
             badge = create_badge(badge_text, state="warning")
             layout.addWidget(badge)
             lbl_text = QLabel(raw_aliases)
-            lbl_text.setProperty("role", "monospace")
+            lbl_text.setProperty("role", "caption")
         else:
             lbl_text = QLabel(raw_aliases)
             lbl_text.setProperty("role", "body")
@@ -296,20 +299,21 @@ class CommandView(BaseView):
             callback=_on_toggled
         )
 
-        cell.add_button(
-            icon_name="edit-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_accent_solid",
-            tooltip=self.i18n.get("command.table.tooltip_edit"),
-            callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
-        )
-
-        cell.add_button(
-            icon_name="trash-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_danger_solid",
-            tooltip=self.i18n.get("command.table.tooltip_delete"),
-            callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
+        cell.add_menu(
+            [
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.edit"),
+                    icon_name="edit-filled.svg",
+                    callback=lambda t=trigger_name: self.edit_requested.emit(t),
+                ),
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.delete"),
+                    icon_name="trash-filled.svg",
+                    callback=lambda t=trigger_name: self._confirm_delete_command(t),
+                    role="row_action_danger"
+                ),
+            ],
+            tooltip=self.i18n.get("common.row_menu.more")
         )
 
         return cell

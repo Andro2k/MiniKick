@@ -104,14 +104,12 @@ class ImportBackupModal(ModernModal):
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
             role="action_outlined",
             icon_name="check-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=16,
             parent=self
         )
         self.btn_select_all.clicked.connect(self._select_all)
@@ -160,7 +158,7 @@ class ImportBackupModal(ModernModal):
             desc_text = "" if raw_desc == desc_key else raw_desc
 
             lbl_title = QLabel(title_text, card_sections)
-            lbl_title.setProperty("role", "h3")
+            lbl_title.setProperty("role", "h2")
 
             lbl_sub = QLabel(desc_text, card_sections)
             lbl_sub.setProperty("role", "caption")

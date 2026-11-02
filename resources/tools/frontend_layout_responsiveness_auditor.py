@@ -1,4 +1,4 @@
-# resources/tools/frontend_layout_responsiveness_auditor.py
+# resources\tools\frontend_layout_responsiveness_auditor.py\
 
 import argparse
 import contextlib

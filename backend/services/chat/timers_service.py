@@ -91,12 +91,6 @@ class TimerService:
                 apply_twitch = timer.get("apply_twitch", True)
                 messages_to_send.append((msg, apply_kick, apply_twitch))
                 logger.info("[TimerService] Triggering timer '%s' message dispatch.", timer.get("name", timer_id))
-                if hasattr(self.storage, "db_manager") and self.storage.db_manager:
-                    target_plat = "all" if (apply_kick and apply_twitch) else ("kick" if apply_kick else ("twitch" if apply_twitch else "none"))
-                    try:
-                        self.storage.db_manager.log_timer_execution(timer_id, msg, platform=target_plat)
-                    except Exception as e:
-                        logger.error("[TimerService] Error logging timer execution: %s", e)
 
                 state["message_index"] = (state["message_index"] + 1) % len(msgs)
                 state["last_posted_time"] = now

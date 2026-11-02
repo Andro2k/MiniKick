@@ -1,4 +1,4 @@
-# resources/tools/frontend_qt_signal_lifecycle_auditor.py
+# resources\tools\frontend_qt_signal_lifecycle_auditor.py\
 
 import ast
 import os

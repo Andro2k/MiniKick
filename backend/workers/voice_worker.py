@@ -17,23 +17,33 @@ class VoiceFetcherWorker(QThread):
         self.provider_type = provider_type
 
     def run(self):
+        com_initialized = False
         if sys.platform == "win32":
             try:
                 import pythoncom
                 pythoncom.CoInitialize()
+                com_initialized = True
             except Exception as com_err:
                 logger.debug("[VoiceFetcherWorker] COM initialization failed: %s", com_err)
-        if self.isInterruptionRequested():
-            return
-        logger.debug("[VoiceFetcherWorker] Fetching available voices for provider: %s...", self.provider_type)
+
         try:
-            voices = self.tts_manager.get_available_voices(self.provider_type)
             if self.isInterruptionRequested():
                 return
-            logger.debug("[VoiceFetcherWorker] Fetched %d voices for %s.", len(voices) if voices else 0, self.provider_type)
-            self.voices_fetched.emit(voices, self.provider_type)
-        except Exception as e:
-            if self.isInterruptionRequested():
-                return
-            logger.error("[VoiceFetcherWorker] Error fetching voices for %s: %s", self.provider_type, e)
-            self.error_occurred.emit(str(e), self.provider_type)
+            logger.debug("[VoiceFetcherWorker] Fetching available voices for provider: %s...", self.provider_type)
+            try:
+                voices = self.tts_manager.get_available_voices(self.provider_type)
+                if self.isInterruptionRequested():
+                    return
+                logger.debug("[VoiceFetcherWorker] Fetched %d voices for %s.", len(voices) if voices else 0, self.provider_type)
+                self.voices_fetched.emit(voices, self.provider_type)
+            except Exception as e:
+                if self.isInterruptionRequested():
+                    return
+                logger.error("[VoiceFetcherWorker] Error fetching voices for %s: %s", self.provider_type, e)
+                self.error_occurred.emit(str(e), self.provider_type)
+        finally:
+            if com_initialized:
+                try:
+                    pythoncom.CoUninitialize()
+                except Exception as uninit_err:
+                    logger.debug("[VoiceFetcherWorker] COM uninitialization failed: %s", uninit_err)

@@ -40,7 +40,7 @@ class DashboardChattersTable(ModernCard):
         title_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_title = QLabel(self.i18n.get("dashboard.chatters.title"), self)
-        self.lbl_title.setProperty("role", "h3")
+        self.lbl_title.setProperty("role", "h2")
 
         self.lbl_subtitle = QLabel(self.i18n.get("dashboard.chatters.subtitle"), self)
         self.lbl_subtitle.setProperty("role", "caption")
@@ -58,7 +58,6 @@ class DashboardChattersTable(ModernCard):
             role="action_kick",
             parent=self
         )
-        self.btn_today.setFixedHeight(28)
         self.btn_today.clicked.connect(self._on_today_clicked)
 
         self.btn_yesterday = ModernButton(
@@ -66,12 +65,9 @@ class DashboardChattersTable(ModernCard):
             role="action_outlined",
             parent=self
         )
-        self.btn_yesterday.setFixedHeight(28)
         self.btn_yesterday.clicked.connect(self._on_yesterday_clicked)
 
         self.combo_dates = NoWheelComboBox(self)
-        self.combo_dates.setFixedHeight(28)
-        self.combo_dates.setMinimumWidth(140)
         self.combo_dates.addItem(self.i18n.get("dashboard.chatters.filter_date_placeholder"), "")
         self.combo_dates.currentIndexChanged.connect(self._on_combo_date_changed)
 
@@ -86,11 +82,11 @@ class DashboardChattersTable(ModernCard):
         self.banner_inactive.setProperty("role", "banner_warning")
         self.banner_inactive.setVisible(False)
         banner_layout = QHBoxLayout(self.banner_inactive)
-        banner_layout.setContentsMargins(12, 8, 12, 8)
+        banner_layout.setContentsMargins(*Size.Margin.MRG_MED)
         banner_layout.setSpacing(Size.SPACING_SM)
 
         lbl_banner_icon = QLabel(self.banner_inactive)
-        lbl_banner_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
+        lbl_banner_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER))
         lbl_banner_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_banner_msg = QLabel(self.i18n.get("dashboard.chatters.inactive_suggestion"), self.banner_inactive)
@@ -103,7 +99,6 @@ class DashboardChattersTable(ModernCard):
             role="action_kick",
             parent=self.banner_inactive
         )
-        self.btn_activate_banner.setFixedHeight(28)
         self.btn_activate_banner.clicked.connect(self.activate_widget_requested.emit)
 
         banner_layout.addWidget(lbl_banner_icon)
@@ -152,11 +147,11 @@ class DashboardChattersTable(ModernCard):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_empty_icon = QLabel(self.empty_widget)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", Palette.NEUTRAL_500, 18))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", Palette.NEUTRAL_500))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_title = QLabel(self.i18n.get("dashboard.chatters.empty_title"), self.empty_widget)
-        self.lbl_empty_title.setProperty("role", "h3")
+        self.lbl_empty_title.setProperty("role", "h2")
         self.lbl_empty_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_desc = QLabel(self.i18n.get("dashboard.chatters.empty_desc"), self.empty_widget)
@@ -265,7 +260,7 @@ class DashboardChattersTable(ModernCard):
             lbl_rank.setProperty("role", "rank_number")
             lbl_rank.setAlignment(Qt.AlignmentFlag.AlignCenter)
             if rank == 1:
-                lbl_rank.setProperty("state", "gold")
+                lbl_rank.setProperty("state", "golden")
             elif rank == 2:
                 lbl_rank.setProperty("state", "silver")
             elif rank == 3:
@@ -298,7 +293,7 @@ class DashboardChattersTable(ModernCard):
             share_pct = (count / calc_total * 100) if calc_total > 0 else 0.0
             share_widget = QWidget()
             share_layout = QHBoxLayout(share_widget)
-            share_layout.setContentsMargins(4, 2, 8, 2)
+            share_layout.setContentsMargins(*Size.Margin.SEC_BDG)
             share_layout.setSpacing(Size.SPACING_XS)
 
             pbar = QProgressBar(share_widget)
@@ -306,7 +301,6 @@ class DashboardChattersTable(ModernCard):
             pbar.setTextVisible(False)
             pbar.setRange(0, 100)
             pbar.setValue(min(100, int(share_pct)))
-            pbar.setFixedHeight(6)
 
             lbl_pct = QLabel(f"{share_pct:.1f}%", share_widget)
             lbl_pct.setProperty("role", "caption")

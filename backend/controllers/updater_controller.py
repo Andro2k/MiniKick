@@ -74,7 +74,7 @@ class UpdaterController(QObject):
         self.download_started.emit()
         self.download_worker = UpdateDownloadWorker(self.updater_manager, url)
         self.download_worker.progress.connect(self.download_progress.emit)
-        self.download_worker.finished.connect(self._on_download_finished)
+        self.download_worker.download_completed.connect(self._on_download_finished)
         self.download_worker.error.connect(self._on_download_error)
         self.download_worker.start()
         return True

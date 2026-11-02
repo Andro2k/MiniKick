@@ -144,18 +144,8 @@ def test_handle_plugin_commands_specific_category(qapp, i18n):
     assert "!pause" in sent_msg
     assert "!discord" not in sent_msg
 
-def test_send_chunked_command_responses_limits(qapp, i18n):
-    mock_service = MagicMock()
-    mock_cmd_service = MagicMock()
-    mock_spam = MagicMock()
-
-    controller = ChatController(
-        view=None,
-        service=mock_service,
-        command_service=mock_cmd_service,
-        spam_service=mock_spam,
-        i18n=i18n
-    )
+def test_send_chunked_command_responses_limits():
+    from backend.handlers.command_help_formatter import chunk_messages
 
     large_sections = [
         f"Seccion1: " + ", ".join([f"!cmd{i}" for i in range(25)]),
@@ -163,10 +153,9 @@ def test_send_chunked_command_responses_limits(qapp, i18n):
         f"Seccion3: " + ", ".join([f"!widget{i}" for i in range(25)])
     ]
 
-    controller._send_chunked_command_responses("📖 Test:", large_sections, platform="kick", max_chars=150)
-    assert mock_cmd_service.send_response.called
-    first_chunk = mock_cmd_service.send_response.call_args[0][0]
-    assert len(first_chunk) <= 150
+    chunks = chunk_messages("📖 Test:", large_sections, max_chars=150)
+    assert len(chunks) > 1
+    assert all(len(c) <= 150 for c in chunks)
 
 def test_bot_messages_do_not_trigger_commands_or_autoresponses(qapp, i18n):
     mock_service = MagicMock()

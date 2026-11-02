@@ -15,6 +15,12 @@ _q_log_handler_instance = None
 
 _DEFAULT_LOG_LEVEL = logging.INFO
 
+_NOISY_LIBRARIES = (
+    "urllib3", "cloudscraper", "comtypes", "piper", "onnxruntime",
+    "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio",
+    "tiktoklive", "yt_dlp", "PIL",
+)
+
 def _resolve_log_level() -> int:
     raw_level = os.environ.get("MINIKICK_LOG_LEVEL", "").strip().upper()
     if not raw_level:
@@ -92,13 +98,26 @@ def flush_all_logs():
     for handler in root_logger.handlers:
         try:
             handler.flush()
-        except Exception:
-            pass
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to flush handler {type(handler).__name__}: {err}"
+            )
     if _fault_file_handle:
         try:
             _fault_file_handle.flush()
-        except Exception:
-            pass
+        except Exception as err:
+            _write_stderr_diagnostic(f"[MiniKick logging] Failed to flush crash log: {err}")
+
+
+def _write_stderr_diagnostic(message: str) -> None:
+    stream = sys.__stderr__
+    if stream is None:
+        return
+    try:
+        stream.write(message + "\n")
+        stream.flush()
+    except (OSError, ValueError):
+        return
 
 def get_log_dir() -> str:
     app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
@@ -129,68 +148,88 @@ def _silence_ffmpeg_native_logging():
         pass
 
 def setup_application_logging():
-    global _fault_file_handle, _q_log_handler_instance
-    
+    global _q_log_handler_instance
+
+    root = logging.getLogger()
     if _q_log_handler_instance is not None:
-        return logging.getLogger(), _q_log_handler_instance
+        return root, _q_log_handler_instance
 
     log_level = _resolve_log_level()
-    logger = logging.getLogger()
-    logger.setLevel(log_level)
-    
-    for handler in list(logger.handlers):
-        logger.removeHandler(handler)
-        
+    root.setLevel(log_level)
+    _reset_handlers(root)
+
     _q_log_handler_instance = QLogHandler()
-    logger.addHandler(_q_log_handler_instance)
-    
+    root.addHandler(_q_log_handler_instance)
+
     log_dir = get_log_dir()
-    log_file = os.path.join(log_dir, 'minikick.log')
-    
-    file_handler = AutoFlushTimedRotatingFileHandler(
-        filename=log_file,
-        when='midnight',
-        interval=1,
-        backupCount=7, 
-        encoding='utf-8'
-    )
-    
-    file_formatter = StructuredLogFormatter()
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(log_level)
-    logger.addHandler(file_handler)
-    
-    logger.info("[Bootstrap] Application logging initialized at level %s", logging.getLevelName(log_level))
-    
-    for lib_name in (
-        "urllib3", "cloudscraper", "comtypes", "piper", "onnxruntime",
-        "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio",
-        "tiktoklive", "yt_dlp", "PIL"
-    ):
-        logging.getLogger(lib_name).setLevel(logging.WARNING)
+    root.addHandler(_build_file_handler(log_dir, log_level))
+    root.info("[Bootstrap] Application logging initialized at level %s", logging.getLevelName(log_level))
 
-    sys.stdout = StreamToLogger(logger, logging.INFO)
-    sys.stderr = StreamToLogger(logger, logging.ERROR)
-
+    _quiet_noisy_libraries()
+    _redirect_std_streams(root)
     _silence_ffmpeg_native_logging()
+    _enable_faulthandler(log_dir, root)
+    threading.excepthook = _threading_excepthook
+    _install_qt_message_handler(root)
 
+    return root, _q_log_handler_instance
+
+
+def _reset_handlers(root: logging.Logger) -> None:
+    for handler in list(root.handlers):
+        root.removeHandler(handler)
+        try:
+            handler.flush()
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to flush replaced handler {type(handler).__name__}: {err}"
+            )
+        try:
+            handler.close()
+        except Exception as err:
+            _write_stderr_diagnostic(
+                f"[MiniKick logging] Failed to close replaced handler {type(handler).__name__}: {err}"
+            )
+
+
+def _build_file_handler(log_dir: str, level: int) -> logging.Handler:
+    handler = AutoFlushTimedRotatingFileHandler(
+        filename=os.path.join(log_dir, "minikick.log"),
+        when="midnight",
+        interval=1,
+        backupCount=7,
+        encoding="utf-8",
+    )
+    handler.setFormatter(StructuredLogFormatter())
+    handler.setLevel(level)
+    return handler
+
+
+def _quiet_noisy_libraries() -> None:
+    for name in _NOISY_LIBRARIES:
+        logging.getLogger(name).setLevel(logging.WARNING)
+
+
+def _redirect_std_streams(root: logging.Logger) -> None:
+    sys.stdout = StreamToLogger(root, logging.INFO)
+    sys.stderr = StreamToLogger(root, logging.ERROR)
+
+
+def _enable_faulthandler(log_dir: str, root: logging.Logger) -> None:
+    global _fault_file_handle
     try:
-        crash_log_path = os.path.join(log_dir, 'minikick_crash.log')
-        _fault_file_handle = open(crash_log_path, 'a', encoding='utf-8', buffering=1)
+        crash_log_path = os.path.join(log_dir, "minikick_crash.log")
+        _fault_file_handle = open(crash_log_path, "a", encoding="utf-8", buffering=1)
         write_fault_log_record(
-            logging.INFO,
-            "minikick.bootstrap",
-            "Session started (faulthandler active)",
+            logging.INFO, "minikick.bootstrap", "Session started (faulthandler active)"
         )
         faulthandler.enable(file=_fault_file_handle, all_threads=True)
-    except Exception as fh_err:
-        logger.warning("[Bootstrap] Failed to enable faulthandler: %s", fh_err)
+    except Exception as err:
+        root.warning("[Bootstrap] Failed to enable faulthandler: %s", err)
 
-    threading.excepthook = _threading_excepthook
 
+def _install_qt_message_handler(root: logging.Logger) -> None:
     try:
         qInstallMessageHandler(_qt_message_handler)
-    except Exception as q_err:
-        logger.warning("[Bootstrap] Failed to install Qt MessageHandler: %s", q_err)
-    
-    return logger, _q_log_handler_instance
+    except Exception as err:
+        root.warning("[Bootstrap] Failed to install Qt MessageHandler: %s", err)

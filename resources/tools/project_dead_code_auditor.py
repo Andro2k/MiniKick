@@ -1,4 +1,4 @@
-# resources/tools/project_dead_code_auditor.py
+# resources\tools\project_dead_code_auditor.py\
 
 import argparse
 import ast
@@ -20,6 +20,8 @@ if hasattr(sys.stdout, "reconfigure"):
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+DEFAULT_SCOPES = ["frontend", "backend", "bootstrap", "resources"]
 
 IGNORED_DIRS = {
     ".venv", "venv", "__pycache__", ".git", ".pytest_cache",
@@ -408,8 +410,8 @@ def clean_orphan_files(orphans: List[OrphanFileDef], root_dir: Path, dry_run: bo
             print(f"  ❌ Error eliminando {rel}: {e}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Audita archivos, símbolos e importaciones Python sin uso en backend y frontend.")
-    parser.add_argument("--scope", choices=["frontend", "backend", "all"], default="all", help="Subsistema a escanear.")
+    parser = argparse.ArgumentParser(description="Audita archivos, símbolos e importaciones Python sin uso en backend, frontend y bootstrap.")
+    parser.add_argument("--scope", choices=[*DEFAULT_SCOPES, "all"], default="all", help="Subsistema a escanear.")
     parser.add_argument("--orphans-only", action="store_true", help="Reportar únicamente archivos .py huérfanos.")
     parser.add_argument("--symbols-only", action="store_true", help="Reportar únicamente clases y funciones no referenciadas.")
     parser.add_argument("--imports-only", action="store_true", help="Reportar únicamente importaciones no utilizadas.")
@@ -420,7 +422,7 @@ def main():
 
     args = parser.parse_args()
 
-    scopes = ["frontend", "backend"] if args.scope == "all" else [args.scope]
+    scopes = DEFAULT_SCOPES if args.scope == "all" else [args.scope]
     scanner = DeadCodeScanner(PROJECT_ROOT, scopes)
     scanner.collect_files()
     scanner.scan_all_ast()
@@ -468,7 +470,7 @@ def main():
         clean_orphan_files(report.orphan_files, PROJECT_ROOT, dry_run=args.dry_run)
 
     if args.vulture:
-        vulture_scopes = ["frontend", "backend"] if args.scope == "all" else [args.scope]
+        vulture_scopes = DEFAULT_SCOPES if args.scope == "all" else [args.scope]
         run_vulture_audit(vulture_scopes)
 
 if __name__ == "__main__":

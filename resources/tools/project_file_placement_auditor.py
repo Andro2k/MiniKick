@@ -1,4 +1,4 @@
-# resources/tools/project_file_placement_auditor.py
+# resources\tools\project_file_placement_auditor.py\
 
 import fnmatch
 import json

@@ -1,4 +1,4 @@
-# resources/tools/project_icon_integrity_tool.py
+# resources\tools\project_icon_integrity_tool.py\
 
 import argparse
 import ast

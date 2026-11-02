@@ -164,7 +164,7 @@ def test_chat_service_overlay_show_gifs_persistence():
     assert overlay_settings.get("show_gifs") is True
 
 def test_chat_controller_gif_command_sync(qapp):
-    from backend.controllers.chat_controller import ChatController
+    from backend.controllers.chat_controller import ChatController, _DEFAULT_MOD_COMMANDS
     from backend.services.chat.commands_service import CommandService
     from backend.services.chat.chat_service import ChatService
 
@@ -207,13 +207,13 @@ def test_chat_controller_gif_command_sync(qapp):
     
     assert next((c for c in cmd_svc.get_all_commands() if c.get("response") == "[PLUGIN_CHAT_GIF]"), None) is None
 
-    controller._sync_command_active_state(cmd_svc.get_all_commands(), "[PLUGIN_CHAT_GIF]", True)
+    cmd_svc.set_command_active_by_tag("[PLUGIN_CHAT_GIF]", True, _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"])
     recreated = next((c for c in cmd_svc.get_all_commands() if c.get("response") == "[PLUGIN_CHAT_GIF]"), None)
     assert recreated is not None
     assert recreated["trigger"] == "!gif"
     assert recreated["is_active"] is True
 
-    controller._sync_command_active_state(cmd_svc.get_all_commands(), "[PLUGIN_CHAT_GIF]", False)
+    cmd_svc.set_command_active_by_tag("[PLUGIN_CHAT_GIF]", False, _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"])
     deactivated = next((c for c in cmd_svc.get_all_commands() if c.get("response") == "[PLUGIN_CHAT_GIF]"), None)
     assert deactivated is not None
     assert deactivated["is_active"] is False

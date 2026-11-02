@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit, QStyleOptionFrame, QStyle
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel
 from frontend.common import Size
 
 def create_card_frame(
@@ -47,7 +46,7 @@ def _assemble_field(
     box: QBoxLayout,
     widget: QWidget,
     label_text: str,
-    role: str = "h3",
+    role: str = "h2",
     label_first: bool = True,
     parent: QWidget | None = None
 ) -> tuple[QBoxLayout, QLabel]:
@@ -66,7 +65,7 @@ def _assemble_field(
 def create_labeled_field(
     label_text: str,
     widget: QWidget,
-    role: str = "h3",
+    role: str = "h2",
     spacing: int = Size.SPACING_XS,
     parent: QWidget | None = None
 ) -> tuple[QVBoxLayout, QLabel]:
@@ -98,50 +97,6 @@ def create_box_layout(
     return layout
 
 
-def create_two_column_container(
-    parent: QWidget | None = None,
-    spacing: int = Size.SPACING_MD,
-    margins: tuple[int, int, int, int] = Size.Margin.MRG_NON
-) -> tuple[QWidget, QVBoxLayout, QBoxLayout, QVBoxLayout, QVBoxLayout]:
-    body_container = QWidget(parent) if parent else QWidget()
-    body_layout = create_col_layout(spacing=spacing, margins=margins, parent=body_container)
-    columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=spacing, margins=margins)
-
-    col1 = QWidget(body_container)
-    col1_layout = create_col_layout(spacing=spacing, margins=margins, parent=col1)
-    col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-    col2 = QWidget(body_container)
-    col2_layout = create_col_layout(spacing=spacing, margins=margins, parent=col2)
-    col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-    columns_layout.addWidget(col1, stretch=1)
-    columns_layout.addWidget(col2, stretch=1)
-    body_layout.addLayout(columns_layout)
-
-    return body_container, body_layout, columns_layout, col1_layout, col2_layout
-
-
-def create_frameless_input(
-    parent: QWidget | None = None,
-    placeholder: str = "",
-    on_text_changed=None,
-    on_return_pressed=None,
-    event_filter_parent: QWidget | None = None
-) -> QLineEdit:
-    txt = QLineEdit(parent) if parent else QLineEdit()
-    if placeholder:
-        txt.setPlaceholderText(placeholder)
-    txt.setFrame(False)
-    if on_text_changed:
-        txt.textChanged.connect(on_text_changed)
-    if on_return_pressed:
-        txt.returnPressed.connect(on_return_pressed)
-    if event_filter_parent:
-        txt.installEventFilter(event_filter_parent)
-    return txt
-
-
 def create_text_label(
     text: str,
     role: str = "caption",
@@ -159,68 +114,11 @@ def create_text_label(
     return lbl
 
 
-def create_error_label(parent: QWidget | None = None) -> QLabel:
+def create_error_label(
+    parent: QWidget | None = None
+) -> QLabel:
     lbl = QLabel(parent) if parent else QLabel()
     lbl.setProperty("state", "error")
     lbl.setWordWrap(True)
     lbl.hide()
     return lbl
-
-
-def sync_platform_switch_state(switch, is_connected: bool, offline_tooltip: str = "", auto_check: bool = False):
-    switch.setEnabled(is_connected)
-    if auto_check:
-        switch.setChecked(is_connected)
-    elif not is_connected:
-        switch.setChecked(False)
-    switch.setToolTip(offline_tooltip if not is_connected else "")
-
-
-def sync_dual_platform_switches(switch_kick, switch_twitch, connected_platforms: dict[str, bool] | None, offline_tooltip: str = "", auto_check: bool = False):
-    conns = connected_platforms or {}
-    kick_on = bool(conns.get("kick", False))
-    twitch_on = bool(conns.get("twitch", False))
-    sync_platform_switch_state(switch_kick, kick_on, offline_tooltip, auto_check=auto_check)
-    sync_platform_switch_state(switch_twitch, twitch_on, offline_tooltip, auto_check=auto_check)
-
-
-def create_platform_switches(
-    kick_label: str = "Kick",
-    twitch_label: str = "Twitch",
-    checked_default: bool = True,
-    spacing: int = Size.SPACING_LG,
-    field_spacing: int = Size.SPACING_MD,
-    parent: QWidget | None = None,
-    on_kick_toggled=None,
-    on_twitch_toggled=None,
-    add_stretch: bool = True,
-    label_first: bool = False
-):
-    from frontend.widgets.controls_widget import ModernSwitch
-    switches_row = create_row_layout(spacing=spacing)
-
-    switch_kick = ModernSwitch(parent=parent)
-    switch_kick.setChecked(checked_default)
-    if on_kick_toggled:
-        switch_kick.toggled.connect(on_kick_toggled)
-    kick_box, _ = create_switch_field(switch_kick, kick_label, spacing=field_spacing, label_first=label_first)
-    switches_row.addLayout(kick_box)
-
-    switch_twitch = ModernSwitch(parent=parent)
-    switch_twitch.setChecked(checked_default)
-    if on_twitch_toggled:
-        switch_twitch.toggled.connect(on_twitch_toggled)
-    twitch_box, _ = create_switch_field(switch_twitch, twitch_label, spacing=field_spacing, label_first=label_first)
-    switches_row.addLayout(twitch_box)
-
-    if add_stretch:
-        switches_row.addStretch()
-
-    return switches_row, switch_kick, switch_twitch
-
-def render_styled_frame_background(widget: QWidget) -> None:
-    opt = QStyleOptionFrame()
-    opt.initFrom(widget)
-    p = QPainter(widget)
-    widget.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, widget)
-    p.end()

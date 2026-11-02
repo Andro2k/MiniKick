@@ -187,6 +187,13 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
         logger.error("Error executing database schema upgrade: %s", e)
         raise
 
+def _migration_002_drop_timer_execution_logs(conn: sqlite3.Connection) -> None:
+    conn.execute("DROP TRIGGER IF EXISTS prune_timer_logs")
+    conn.execute("DROP INDEX IF EXISTS idx_timer_logs_timer")
+    conn.execute("DROP INDEX IF EXISTS idx_timer_logs_platform")
+    conn.execute("DROP TABLE IF EXISTS timer_execution_logs")
+
 MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_add_missing_columns_and_constraints),
+    (2, _migration_002_drop_timer_execution_logs),
 ]

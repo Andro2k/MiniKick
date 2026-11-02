@@ -4,6 +4,7 @@ import logging
 import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient
+from backend.utils.worker_utils import cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.timers")
 
@@ -31,7 +32,7 @@ class TimerWorker(QThread):
             except Exception as e:
                 logger.error("[TimerWorker] Initial stream status fetch failed: %s", e)
 
-        while self._running:
+        while self._running and not self.isInterruptionRequested():
             try:
                 now = time.time()
                 if now - last_status_fetch_time >= 60:
@@ -40,6 +41,8 @@ class TimerWorker(QThread):
                         last_status_fetch_time = now
                 messages_to_send = self.timer_service.check_timers(stream_status)
                 for item in messages_to_send:
+                    if not self._running or self.isInterruptionRequested():
+                        break
                     if isinstance(item, tuple) and len(item) == 3:
                         msg, apply_kick, apply_twitch = item
                         platforms = [p for p, active in [("kick", apply_kick), ("twitch", apply_twitch)] if active]
@@ -52,10 +55,8 @@ class TimerWorker(QThread):
             except Exception as e:
                 logger.error("[TimerWorker] Error in run loop: %s", e)
 
-            for _ in range(self.check_interval * 20):
-                if not self._running or self.isInterruptionRequested():
-                    break
-                self.msleep(50)
+            if not cooperative_sleep(self, self.check_interval, step_ms=50):
+                break
 
     def stop(self):
         self._running = False

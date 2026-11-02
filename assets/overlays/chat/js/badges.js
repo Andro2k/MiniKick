@@ -2,20 +2,12 @@
  * MiniKick Chat Overlay - Badges, Icons & Emotes Engine
  * Big-O lookup complexity: O(1) hash table access for all icons and level badges.
  */
-
-
-// 1. Generic Minimalist SVG Icons
-
 const ICONS = {
-    // Platforms
     twitch: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57V4.714zm4.715 0H18v5.143h-1.714V4.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0H6zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714v9.429z"/></svg>`,
     kick: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>kick</title><path fill="currentColor" d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></svg>`,
     youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path fill="currentColor" d="M18 3a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM9 9v6a1 1 0 0 0 1.514.857l5-3a1 1 0 0 0 0-1.714l-5-3A1 1 0 0 0 9 9"/></svg>`,
     tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>`,
-    trovo: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16v18H4V3zm2 2v14h12V5H6zm4 3h4v4h-4V8zm0 6h4v2h-4v-2z"/></svg>`,
-    chzzk: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19.5 8.5 12 12.2 4.5 8.5 12 4.8z"/></svg>`,
 
-    // Generic Role Badges
     broadcaster: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>broadcaster</title><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>`,
     moderator: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>moderator</title><path fill="currentColor" d="m2.29 18.71l3 3c.2.2.45.29.71.29s.51-.1.71-.29L10 18.42l2.29 2.29l1.41-1.41l-2.29-2.29L7 12.6l-2.29-2.29l-1.41 1.41l2.29 2.29L2.3 17.3a.996.996 0 0 0 0 1.41ZM21 2h-3c-.27 0-.52.11-.71.29l-9.58 9.59l4.41 4.41l9.59-9.59a1 1 0 0 0 .29-.71v-3c0-.55-.45-1-1-1Z"/></svg>`,
     vip: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>vip</title><path fill="currentColor" d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>`,
@@ -34,7 +26,6 @@ const ICONS = {
     prime: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>Prime</title><path fill="currentColor" d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>`
 };
 
-// 2. Official Platform Badges (Kick SVGs & Twitch Official CDN)
 const PLATFORM_BADGES = {
     kick: {
         moderator: `<svg viewBox="0 0 16 16" fill="none"><path d="M11.7 1.3v1.5h-1.5v1.5H8.7v1.5H7.3v1.5H5.8V5.8h-3v3h1.5v1.5H2.8v1.5H1.3v3h3v-1.5h1.5v-1.5h1.5v1.5h3v-3H8.7V8.7h1.5V7.3h1.5V5.8h1.5V4.3h1.5v-3C14.7 1.3 11.7 1.3 11.7 1.3z" fill="#00C7FF"/></svg>`,
@@ -82,7 +73,6 @@ const PLATFORM_BADGES = {
     }
 };
 
-// 3. TikTok Twemoji Map
 const TIKTOK_STICKERS = {
     'wow': { svg: '1f62e', emoji: '😮' },
     'laugh': { svg: '1f606', emoji: '😆' },
@@ -165,7 +155,6 @@ const TIKTOK_STICKERS = {
     'shock': { svg: '1f631', emoji: '😱' }
 };
 
-// 4. Badge Dispatch & Formatting Helpers
 const BADGE_LABELS = {
     'broadcaster': 'Streamer',
     'moderator': 'Mod',
@@ -193,15 +182,7 @@ function getBadgeLabel(badge) {
     return BADGE_LABELS[badge] || badge;
 }
 
-/**
- * Resolves a badge representation with O(1) Big-O complexity.
- * - Kick: Official Kick role SVGs and 1-99 level badges.
- * - Twitch: Official Twitch role & Prime Gaming Base64 badges.
- * - Other platforms (YouTube, TikTok, etc.): Generic minimalist vector SVG badges.
- * @param {string} platform - Platform identifier ('kick', 'twitch', 'youtube', etc.)
- * @param {string} badgeKey - Badge key ('moderator', 'level_30', etc.)
- * @returns {object|null} { html, text, isGeneric, isLevel, title }
- */
+
 function resolveBadge(platform, badgeKey) {
     if (typeof badgeKey === 'string' && badgeKey.startsWith('level_')) {
         const lvlNum = parseInt(badgeKey.replace('level_', ''), 10);
@@ -224,7 +205,6 @@ function resolveBadge(platform, badgeKey) {
         };
     }
 
-    // 1. Official Kick & Twitch badges (O(1) hash table lookup)
     if ((platform === 'kick' || platform === 'twitch') && PLATFORM_BADGES[platform] && PLATFORM_BADGES[platform][badgeKey]) {
         return {
             html: PLATFORM_BADGES[platform][badgeKey],
@@ -235,7 +215,6 @@ function resolveBadge(platform, badgeKey) {
         };
     }
 
-    // 2. Generic minimalist badges for other platforms (YouTube, TikTok, etc.)
     if (ICONS[badgeKey]) {
         return {
             html: ICONS[badgeKey],
@@ -249,7 +228,6 @@ function resolveBadge(platform, badgeKey) {
     return null;
 }
 
-// 5. Official Kick Level Badges (Levels 1 to 99)
 const KICK_LEVEL_ICONS = {
     1: `<svg data-ds-icon="Level1" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="url(#Level1__a)" d="M10 16.98a6.98 6.98 0 1 0 0-13.96 6.98 6.98 0 0 0 0 13.96"/><path fill="url(#Level1__b)" d="M16.94 10A6.94 6.94 0 1 0 10 16.94v1.11a8.05 8.05 0 1 1 0-16.1 8.05 8.05 0 0 1 0 16.1v-1.11c3.83 0 6.94-3.1 6.94-6.94"/><path fill="#000" d="M11.08 7.24v5.54H9.74V8.49h-.03l-1.24.76V8.09l1.37-.85z"/><defs><linearGradient id="Level1__a" x1="10" x2="10" y1="3.02" y2="16.98" gradientUnits="userSpaceOnUse"><stop stop-color="#dbdbdb"/><stop offset="1" stop-color="#e4e4e4"/></linearGradient><linearGradient id="Level1__b" x1="10" x2="10" y1="1.95" y2="18.05" gradientUnits="userSpaceOnUse"><stop stop-color="#e3e3e3"/><stop offset="1" stop-color="#b8b8b8"/></linearGradient></defs></svg>`,
     2: `<svg data-ds-icon="Level2" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="url(#Level2__a)" d="M10 16.98a6.98 6.98 0 1 0 0-13.96 6.98 6.98 0 0 0 0 13.96"/><path fill="url(#Level2__b)" d="M16.94 10A6.94 6.94 0 1 0 10 16.94v1.11a8.05 8.05 0 1 1 0-16.1 8.05 8.05 0 0 1 0 16.1v-1.11c3.83 0 6.94-3.1 6.94-6.94"/><path fill="#000" d="M7.98 12.78v-.96L10 10.05l.39-.38q.15-.17.24-.34a1 1 0 0 0-.02-.78 1 1 0 0 0-.27-.25 1 1 0 0 0-.4-.09 1 1 0 0 0-.4.1 1 1 0 0 0-.28.26 1 1 0 0 0-.1.43H7.9q0-.57.25-.98.26-.4.72-.63t1.07-.22q.63 0 1.1.2.46.22.71.6.27.38.26.87 0 .32-.13.63-.12.3-.45.68t-.93.9l-.66.62v.03h2.24v1.08z"/><defs><linearGradient id="Level2__a" x1="10" x2="10" y1="3.02" y2="16.98" gradientUnits="userSpaceOnUse"><stop stop-color="#dbdbdb"/><stop offset="1" stop-color="#e4e4e4"/></linearGradient><linearGradient id="Level2__b" x1="10" x2="10" y1="1.95" y2="18.05" gradientUnits="userSpaceOnUse"><stop stop-color="#e3e3e3"/><stop offset="1" stop-color="#b8b8b8"/></linearGradient></defs></svg>`,

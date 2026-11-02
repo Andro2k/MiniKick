@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge, RowMenuAction
 from frontend.common import Palette, Size
 
 class TimersView(BaseView):
@@ -60,12 +60,15 @@ class TimersView(BaseView):
         h_header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
 
-        self.table.setColumnWidth(6, 130)
+        self.table.setColumnWidth(6, 96)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
-        self.connected_platforms = connected_platforms or {}
+        new_state = dict(connected_platforms or {})
+        if new_state == self.connected_platforms:
+            return
+        self.connected_platforms = new_state
         if hasattr(self, "_raw_timers") and self._raw_timers is not None:
             self.populate_table(self._raw_timers)
 
@@ -124,7 +127,7 @@ class TimersView(BaseView):
         if not apply_kick and not apply_twitch:
             container = QWidget()
             layout = QHBoxLayout(container)
-            layout.setContentsMargins(*Size.Margin.MRG_HMD)
+            layout.setContentsMargins(*Size.Margin.MRG_HSM)
             lbl_none = QLabel("-")
             lbl_none.setProperty("role", "body")
             layout.addWidget(lbl_none)
@@ -161,21 +164,22 @@ class TimersView(BaseView):
             callback=lambda checked, tid=timer_id: self.status_toggled.emit(tid, checked)
         )
 
-        cell.add_button(
-            icon_name="edit-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_accent_solid",
-            tooltip=self.i18n.get("timer.table.tooltip_edit"),
-            callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
-        )
-
         timer_name = timer_data.get("name", "")
-        cell.add_button(
-            icon_name="trash-filled.svg",
-            color=Palette.NEUTRAL_050,
-            role="action_danger_solid",
-            tooltip=self.i18n.get("timer.table.tooltip_delete"),
-            callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
+        cell.add_menu(
+            [
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.edit"),
+                    icon_name="edit-filled.svg",
+                    callback=lambda tid=timer_id: self.edit_requested.emit(tid),
+                ),
+                RowMenuAction(
+                    text=self.i18n.get("common.row_menu.delete"),
+                    icon_name="trash-filled.svg",
+                    callback=lambda tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname),
+                    role="row_action_danger"
+                ),
+            ],
+            tooltip=self.i18n.get("common.row_menu.more")
         )
 
         return cell

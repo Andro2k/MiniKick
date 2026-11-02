@@ -124,6 +124,10 @@ class ChatService:
             "chat_overlay_show_platform": self.storage.load_bool("chat_overlay_show_platform", True),
         }
 
+    def get_ignored_users(self) -> set[str]:
+        raw = self.storage.load_string("tts_ignored_users", "")
+        return {u.strip().lstrip("@").lower() for u in raw.split(",") if u.strip()}
+
     def get_overlay_settings(self) -> dict:
         s = self.get_settings()
         current_orientation = s.get("chat_overlay_orientation", "vertical")

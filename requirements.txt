@@ -94,6 +94,8 @@ pefile==2024.8.26
     # via pyinstaller
 piper-tts==1.8.0
     # via minikick (pyproject.toml)
+prompt-toolkit==3.0.53
+    # via questionary
 propcache==0.5.4
     # via
     #   aiohttp
@@ -152,6 +154,8 @@ pywin32==312
     #   pyttsx3
 pywin32-ctypes==0.2.3
     # via pyinstaller
+questionary==2.1.1
+    # via minikick (pyproject.toml)
 requests==2.34.2
     # via
     #   minikick (pyproject.toml)
@@ -173,6 +177,10 @@ tiktoklive==7.0.1
     # via minikick (pyproject.toml)
 tiktokliveproto==0.2.2
     # via tiktoklive
+tomli==2.5.0
+    # via minikick (pyproject.toml)
+tomli-w==1.2.0
+    # via minikick (pyproject.toml)
 typing-extensions==4.16.0
     # via
     #   anyio
@@ -187,6 +195,8 @@ typing-inspection==0.4.4
     # via pydantic
 urllib3==2.8.0
     # via requests
+wcwidth==0.9.4
+    # via prompt-toolkit
 websocket-client==1.9.2
     # via minikick (pyproject.toml)
 websockets==17.3

@@ -1,4 +1,4 @@
-# resources/tests/test_structured_logging.py
+# resources\tests\test_structured_logging.py\
 
 import io
 import logging

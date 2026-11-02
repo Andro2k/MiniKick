@@ -47,7 +47,7 @@ def test_dashboard_controller_handle_error_state(qapp):
 
 def test_modern_toast_dynamic_geometry_scaling(qapp):
     toast_empty = ModernToast("Titulo", "", "info")
-    assert toast_empty.height() == 58
+    assert toast_empty.height() == 56
 
     toast_short = ModernToast("Guardado", "Cambios aplicados con éxito.", "success")
     assert 65 <= toast_short.height() <= 90

@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import weakref
 from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
@@ -11,19 +12,29 @@ logger = logging.getLogger("minikick.providers.youtube_provider")
 
 _ERR_INVALID_MEDIA = "INVALID_MEDIA"
 _ERR_PLAYER_ERROR = "PLAYER_ERROR"
+_ACTIVE_SEARCH_WORKERS = set()
+
+
+def _release_search_worker(worker_ref: weakref.ReferenceType) -> None:
+    worker = worker_ref()
+    if worker is not None:
+        _ACTIVE_SEARCH_WORKERS.discard(worker)
 
 _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database import SQLiteMusicStorage
+from backend.interfaces import IConfigProvider
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
     queue_updated = Signal()
 
-    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
+    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None,
+                 settings_storage: IConfigProvider | None = None):
         super().__init__()
         self.i18n = i18n
         self.db_manager = db_manager
+        self.settings_storage = settings_storage
         if music_storage:
             self.music_storage = music_storage
         elif db_manager:
@@ -38,9 +49,11 @@ class YouTubeMusicProvider(QObject):
         self.current_local_file: str | None = None
         self.resolve_worker = None
         self._search_workers = []
+        self._search_contexts = {}
         self.preload_worker = None
         self.preload_song_url: str | None = None
         self._retiring_workers: set = set()
+        self._is_shutting_down = False
 
         self.player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
@@ -64,10 +77,9 @@ class YouTubeMusicProvider(QObject):
         self._duck_factor = 0.30
         self.loudness_normalization_enabled = True
 
-        if self.db_manager:
+        if self.settings_storage:
             try:
-                from backend.database import SQLiteSettingsStorage
-                settings = SQLiteSettingsStorage(self.db_manager)
+                settings = self.settings_storage
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
                 self.loudness_normalization_enabled = settings.load_bool("music_loudness_normalization", True)
                 saved_vol = int(settings.load_string("music_volume", "100"))
@@ -224,41 +236,73 @@ class YouTubeMusicProvider(QObject):
             requester=requester or "",
         )
         
-        def on_worker_finished(success, message):
-            if success and worker.song_entry:
-                worker.song_entry["requester"] = requester
-                worker.song_entry["platform"] = platform
-                if self.music_storage:
-                    db_id = self.music_storage.add_song_to_queue(
-                        title=worker.song_entry["title"],
-                        artist=worker.song_entry["artist"],
-                        url=worker.song_entry["url"],
-                        requester=requester,
-                        provider="youtube",
-                        platform=platform,
-                        duration=worker.song_entry.get("duration", "-")
-                    )
-                    worker.song_entry["db_id"] = db_id
-                self.queue.append(worker.song_entry)
-                self.queue_updated.emit()
-                if is_search:
-                    self._save_search_to_cache(query, worker.song_entry)
-                if not self.current_song:
-                    self._play_next(start_playing=self.auto_resume)
-                else:
-                    self._preload_next_song()
-            if callback:
-                callback(success, message)
-            
-            if worker in self._search_workers:
-                self._search_workers.remove(worker)
-            worker.deleteLater()
-
-        worker.finished.connect(on_worker_finished)
+        worker.search_completed.connect(self._on_search_worker_completed)
+        worker.finished.connect(self._on_search_worker_finished)
+        _ACTIVE_SEARCH_WORKERS.add(worker)
+        worker.finished.connect(
+            lambda worker_ref=weakref.ref(worker): _release_search_worker(worker_ref)
+        )
+        self._search_contexts[worker] = {
+            "requester": requester,
+            "platform": platform,
+            "is_search": is_search,
+            "query": query,
+            "callback": callback,
+        }
         self._search_workers.append(worker)
         worker.start()
 
         return True, immediate_msg
+
+    @Slot(bool, str)
+    def _on_search_worker_completed(self, success: bool, message: str) -> None:
+        worker = self.sender()
+        if not isinstance(worker, YouTubeSearchWorker):
+            return
+        context = self._search_contexts.get(worker)
+        if context is None or self._is_shutting_down:
+            return
+
+        requester = context["requester"]
+        platform = context["platform"]
+        is_search = context["is_search"]
+        query = context["query"]
+        callback = context["callback"]
+        if success and worker.song_entry:
+            worker.song_entry["requester"] = requester
+            worker.song_entry["platform"] = platform
+            if self.music_storage:
+                db_id = self.music_storage.add_song_to_queue(
+                    title=worker.song_entry["title"],
+                    artist=worker.song_entry["artist"],
+                    url=worker.song_entry["url"],
+                    requester=requester,
+                    provider="youtube",
+                    platform=platform,
+                    duration=worker.song_entry.get("duration", "-")
+                )
+                worker.song_entry["db_id"] = db_id
+            self.queue.append(worker.song_entry)
+            self.queue_updated.emit()
+            if is_search:
+                self._save_search_to_cache(query, worker.song_entry)
+            if not self.current_song:
+                self._play_next(start_playing=self.auto_resume)
+            else:
+                self._preload_next_song()
+        if callback:
+            callback(success, message)
+
+    @Slot()
+    def _on_search_worker_finished(self) -> None:
+        worker = self.sender()
+        if not isinstance(worker, YouTubeSearchWorker):
+            return
+        self._search_contexts.pop(worker, None)
+        if worker in self._search_workers:
+            self._search_workers.remove(worker)
+        worker.deleteLater()
+
 
     def skip_current(self) -> bool:
         self._play_next()
@@ -290,7 +334,7 @@ class YouTubeMusicProvider(QObject):
             )
             return effective
         except Exception as e:
-            logger.debug("[YouTubeMusicProvider] Error calculando ganancia de sonoridad: %s", e)
+            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
             return max(0.0, min(1.0, perceptual_vol))
 
     def set_ducking(self, ducked: bool) -> None:
@@ -302,10 +346,9 @@ class YouTubeMusicProvider(QObject):
     def set_loudness_normalization(self, enabled: bool) -> None:
         self.loudness_normalization_enabled = enabled
         self.audio_output.setVolume(self._calculate_effective_volume())
-        if self.db_manager:
+        if self.settings_storage:
             try:
-                from backend.database import SQLiteSettingsStorage
-                SQLiteSettingsStorage(self.db_manager).save_bool("music_loudness_normalization", enabled)
+                self.settings_storage.save_bool("music_loudness_normalization", enabled)
             except Exception as e:
                 logger.debug("[YouTubeMusicProvider] Could not persist loudness normalization: %s", e)
 
@@ -397,11 +440,17 @@ class YouTubeMusicProvider(QObject):
             self._retire_worker(worker)
 
     def shutdown(self):
+        if self._is_shutting_down:
+            return
+        self._is_shutting_down = True
         self.player.stop()
         self.player.setSource(QUrl())
         self.current_local_file = None
         self._cancel_worker("preload_worker")
         self._cancel_worker("resolve_worker")
+        for worker in self._search_workers:
+            worker.requestInterruption()
+            worker.quit()
         self.preload_song_url = None
 
     def _preload_next_song(self):

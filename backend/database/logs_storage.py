@@ -31,6 +31,16 @@ class SQLiteSystemLogStorage:
                     pass
         return None
 
+    def append_logs(self, records: list[tuple[str, str, str]]) -> None:
+        if not self.db_manager or not records:
+            return
+        with self.db_manager.get_connection() as conn:
+            conn.executemany(
+                "INSERT INTO system_logs (level, timestamp, message) VALUES (?, ?, ?)",
+                records
+            )
+            conn.commit()
+
     def clear_logs(self) -> None:
         if not self.db_manager:
             return
