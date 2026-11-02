@@ -52,10 +52,14 @@
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+<<<<<<< Updated upstream
+=======
 | **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
 | **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
 | **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
 | **INC-046** | `AttributeError` al abrir Settings por callbacks de YouTube y TikTok inexistentes en `MainWindowCore` | Log de usuario `minikick.log` (2026-11-01, líneas 84-111) | v1.6.6 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.6 |
+| **INC-047** | El generador de capturas llama a un handler de navegación eliminado y termina con un worker activo | Reporte del usuario al ejecutar `resources/tools/generate_screenshots.py` | v1.6.6 | `✅ Solventado` | `resources/tools/generate_screenshots.py`, `resources/tests/test_screenshot_generator.py` | v1.6.6 (`WT-1.6.6_12`) |
+>>>>>>> Stashed changes
 
 ---
 
@@ -1045,6 +1049,8 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
 * **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.
+<<<<<<< Updated upstream
+=======
 
 ---
 
@@ -1136,3 +1142,27 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/historial_crashes_y_errores.md`
 * **Solución Implementada**: Las señales de YouTube y TikTok ahora usan `functools.partial` para invocar el handler compartido con su instancia de conexión correspondiente.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que Settings se crea y que ambos botones encaminan la conexión correcta al handler compartido. El archivo completo pasó: 7 pruebas aprobadas.
+
+---
+
+### INC-047: El generador de capturas usa un handler de navegación obsoleto
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (el generador se interrumpía antes de completar las capturas y dejaba workers activos al salir).
+* **Reportes Asociados**: Reporte del usuario al ejecutar `uv run .\resources\tools\generate_screenshots.py`, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  File "resources/tools/generate_screenshots.py", line 57, in generate_screenshots
+    window._handle_navigation("Dashboard")
+  AttributeError: 'MainWindowCore' object has no attribute '_handle_navigation'
+  QThread: Destroyed while thread 'Worker_Voice_Fetcher' is still running
+  ```
+* **Causa Raíz**: La fase de extracción de navegación movió el comportamiento a `NavigationCoordinator.handle_navigation`, pero el generador de capturas conservó llamadas al antiguo método privado de `MainWindowCore`. La excepción escapaba antes de que el script ejecutara su cierre normal, terminando con workers activos.
+* **Archivos y Módulos Modificados**:
+  - `resources/tools/generate_screenshots.py`
+  - `resources/tests/test_screenshot_generator.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: El generador delega la navegación a `window.navigation.handle_navigation`. El flujo de capturas queda protegido con `finally` y solicita el apagado coordinado de la ventana incluso si una captura falla, esperando hasta 15 segundos a que finalice la secuencia.
+* **Pruebas y Verificación**: `resources/tests/test_screenshot_generator.py` pasó (2 pruebas); `python resources/tools/project_quality_suite.py --quick` pasó (12/12 auditorías); `git diff --check` pasó.
+>>>>>>> Stashed changes
