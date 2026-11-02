@@ -1,8 +1,6 @@
 # Entornos virtuales
 .vscode/
 .venv/
-.claude/
-.interface-design/
 # Archivos compilados de Python
 __pycache__/
 *.py[cod]
@@ -26,4 +24,3 @@ kick_api_config*.json
 # Archivos de configuración de IDEs
 build/
 dist/
-.agents/
