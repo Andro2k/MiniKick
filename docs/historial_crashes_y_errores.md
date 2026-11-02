@@ -52,6 +52,14 @@
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
+<<<<<<< Updated upstream
+=======
+| **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
+| **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
+| **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
+| **INC-046** | `AttributeError` al abrir Settings por callbacks de YouTube y TikTok inexistentes en `MainWindowCore` | Log de usuario `minikick.log` (2026-11-01, líneas 84-111) | v1.6.6 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.6 |
+| **INC-047** | El generador de capturas llama a un handler de navegación eliminado y termina con un worker activo | Reporte del usuario al ejecutar `resources/tools/generate_screenshots.py` | v1.6.6 | `✅ Solventado` | `resources/tools/generate_screenshots.py`, `resources/tests/test_screenshot_generator.py` | v1.6.6 (`WT-1.6.6_12`) |
+>>>>>>> Stashed changes
 
 ---
 
@@ -1041,3 +1049,120 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
 * **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.
+<<<<<<< Updated upstream
+=======
+
+---
+
+### INC-043: `AttributeError` y cierre de MiniKick al eliminar una encuesta
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la excepción interrumpía el procesamiento de `PollDeleteEvent` y el hilo Qt podía destruirse mientras seguía activo).
+* **Reportes Asociados**: Log de usuario `minikick.log`, líneas 68-70.
+* **Fecha y Versión del Fallo**: 2026-10-27 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  Error processing frame for event 'App\Events\PollDeleteEvent':
+  'KickChatWorker' object has no attribute '_retiring_poll_workers'
+  QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running
+  ```
+* **Causa Raíz**: La ruta de retiro asíncrono del worker de sincronización añade los hilos todavía activos a `_retiring_poll_workers` para mantenerlos referenciados hasta su señal `finished`, pero el constructor de `KickChatWorker` no inicializaba ese conjunto.
+* **Archivos y Módulos Modificados**:
+  - `backend/workers/kick_chat_worker.py`
+  - `resources/tests/test_kick_ws_key_rotation.py`
+* **Solución Implementada**: Se inicializa `_retiring_poll_workers` como un conjunto por instancia. La prueba de regresión verifica que el worker activo permanece referenciado durante el retiro y que se elimina del conjunto al finalizar.
+* **Pruebas y Verificación**: `resources/tests/test_kick_ws_key_rotation.py` cubre el ciclo de retención y liberación del worker.
+
+---
+
+### INC-044: Texto residual en el pie del modal de actualización
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (defecto visual; el flujo de descarga e instalación no se interrumpía).
+* **Reportes Asociados**: Capturas compartidas por el usuario, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza / Síntoma**:
+  ```text
+  Al completar una descarga, el botón de acción cambiaba de ancho y posición, pero parte de su texto anterior permanecía visible hasta que el cursor pasaba sobre el modal.
+  ```
+* **Causa Raíz**: El modal conservaba el alto calculado al mostrarse inicialmente. Al habilitar la barra de progreso y cambiar el título por uno que ocupa dos líneas, el cuerpo recibía menos espacio que su `sizeHint`, comprimiendo y recortando los controles de progreso.
+* **Archivos y Módulos Modificados**:
+  - `frontend/dialogs/updater_dialog.py`
+  - `resources/tests/test_updater_dialog.py`
+* **Solución Implementada**: Tras cada cambio de estado, se recalcula el tamaño mínimo del cuerpo a partir del contenido visible, se reajustan el contenedor y el diálogo, y se repintan las superficies afectadas.
+* **Pruebas y Verificación**: `resources/tests/test_updater_dialog.py` comprueba que el cuerpo, la barra y su fila de texto reciben su altura requerida y no invaden el pie tras completar la descarga. La suite rápida de calidad detectó estilos inline preexistentes en `frontend/dialogs/base_dialog.py`; no se modificaron como parte de esta corrección.
+* **Walkthrough de Referencia**: No aplica.
+
+---
+
+### INC-045: Documentación de walkthroughs incluida en el instalador exportado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (archivos de documentación innecesarios aumentaban el tamaño de la instalación; la aplicación seguía funcionando).
+* **Reportes Asociados**: Inspección solicitada por el usuario en `C:\Users\TheAn\AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs`.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza / Síntoma**:
+  ```text
+  La instalación PyInstaller contenía docs\walkthroughs aunque esos archivos no son necesarios para ejecutar MiniKick.
+  ```
+* **Causa Raíz**: La distribución Inno Setup copiaba recursivamente todo `dist\MiniKick`, y la compilación no tenía una exclusión de documentación ni una validación de la salida. Además, las notas locales se consultaban desde `docs\walkthroughs` pese a que ya existía una fuente remota de GitHub Releases.
+* **Relación con INC-017**: La decisión anterior de incluir walkthroughs para mostrar novedades sin conexión queda sustituida; el bundle ahora consulta GitHub y conserva únicamente los highlights de esa versión como fallback local.
+* **Archivos y Módulos Modificados**:
+  - `.gitignore`
+  - `MiniKick.spec`
+  - `README.md`
+  - `backend/services/system/whats_new_service.py`
+  - `backend/services/system/updater_service.py`
+  - `frontend/window/whats_new.py`
+  - `instalador.iss`
+  - `resources/tests/test_main_window_support.py`
+  - `resources/tests/test_whats_new_remote.py`
+  - `resources/tools/build_manager.py`
+* **Solución Implementada**: PyInstaller ya no agrega walkthroughs como datos; el gestor limpia la salida previa y rechaza el bundle si reaparece `docs`; Inno Setup excluye `docs` incluso al compilarse directamente y elimina las carpetas heredadas `docs` y `_internal\docs` al actualizar una instalación previa. El modal consulta primero la release de GitHub correspondiente a la versión instalada y usa los highlights cacheados de esa versión si falla la red. La guía de desarrollo recomienda el gestor de compilación para garantizar la limpieza.
+* **Pruebas y Verificación**: Build PyInstaller completado; `dist\MiniKick` conserva `assets` y `locales` y no contiene `docs`. Las pruebas de notas remotas y de integración relacionadas aprobaron; `build_manager.py --check`, `py_compile` y `git diff --check` correctos. Inno Setup 7.1.0 compiló `Output\MiniKick_Installer_v1.6.6.exe` con las reglas de exclusión y limpieza (la instalación existente del usuario no fue modificada).
+
+---
+
+### INC-046: `AttributeError` al abrir Settings por callbacks de integración inexistentes
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (impedía abrir la vista Settings y generaba una excepción no manejada en el hilo GUI).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  File "frontend\main_window_views.py", line 162, in get_or_create
+    window._on_youtube_integration_button_clicked
+  AttributeError: 'MainWindowCore' object has no attribute '_on_youtube_integration_button_clicked'. Did you mean: '_on_twitch_integration_button_clicked'?
+  ```
+* **Causa Raíz**: La factoría de vistas conectaba los botones de YouTube y TikTok con handlers que no existen en `MainWindowCore`. Tras abstraer ambas conexiones, los flujos pasaron a usar `_on_live_chat_button_clicked(chat)`, pero las conexiones de señales de Settings conservaron los nombres de los handlers anteriores. La resolución del atributo fallaba durante la creación de Settings, incluso cuando el prewarmer intentaba anticiparla.
+* **Archivos y Módulos Modificados**:
+  - `frontend/main_window_views.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: Las señales de YouTube y TikTok ahora usan `functools.partial` para invocar el handler compartido con su instancia de conexión correspondiente.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que Settings se crea y que ambos botones encaminan la conexión correcta al handler compartido. El archivo completo pasó: 7 pruebas aprobadas.
+
+---
+
+### INC-047: El generador de capturas usa un handler de navegación obsoleto
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (el generador se interrumpía antes de completar las capturas y dejaba workers activos al salir).
+* **Reportes Asociados**: Reporte del usuario al ejecutar `uv run .\resources\tools\generate_screenshots.py`, 2026-11-01.
+* **Fecha y Versión del Fallo**: 2026-11-01 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**:
+  ```text
+  File "resources/tools/generate_screenshots.py", line 57, in generate_screenshots
+    window._handle_navigation("Dashboard")
+  AttributeError: 'MainWindowCore' object has no attribute '_handle_navigation'
+  QThread: Destroyed while thread 'Worker_Voice_Fetcher' is still running
+  ```
+* **Causa Raíz**: La fase de extracción de navegación movió el comportamiento a `NavigationCoordinator.handle_navigation`, pero el generador de capturas conservó llamadas al antiguo método privado de `MainWindowCore`. La excepción escapaba antes de que el script ejecutara su cierre normal, terminando con workers activos.
+* **Archivos y Módulos Modificados**:
+  - `resources/tools/generate_screenshots.py`
+  - `resources/tests/test_screenshot_generator.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: El generador delega la navegación a `window.navigation.handle_navigation`. El flujo de capturas queda protegido con `finally` y solicita el apagado coordinado de la ventana incluso si una captura falla, esperando hasta 15 segundos a que finalice la secuencia.
+* **Pruebas y Verificación**: `resources/tests/test_screenshot_generator.py` pasó (2 pruebas); `python resources/tools/project_quality_suite.py --quick` pasó (12/12 auditorías); `git diff --check` pasó.
+>>>>>>> Stashed changes
