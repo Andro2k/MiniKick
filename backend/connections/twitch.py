@@ -155,6 +155,7 @@ class TwitchConnection(QObject):
             logger.exception("[Twitch Auth] Error initializing Twitch session.")
             self._is_connected = False
             self._channel = ""
+            self.state_changed.emit()
             self.auth_failed.emit(str(error))
 
     def _start_chat_worker(self, channel: str) -> None:
