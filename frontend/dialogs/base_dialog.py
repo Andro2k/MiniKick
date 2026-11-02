@@ -434,7 +434,6 @@ def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", ic
     badge.setObjectName("dialog_icon_badge")
     badge.setFixedSize(box, box)
     badge.setProperty("role", icon_role or resolved_role)
-    # Qt stylesheets do not clip a QFrame's background to border-radius.
     radius = min(Size.Radius.RAD_FUL, box / 2)
     shape = QPainterPath()
     shape.addRoundedRect(QRectF(0, 0, box, box), radius, radius)

@@ -2,7 +2,11 @@ import logging
 from unittest.mock import MagicMock
 
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.window.rewards import RewardRedemptionHandler
+from frontend.window.rewards import (
+    RewardRedemptionHandler,
+    RewardRedemptionOutcome,
+    RewardRedemptionPresenter,
+)
 
 
 def _handler(service, clock=None):
@@ -73,3 +77,26 @@ def test_unconfigured_reward_reports_no_file_action():
     assert outcome.media_valid is None
     service.trigger_preview.assert_not_called()
     service.log_redemption.assert_not_called()
+
+
+def test_reward_presenter_escapes_reward_name_and_processes_chat_message():
+    window = MagicMock()
+    window.i18n.get.side_effect = lambda key: {
+        "main.toasts.reward_msg": "{user} redeemed {reward_name}",
+        "main.toasts.reward_title": "Reward",
+        "main.chat.reward_redeemed": "Redeemed {reward_name}",
+        "main.chat.points_tag": "Points",
+    }.get(key, key)
+    window.chat_service.get_settings.return_value = {"enabled": True}
+    handler = MagicMock()
+    redemption = object()
+    handler.begin.return_value = redemption
+    handler.process.return_value = RewardRedemptionOutcome(configured=False)
+    presenter = RewardRedemptionPresenter(window, handler)
+
+    presenter.on_redeemed("viewer", "<script>", "hello", platform="twitch")
+
+    window.view_chat.append_message.assert_called_once()
+    assert "&lt;script&gt;" in window.view_chat.append_message.call_args.args[1]
+    window.chat_controller.process_message.assert_called_once()
+    handler.process.assert_called_once_with(redemption)

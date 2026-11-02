@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import frontend.window.composition as composition_module
 from frontend.window.composition import MainWindowComposition
+from frontend.window.platform_connections import PlatformConnectionHandlers
 from frontend.window.startup import StartupSequencer
 from frontend.window.wiring import MainWindowWiring
 
@@ -60,6 +61,7 @@ def test_composition_builds_services_and_controllers(monkeypatch):
     assert window.chat_controller is constructors["ChatController"].return_value
     assert window.connection_hub is constructors["ConnectionHub"].return_value
     assert window.integrations_status is constructors["IntegrationsStatusPresenter"].return_value
+    assert isinstance(window.platform_connections, PlatformConnectionHandlers)
 
 
 def test_wiring_connects_platform_and_application_signals():
@@ -68,15 +70,44 @@ def test_wiring_connects_platform_and_application_signals():
     MainWindowWiring(window).connect_signals()
 
     window.dashboard_controller.request_connection.connect.assert_called_once_with(
-        window._handle_auth_process
+        window.platform_connections.handle_auth_process
     )
-    window.kick.connected.connect.assert_called_once_with(window._on_kick_connected)
-    window.twitch.connected.connect.assert_called_once_with(window._on_twitch_connected)
-    window.youtube.error_reported.connect.assert_called_once_with(window._on_live_chat_error)
-    window.tiktok.error_reported.connect.assert_called_once_with(window._on_live_chat_error)
+    window.kick.connected.connect.assert_called_once_with(
+        window.platform_connections.on_kick_connected
+    )
+    window.twitch.connected.connect.assert_called_once_with(
+        window.platform_connections.on_twitch_connected
+    )
+    window.youtube.error_reported.connect.assert_called_once_with(
+        window.platform_connections.on_live_chat_error
+    )
+    window.tiktok.error_reported.connect.assert_called_once_with(
+        window.platform_connections.on_live_chat_error
+    )
     window.q_log_handler.emitter.log_received.connect.assert_called_once_with(
         window.logs_controller.process_incoming_log
     )
+
+
+def test_kick_connection_handler_preserves_startup_toast_suppression():
+    window = MagicMock()
+    handler = PlatformConnectionHandlers(window)
+    window._consume_startup_silent_connection.return_value = True
+
+    handler.on_kick_connected("streamer", {"broadcaster_id": 123})
+
+    window.toast.show_toast.assert_not_called()
+    window.kick.fetch_rewards.assert_called_once()
+
+
+def test_kick_connection_handler_shows_toast_for_manual_connection():
+    window = MagicMock()
+    handler = PlatformConnectionHandlers(window)
+    window._consume_startup_silent_connection.return_value = False
+
+    handler.on_kick_connected("streamer", {"broadcaster_id": 123})
+
+    window.toast.show_toast.assert_called_once()
 
 
 def test_startup_sequencer_runs_steps_in_order_and_continues_after_failure(caplog):

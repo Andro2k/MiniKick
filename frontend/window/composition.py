@@ -1,3 +1,5 @@
+# frontend\window\composition.py
+
 from __future__ import annotations
 
 from backend.connections import ConnectionHub, KickConnection, WorkerSlot
@@ -30,7 +32,10 @@ from backend.workers import GlobalMediaWorker
 from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.media_keys import MediaKeysHandler
 from frontend.window.messages import ChatMessageRouter
-from frontend.window.rewards import RewardRedemptionHandler
+from frontend.window.platform_connections import PlatformConnectionHandlers
+from frontend.window.overlay_events import OverlayEventPresenter
+from frontend.window.rewards import RewardRedemptionHandler, RewardRedemptionPresenter
+from frontend.window.schedule import SchedulePresenter
 
 
 class MainWindowComposition:
@@ -67,6 +72,12 @@ class MainWindowComposition:
 
     def create_controllers(self) -> None:
         w = self._window
+        w.platform_connections = PlatformConnectionHandlers(w)
+        w.reward_redemption_presenter = RewardRedemptionPresenter(
+            w,
+            w.reward_redemption_handler,
+        )
+        w.overlay_events = OverlayEventPresenter(w.overlay_server)
         w.dashboard_controller = DashboardController(
             view=w.view_dashboard,
             avatar_service=w.avatar_service,
@@ -87,7 +98,7 @@ class MainWindowComposition:
         w.chat_message_router = ChatMessageRouter(
             process_message=w.chat_controller.process_message,
             record_message=w.session_metrics.record_message,
-            profile_provider=w._get_message_profile,
+            profile_provider=w.platform_connections.get_message_profile,
         )
         w.widgets_controller = WidgetsController(
             view=None,
@@ -130,20 +141,20 @@ class MainWindowComposition:
             None,
             w.command_service,
             toast_manager=w.toast,
-            connected_platforms_provider=w.get_connected_platforms,
+            connected_platforms_provider=w.platform_connections.get_connected_platforms,
         )
         w.spam_controller = SpamController(
             None,
             w.spam_service,
             toast_manager=w.toast,
-            connected_platforms_provider=w.get_connected_platforms,
+            connected_platforms_provider=w.platform_connections.get_connected_platforms,
         )
         w.timers_controller = TimersController(
             None,
             w.timer_service,
             toast_manager=w.toast,
             schedule_service=w.schedule_service,
-            connected_platforms_provider=w.get_connected_platforms,
+            connected_platforms_provider=w.platform_connections.get_connected_platforms,
         )
         w.settings_controller = SettingsController(
             view=None,
@@ -163,8 +174,9 @@ class MainWindowComposition:
             service=w.schedule_service,
             toast_manager=w.toast,
             i18n=w.i18n,
-            connected_platforms_provider=w.get_connected_platforms,
+            connected_platforms_provider=w.platform_connections.get_connected_platforms,
         )
+        w.schedule_presenter = SchedulePresenter(w)
         w.alerts_controller = AlertsController(
             view=None,
             service=w.container.alert_service,

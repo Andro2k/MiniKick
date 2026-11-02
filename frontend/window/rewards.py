@@ -1,10 +1,16 @@
+# frontend\window\rewards.py
+
 from __future__ import annotations
 
+import html
 import logging
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Callable
 
+from backend.services import ChatMessageDTO
+from frontend.common import BrandColors
 from frontend.recent_redemptions import RecentRedemptionCache
 
 
@@ -87,3 +93,82 @@ class RewardRedemptionHandler:
             media_valid=True,
             filepath=str(filepath),
         )
+
+
+class RewardRedemptionPresenter:
+    def __init__(self, window, handler: RewardRedemptionHandler) -> None:
+        self._window = window
+        self._handler = handler
+
+    def on_redeemed(
+        self,
+        user: str,
+        reward_name: str,
+        message: str,
+        platform: str = "kick",
+    ) -> None:
+        w = self._window
+        redemption = self._handler.begin(user, reward_name, platform)
+        if redemption is None:
+            return
+
+        toast_template = w.i18n.get("main.toasts.reward_msg")
+        w.toast.show_toast(
+            title=w.i18n.get("main.toasts.reward_title"),
+            message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name),
+            state="success",
+        )
+
+        current_time = datetime.now().strftime("%H:%M")
+        safe_reward_name = html.escape(reward_name)
+        reward_template = w.i18n.get("main.chat.reward_redeemed")
+        system_message = (
+            f'<span style="color: {BrandColors.GREEN};">'
+            f'{reward_template.replace("{reward_name}", safe_reward_name)}</span>'
+        )
+        tag = w.i18n.get("main.chat.points_tag")
+        if w.view_chat is not None:
+            w.view_chat.append_message(
+                f"[{tag}] {user}",
+                system_message,
+                BrandColors.GREEN,
+                timestamp=current_time,
+                is_html=True,
+                platform=platform,
+            )
+
+        outcome = self._handler.process(redemption)
+        if outcome.configured and not outcome.media_valid:
+            missing_log = (
+                w.i18n.get("main.logs.reward_file_missing")
+                .replace("{reward_name}", reward_name)
+                .replace("{filepath}", outcome.filepath)
+            )
+            w.logger.warning(missing_log)
+            w.toast.show_toast(
+                title=w.i18n.get("common.status.warning"),
+                message=w.i18n.get("rewards.status.redeem_file_missing").replace(
+                    "{reward}", reward_name
+                ),
+                state="danger",
+            )
+        elif not outcome.configured:
+            no_rewards_template = w.i18n.get("main.logs.reward_no_rewards")
+            w.logger.debug(
+                "[Reward] %s",
+                no_rewards_template.replace("{reward_name}", reward_name),
+            )
+
+        settings = w.chat_service.get_settings()
+        if settings.get("enabled", False) and message:
+            dto = ChatMessageDTO(
+                user,
+                message,
+                [],
+                "",
+                "",
+                0,
+                timestamp=current_time,
+                platform=platform,
+            )
+            w.chat_controller.process_message(dto)

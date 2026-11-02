@@ -1,3 +1,5 @@
+# frontend\window\integrations_status.py
+
 import logging
 import time
 from collections.abc import Callable, Sequence

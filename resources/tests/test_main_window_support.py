@@ -106,10 +106,12 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
         i18n=MagicMock(),
         youtube=MagicMock(name="youtube"),
         tiktok=MagicMock(name="tiktok"),
-        _on_twitch_integration_button_clicked=MagicMock(),
-        _on_live_chat_button_clicked=MagicMock(),
+        platform_connections=SimpleNamespace(
+            on_twitch_integration_button_clicked=MagicMock(),
+            on_live_chat_button_clicked=MagicMock(),
+            update_integrations_status_ui=MagicMock(),
+        ),
         settings_controller=MagicMock(),
-        _update_integrations_status_ui=MagicMock(),
     )
     factory = MainWindowViewFactory(window)
 
@@ -118,8 +120,8 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
     view.youtube_integration_clicked.connect.call_args.args[0]()
     view.tiktok_integration_clicked.connect.call_args.args[0]()
 
-    window._on_live_chat_button_clicked.assert_any_call(window.youtube)
-    window._on_live_chat_button_clicked.assert_any_call(window.tiktok)
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.youtube)
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.tiktok)
     settings_view_class.assert_called_once_with(window.i18n, parent=window.content_stack)
     window.settings_controller.attach_view.assert_called_once_with(view)
 
