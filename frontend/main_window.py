@@ -26,6 +26,8 @@ from frontend.recent_redemptions import RecentRedemptionCache
 from frontend.window.media_keys import MediaKeysHandler
 from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.session_metrics import SessionMetrics
+from frontend.window.messages import ChatMessageRouter
+from frontend.window.rewards import RewardRedemptionHandler
 from frontend.window.shutdown import ShutdownSequence
 from frontend.window.updates import AutoUpdateCoordinator
 from frontend.window.whats_new import WhatsNewPresenter
@@ -250,6 +252,11 @@ class MainWindowCore(QMainWindow):
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
+        self.reward_redemption_handler = RewardRedemptionHandler(
+            self.rewards_service,
+            self._recent_reward_redemptions,
+            self.logger,
+        )
 
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
@@ -310,6 +317,11 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n,
             timer_service=self.timer_service,
             toast_manager=self.toast
+        )
+        self.chat_message_router = ChatMessageRouter(
+            process_message=self.chat_controller.process_message,
+            record_message=self.session_metrics.record_message,
+            profile_provider=self._get_message_profile,
         )
         self.widgets_controller = WidgetsController(
             view=None,
@@ -798,14 +810,10 @@ class MainWindowCore(QMainWindow):
         return f'<span style="color: {BrandColors.GREEN};">{texto_canje}</span>'
 
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str, platform: str = "kick"):
-        recents = getattr(self, "_recent_reward_redemptions", None)
-        if recents is not None:
-            dedup_key = f"{platform}:{user.lower()}:{reward_name.lower()}:{int(time.time() / 8)}"
-            if recents.contains_or_add(dedup_key):
-                self.logger.debug("[Reward] Ignoring duplicate redemption: %s", dedup_key)
-                return
+        redemption = self.reward_redemption_handler.begin(user, reward_name, platform)
+        if redemption is None:
+            return
 
-        self.logger.info("[Reward] Redemption processed: user='%s', reward='%s' (Platform: %s)", user, reward_name, platform.capitalize())
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
             title=self.i18n.get("main.toasts.reward_title"),
@@ -820,22 +828,17 @@ class MainWindowCore(QMainWindow):
         if self.view_chat is not None:
             self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, BrandColors.GREEN, timestamp=current_time, is_html=True, platform=platform)
 
-        config = self.rewards_service.get_reward_config(reward_name, platform=platform)
-        if config:
-            if self.rewards_service.is_file_valid(config):
-                self.rewards_service.trigger_preview(reward_name, config)
-                self.rewards_service.log_redemption(reward_name, user, platform=platform)
-            else:
-                filepath = config.get("filepath", "") if isinstance(config, dict) else (config if isinstance(config, str) else "")
-                missing_log = self.i18n.get("main.logs.reward_file_missing").replace("{reward_name}", reward_name).replace("{filepath}", str(filepath))
-                self.logger.warning(missing_log)
-                if self.toast:
-                    self.toast.show_toast(
-                        title=self.i18n.get("common.status.warning"),
-                        message=self.i18n.get("rewards.status.redeem_file_missing").replace("{reward}", reward_name),
-                        state="danger"
-                    )
-        else:
+        outcome = self.reward_redemption_handler.process(redemption)
+        if outcome.configured and not outcome.media_valid:
+            missing_log = self.i18n.get("main.logs.reward_file_missing").replace("{reward_name}", reward_name).replace("{filepath}", outcome.filepath)
+            self.logger.warning(missing_log)
+            if self.toast:
+                self.toast.show_toast(
+                    title=self.i18n.get("common.status.warning"),
+                    message=self.i18n.get("rewards.status.redeem_file_missing").replace("{reward}", reward_name),
+                    state="danger"
+                )
+        elif not outcome.configured:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
             self.logger.debug("[Reward] %s", no_rewards_template.replace("{reward_name}", reward_name))
 
@@ -1138,35 +1141,32 @@ class MainWindowCore(QMainWindow):
             self.schedule_controller.reload_schedules()
             self.schedule_controller.fetch_current_info()
 
-    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
-        if isinstance(user_or_dto, ChatMessageDTO):
-            dto = user_or_dto
-            if not dto.timestamp:
-                dto.timestamp = datetime.now().strftime("%H:%M")
-            platform = getattr(dto, "platform", "kick") or "kick"
-        else:
-            dto = ChatMessageDTO(
-                user_or_dto,
-                msg,
-                badges or [],
-                color,
-                msg_id,
-                sender_id,
-                timestamp=datetime.now().strftime("%H:%M"),
-                avatar_url=avatar_url
-            )
-            platform = "kick"
+    def _route_incoming_message(
+        self,
+        user_or_dto,
+        msg: str = None,
+        badges: list = None,
+        color: str = "",
+        msg_id: str = "",
+        sender_id: int = 0,
+        avatar_url: str = "",
+    ):
+        self.chat_message_router.route(
+            user_or_dto,
+            msg,
+            badges,
+            color,
+            msg_id,
+            sender_id,
+            avatar_url,
+        )
 
-        if not getattr(dto, "avatar_url", ""):
-            user_lower = str(dto.user).lower()
-            if platform == "kick" and self.kick.username and user_lower == self.kick.username.lower():
-                dto.avatar_url = self.kick.avatar_url
-            elif platform == "twitch" and self.twitch.channel and user_lower == self.twitch.channel.lower():
-                dto.avatar_url = self.twitch.avatar_url
-
-        self.session_metrics.record_message(platform)
-
-        self.chat_controller.process_message(dto)
+    def _get_message_profile(self, platform: str) -> tuple[str, str]:
+        if platform == "kick":
+            return self.kick.username, self.kick.avatar_url
+        if platform == "twitch":
+            return self.twitch.channel, self.twitch.avatar_url
+        return "", ""
 
     def _on_poll_updated(self, poll_data: dict):
         if hasattr(self, 'overlay_server') and self.overlay_server:

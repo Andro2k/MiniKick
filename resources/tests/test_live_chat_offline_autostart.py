@@ -100,11 +100,12 @@ def test_autostart_connects_without_clearing_offline_suppression(qapp):
     settings = _SettingsStorage()
     youtube, _tiktok, _deferred, _i18n = _connections(settings)
     youtube.connect_channel = Mock()
-    window = SimpleNamespace(_is_shutting_down=False, logger=Mock())
+    window = SimpleNamespace(_is_shutting_down=False, logger=Mock(), _startup_silent_connections=set())
 
     MainWindowCore._autostart_live_chat(window, youtube, "youtube-channel")
 
     youtube.connect_channel.assert_called_once_with("youtube-channel", manual=False)
+    assert window._startup_silent_connections == {"youtube"}
 
 
 def test_offline_errors_are_remembered_for_both_platforms(qapp):
