@@ -191,7 +191,6 @@ class BaseOAuthManager:
     def has_missing_scopes(self) -> bool:
         return len(self.get_missing_scopes()) > 0
 
-
 class KickAuthManager(BaseOAuthManager):
     REQUIRED_SCOPES = {
         "user:read": "dashboard.banner.scope.kick_user_read",
@@ -292,7 +291,6 @@ class KickAuthManager(BaseOAuthManager):
         )
         response.raise_for_status()
         return response.json()
-
 
 class TwitchAuthManager(BaseOAuthManager):
     REQUIRED_SCOPES = {
