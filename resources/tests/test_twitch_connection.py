@@ -334,3 +334,18 @@ def test_fetch_rewards_requires_authentication_and_skips_when_busy(qapp):
     assert len(_FetchWorker.instances) == 1
     assert connection.api is None
     assert _FetchWorker.instances[0].args[0].kwargs["client_id"] == "client-id"
+
+
+def test_failed_session_start_publishes_the_disconnected_state(qapp, monkeypatch):
+    connection, _coordinator, _auth = _connection(authenticated=True)
+    connection._is_connected = True
+    connection._channel = "streamer"
+    monkeypatch.setattr(connection, "_build_api", MagicMock(side_effect=RuntimeError("boom")))
+    seen = []
+    failures = _spy(connection.auth_failed)
+    connection.state_changed.connect(lambda: seen.append((connection.is_connected, connection.channel)))
+
+    connection.resume_session()
+
+    assert seen[-1] == (False, "")
+    assert failures == [("boom",)]
