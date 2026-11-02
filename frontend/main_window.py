@@ -4,17 +4,15 @@ import html
 import threading
 import time
 import logging
-from collections import deque
 from datetime import datetime
-from functools import partial
 from typing import Callable
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QApplication
 from PySide6.QtCore import Slot, Signal, QTimer, QThread
 
 from backend.utils.perf import perf_phase
-from backend.services import ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService, LogService, SettingsService, SpamService, TimerService, WhatsNewService
-from backend.controllers import RewardsController, ChatController, CommandsController, DashboardController, TimersController, LogsController, MusicController, SettingsController, SpamController, UpdaterController, WidgetsController, ScheduleController, AlertsController
-from backend.workers import ScheduleWorker, GlobalMediaWorker
+from backend.services import ChatMessageDTO, WhatsNewService
+from backend.controllers import UpdaterController
+from backend.workers import ScheduleWorker
 from frontend.common import get_global_qss, BrandColors, Size
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
@@ -23,27 +21,24 @@ from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokCo
 from frontend.main_window_views import MainWindowViewFactory
 from frontend.view_prewarmer import ViewPrewarmer
 from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.window.media_keys import MediaKeysHandler
-from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.session_metrics import SessionMetrics
-from frontend.window.messages import ChatMessageRouter
-from frontend.window.rewards import RewardRedemptionHandler
 from frontend.window.shutdown import ShutdownSequence
 from frontend.window.updates import AutoUpdateCoordinator
 from frontend.window.whats_new import WhatsNewPresenter
 from frontend.window.window_state import WindowStateManager
 from backend.connections import (
-    ConnectionHub,
-    KickConnection,
     LiveChatConnection,
-    TikTokConnection,
-    TwitchConnection,
     WorkerShutdownCoordinator,
     WorkerSlot,
+    TikTokConnection,
+    TwitchConnection,
     YouTubeConnection,
 )
 
-from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
+from backend.config import TWITCH_CLIENT_ID
+from frontend.window.composition import MainWindowComposition
+from frontend.window.startup import StartupSequencer
+from frontend.window.wiring import MainWindowWiring
 
 logger = logging.getLogger("minikick.core")
 
@@ -88,8 +83,6 @@ class MainWindowCore(QMainWindow):
         ),
     }
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
-    _PREWARM_START_DELAY_MS = 300
-    _DB_MAINTENANCE_DELAY_MS = 10_000
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
@@ -108,16 +101,18 @@ class MainWindowCore(QMainWindow):
         self._init_shutdown_support()
         self._init_live_chat_connections()
         self._init_twitch_connection()
+        self.composition = MainWindowComposition(self)
         self.setWindowTitle(self.i18n.get("main.window.title").replace("{version}", app_version))
 
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
         self.toast = ToastManager(self)
+        self.wiring = MainWindowWiring(self)
         with perf_phase(self.logger, "Startup", "Main UI shell and controllers initialized"):
             self._setup_ui()
         with perf_phase(self.logger, "Startup", "Tray and startup wiring initialized"):
             self._setup_tray()
             self._init_updater()
-            self._connect_signals()
+            self.wiring.connect_signals()
             self._load_settings_into_ui()
 
         self.setUpdatesEnabled(True)
@@ -128,6 +123,7 @@ class MainWindowCore(QMainWindow):
         self._cleanup_complete = False
         self._quit_requested = False
         self._startup_silent_connections: set[str] = set()
+        self._applied_font_size: int | None = None
 
     def _consume_startup_silent_connection(self, platform: str) -> bool:
         if platform not in self._startup_silent_connections:
@@ -225,14 +221,21 @@ class MainWindowCore(QMainWindow):
 
     def _setup_ui(self):
         self._build_layout_shell()
-        self._create_services()
+        self.composition.create_services()
         self._create_views_registry()
-        self._create_controllers()
+        self.composition.create_controllers()
         self._start_background_workers()
         self._assemble_layout()
         QTimer.singleShot(0, self._update_dashboard_metrics)
         self._init_whats_new()
         self.whats_new.init_badges()
+        self.startup_sequencer = StartupSequencer(
+            logger=self.logger,
+            is_active=lambda: not self._is_shutting_down,
+            whats_new_check=self.whats_new.check_dialog,
+            prewarm_views=self._view_prewarmer.start,
+            start_database_maintenance=self._start_database_maintenance,
+        )
 
     def _build_layout_shell(self):
         self.central_widget = QWidget()
@@ -246,33 +249,6 @@ class MainWindowCore(QMainWindow):
             self.sidebar.add_tab(name, icon, position=pos, is_active=(name == "Dashboard"))
 
         self.content_stack = QStackedWidget(self.central_widget)
-
-    def _create_services(self):
-        self.avatar_service = AvatarService(avatar_storage=self.container.avatar_storage)
-        self.chat_service = ChatService(self.tts_manager, self.settings_storage)
-        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
-        self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
-        self.reward_redemption_handler = RewardRedemptionHandler(
-            self.rewards_service,
-            self._recent_reward_redemptions,
-            self.logger,
-        )
-
-        self.command_service = CommandService(self.commands_storage, api_client=None)
-        self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
-        self.timer_service = TimerService(self.timers_storage, api_client=None)
-        self.kick = KickConnection(
-            auth_manager=self.kick_auth_manager,
-            i18n=self.i18n,
-            timer_service=self.timer_service,
-            pusher=KICK_PUSHER,
-            coordinator=self._worker_shutdown_coordinator,
-            is_shutting_down=lambda: self._is_shutting_down,
-            parent=self,
-        )
-        self._schedule_slot = WorkerSlot("Worker_Stream_Schedule", self._worker_shutdown_coordinator)
-        self.log_service = LogService(log_storage=self.container.system_log_storage)
-        self.schedule_service = self.container.schedule_service
 
     def _create_views_registry(self):
         self.view_dashboard = DashboardView(self.i18n, browser_service=self.container.browser_service, parent=self)
@@ -300,141 +276,6 @@ class MainWindowCore(QMainWindow):
         )
         self._view_factory = MainWindowViewFactory(self)
 
-    def _create_controllers(self):
-        self.dashboard_controller = DashboardController(
-            view=self.view_dashboard,
-            avatar_service=self.avatar_service,
-            db_manager=self.container.db_manager,
-            widget_service=self.container.widget_service,
-            toast_manager=self.toast,
-            i18n=self.i18n
-        )
-        self.chat_controller = ChatController(
-            view=None,
-            service=self.chat_service,
-            command_service=self.command_service,
-            spam_service=self.spam_service,
-            i18n=self.i18n,
-            timer_service=self.timer_service,
-            toast_manager=self.toast
-        )
-        self.chat_message_router = ChatMessageRouter(
-            process_message=self.chat_controller.process_message,
-            record_message=self.session_metrics.record_message,
-            profile_provider=self._get_message_profile,
-        )
-        self.widgets_controller = WidgetsController(
-            view=None,
-            widget_service=self.container.widget_service,
-            command_service=self.command_service,
-            overlay_server=self.overlay_server,
-            i18n=self.i18n,
-            toast_manager=self.toast,
-            ignored_users_provider=self.chat_service.get_ignored_users
-        )
-        self.dashboard_controller.widgets_controller = self.widgets_controller
-        self.music_controller = MusicController(
-            view=None,
-            command_service=self.command_service,
-            toast_manager=self.toast,
-            i18n=self.i18n,
-            settings_storage=self.container.settings_storage,
-            music_storage=self.container.music_storage,
-            music_provider=self.container.music_provider
-        )
-        self.media_keys = MediaKeysHandler(
-            self.music_controller,
-            config=self.settings_storage,
-            slot=WorkerSlot("Worker_Global_Media_Keys", self._worker_shutdown_coordinator),
-            worker_factory=GlobalMediaWorker,
-            is_shutting_down=lambda: self._is_shutting_down,
-        )
-        if hasattr(self.chat_service, "set_speech_callbacks"):
-            self.chat_service.set_speech_callbacks(
-                on_started=lambda: self.music_controller.set_ducking(True),
-                on_finished=lambda: self.music_controller.set_ducking(False)
-            )
-        self.rewards_controller = RewardsController(
-            view=None,
-            service=self.rewards_service,
-            toast_manager=self.toast,
-            kick_auth_manager=self.kick_auth_manager,
-            twitch_auth_manager=self.container.twitch_auth_manager
-        )
-        self.commands_controller = CommandsController(
-            None,
-            self.command_service,
-            toast_manager=self.toast,
-            connected_platforms_provider=self.get_connected_platforms
-        )
-        self.spam_controller = SpamController(
-            None,
-            self.spam_service,
-            toast_manager=self.toast,
-            connected_platforms_provider=self.get_connected_platforms
-        )
-        self.timers_controller = TimersController(
-            None,
-            self.timer_service,
-            toast_manager=self.toast,
-            schedule_service=self.schedule_service,
-            connected_platforms_provider=self.get_connected_platforms
-        )
-        self.settings_controller = SettingsController(
-            view=None,
-            service=self.settings_service,
-            toast_manager=self.toast,
-            music_provider=self.container.music_provider,
-            tts_manager=self.tts_manager,
-            browser_service=self.container.browser_service
-        )
-        self.logs_controller = LogsController(
-            view=None,
-            service=self.log_service,
-            toast_manager=self.toast
-        )
-        self.schedule_controller = ScheduleController(
-            view=None,
-            service=self.schedule_service,
-            toast_manager=self.toast,
-            i18n=self.i18n,
-            connected_platforms_provider=self.get_connected_platforms
-        )
-        self.alerts_controller = AlertsController(
-            view=None,
-            service=self.container.alert_service,
-            toast_manager=self.toast,
-            i18n=self.i18n,
-            browser_service=self.container.browser_service
-        )
-        self.connection_hub = ConnectionHub(
-            connections={
-                "kick": self.kick,
-                "twitch": self.twitch,
-                "youtube": self.youtube,
-                "tiktok": self.tiktok,
-            },
-            authenticated_providers={
-                "kick": self.kick_auth_manager.is_authenticated,
-                "twitch": self.container.twitch_auth_manager.is_authenticated,
-            },
-            parent=self,
-        )
-        self.integrations_status = IntegrationsStatusPresenter(
-            hub=self.connection_hub,
-            dashboard_controller=self.dashboard_controller,
-            session_metrics=self.session_metrics,
-            settings_view_provider=lambda: self.view_settings,
-            platform_views_provider=lambda: (
-                self.view_chat,
-                self.view_commands,
-                self.view_schedule,
-                self.view_rewards,
-                self.view_timers,
-                self.view_alerts,
-            ),
-        )
-
     def _start_background_workers(self):
         self._start_schedule_worker()
         self.media_keys.setup_global_keys()
@@ -456,44 +297,9 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.tts_voice_type_changed.connect(self._handle_tray_tts_voice_type_change)
         self.tray_manager.show()
 
-    def _connect_signals(self):
-        self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
-        self.sidebar.view_selected.connect(self._handle_navigation)
-        self.sidebar.section_viewed.connect(self.whats_new.on_section_viewed)
-        self.dashboard_controller.request_connection.connect(self._handle_auth_process)
-        self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
-        self.dashboard_controller.youtube_connect_requested.connect(partial(self._on_live_chat_button_clicked, self.youtube))
-        self.dashboard_controller.tiktok_connect_requested.connect(partial(self._on_live_chat_button_clicked, self.tiktok))
-        self._wire_live_chat(self.youtube)
-        self._wire_live_chat(self.tiktok)
-        self._wire_twitch()
-        self._wire_kick()
-        self.dashboard_controller.reauth_requested.connect(self._force_reauth)
-        self.dashboard_controller.reauth_kick_requested.connect(self._handle_reauth_kick)
-        self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
-        self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
-        self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
-        self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
-        self.chat_controller.tts_ignored_users_changed.connect(self.widgets_controller.invalidate_ignored_bots_cache)
-        self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
-        self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
-        self.music_controller.song_changed.connect(self._handle_tray_song_changed)
-        self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
-        self.chat_controller.widget_plugin_triggered.connect(self.widgets_controller.handle_widget_command)
-        self.chat_controller.spam_blocked.connect(self.session_metrics.record_spam_blocked)
-        self.session_metrics.refresh_requested.connect(self._refresh_dashboard_view)
-        self.session_metrics.analytics_loaded.connect(self.dashboard_controller.update_analytics_summary)
-        self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
-        self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
-        self.settings_controller.check_update_requested.connect(self.handle_update_check)
-        self.sidebar.update_requested.connect(self.handle_update_check)
-        self.settings_controller.backup_restored.connect(self._on_backup_restored)
-        self.q_log_handler.emitter.log_received.connect(self.logs_controller.process_incoming_log)
-        self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
-
     def _load_settings_into_ui(self, *, refresh_chat_backend: bool = False):
         self.logger.debug("[AutoStart] Loading controller initial state (Rewards, Widgets, Chat, Spam, Timers, Music)...")
-        self._startup_hydration_steps = deque((
+        steps = (
             ("rewards", self.rewards_controller.load_initial_data),
             ("widgets", self.widgets_controller.load_initial_data),
             ("chat settings", self._load_chat_settings),
@@ -501,37 +307,11 @@ class MainWindowCore(QMainWindow):
             ("spam, timers, and music", self._load_remaining_controller_data),
             ("chat and overlay settings", lambda: self._load_chat_controller_data(refresh_backend=refresh_chat_backend)),
             ("integrations and profile", self._finish_settings_hydration),
-        ))
-        QTimer.singleShot(50, self._run_next_startup_hydration_step)
+        )
+        self.startup_sequencer.start(steps)
 
     def _on_backup_restored(self):
         self._load_settings_into_ui(refresh_chat_backend=True)
-
-    def _run_next_startup_hydration_step(self):
-        import time
-
-        if self._is_shutting_down or not self._startup_hydration_steps:
-            return
-
-        step_name, step = self._startup_hydration_steps.popleft()
-        step_started = time.perf_counter()
-        try:
-            step()
-        except Exception:
-            self.logger.exception(
-                "[Startup] Hydration phase '%s' failed.",
-                step_name,
-            )
-        else:
-            self.logger.info(
-                "[Perf/Startup] Hydration phase '%s' completed in %.2f ms",
-                step_name,
-                (time.perf_counter() - step_started) * 1000
-            )
-        if self._startup_hydration_steps:
-            QTimer.singleShot(16, self._run_next_startup_hydration_step)
-        else:
-            self._schedule_startup_followups()
 
     def _load_chat_settings(self):
         settings = self.chat_service.get_settings()
@@ -546,8 +326,7 @@ class MainWindowCore(QMainWindow):
 
     def _load_chat_controller_data(self, *, refresh_backend: bool = False):
         self.chat_controller.load_initial_data(refresh_backend=refresh_backend)
-        if hasattr(self, "overlay_server") and self.overlay_server:
-            self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
+        self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
 
     def _finish_settings_hydration(self):
         self._apply_dynamic_theme(self.settings_service.get_font_size())
@@ -628,11 +407,6 @@ class MainWindowCore(QMainWindow):
 
     def _get_or_create_view(self, view_name: str):
         return self._view_factory.get_or_create(view_name)
-
-    def _schedule_startup_followups(self) -> None:
-        QTimer.singleShot(750, self.whats_new.check_dialog)
-        self._view_prewarmer.start(self._PREWARM_START_DELAY_MS)
-        QTimer.singleShot(self._DB_MAINTENANCE_DELAY_MS, self._start_database_maintenance)
 
     def _start_database_maintenance(self) -> None:
         if self._is_shutting_down:
@@ -832,12 +606,11 @@ class MainWindowCore(QMainWindow):
         if outcome.configured and not outcome.media_valid:
             missing_log = self.i18n.get("main.logs.reward_file_missing").replace("{reward_name}", reward_name).replace("{filepath}", outcome.filepath)
             self.logger.warning(missing_log)
-            if self.toast:
-                self.toast.show_toast(
-                    title=self.i18n.get("common.status.warning"),
-                    message=self.i18n.get("rewards.status.redeem_file_missing").replace("{reward}", reward_name),
-                    state="danger"
-                )
+            self.toast.show_toast(
+                title=self.i18n.get("common.status.warning"),
+                message=self.i18n.get("rewards.status.redeem_file_missing").replace("{reward}", reward_name),
+                state="danger"
+            )
         elif not outcome.configured:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
             self.logger.debug("[Reward] %s", no_rewards_template.replace("{reward_name}", reward_name))
@@ -848,8 +621,7 @@ class MainWindowCore(QMainWindow):
             self.chat_controller.process_message(dto)
 
     def _handle_incoming_alert(self, alert_event):
-        if hasattr(self.container, "alert_service") and self.container.alert_service:
-            self.container.alert_service.process_event(alert_event)
+        self.container.alert_service.process_event(alert_event)
 
     @Slot(str, bool, bool)
     def _send_timer_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
@@ -950,46 +722,6 @@ class MainWindowCore(QMainWindow):
 
     def get_connected_platforms(self) -> dict[str, bool]:
         return self.connection_hub.get_connected_platforms()
-
-    def _wire_kick(self) -> None:
-        kick = self.kick
-        kick.connecting.connect(self.dashboard_controller.handle_connecting_state)
-        kick.error_reported.connect(self.dashboard_controller.handle_error_state)
-        kick.api_changed.connect(self._on_kick_api_changed)
-        kick.connected.connect(self._on_kick_connected)
-        kick.disconnected.connect(self._on_kick_disconnected)
-        kick.reauth_ready.connect(self._on_kick_reauth_ready)
-        kick.message_received.connect(self._route_incoming_message)
-        kick.poll_updated.connect(self._on_poll_updated)
-        kick.poll_deleted.connect(self._on_poll_deleted)
-        kick.pinned_created.connect(self._on_pinned_created)
-        kick.pinned_deleted.connect(self._on_pinned_deleted)
-        kick.reward_redeemed.connect(partial(self._on_reward_redeemed, platform="kick"))
-        kick.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
-        kick.rewards_error.connect(self._handle_rewards_error)
-        kick.timer_message_requested.connect(self._send_timer_message)
-
-    def _wire_twitch(self) -> None:
-        twitch = self.twitch
-        twitch.message_received.connect(self._route_incoming_message)
-        twitch.browser_auth_opening.connect(self._on_twitch_browser_auth_opening)
-        twitch.auth_failed.connect(self._on_twitch_auth_failed)
-        twitch.session_started.connect(self._evaluate_all_scopes)
-        twitch.api_changed.connect(self._on_twitch_api_changed)
-        twitch.chat_worker_changed.connect(self._on_twitch_chat_worker_changed)
-        twitch.connected.connect(self._on_twitch_connected)
-        twitch.error_reported.connect(self._on_twitch_error)
-        twitch.disconnected.connect(self._on_twitch_disconnected)
-        twitch.reward_redeemed.connect(partial(self._on_reward_redeemed, platform="twitch"))
-        twitch.alert_received.connect(self._handle_incoming_alert)
-        twitch.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
-
-    def _wire_live_chat(self, chat: LiveChatConnection) -> None:
-        chat.connecting.connect(partial(self._on_live_chat_connecting, chat))
-        chat.connected.connect(partial(self._on_live_chat_connected, chat))
-        chat.disconnected.connect(partial(self._on_live_chat_disconnected, chat))
-        chat.error_reported.connect(self._on_live_chat_error)
-        chat.message_received.connect(self._route_incoming_message)
 
     def _on_live_chat_button_clicked(self, chat: LiveChatConnection) -> None:
         dialog_class, unlink_title_key, unlink_desc_key = self._LIVE_CHAT_DIALOGS[chat.platform_id]
@@ -1137,9 +869,8 @@ class MainWindowCore(QMainWindow):
             message=name,
             state="success"
         )
-        if hasattr(self, "schedule_controller") and self.schedule_controller:
-            self.schedule_controller.reload_schedules()
-            self.schedule_controller.fetch_current_info()
+        self.schedule_controller.reload_schedules()
+        self.schedule_controller.fetch_current_info()
 
     def _route_incoming_message(
         self,
@@ -1169,20 +900,16 @@ class MainWindowCore(QMainWindow):
         return "", ""
 
     def _on_poll_updated(self, poll_data: dict):
-        if hasattr(self, 'overlay_server') and self.overlay_server:
-            self.overlay_server.trigger_widget_event("poll_update", {"poll": poll_data})
+        self.overlay_server.trigger_widget_event("poll_update", {"poll": poll_data})
 
     def _on_poll_deleted(self):
-        if hasattr(self, 'overlay_server') and self.overlay_server:
-            self.overlay_server.trigger_widget_event("poll_delete", {})
+        self.overlay_server.trigger_widget_event("poll_delete", {})
 
     def _on_pinned_created(self, pinned_data: dict):
-        if hasattr(self, 'overlay_server') and self.overlay_server:
-            self.overlay_server.trigger_widget_event("pinned_created", {"pinned": pinned_data})
+        self.overlay_server.trigger_widget_event("pinned_created", {"pinned": pinned_data})
 
     def _on_pinned_deleted(self):
-        if hasattr(self, 'overlay_server') and self.overlay_server:
-            self.overlay_server.trigger_widget_event("pinned_deleted", {})
+        self.overlay_server.trigger_widget_event("pinned_deleted", {})
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
@@ -1190,19 +917,16 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_tray_play_pause(self):
-        if hasattr(self, "music_controller"):
-            self.music_controller.handle_play_pause()
+        self.music_controller.handle_play_pause()
 
     @Slot()
     def _handle_tray_skip(self):
-        if hasattr(self, "music_controller"):
-            self.music_controller.handle_skip()
+        self.music_controller.handle_skip()
 
     @Slot(object)
     def _handle_tray_song_changed(self, song: dict):
-        if hasattr(self, "tray_manager"):
-            is_playing = bool(song.get("is_playing", False)) if isinstance(song, dict) else False
-            self.tray_manager.set_playback_state(is_playing)
+        is_playing = bool(song.get("is_playing", False)) if isinstance(song, dict) else False
+        self.tray_manager.set_playback_state(is_playing)
 
     @Slot(bool)
     def _handle_tray_tts_use_command_toggle(self, enabled: bool):
@@ -1221,8 +945,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int):
-        current_size = getattr(self, "_applied_font_size", None)
-        if current_size == base_size:
+        if self._applied_font_size == base_size:
             return
         self._applied_font_size = base_size
         app = QApplication.instance()
