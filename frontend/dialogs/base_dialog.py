@@ -2,9 +2,10 @@
 
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
-from PySide6.QtCore import Qt, QSize, QSettings, QEvent, Signal, QRectF
-from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent, QPainterPath, QRegion
-from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
+from PySide6.QtCore import Qt, QSettings, QEvent, Signal, QRectF, QByteArray
+from PySide6.QtGui import QColor, QMouseEvent, QKeyEvent, QPainter, QPainterPath, QRegion
+from PySide6.QtSvg import QSvgRenderer
+from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, resolve_icon_path, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
@@ -416,6 +417,45 @@ class DialogHeader(QFrame):
         self._refresh_layout()
 
 
+class _DialogSvgIconLabel(QLabel):
+    def __init__(
+        self,
+        icon_path: str,
+        color: str,
+        size: int,
+        fallback_dpr: float,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._svg_renderer = None
+        resolved_path = resolve_icon_path(icon_path)
+        if resolved_path:
+            with open(resolved_path, "r", encoding="utf-8", errors="ignore") as icon_file:
+                svg_data = icon_file.read().replace("currentColor", color)
+            renderer = QSvgRenderer(QByteArray(svg_data.encode("utf-8")))
+            if renderer.isValid():
+                self._svg_renderer = renderer
+                return
+
+        self.setPixmap(
+            get_pixmap_colored(
+                icon_path,
+                color_str=color,
+                size=size,
+                dpr=fallback_dpr,
+            )
+        )
+
+    def paintEvent(self, event):
+        if self._svg_renderer is None:
+            super().paintEvent(event)
+            return
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self._svg_renderer.render(painter, QRectF(self.rect()))
+
+
 def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", icon_color: str = "",
                      box: int = 40, glyph: int = 24, dpr: float = 1.0) -> QFrame:
     role_dispatch = {
@@ -434,7 +474,6 @@ def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", ic
     badge.setObjectName("dialog_icon_badge")
     badge.setFixedSize(box, box)
     badge.setProperty("role", icon_role or resolved_role)
-    # Qt stylesheets do not clip a QFrame's background to border-radius.
     radius = min(Size.Radius.RAD_FUL, box / 2)
     shape = QPainterPath()
     shape.addRoundedRect(QRectF(0, 0, box, box), radius, radius)
@@ -445,12 +484,14 @@ def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", ic
     inner.setContentsMargins(*Size.Margin.MRG_NON)
     inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    icon_lbl = QLabel()
+    icon_lbl = _DialogSvgIconLabel(
+        icon_path,
+        icon_color or default_fg,
+        size=glyph,
+        fallback_dpr=dpr,
+    )
     icon_lbl.setObjectName("dialog_icon_badge_glyph")
-    pixmap = get_pixmap_colored(icon_path, color_str=icon_color or default_fg, size=glyph, dpr=dpr)
-    if pixmap.isNull():
-        pixmap = QIcon(icon_path).pixmap(QSize(glyph, glyph), dpr)
-    icon_lbl.setPixmap(pixmap)
+    icon_lbl.setFixedSize(glyph, glyph)
     inner.addWidget(icon_lbl)
     return badge
 
@@ -496,7 +537,13 @@ class ModernModal(ModernFramelessShell):
         root.setContentsMargins(*Size.Margin.MRG_NON)
         root.setSpacing(Size.SPACING_NN)
 
-        icon_widget = build_icon_badge(icon_path, icon_bg_color, icon_role, icon_color, dpr=self.devicePixelRatio()) if icon_path else None
+        icon_widget = build_icon_badge(
+            icon_path,
+            icon_bg_color,
+            icon_role,
+            icon_color,
+            dpr=self.devicePixelRatioF(),
+        ) if icon_path else None
         self.header = DialogHeader(title, subtitle, icon_widget, parent=self.container)
         self.header.close_requested.connect(self.reject)
         self.title_lbl = self.header.lbl_title

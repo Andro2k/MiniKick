@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, Signal
 
 from backend.connections import TikTokConnection, YouTubeConnection
 from backend.services.system import TranslationService
-from frontend.main_window import MainWindowCore
+from frontend.window.startup import MainWindowStartup
 
 
 class _SettingsStorage:
@@ -87,10 +87,15 @@ def test_autostart_skips_streams_saved_as_offline(qapp):
     youtube, tiktok, _deferred, _i18n = _connections(settings)
     youtube.connect_channel = Mock()
     tiktok.connect_channel = Mock()
-    window = SimpleNamespace(_is_shutting_down=False, logger=Mock())
+    window = SimpleNamespace(
+        _is_shutting_down=False,
+        logger=Mock(),
+        whats_new=SimpleNamespace(check_dialog=Mock()),
+    )
 
-    MainWindowCore._autostart_live_chat(window, youtube, "youtube-channel")
-    MainWindowCore._autostart_live_chat(window, tiktok, "tiktok-channel")
+    startup = MainWindowStartup(window, Mock())
+    startup._autostart_live_chat(youtube, "youtube-channel")
+    startup._autostart_live_chat(tiktok, "tiktok-channel")
 
     youtube.connect_channel.assert_not_called()
     tiktok.connect_channel.assert_not_called()
@@ -100,11 +105,17 @@ def test_autostart_connects_without_clearing_offline_suppression(qapp):
     settings = _SettingsStorage()
     youtube, _tiktok, _deferred, _i18n = _connections(settings)
     youtube.connect_channel = Mock()
-    window = SimpleNamespace(_is_shutting_down=False, logger=Mock())
+    window = SimpleNamespace(
+        _is_shutting_down=False,
+        logger=Mock(),
+        whats_new=SimpleNamespace(check_dialog=Mock()),
+        _startup_silent_connections=set(),
+    )
 
-    MainWindowCore._autostart_live_chat(window, youtube, "youtube-channel")
+    MainWindowStartup(window, Mock())._autostart_live_chat(youtube, "youtube-channel")
 
     youtube.connect_channel.assert_called_once_with("youtube-channel", manual=False)
+    assert window._startup_silent_connections == {"youtube"}
 
 
 def test_offline_errors_are_remembered_for_both_platforms(qapp):

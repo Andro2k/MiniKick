@@ -8,7 +8,7 @@ from PySide6.QtCore import Qt
 from shiboken6 import isValid
 
 from backend.services.system import TranslationService
-from frontend.main_window import MainWindowCore
+from frontend.window.shutdown import MainWindowShutdown
 from frontend.views.chat_view import ChatView, _FloatingChatWindow
 
 
@@ -108,13 +108,15 @@ def test_app_shutdown_closes_the_floating_chat(qapp):
         _is_shutting_down=False,
         session_metrics=SimpleNamespace(stop=lambda: None),
         view_chat=view,
-        _shutdown_sequence=SimpleNamespace(run=MagicMock()),
     )
+    shutdown = MainWindowShutdown.__new__(MainWindowShutdown)
+    shutdown._window = fake_window
+    shutdown._sequence = SimpleNamespace(run=MagicMock())
 
-    MainWindowCore._cleanup(fake_window)
+    shutdown.cleanup()
     qapp.processEvents()
 
-    fake_window._shutdown_sequence.run.assert_called_once_with()
+    shutdown._sequence.run.assert_called_once_with()
 
     assert view._floating_chat_dialog is None
     assert not isValid(floating) or not floating.isVisible()

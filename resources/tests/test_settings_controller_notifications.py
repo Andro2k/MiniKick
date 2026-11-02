@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from PySide6.QtCore import QEvent, Qt
 
 from backend.controllers.settings_controller import SettingsController
-from frontend.main_window import MainWindowCore
+from frontend.window.tray import TrayPresenter
 from frontend.window.window_state import WindowStateManager
 
 
@@ -38,7 +38,7 @@ def test_tray_tts_toggle_does_not_send_system_notification(qapp):
         tray_manager=MagicMock(),
     )
 
-    MainWindowCore._handle_tray_tts_toggle(window, True)
+    TrayPresenter(window).handle_tts_toggle(True)
 
     window.chat_controller.set_tts_option.assert_called_once_with("enabled", True)
     window.tray_manager.showMessage.assert_not_called()

@@ -3,10 +3,10 @@
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt, Signal, Slot
-from .base_dialog import ModernFramelessShell, DialogHeader, build_icon_badge, build_dialog_footer
+from .base_dialog import ModernFramelessShell, DialogHeader, build_dialog_footer
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
-from frontend.common import get_icon_colored, get_pixmap_colored, get_assets_path, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, Size
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
@@ -44,7 +44,6 @@ class PiperVoicesDialog(ModernFramelessShell):
         header = DialogHeader(
             self.i18n.get("piper_dialog.title"),
             self.i18n.get("piper_dialog.subtitle"),
-            # build_icon_badge(get_assets_path("icons/megaphone-filled.svg"), BrandColors.GREEN, dpr=self.devicePixelRatio()),
             parent=self.container
         )
         header.close_requested.connect(self.reject)

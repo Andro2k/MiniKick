@@ -50,6 +50,19 @@ def test_startup_connection_toast_suppression_is_consumed_once():
     assert MainWindowCore._consume_startup_silent_connection(window, "twitch") is True
 
 
+def test_window_runtime_flags_are_initialized_in_one_place():
+    window = SimpleNamespace()
+
+    MainWindowCore._init_flags(window)
+
+    assert window._is_shutting_down is False
+    assert window._cleanup_complete is False
+    assert window._quit_requested is False
+    assert window._startup_silent_connections == set()
+    assert window._applied_font_size is None
+    assert not hasattr(window, "_is_window_closing")
+
+
 def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     import frontend.main_window_views as views_module
 
@@ -93,10 +106,12 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
         i18n=MagicMock(),
         youtube=MagicMock(name="youtube"),
         tiktok=MagicMock(name="tiktok"),
-        _on_twitch_integration_button_clicked=MagicMock(),
-        _on_live_chat_button_clicked=MagicMock(),
+        platform_connections=SimpleNamespace(
+            on_twitch_integration_button_clicked=MagicMock(),
+            on_live_chat_button_clicked=MagicMock(),
+            update_integrations_status_ui=MagicMock(),
+        ),
         settings_controller=MagicMock(),
-        _update_integrations_status_ui=MagicMock(),
     )
     factory = MainWindowViewFactory(window)
 
@@ -105,8 +120,8 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
     view.youtube_integration_clicked.connect.call_args.args[0]()
     view.tiktok_integration_clicked.connect.call_args.args[0]()
 
-    window._on_live_chat_button_clicked.assert_any_call(window.youtube)
-    window._on_live_chat_button_clicked.assert_any_call(window.tiktok)
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.youtube)
+    window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.tiktok)
     settings_view_class.assert_called_once_with(window.i18n, parent=window.content_stack)
     window.settings_controller.attach_view.assert_called_once_with(view)
 

@@ -4,7 +4,6 @@ from PySide6.QtCore import QObject, Signal
 
 from backend.connections import ConnectionHub
 from frontend.window.integrations_status import IntegrationsStatusPresenter
-from frontend.window.session_metrics import SessionMetrics
 
 
 class _Connection(QObject):
