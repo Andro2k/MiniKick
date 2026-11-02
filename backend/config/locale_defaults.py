@@ -880,8 +880,6 @@ DEFAULT_DICTIONARY = {
       "reward_title": "Reward Redeemed"
     },
     "tray": {
-      "bg_desc": "I will keep reading the chat for you. Double click to return.",
-      "bg_title": "MiniKick in background",
       "close_app": "Close MiniKick",
       "open_panel": "Open Panel",
       "pause": "Pause Music",
@@ -889,9 +887,6 @@ DEFAULT_DICTIONARY = {
       "read_chat": "Read chat out loud",
       "skip": "Skip Track",
       "tooltip": "MiniKick v{version} | Active",
-      "tts_msg": "Chat reading: {estado}",
-      "tts_off": "Disabled",
-      "tts_on": "Enabled",
       "tts_use_command": "Require command for TTS",
       "tts_voice_type": "Use Web Voices (Premium)"
     },
@@ -1073,9 +1068,6 @@ DEFAULT_DICTIONARY = {
     "param_noise_w_scale": "Pacing / Cadence (Noise W)",
     "param_noise_w_scale_desc": "Controls rhythmic variation and pause duration between words (Recommended: 0.80).",
     "search_placeholder": "Search voice or accent...",
-    "status_downloading": "Downloading...",
-    "status_installed": "Installed",
-    "status_not_installed": "Available",
     "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
     "synthesis_desc": "Fine-tune intonation, expressiveness, and cadence for the VITS neural acoustic generator.",
     "synthesis_title": "Acoustic & Synthesis Settings",

@@ -133,7 +133,10 @@ def test_icon_badge_uses_theme_radius_and_transparent_glyph(qapp):
         rendered_image = rendered.toImage()
         assert rendered_image.pixelColor(10, 10) != QColor(BrandColors.RED)
         assert rendered_image.pixelColor(12, 30) == QColor(BrandColors.RED)
-        assert badge.findChild(QLabel, "dialog_icon_badge_glyph") is not None
+        glyph = badge.findChild(QLabel, "dialog_icon_badge_glyph")
+        assert glyph is not None
+        assert glyph._svg_renderer is not None
+        assert glyph._svg_renderer.isValid()
     finally:
         parent.deleteLater()
         qapp.setStyleSheet(previous_stylesheet)
