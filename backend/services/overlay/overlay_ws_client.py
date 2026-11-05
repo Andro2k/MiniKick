@@ -1,6 +1,6 @@
 # backend\services\overlay\websocket_client.py
 
-from backend.utils.json_utils import fast_dumps
+from backend.utils import fast_dumps
 import logging
 import socket
 import struct

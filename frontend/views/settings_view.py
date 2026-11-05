@@ -5,7 +5,8 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from PySide6.QtMultimedia import QMediaDevices
-from frontend.widgets import BaseView, SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
+from frontend.views.base_view import BaseView
+from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
 from frontend.common import Size
 
 class SettingsView(BaseView):

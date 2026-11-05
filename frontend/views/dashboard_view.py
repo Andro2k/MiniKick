@@ -4,7 +4,8 @@ import logging
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy, QProgressBar
 from PySide6.QtCore import Qt, Signal, QUrl
 from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
-from frontend.widgets import BaseView, StatCard, ModernCard, ModernButton
+from frontend.views.base_view import BaseView
+from frontend.widgets import StatCard, ModernCard, ModernButton
 from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard, DashboardChattersTable
 
 logger = logging.getLogger("minikick.views.dashboard")

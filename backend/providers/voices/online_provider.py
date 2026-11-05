@@ -8,7 +8,7 @@ import threading
 import time
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput, QMediaDevices
 from PySide6.QtCore import QUrl, QEventLoop
-from backend.utils.text_utils import is_speakable_text
+from backend.utils import is_speakable_text
 
 logger = logging.getLogger("minikick.providers.web_tts")
 

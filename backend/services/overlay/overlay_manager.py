@@ -2,7 +2,7 @@
 
 from .overlay_routes import OverlayRequestHandler, canonical_media_path
 from .overlay_ws_client import WebSocketClient
-from backend.utils.json_utils import fast_dumps
+from backend.utils import fast_dumps
 import logging
 import os
 import secrets

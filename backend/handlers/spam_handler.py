@@ -102,7 +102,7 @@ class ChatFilterHandler:
             cleaned = TwitchSocketManager.strip_twitch_emotes(cleaned, emotes_tag)
             if emotes_tag.startswith("["):
                 try:
-                    from backend.utils.json_utils import fast_loads
+                    from backend.utils import fast_loads
                     em_list = fast_loads(emotes_tag)
                     if isinstance(em_list, list):
                         for em in em_list:

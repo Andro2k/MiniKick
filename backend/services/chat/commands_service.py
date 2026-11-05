@@ -6,7 +6,7 @@ import time
 from contextlib import contextmanager
 
 from PySide6.QtCore import QObject, QTimer, Signal
-from backend.utils.command_utils import sanitize_command_trigger
+from backend.utils import sanitize_command_trigger
 
 logger = logging.getLogger("minikick.services.chat.commands")
 

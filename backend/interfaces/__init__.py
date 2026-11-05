@@ -2,7 +2,7 @@
 
 from .i_auth import TokenStorage, TokenProvider, TransientAuthError
 from .i_secrets import SecretCipher, TokenEncryptionError
-from .i_config_provider import IConfigProvider
+from .i_config_provider import ConfigValue, IConfigProvider
 from .i_tts import ITTSProvider
 from .i_updater import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .i_music_provider import IMusicProvider
@@ -14,6 +14,7 @@ __all__ = [
     "TokenProvider",
     "TransientAuthError",
     "SecretCipher",
+    "ConfigValue",
     "IConfigProvider",
     "ITTSProvider",
     "IUpdateChecker",

@@ -4,8 +4,8 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Set
 
-from backend.config.version import APP_VERSION
-from backend.utils.json_utils import fast_dumps, fast_loads
+from backend.config import APP_VERSION
+from backend.utils import fast_dumps, fast_loads
 
 logger = logging.getLogger("minikick.system.whats_new")
 

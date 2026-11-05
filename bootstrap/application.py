@@ -5,7 +5,7 @@ import sys
 import time
 
 from backend.config import APP_VERSION
-from backend.utils.perf import elapsed_ms, perf_phase
+from backend.utils import elapsed_ms, perf_phase
 from bootstrap.environment import PROCESS_STARTED, set_windows_app_id
 from bootstrap.qt_setup import create_application
 from bootstrap.services import StartupServices

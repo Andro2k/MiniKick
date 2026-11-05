@@ -3,7 +3,7 @@
 import logging
 import sys
 from .database_manager import DatabaseManager
-from backend.core.log_format import LEVEL_ALIASES
+from backend.core import LEVEL_ALIASES
 
 logger = logging.getLogger("minikick.database.system_logs")
 

@@ -5,6 +5,7 @@ import logging
 from .version import APP_VERSION
 from .locale_defaults import DEFAULT_DICTIONARY
 from .pusher_config import KICK_PUSHER, PusherConfig
+from .toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
 
 logger = logging.getLogger("minikick.config")
 
@@ -31,6 +32,7 @@ TWITCH_CLIENT_SECRET = _key("TWITCH_CLIENT_SECRET")
 TWITCH_REDIRECT_URI = _key("TWITCH_REDIRECT_URI", DEFAULT_REDIRECT_URI)
 DISCORD_WEBHOOK_URL = _key("DISCORD_WEBHOOK_URL")
 SIGN_API_KEY = _key("SIGN_API_KEY")
+GIPHY_API_KEY = _key("GIPHY_API_KEY")
 
 __all__ = [
     "APP_VERSION",
@@ -45,5 +47,8 @@ __all__ = [
     "TWITCH_CLIENT_SECRET",
     "TWITCH_REDIRECT_URI",
     "SIGN_API_KEY",
+    "GIPHY_API_KEY",
+    "CONFIG_FILE_NAME",
+    "TomlConfigProvider",
     "DEFAULT_DICTIONARY",
 ]

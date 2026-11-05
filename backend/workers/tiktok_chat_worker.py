@@ -6,8 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TikTokChatProvider
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
-from backend.utils.json_utils import fast_dumps
-from backend.utils.worker_utils import stop_provider_chat_worker, ExponentialBackoff
+from backend.utils import fast_dumps, stop_provider_chat_worker, ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
 

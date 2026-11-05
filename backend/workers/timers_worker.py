@@ -4,7 +4,7 @@ import logging
 import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient
-from backend.utils.worker_utils import cooperative_sleep
+from backend.utils import cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.timers")
 

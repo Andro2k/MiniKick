@@ -1,7 +1,7 @@
 # backend\services\system\backup_service.py
 
 import base64
-from backend.utils.json_utils import fast_load, fast_dump
+from backend.utils import fast_load, fast_dump
 import logging
 import os
 from datetime import datetime, timezone

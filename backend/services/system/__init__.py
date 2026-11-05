@@ -3,7 +3,10 @@
 from .backup_service import BackupService
 from .browser_service import BrowserService
 from .dashboard_service import AvatarService
+from .db_maintenance_service import DatabaseMaintenance, DatabaseStats
+from .identity import pick_primary_identity, resolve_primary_identity
 from .instance_service import SocketInstanceProvider
+from .log_writer import BatchedLogWriter
 from .logs_service import LogService
 from .secret_cipher import create_secret_cipher, DPAPISecretCipher, NoOpSecretCipher
 from .settings_service import SettingsService
@@ -14,6 +17,11 @@ from .widgets_service import WidgetService
 
 __all__ = [
     "AvatarService",
+    "BatchedLogWriter",
+    "DatabaseMaintenance",
+    "DatabaseStats",
+    "pick_primary_identity",
+    "resolve_primary_identity",
     "BackupService",
     "BrowserService",
     "GithubUpdateProvider",

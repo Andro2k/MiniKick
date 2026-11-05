@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
 from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
-from frontend.widgets import create_row_layout
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import create_row_layout, configure_icon_only_button
 
 class ModernToast(QFrame):
     expired = Signal(object)

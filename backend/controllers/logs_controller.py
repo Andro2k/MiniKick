@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, Slot, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
-from backend.core.log_format import log_level_matches, parse_log_line
+from backend.core import log_level_matches, parse_log_line
 
 logger = logging.getLogger("minikick.controllers.logs")
 

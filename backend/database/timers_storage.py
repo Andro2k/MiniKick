@@ -1,6 +1,6 @@
 # backend\database\timers_storage.py
 
-from backend.utils.json_utils import fast_loads, fast_dumps
+from backend.utils import fast_loads, fast_dumps
 import logging
 from .database_manager import DatabaseManager
 

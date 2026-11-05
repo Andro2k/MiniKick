@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLa
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
-from frontend.widgets.controls_widget import configure_icon_only_button
+from frontend.widgets import configure_icon_only_button
 
 class Sidebar(QFrame):
     view_selected = Signal(str)

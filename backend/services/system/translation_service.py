@@ -1,6 +1,6 @@
 # backend\services\system\translation_service.py
 
-from backend.utils.json_utils import fast_load, fast_dump
+from backend.utils import fast_load, fast_dump
 import logging
 import os
 import sys

@@ -7,7 +7,7 @@ import subprocess
 import sys
 import webbrowser
 from typing import Optional
-from backend.interfaces.i_config_provider import IConfigProvider
+from backend.interfaces import IConfigProvider
 
 logger = logging.getLogger("minikick.services.browser")
 

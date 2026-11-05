@@ -2,9 +2,9 @@
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout, QComboBox
-from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader, create_col_layout, create_row_layout
-from frontend.widgets.controls_widget import configure_icon_only_button
-from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored, BrandColors, Size
+from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader, create_col_layout, create_row_layout, configure_icon_only_button
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
+from backend.utils import validate_trigger_prefix
 
 class PlatformToggleItem(QWidget):
     def __init__(self, icon_name: str, brand_name: str, switch: ModernSwitch,

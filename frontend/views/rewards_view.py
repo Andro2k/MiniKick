@@ -4,7 +4,8 @@ import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
-from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton, RowMenuAction
+from frontend.views.base_view import BaseView
+from frontend.widgets import SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton, RowMenuAction
 from frontend.common import get_pixmap_colored, get_icon_colored, Palette, Semantic, BrandColors, Size
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
