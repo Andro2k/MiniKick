@@ -358,6 +358,7 @@ class ModernFramelessShell(QDialog):
         if hasattr(self, 'container'):
             self.container.unsetCursor()
 
+
 class DialogHeader(QFrame):
     close_requested = Signal()
 
@@ -595,6 +596,7 @@ class ModernModal(ModernFramelessShell):
         self.footer.show()
         return self.footer_layout, btn_cancel, btn_confirm
 
+
 class ModernWizardPanel(ModernFramelessShell):
     def __init__(
         self,
@@ -742,6 +744,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
     def validate_step(self, _step_index: int) -> bool:
         return True
+
 
 class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):

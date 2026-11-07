@@ -9,6 +9,7 @@ class TokenStorage(Protocol):
     
     def clear(self) -> None: ...
 
+
 class TokenProvider(Protocol):
     def get_tokens(self) -> dict: ...
     

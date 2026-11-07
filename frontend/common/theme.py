@@ -22,6 +22,7 @@ class Palette:
     NEUTRAL_050 = "#F4F4F4"
     NEUTRAL_000 = "#FFFFFF"
 
+
 class Semantic:
     BORDER_HOVER          = "#484C5A"
     BORDER_TOP_SHINE      = "#38363E"
@@ -43,6 +44,7 @@ class Semantic:
     AMBER_GLOW            = "rgba(245, 158, 11, 0.10)"
     BLUE_GLOW             = "rgba(59, 130, 246, 0.10)"
     PURPLE_GLOW           = "rgba(168, 85, 247, 0.10)"
+
 
 class BrandColors:
     INDIGO         = "#818CF8"
@@ -93,6 +95,7 @@ class BrandColors:
     GREEN_800      = "#146133"
     GREEN_900      = "#0F4F29"
 
+
 class MusicTheme:
     MUSIC_VINYL_BG_TOP    = "#3E5238"
     MUSIC_VINYL_BG_BOTTOM = "#243129"
@@ -111,6 +114,7 @@ class MusicTheme:
     MUSIC_HEAD_BG         = "#111827"
     MUSIC_GROOVE          = "#303038"
 
+
 class AlertTheme:
     ALERT_PREVIEW_BG        = "#121317"
     ALERT_PREVIEW_TILE_A    = "#11141C"
@@ -118,6 +122,7 @@ class AlertTheme:
     ALERT_PREVIEW_BORDER    = "#1F242F"
     ALERT_PREVIEW_MEDIA     = "#12161E"
     ALERT_PREVIEW_MEDIA_TOP = "#222632"
+
 
 class ChatTheme:
     CHAT_PREVIEW_SURFACE = "#12121A"
@@ -128,12 +133,14 @@ class ChatTheme:
         (BrandColors.EMERALD, BrandColors.GREEN_600), (BrandColors.CYAN_500, BrandColors.CYAN_600),
     )
 
+
 class BadgeTheme:
     BADGE_STR = "#E64747"
     BADGE_MOD = "#3EC669"
     BADGE_VIP = "#E08338"
     BADGE_SUB = "#389CE0"
     BADGE_BCG = Palette.NEUTRAL_750
+
 
 class SwitchTheme:
     SWITCH_TRACK_ON_00  = "#1E8E4D"
@@ -146,6 +153,7 @@ class SwitchTheme:
     SWITCH_THUMB_DIS_0 = "#D4D2DC"
     SWITCH_THUMB_DIS_1 = "#9D9AA8"
 
+
 class Radius:
     RAD_XXS = 2
     RAD_XSM = 6
@@ -153,6 +161,7 @@ class Radius:
     RAD_LRG = 12
     RAD_XLG = 16
     RAD_FUL = 24
+
 
 class Margin:
     MRG_NON = (0, 0, 0, 0)
@@ -171,6 +180,7 @@ class Margin:
     SEC_HDR = (2, 12, 2, 4)
     SEC_BDG = (4, 4, 8, 4)
 
+
 class Padding:
     PAD_MINI  = "2px 2px"
     PAD_COMP  = "2px 6px"
@@ -181,8 +191,10 @@ class Padding:
     PAD_CORE  = "6px 10px"
     PAD_WIDE  = "6px 14px"
 
+
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
+
 
 class Size:
     Radius     = Radius
@@ -202,8 +214,10 @@ class Size:
     CONTENT_MIN_WIDTH = 520
     CONTENT_WIDE_MAX_WIDTH = 1440
 
+
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
     return f"{width:g}px {style} {color}"
+
 
 class Borders:
     BRD_BASE = get_border(Palette.NEUTRAL_750)
@@ -218,6 +232,7 @@ class Borders:
     BRD_FAIL = get_border(BrandColors.RED)
     BRD_SHIN = get_border(Semantic.BORDER_TOP_SHINE)
 
+
 class Gradients:
     ACCENT_FILL    = (
         f"qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
@@ -231,6 +246,7 @@ class Gradients:
         f"qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
         f"stop:0 {BrandColors.GREEN_800}, stop:1 {BrandColors.GREEN_900})"
     )
+
 
 def rgba(color_hex: str, alpha: float) -> str:
     h = color_hex.lstrip("#")

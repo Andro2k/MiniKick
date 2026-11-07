@@ -42,6 +42,7 @@ def _is_valid_widget(widget) -> bool:
         except RuntimeError:
             return False
 
+
 class ModernTableCard(QFrame):
     clear_filters_requested = Signal()
 
@@ -426,6 +427,7 @@ class ModernTableCard(QFrame):
     def enable_filter_header(self) -> FilterHeaderView:
         return self.table.enable_filter_header()
 
+
 class TableActionCell(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -457,6 +459,7 @@ class TableActionCell(QWidget):
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)
         return btn
+
 
 class PlatformBadgeCell(QWidget):
     def __init__(self, platforms: list[str] | None = None, parent=None):

@@ -12,6 +12,7 @@ KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 
+
 class ScraperFactory:
     @staticmethod
     def create() -> cloudscraper.CloudScraper:
@@ -35,6 +36,7 @@ class ScraperFactory:
             'Sec-Fetch-Site': 'same-origin'
         })
         return scraper
+
 
 class KickAPIClient:
     def __init__(self, auth_provider: TokenProvider):

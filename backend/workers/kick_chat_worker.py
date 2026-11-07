@@ -62,6 +62,7 @@ class KickPollSyncWorker(QThread):
             except Exception as e:
                 logger.debug("[KickPollSyncWorker] Error during poll reconciliation: %s", e)
 
+
 class KickChatWorker(QThread):
     message_received = Signal(object) 
     error_occurred = Signal(str)        

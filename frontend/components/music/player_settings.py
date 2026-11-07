@@ -46,6 +46,7 @@ class MusicScrubberSlider(NoWheelSlider):
             self.setToolTip(_format_time(val))
         super().mouseMoveEvent(event)
 
+
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)
     play_pause_requested = Signal()

@@ -68,8 +68,10 @@ class StructuredLogFormatter(logging.Formatter):
 
         return f"[{timestamp_str}] [{short_lvl}] [{thread_name}] {logger_name}: {msg}"
 
+
 class LogEmitter(QObject):
     log_received = Signal(str, str)
+
 
 class QLogHandler(logging.Handler):
     def __init__(self):
@@ -84,6 +86,7 @@ class QLogHandler(logging.Handler):
                 self.emitter.log_received.emit(record.levelname, msg)
         except Exception:
             pass
+
 
 class StreamToLogger:
     _DEBUG_PREFIXES = ("[download]", "[info]", "[youtube]", "[generic]")

@@ -30,6 +30,7 @@ class CategoryItemWidget(QWidget):
         self.lbl_name.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout.addWidget(self.lbl_name)
 
+
 class CategorySuggestionsPopup(BaseFloatingListPopup):
     category_selected = Signal(object)
 
@@ -92,6 +93,7 @@ class CategorySuggestionsPopup(BaseFloatingListPopup):
         self.hide()
         if data:
             self.category_selected.emit(data)
+
 
 class CategorySearchComboBox(ActionLineEdit):
     category_selected = Signal(object)

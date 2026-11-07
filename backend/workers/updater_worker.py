@@ -36,6 +36,7 @@ class UpdateCheckWorker(QThread):
             logger.error("[UpdateCheckWorker] Error checking for updates: %s", e)
             self.error.emit(str(e))
 
+
 class UpdateDownloadWorker(QThread):
     download_completed = Signal(bool)
     error = Signal(str)
@@ -66,6 +67,7 @@ class UpdateDownloadWorker(QThread):
                 return
             logger.error("[UpdateDownloadWorker] Error downloading update: %s", e)
             self.error.emit(str(e))
+
 
 class ReleaseNotesWorker(QThread):
     release_fetched = Signal(object)
@@ -98,6 +100,7 @@ class ReleaseNotesWorker(QThread):
                 return
             logger.error("[ReleaseNotesWorker] Exception fetching release notes: %s", e)
             self.error_occurred.emit(str(e))
+
 
 class WhatsNewWorker(QThread):
     highlights_fetched = Signal(list)

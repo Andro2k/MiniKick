@@ -44,6 +44,7 @@ class AlertConfigData:
     card_width: int = 560
     card_height: int = 0
 
+
 class AlertEventCard(QWidget):
     config_changed = Signal(object)
     save_requested = Signal(object)

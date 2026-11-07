@@ -112,6 +112,7 @@ class GithubUpdateProvider:
             logger.error("[GithubUpdateProvider] Error downloading update binary: %s", e)
             return False
 
+
 class WindowsInstaller:
     def install_and_restart(self, installer_path: str) -> None:
         CREATE_NO_WINDOW = 0x08000000        
@@ -123,6 +124,7 @@ class WindowsInstaller:
             creationflags=CREATE_NO_WINDOW,
             close_fds=True 
         )
+
 
 class UpdateManager:
     def __init__(

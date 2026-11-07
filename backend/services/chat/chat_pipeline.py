@@ -23,6 +23,7 @@ class ChatMessageDTO:
     avatar_url: str = ""
     received_at: float = 0.0
 
+
 class MessagePipeline:
     def __init__(self):
         self._middlewares: list[Callable[[ChatMessageDTO], None]] = []

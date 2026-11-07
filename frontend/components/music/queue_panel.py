@@ -88,6 +88,7 @@ class DragDropQueueTable(ModernTable):
                 painter.drawRoundedRect(target_draw_rect, 6, 6)
                 painter.end()
 
+
 class MusicQueuePanel(QWidget):
     remove_queue_item_requested = Signal(int)
     move_queue_item_requested = Signal(int, int)

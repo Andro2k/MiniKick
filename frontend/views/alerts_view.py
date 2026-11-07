@@ -39,6 +39,7 @@ class LazyAlertCardsDict(dict):
             return self._view._get_or_create_card(key[0], key[1])
         return dict.__getitem__(self, key)
 
+
 class AlertsView(BaseView):
     config_changed = Signal(object)
     test_alert_requested = Signal(str, str)

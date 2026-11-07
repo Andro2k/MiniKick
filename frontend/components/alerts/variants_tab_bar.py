@@ -97,6 +97,7 @@ class AlertVariantTabPill(QFrame):
             self.clicked.emit(self.alert_type)
         super().mousePressEvent(event)
 
+
 class AlertVariantsTabBar(ModernCard):
     variant_selected = Signal(str)
     variant_enabled_changed = Signal(str, bool)

@@ -35,6 +35,7 @@ else:
     KBDLLHOOKSTRUCT = None
     HOOKPROC = None
 
+
 class GlobalMediaWorker(QThread):
     play_pause_pressed = Signal()
     skip_pressed = Signal()

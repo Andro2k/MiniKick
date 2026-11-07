@@ -17,12 +17,14 @@ def _is_corruption_error(error: Exception) -> bool:
     message = str(error).lower()
     return any(keyword in message for keyword in _CORRUPTION_KEYWORDS)
 
+
 class AutoCloseConnection(sqlite3.Connection):
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             super().__exit__(exc_type, exc_val, exc_tb)
         finally:
             self.close()
+
 
 class DatabaseManager:
     _initialized_dbs = set()

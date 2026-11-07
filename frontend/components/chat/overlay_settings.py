@@ -34,6 +34,7 @@ def _setup_icon_text_row(
         lbl.setToolTip(tooltip)
     return layout, lbl
 
+
 class CompactToggleItem(QWidget):
     def __init__(self, icon_name: str, title: str, switch: ModernSwitch, tooltip: str = "", parent=None):
         super().__init__(parent)
@@ -41,6 +42,7 @@ class CompactToggleItem(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=Size.Margin.MRG_XXS, spacing=Size.SPACING_SM)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
