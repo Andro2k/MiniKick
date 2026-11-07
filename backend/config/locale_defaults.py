@@ -1577,6 +1577,14 @@ DEFAULT_DICTIONARY = {
       "reset_success": "Chatters leaderboard reset successfully!",
       "title": "Top Chatters (!topchatters)"
     },
+    "timer": {
+      "desc": "On-screen countdown. Moderators only: !timer 5m [label], !timer pause|resume|stop.",
+      "title": "Timer (!timer)"
+    },
+    "stopwatch": {
+      "desc": "On-screen stopwatch. Moderators only: !cronometro start|pause|resume|reset.",
+      "title": "Stopwatch (!cronometro)"
+    },
     "clock": {
       "desc": "Displays the current time and date in real-time in a sleek capsule design for your stream.",
       "title": "Clock & Date"

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Timer OBS Overlay (Neutral)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent !important;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
+        #timer-container {
+            width: 100%;
+            height: 100%;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        #timer-container.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .timer-card {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 220px;
+            background: rgba(24, 24, 27, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            color: #ffffff;
+            zoom: 1.5;
+        }
+
+        .timer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 11px;
+            font-weight: 800;
+            color: #a1a1aa;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .timer-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .timer-state {
+            color: #e4e4e7;
+            display: none;
+        }
+
+        .timer-card.paused .timer-state {
+            display: inline;
+        }
+
+        .timer-body {
+            display: flex;
+            justify-content: center;
+            padding: 14px 24px 12px;
+        }
+
+        .timer-time {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-card.paused .timer-time {
+            color: #a1a1aa;
+        }
+
+        .timer-card.finished .timer-time {
+            color: #ff6b81;
+            animation: blink 0.8s ease-in-out infinite alternate;
+        }
+
+        .timer-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #ffffff;
+        }
+
+        .timer-card.finished .timer-bar-fill {
+            background: #ff6b81;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.35; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="timer-container">
+        <div id="timer-card" class="timer-card">
+            <div class="timer-header">
+                <span id="timer-label" class="timer-label">TEMPORIZADOR</span>
+                <span id="timer-state" class="timer-state">PAUSADO</span>
+            </div>
+            <div class="timer-body">
+                <span id="timer-time" class="timer-time">00:00</span>
+            </div>
+            <div class="timer-bar">
+                <div id="timer-bar-fill" class="timer-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
+        const WIDGET_ID = 'timer';
+        const FINISH_HOLD_MS = 10000;
+
+        const TEXTS = lang === 'en'
+            ? { label: 'TIMER', paused: 'PAUSED', finished: "TIME'S UP" }
+            : { label: 'TEMPORIZADOR', paused: 'PAUSADO', finished: '¡TIEMPO!' };
+
+        const container = document.getElementById('timer-container');
+        const card = document.getElementById('timer-card');
+        const labelEl = document.getElementById('timer-label');
+        const stateEl = document.getElementById('timer-state');
+        const timeEl = document.getElementById('timer-time');
+        const barFillEl = document.getElementById('timer-bar-fill');
+
+        stateEl.textContent = TEXTS.paused;
+
+        let widgetActive = true;
+        let hasContent = false;
+        let status = 'stopped';
+        let baseRemainingMs = 0;
+        let totalMs = 0;
+        let anchor = 0;
+        let label = '';
+        let rafId = null;
+        let hideTimer = null;
+
+        const pad = (n) => String(n).padStart(2, '0');
+
+        function formatTime(ms) {
+            const totalSec = Math.ceil(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+        }
+
+        function remainingMs() {
+            if (status !== 'running') return baseRemainingMs;
+            return Math.max(0, baseRemainingMs - (performance.now() - anchor));
+        }
+
+        function render() {
+            const remaining = remainingMs();
+            timeEl.textContent = formatTime(remaining);
+            barFillEl.style.width = totalMs > 0 ? `${(remaining / totalMs) * 100}%` : '0%';
+
+            if (status === 'running' && remaining <= 0) {
+                setStatus('finished', 0);
+            }
+        }
+
+        function loop() {
+            render();
+            rafId = status === 'running' ? requestAnimationFrame(loop) : null;
+        }
+
+        function syncVisibility() {
+            container.classList.toggle('visible', widgetActive && hasContent);
+            card.classList.toggle('paused', status === 'paused');
+            card.classList.toggle('finished', status === 'finished');
+            labelEl.textContent = status === 'finished' ? TEXTS.finished : (label || TEXTS.label);
+
+            if (status === 'running' && rafId === null) {
+                rafId = requestAnimationFrame(loop);
+            }
+        }
+
+        function setStatus(newStatus, remainingMsValue) {
+            status = newStatus;
+            baseRemainingMs = remainingMsValue;
+            anchor = performance.now();
+
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+
+            if (status === 'stopped' || status === 'idle') {
+                hasContent = false;
+            } else {
+                hasContent = true;
+            }
+
+            if (status === 'finished') {
+                hideTimer = setTimeout(() => {
+                    hasContent = false;
+                    syncVisibility();
+                }, FINISH_HOLD_MS);
+            }
+
+            render();
+            syncVisibility();
+        }
+
+        function applyUpdate(data) {
+            if (typeof data.total_ms === 'number') totalMs = data.total_ms;
+            label = data.label || '';
+            setStatus(data.status || 'stopped', Math.max(0, data.remaining_ms || 0));
+        }
+
+        let ws = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) { }
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log('[Timer Overlay] WebSocket conectado.');
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
+                    if (data.event === 'timer_update') {
+                        applyUpdate(data);
+                    } else if (data.event === 'widget_toggle' && data.widget_id === WIDGET_ID) {
+                        widgetActive = data.is_active !== false;
+                        syncVisibility();
+                    } else if (data.event === 'initial_state' && data.widgets && data.widgets[WIDGET_ID]) {
+                        widgetActive = data.widgets[WIDGET_ID].is_active !== false;
+                        syncVisibility();
+                    }
+                } catch (err) {
+                    console.error('Error al procesar evento de temporizador:', err);
+                }
+            };
+
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+                connectWS();
+            }, 3000);
+        }
+
+        if (isPreview) {
+            applyUpdate({ status: 'running', remaining_ms: 272000, total_ms: 300000, label: lang === 'en' ? 'Starting soon' : 'Empezamos pronto' });
+        }
+
+        if (window.location.protocol !== 'file:') {
+            connectWS();
+        }
+    </script>
+</body>
+</html>

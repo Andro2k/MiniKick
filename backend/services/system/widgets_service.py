@@ -64,6 +64,20 @@ class WidgetService:
                 "top_count": 5
             }
         },
+        "timer": {
+            "is_active": True,
+            "command": "!timer",
+            "cooldown": 1,
+            "permission": "moderator",
+            "config": {}
+        },
+        "stopwatch": {
+            "is_active": True,
+            "command": "!cronometro",
+            "cooldown": 1,
+            "permission": "moderator",
+            "config": {}
+        },
         "clock": {
             "is_active": True,
             "command": "!time",

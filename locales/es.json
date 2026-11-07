@@ -1575,6 +1575,14 @@
       "reset_success": "¡Ranking de chatters reiniciado con éxito!",
       "title": "Top Chatters (!topchatters)"
     },
+    "timer": {
+      "desc": "Cuenta regresiva en pantalla. Solo moderadores: !timer 5m [etiqueta], !timer pause|resume|stop.",
+      "title": "Temporizador (!timer)"
+    },
+    "stopwatch": {
+      "desc": "Cronómetro en pantalla. Solo moderadores: !cronometro start|pause|resume|reset.",
+      "title": "Cronómetro (!cronometro)"
+    },
     "clock": {
       "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
       "title": "Reloj y Fecha"

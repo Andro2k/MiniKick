@@ -275,6 +275,7 @@
         let countdownInterval = null;
 
         let currentPollState = null;
+        let widgetActive = true;
         let remainingSeconds = 0;
         let resultDisplaySeconds = 15;
         let isResultPhase = false;
@@ -316,9 +317,10 @@
                         data.event === "widget_toggle" &&
                         data.widget_id === "poll"
                     ) {
-                        if (data.is_active === false) {
-                            hidePoll();
-                        }
+                        widgetActive = data.is_active !== false;
+                        pollContainer.classList.toggle("visible", widgetActive && currentPollState !== null);
+                    } else if (data.event === "initial_state" && data.widgets && data.widgets.poll) {
+                        widgetActive = data.widgets.poll.is_active !== false;
                     }
                 } catch (err) {
                     console.error("Error al procesar evento de encuesta:", err);
@@ -519,7 +521,7 @@
                 optionsList.appendChild(optItem);
             });
 
-            pollContainer.classList.add("visible");
+            pollContainer.classList.toggle("visible", widgetActive);
         }
 
         function hidePoll() {

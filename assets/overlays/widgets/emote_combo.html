@@ -200,11 +200,13 @@
         const timerBarEl = document.getElementById('timer-bar');
 
         let comboTimeoutSec = 5.0;
+        let widgetActive = true;
         let comboTimer = null;
         let timerInterval = null;
         let startTime = 0;
 
         function showCombo(data, count, timeoutSec = 5.0) {
+            if (!widgetActive) return;
             let emoteName = "KEKW";
             let emoteSrc = "";
             let emoteType = "text";
@@ -295,8 +297,11 @@
 
                     if (data.event === 'emote_combo') {
                         showCombo(data, data.count, data.timeout_sec || 5.0);
-                    } else if (data.event === 'widget_toggle' && data.widget_id === 'combo' && !data.is_active) {
-                        hideCombo();
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'combo') {
+                        widgetActive = data.is_active !== false;
+                        if (!widgetActive) hideCombo();
+                    } else if (data.event === 'initial_state' && data.widgets && data.widgets.combo) {
+                        widgetActive = data.widgets.combo.is_active !== false;
                     }
                 } catch (err) {
                     console.error("Error parsing emote combo event:", err);

@@ -170,6 +170,7 @@
         const soUrl = document.getElementById('so-url');
 
         let soTimeout = null;
+        let widgetActive = true;
 
         if (lang === 'en') {
             soHeader.textContent = 'Recommended Streamer';
@@ -208,6 +209,11 @@
                     if (data.type === 'pong') return;
                     if (data.event === 'shoutout') {
                         showShoutout(data);
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'shoutout') {
+                        widgetActive = data.is_active !== false;
+                        if (!widgetActive) hideShoutout();
+                    } else if (data.event === 'initial_state' && data.widgets && data.widgets.shoutout) {
+                        widgetActive = data.widgets.shoutout.is_active !== false;
                     }
                 } catch (err) {}
             };
@@ -238,7 +244,13 @@
             }, 3000);
         }
 
+        function hideShoutout() {
+            if (soTimeout) clearTimeout(soTimeout);
+            soCard.classList.remove('active');
+        }
+
         function showShoutout(data) {
+            if (!widgetActive) return;
             const target = data.target || 'Streamer';
             const channelUrl = data.url || `https://kick.com/${target}`;
             const avatar = data.avatar_url || `https://kick.com/favicon.ico`;
