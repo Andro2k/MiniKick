@@ -2,8 +2,9 @@
 name: minikick-walkthrough-manager
 description: >-
   Use this skill whenever generating technical walkthroughs (WT-X.Y.Z_NN.md)
-  or compiling user-facing Release Notes (Release_Notes_vX.Y.Z.md) in MiniKick,
-  enforcing strict structure, zero emojis, and zero code leaks.
+  or compiling user-facing Release Notes (Release_Notes_vX.Y.Z.md) in MiniKick.
+  After a walkthrough is approved, also prepare a concise GitHub pull request
+  title and description based only on verified changes and test results.
 ---
 
 # MiniKick Walkthrough & Release Notes Manager
@@ -73,3 +74,33 @@ Al compilar o actualizar las notas de versión maestras a partir de los walkthro
    *Valores válidos para `Sección`:* `Chat`, `Widgets`, `Comandos`, `Timers`, `Music`, `Developer`, `Dashboard`, `Settings`.
 6. **Veracidad Estricta**: No incluir características que no estén presentes o probadas en el código real de la versión.
 7. **Alertas Markdown Permitidas**: Se pueden emplear bloques `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]` para destacar avisos relevantes.
+
+---
+
+## 4. Resumen para Pull Request de GitHub
+
+Cuando el usuario apruebe un walkthrough técnico, entregar también un resumen listo para pegar en **Open a pull request**. No crear ni publicar el pull request salvo que el usuario lo solicite explícitamente.
+
+### Formato obligatorio
+
+```markdown
+**Título:** [Resumen corto y orientado al cambio principal]
+
+**Descripción:**
+## Resumen
+- [Cambios principales verificados]
+- [Impacto visible o técnico relevante]
+
+## Verificación
+- [Pruebas y auditorías ejecutadas con resultados exactos]
+```
+
+### Reglas
+
+1. Generar el resumen solo después de comprobar el walkthrough y contrastar su contenido con los cambios implementados.
+2. Mantener el título corto, específico y sin etiquetas como `[FEATURE]` o `[BUGFIX]`.
+3. En `Resumen`, describir únicamente cambios presentes en el código y documentados en el walkthrough; no inventar beneficios ni alcance.
+4. En `Verificación`, enumerar los comandos/pruebas relevantes y sus resultados reales. Identificar con claridad pruebas omitidas o fallidas, sin presentarlas como aprobadas.
+5. Incluir la ruta del walkthrough como referencia cuando aporte contexto.
+6. Usar español, salvo que el usuario pida otro idioma. No usar emojis.
+7. El resumen de PR es técnico: puede nombrar módulos o archivos si ayuda a revisar el cambio; la prohibición de filtrar nombres de código de las Release Notes no aplica a este resumen.
