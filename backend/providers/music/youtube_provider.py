@@ -24,6 +24,7 @@ _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database import SQLiteMusicStorage
 from backend.interfaces import IConfigProvider
+from backend.utils.youtube_url import KIND_SEARCH, KIND_YOUTUBE_VIDEO, classify_music_query
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
@@ -171,8 +172,9 @@ class YouTubeMusicProvider(QObject):
         return "youtube"
 
     def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None, platform: str = "kick", max_duration_min: int = 10) -> tuple[bool, str]:
-        query = query_or_uri.strip()
-        is_search = not (query.startswith("http://") or query.startswith("https://") or query.startswith("www."))
+        music_query = classify_music_query(query_or_uri)
+        query = music_query.value
+        is_search = music_query.kind == KIND_SEARCH
         
         if is_search:
             cached = self._get_cached_search(query)
@@ -227,6 +229,7 @@ class YouTubeMusicProvider(QObject):
         else:
             search_query = query
             immediate_msg = self.i18n.get("music.queue.processing_link")
+        single_video = music_query.kind == KIND_YOUTUBE_VIDEO
 
         worker = YouTubeSearchWorker(
             search_query,
@@ -234,6 +237,7 @@ class YouTubeMusicProvider(QObject):
             self.i18n,
             max_duration_min=max_duration_min,
             requester=requester or "",
+            single_video=single_video,
         )
         
         worker.search_completed.connect(self._on_search_worker_completed)

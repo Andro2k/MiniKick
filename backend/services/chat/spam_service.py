@@ -4,6 +4,8 @@ import logging
 import re
 from collections import deque
 
+from backend.utils.youtube_url import is_youtube_link
+
 logger = logging.getLogger("minikick.services.chat.spam")
 
 class SpamService:
@@ -45,7 +47,7 @@ class SpamService:
             clean_msg = self._LINK_REGEX.sub('', clean_msg)
         return clean_msg
 
-    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "", platform: str = "kick") -> bool:
+    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "", platform: str = "kick", youtube_links_allowed: bool = False) -> bool:
         if not message or platform not in ("kick", "twitch"):
             return False
 
@@ -121,6 +123,8 @@ class SpamService:
                     is_violation = False
                     for link in found_links:
                         link_lower = link.lower()
+                        if youtube_links_allowed and is_youtube_link(link if "://" in link else f"https://{link}"):
+                            continue
                         if not any(domain in link_lower for domain in allowed_domains):
                             is_violation = True
                             break

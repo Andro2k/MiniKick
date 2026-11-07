@@ -240,6 +240,11 @@ class CommandService(QObject):
 
         return user_level >= req_level
 
+    def peek_plugin_tag(self, message: str) -> str:
+        parts = (message or "").strip().split(maxsplit=1)
+        cmd = self._dispatch_table.get(parts[0].lower()) if parts else None
+        return cmd.get("response", "") if cmd else ""
+
     def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if not message or not message.strip():
             return False, "", {}, ""
