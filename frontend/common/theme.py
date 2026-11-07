@@ -6,7 +6,7 @@ import tempfile
 from functools import lru_cache
 from pathlib import Path
 from PySide6.QtGui import QPalette, QColor
-from .paths import get_assets_path, resolve_icon_path
+from .icons import get_assets_path, resolve_icon_path
 
 class Palette:
     NEUTRAL_999 = "#000000"

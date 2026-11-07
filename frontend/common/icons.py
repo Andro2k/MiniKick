@@ -1,15 +1,45 @@
 # frontend\common\icons.py
 
 import logging
+import os
 from functools import lru_cache
 from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 
-from .paths import resolve_icon_path
-from .theme import Palette
+from backend.utils import resource_path
 
 logger = logging.getLogger("minikick.icons")
+
+
+def get_assets_path(subfolder: str = "") -> str:
+    path = resource_path("assets")
+    if subfolder:
+        path = os.path.join(path, subfolder)
+    return os.path.normpath(path).replace("\\", "/")
+
+
+def resolve_icon_path(name: str) -> str | None:
+    if not name:
+        return None
+    if os.path.isabs(name) and os.path.exists(name):
+        return name
+    base_candidate = os.path.basename(name)
+    full_path = get_assets_path(os.path.join("icons", base_candidate))
+    if os.path.exists(full_path):
+        return full_path
+    direct_path = get_assets_path(name)
+    if os.path.exists(direct_path):
+        return direct_path
+    logger.warning("Icon file not found: '%s' in %s", name, full_path)
+    return None
+
+
+def _default_icon_color() -> str:
+    from .theme import Palette
+
+    return Palette.NEUTRAL_050
+
 
 @lru_cache(maxsize=128)
 def _load_svg_raw(full_path: str) -> str:
@@ -63,15 +93,13 @@ def _resolve_dpr(dpr: float | None) -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QIcon:
-    return _get_icon_colored_impl(name, color_str, size, _resolve_dpr(dpr))
+def get_icon_colored(name: str, color_str: str | None = None, size: int = 16, dpr: float | None = None) -> QIcon:
+    color = _default_icon_color() if color_str is None else color_str
+    return _get_icon_colored_impl(name, color, size, _resolve_dpr(dpr))
 
-def get_pixmap_colored(name: str, color_str: str = Palette.NEUTRAL_050, size: int = 16, dpr: float | None = None) -> QPixmap:
+def get_pixmap_colored(name: str, color_str: str | None = None, size: int = 16, dpr: float | None = None) -> QPixmap:
     dpr = _resolve_dpr(dpr)
     return get_icon_colored(name, color_str, size, dpr).pixmap(QSize(size, size), dpr)
-
-def get_pixmap(name: str, size: int = 16, dpr: float | None = None) -> QPixmap:
-    return get_icon(name).pixmap(QSize(size, size), _resolve_dpr(dpr))
 
 def create_circular_pixmap(img_data: QByteArray, target_size: int | None = None) -> QPixmap:
     image = QImage.fromData(img_data)
