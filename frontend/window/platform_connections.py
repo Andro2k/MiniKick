@@ -82,8 +82,7 @@ class PlatformConnectionHandlers:
     @Slot(str)
     def handle_rewards_error(self, error_msg: str) -> None:
         w = self._window
-        err_template = w.i18n.get("main.logs.api_error")
-        w.logger.error(err_template.replace("{error}", error_msg))
+        w.logger.error("Kick Rewards API failure: %s", error_msg)
 
     def handle_incoming_alert(self, alert_event) -> None:
         self._window.container.alert_service.process_event(alert_event)

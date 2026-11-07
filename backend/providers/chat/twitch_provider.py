@@ -73,8 +73,7 @@ class TwitchAPIClient:
             resp.raise_for_status()
             data = resp.json().get("data", [])
             if not data:
-                err_msg = self.i18n.get("logs.twitch.user_not_found")
-                raise ValueError(err_msg)
+                raise ValueError("No user data found in Twitch Helix API.")
             user_info = data[0]
             created_at_raw = user_info.get("created_at", "")
             created_at = created_at_raw[:10] if created_at_raw and len(created_at_raw) >= 10 else "-"

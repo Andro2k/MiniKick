@@ -149,9 +149,9 @@ class LiveChatConnection(QObject):
         is_offline = self._is_offline_error(error_msg)
         if is_offline:
             self._config.save_bool(self.offline_setting_key, True)
-            logger.warning("[%s] %s worker offline status: %s", self.log_tag, self.log_name, error_msg)
+            logger.warning("[%s] %s stream is offline or unavailable.", self.log_tag, self.log_name)
         else:
-            logger.error("[%s] Error in %s worker: %s", self.log_tag, self.log_name, error_msg)
+            logger.error("[%s] %s worker stopped after an error (see worker log for details).", self.log_tag, self.log_name)
         self.slot.stop(timeout_ms=1000)
         self.state_changed.emit()
         self.error_reported.emit(error_msg, is_offline)

@@ -67,6 +67,4 @@ class CrashHandler:
 
     @staticmethod
     def _dialog_error_message(i18n, error: Exception) -> str:
-        if i18n:
-            return i18n.get("logs.bootstrap.crash_dialog_failed").replace("{error}", str(error))
         return f"[Bootstrap] Failed to display crash dialog: {error}"

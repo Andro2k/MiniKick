@@ -4,6 +4,7 @@ from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QPushButton, QApplication, QCheckBox
 from frontend.common import Size
+from backend.services.system.widgets_service import EXPLOSION_PLATFORMS
 
 class WidgetCard(ExpandableCard):
     widget_changed = Signal(str, bool, str, int, str, object)
@@ -145,8 +146,23 @@ class WidgetCard(ExpandableCard):
             gp_layout.addWidget(lbl_parts)
             gp_layout.addWidget(self.spn_particle_count)
 
+            group_platforms = QWidget()
+            gpl_layout = QHBoxLayout(group_platforms)
+            gpl_layout.setContentsMargins(*Size.Margin.MRG_NON)
+            gpl_layout.setSpacing(Size.SPACING_MD)
+            lbl_platforms = QLabel(self.i18n.get("widgets.explosion.platforms_label"))
+            lbl_platforms.setProperty("role", "body")
+            gpl_layout.addWidget(lbl_platforms)
+            self.chk_platforms = {}
+            for platform, label in EXPLOSION_PLATFORMS.items():
+                chk = QCheckBox(label)
+                chk.toggled.connect(self._on_input_changed)
+                self.chk_platforms[platform] = chk
+                gpl_layout.addWidget(chk)
+
             flow.addWidget(group_min)
             flow.addWidget(group_parts)
+            flow.addWidget(group_platforms)
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "combo":
@@ -244,6 +260,10 @@ class WidgetCard(ExpandableCard):
             self.spn_particle_count.setValue(int(cfg.get("particle_count", 15)))
             self.spn_min_emotes.blockSignals(False)
             self.spn_particle_count.blockSignals(False)
+            for platform, chk in self.chk_platforms.items():
+                chk.blockSignals(True)
+                chk.setChecked(bool(cfg.get(f"show_{platform}", True)))
+                chk.blockSignals(False)
         elif self.widget_id == "combo" and hasattr(self, "spn_min_combo"):
             self.spn_min_combo.blockSignals(True)
             self.spn_timeout_sec.blockSignals(True)
@@ -302,6 +322,8 @@ class WidgetCard(ExpandableCard):
         elif self.widget_id == "explosion" and hasattr(self, "spn_min_emotes"):
             self._config_data["min_emotes"] = self.spn_min_emotes.value()
             self._config_data["particle_count"] = self.spn_particle_count.value()
+            for platform, chk in self.chk_platforms.items():
+                self._config_data[f"show_{platform}"] = chk.isChecked()
         elif self.widget_id == "combo" and hasattr(self, "spn_min_combo"):
             self._config_data["min_combo"] = self.spn_min_combo.value()
             self._config_data["timeout_sec"] = self.spn_timeout_sec.value()

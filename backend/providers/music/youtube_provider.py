@@ -329,7 +329,7 @@ class YouTubeMusicProvider(QObject):
             gain_factor = max(0.2, min(1.5, gain_factor))
             effective = max(0.0, min(1.0, perceptual_vol * gain_factor))
             logger.debug(
-                "[YouTubeMusicProvider] Loudness norm aplicada: %.2f dB → gain=%.3f, base=%.3f, eff=%.3f (ducked=%s)",
+                "[YouTubeMusicProvider] Loudness normalization applied: %.2f dB -> gain=%.3f, base=%.3f, eff=%.3f (ducked=%s)",
                 loudness, gain_factor, perceptual_vol, effective, self._is_ducked
             )
             return effective

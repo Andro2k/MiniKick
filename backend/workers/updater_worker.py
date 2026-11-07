@@ -91,7 +91,7 @@ class ReleaseNotesWorker(QThread):
                 self.release_fetched.emit(data)
             else:
                 err_msg = self.i18n.get("dialogs.release_notes.error")
-                logger.error("[ReleaseNotesWorker] Failed to fetch release notes: %s", err_msg)
+                logger.error("[ReleaseNotesWorker] Failed to fetch release notes: no release data returned.")
                 self.error_occurred.emit(err_msg)
         except Exception as e:
             if self.isInterruptionRequested():

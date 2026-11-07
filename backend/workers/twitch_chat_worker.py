@@ -53,7 +53,9 @@ class TwitchChatWorker(QThread):
 
             if not self.channel_name:
                 err_msg = self.i18n.get("logs.twitch.channel_empty")
-                raise ValueError(err_msg)
+                logger.error("[TwitchChatWorker] Cannot start: target channel is empty.")
+                self.error_occurred.emit(err_msg)
+                return
 
             if not self.bot_nick:
                 self.bot_nick = self.channel_name

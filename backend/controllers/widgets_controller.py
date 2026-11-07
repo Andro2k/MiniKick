@@ -567,8 +567,10 @@ class WidgetsController(QObject):
             cfg_exp = w_exp.get("config", {})
             min_emotes = int(cfg_exp.get("min_emotes", 1))
             particle_count = int(cfg_exp.get("particle_count", 15))
+            platform_enabled = cfg_exp.get(f"show_{platform}", True)
+            logger.debug("[Widgets] explosion platform=%s emotes=%d enabled=%s", platform, len(image_emotes), platform_enabled)
 
-            if len(image_emotes) >= min_emotes:
+            if platform_enabled and len(image_emotes) >= min_emotes:
                 self.overlay_server.trigger_widget_event("emote_explosion", {
                     "emotes": image_emotes,
                     "count": particle_count

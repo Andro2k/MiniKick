@@ -139,12 +139,11 @@ class RewardRedemptionPresenter:
 
         outcome = self._handler.process(redemption)
         if outcome.configured and not outcome.media_valid:
-            missing_log = (
-                w.i18n.get("main.logs.reward_file_missing")
-                .replace("{reward_name}", reward_name)
-                .replace("{filepath}", outcome.filepath)
+            w.logger.warning(
+                "Media file for reward '%s' was not found at: %s",
+                reward_name,
+                outcome.filepath,
             )
-            w.logger.warning(missing_log)
             w.toast.show_toast(
                 title=w.i18n.get("common.status.warning"),
                 message=w.i18n.get("rewards.status.redeem_file_missing").replace(
@@ -153,11 +152,7 @@ class RewardRedemptionPresenter:
                 state="danger",
             )
         elif not outcome.configured:
-            no_rewards_template = w.i18n.get("main.logs.reward_no_rewards")
-            w.logger.debug(
-                "[Reward] %s",
-                no_rewards_template.replace("{reward_name}", reward_name),
-            )
+            w.logger.debug("[Reward] Reward '%s' has no reward configured.", reward_name)
 
         settings = w.chat_service.get_settings()
         if settings.get("enabled", False) and message:

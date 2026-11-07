@@ -5,6 +5,9 @@ from backend.database import SQLiteWidgetsStorage
 
 logger = logging.getLogger("minikick.services.widgets")
 
+EXPLOSION_PLATFORMS = {"kick": "Kick", "twitch": "Twitch", "youtube": "YouTube", "tiktok": "TikTok"}
+
+
 class WidgetService:
     DEFAULT_WIDGETS = {
         "shoutout": {
@@ -42,7 +45,11 @@ class WidgetService:
             "permission": "everyone",
             "config": {
                 "min_emotes": 1,
-                "particle_count": 15
+                "particle_count": 15,
+                "show_kick": True,
+                "show_twitch": True,
+                "show_youtube": True,
+                "show_tiktok": True
             }
         },
         "combo": {

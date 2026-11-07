@@ -1612,6 +1612,7 @@ DEFAULT_DICTIONARY = {
       "min_emotes_label": "Minimum Emotes per message:",
       "msg_explosion": "💥 @{user} unleashed an emote explosion!",
       "particle_count_label": "Particles per burst:",
+      "platforms_label": "Platforms that trigger emotes:",
       "title": "Emote Explosion (!explosion)"
     },
     "header": {
