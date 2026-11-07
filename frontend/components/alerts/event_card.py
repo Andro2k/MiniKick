@@ -184,7 +184,6 @@ class AlertEventCard(QWidget):
         self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.duration"),
             self.spin_duration,
-            icon_name="clock-filled.svg",
             tooltip=self.i18n.get("alerts.fields.duration_desc"),
             parent=self
         ))
@@ -206,7 +205,6 @@ class AlertEventCard(QWidget):
         self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_label"),
             self.combo_anim_in,
-            icon_name="play-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -222,7 +220,6 @@ class AlertEventCard(QWidget):
         self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_duration"),
             self.spin_anim_in_dur,
-            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -244,7 +241,6 @@ class AlertEventCard(QWidget):
         self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_label"),
             self.combo_anim_out,
-            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -260,7 +256,6 @@ class AlertEventCard(QWidget):
         self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_duration"),
             self.spin_anim_out_dur,
-            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -286,7 +281,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.layout.title"),
             self.seg_layout,
-            icon_name="transfer-v-filled.svg",
             tooltip=self.i18n.get("alerts.layout.desc"),
             parent=self
         ))
@@ -302,7 +296,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.bg_color"),
             self.picker_bg_color,
-            icon_name="palette-filled.svg",
             tooltip=self.i18n.get("alerts.fields.bg_color_desc"),
             parent=self
         ))
@@ -327,7 +320,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.bg_opacity"),
             box_bg_opacity,
-            icon_name="dark-light-filled.svg",
             tooltip=self.i18n.get("alerts.fields.bg_opacity_desc"),
             parent=self
         ))
@@ -342,7 +334,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.padding"),
             self.spin_padding,
-            icon_name="minimize-filled.svg",
             tooltip=self.i18n.get("alerts.fields.padding_desc"),
             parent=self
         ))
@@ -357,7 +348,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.spacing"),
             self.spin_spacing,
-            icon_name="transfer-h-filled.svg",
             tooltip=self.i18n.get("alerts.fields.spacing_desc"),
             parent=self
         ))
@@ -372,7 +362,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.border_radius"),
             self.spin_border_radius,
-            icon_name="minimize-filled.svg",
             tooltip=self.i18n.get("alerts.fields.border_radius_desc"),
             parent=self
         ))
@@ -384,7 +373,6 @@ class AlertEventCard(QWidget):
         self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.box_shadow"),
             self.sw_box_shadow,
-            icon_name="squares-filled.svg",
             tooltip=self.i18n.get("alerts.fields.box_shadow_desc"),
             parent=self
         ))
@@ -408,7 +396,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.template"),
             self.edit_template,
-            icon_name="edit-filled.svg",
             tooltip=self.i18n.get("alerts.fields.template_hint"),
             stretch_content=True,
             parent=self
@@ -422,7 +409,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_family"),
             self.combo_font,
-            icon_name="text-filled.svg",
             tooltip=self.i18n.get("alerts.fields.font_family_desc"),
             parent=self
         ))
@@ -438,7 +424,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_weight"),
             self.combo_font_weight,
-            icon_name="bold-filled.svg",
             tooltip=self.i18n.get("alerts.fields.font_weight_desc"),
             parent=self
         ))
@@ -453,7 +438,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_align"),
             self.seg_align,
-            icon_name="textalign-left-filled.svg",
             tooltip=self.i18n.get("alerts.fields.text_align_desc"),
             parent=self
         ))
@@ -468,7 +452,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_size"),
             self.spin_font_size,
-            icon_name="text-filled.svg",
             tooltip=self.i18n.get("alerts.fields.font_size_desc"),
             parent=self
         ))
@@ -484,7 +467,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_color"),
             self.picker_text_color,
-            icon_name="palette-filled.svg",
             tooltip=self.i18n.get("alerts.fields.text_color_desc"),
             parent=self
         ))
@@ -501,7 +483,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.highlight_color"),
             self.picker_highlight_color,
-            icon_name="text-input-filled.svg",
             tooltip=self.i18n.get("alerts.fields.highlight_color_desc"),
             parent=self
         ))
@@ -513,7 +494,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_shadow"),
             self.sw_text_shadow,
-            icon_name="eye-filled.svg",
             tooltip=self.i18n.get("alerts.fields.text_shadow_desc"),
             parent=self
         ))
@@ -524,7 +504,6 @@ class AlertEventCard(QWidget):
         self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.tts"),
             self.sw_tts,
-            icon_name="megaphone-filled.svg",
             tooltip=self.i18n.get("alerts.fields.tts_section"),
             parent=self
         ))
@@ -562,7 +541,6 @@ class AlertEventCard(QWidget):
         self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.media"),
             media_picker_box,
-            icon_name="album-filled.svg",
             stretch_content=True,
             parent=self
         ))
@@ -590,7 +568,6 @@ class AlertEventCard(QWidget):
         self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.sound"),
             sound_picker_box,
-            icon_name="music-notes-filled.svg",
             stretch_content=True,
             parent=self
         ))
@@ -615,7 +592,6 @@ class AlertEventCard(QWidget):
         self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.volume"),
             vol_box,
-            icon_name="volume-up-filled.svg",
             parent=self
         ))
         col_right.addWidget(self.card_media)
@@ -667,7 +643,6 @@ class AlertEventCard(QWidget):
         controls_layout.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.card_width"),
             self.spin_card_width,
-            icon_name="transfer-h-filled.svg",
             tooltip=self.i18n.get("alerts.fields.card_width_desc"),
             parent=self
         ))
@@ -683,7 +658,6 @@ class AlertEventCard(QWidget):
         controls_layout.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.card_height"),
             self.spin_card_height,
-            icon_name="transfer-v-filled.svg",
             tooltip=self.i18n.get("alerts.fields.card_height_desc"),
             parent=self
         ))

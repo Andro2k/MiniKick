@@ -363,6 +363,7 @@ class ExpandableCard(QFrame):
         self.divider.hide()
         self.main_layout.addWidget(self.divider)
         self.body_widget = QWidget(self)
+        self.body_widget.setProperty("role", "expandable_card_body")
         self.body_layout = QVBoxLayout(self.body_widget)
         self.body_layout.setContentsMargins(*Size.Margin.MRG_MED)
         self.body_layout.setSpacing(Size.SPACING_MD)

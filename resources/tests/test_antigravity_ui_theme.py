@@ -244,6 +244,14 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
     for section_card in (card.card_general, card.card_design, card.card_typography, card.card_media):
         assert isinstance(section_card, ExpandableCard)
         assert isinstance(section_card.divider, ModernDivider)
+        assert section_card.body_widget.property("role") == "expandable_card_body"
+
+    from frontend.widgets import InspectorPropertyRow
+    assert card.findChildren(InspectorPropertyRow)
+    assert all(not hasattr(row, "lbl_icon") for row in card.findChildren(InspectorPropertyRow))
+    assert all(section_card.lbl_icon is not None for section_card in (
+        card.card_general, card.card_design, card.card_typography, card.card_media
+    ))
 
     assert card.card_general.is_expanded() is True
     assert card.card_design.is_expanded() is False

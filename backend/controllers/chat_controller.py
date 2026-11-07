@@ -430,7 +430,8 @@ class ChatController(QObject):
         if platform not in ("kick", "twitch"):
             return
         emotes_tag = getattr(dto, "emotes_tag", "")
-        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag, platform=platform):
+        is_song_request = self.command_service.peek_plugin_tag(dto.content) == "[PLUGIN_MUSIC_SR]"
+        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag, platform=platform, youtube_links_allowed=is_song_request):
             dto.is_cancelled = True
             self.spam_blocked.emit()
 

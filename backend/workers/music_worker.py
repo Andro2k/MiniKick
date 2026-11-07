@@ -260,10 +260,18 @@ class YouTubeResolveWorker(QThread):
             self.error.emit(str(e))
 
 
+def _has_results(res) -> bool:
+    if not res:
+        return False
+    if 'entries' in res:
+        return any(res['entries'])
+    return bool(res.get('id'))
+
+
 class YouTubeSearchWorker(QThread):
     search_completed = Signal(bool, str)
 
-    def __init__(self, search_query: str, query_raw: str, i18n, max_duration_min: int = 10, requester: str = ""):
+    def __init__(self, search_query: str, query_raw: str, i18n, max_duration_min: int = 10, requester: str = "", single_video: bool = False):
         super().__init__()
         self.setObjectName("Worker_YouTube_Search")
         self.search_query = search_query
@@ -271,6 +279,7 @@ class YouTubeSearchWorker(QThread):
         self.i18n = i18n
         self.max_duration_min = max_duration_min
         self.requester = requester
+        self.single_video = single_video
         self.song_entry = None
 
     def run(self):
@@ -289,6 +298,7 @@ class YouTubeSearchWorker(QThread):
                 'socket_timeout': 10,
                 'retries': 2,
                 'age_limit': 99,
+                'noplaylist': self.single_video,
             }
 
             info = None
@@ -299,7 +309,7 @@ class YouTubeSearchWorker(QThread):
                 try:
                     with yt_dlp.YoutubeDL(base_opts) as ydl:
                         res = ydl.extract_info(self.search_query, download=False)
-                        if res and res.get('entries') and [e for e in res['entries'] if e]:
+                        if _has_results(res):
                             info = res
                             break
                 except Exception as e:
