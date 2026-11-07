@@ -279,3 +279,84 @@ def test_widgets_controller_ignores_minikick_and_bots_in_top_chatters():
     assert "theandro2k" in controller._chatters_counts
     assert controller._chatters_counts["theandro2k"]["count"] == 2
     assert controller._chatters_counts["theandro2k"]["user"] == "TheAndro2K"
+
+
+def _build_gif_controller():
+    from backend.controllers.chat_controller import ChatController
+    from backend.services.chat.commands_service import CommandService
+    from backend.services.chat.chat_service import ChatService
+
+    mock_view = MagicMock()
+    mock_view.get_role_voices.return_value = {}
+    mock_view.is_web_provider = False
+    mock_view.tts_volume = 100
+    mock_view.tts_speed = 100
+    mock_view.mod_mute_command_enabled = True
+    mock_view.mod_block_command_enabled = True
+    chat_svc = ChatService(tts_manager=MagicMock(), settings_storage=MockSettingsStorage())
+    return ChatController(
+        view=mock_view,
+        service=chat_svc,
+        command_service=CommandService(commands_storage=MockCommandStorage()),
+        spam_service=MagicMock(),
+        i18n=DummyI18n(),
+    )
+
+
+def test_gif_search_does_not_block_the_ui_thread_and_renders_when_resolved(qapp):
+    import threading
+    import time
+
+    controller = _build_gif_controller()
+    release = threading.Event()
+    giphy = MagicMock()
+    giphy.has_active_key.return_value = True
+
+    def fake_resolve(arg, api_key_override="", allow_search=True):
+        if not allow_search:
+            return None
+        release.wait(timeout=5)
+        return "https://media.giphy.com/media/abc/giphy.gif"
+
+    giphy.resolve_gif.side_effect = fake_resolve
+    controller.giphy_service = giphy
+    controller._step_ui_render = MagicMock()
+
+    dto = ChatMessageDTO(user="viewer", content="!gif cat", badges=[], color="#fff", msg_id="1", sender_id=1)
+    started = time.perf_counter()
+    controller._handle_plugin_gif(dto, "!gif")
+    assert time.perf_counter() - started < 0.5
+    controller._step_ui_render.assert_not_called()
+
+    release.set()
+    deadline = time.time() + 3
+    while not controller._step_ui_render.called and time.time() < deadline:
+        qapp.processEvents()
+        time.sleep(0.01)
+
+    controller._step_ui_render.assert_called_once()
+    rendered = controller._step_ui_render.call_args.args[0]
+    assert rendered.gif_url == "https://media.giphy.com/media/abc/giphy.gif"
+    assert rendered.user == "viewer"
+
+
+def test_gif_direct_url_renders_synchronously_without_a_thread(qapp):
+    controller = _build_gif_controller()
+    controller._step_ui_render = MagicMock()
+    dto = ChatMessageDTO(user="viewer", content="!gif https://media.giphy.com/media/xyz/giphy.gif", badges=[], color="#fff", msg_id="1", sender_id=1)
+    controller._handle_plugin_gif(dto, "!gif")
+    controller._step_ui_render.assert_called_once()
+    assert controller._step_ui_render.call_args.args[0].gif_url == "https://media.giphy.com/media/xyz/giphy.gif"
+
+
+def test_gif_search_without_api_key_warns_user_instead_of_searching(qapp):
+    controller = _build_gif_controller()
+    giphy = MagicMock()
+    giphy.resolve_gif.return_value = None
+    giphy.has_active_key.return_value = False
+    controller.giphy_service = giphy
+    controller.command_service.send_response = MagicMock()
+    dto = ChatMessageDTO(user="viewer", content="!gif cat", badges=[], color="#fff", msg_id="1", sender_id=1)
+    controller._handle_plugin_gif(dto, "!gif")
+    controller.command_service.send_response.assert_called_once()
+    assert giphy.resolve_gif.call_count == 1

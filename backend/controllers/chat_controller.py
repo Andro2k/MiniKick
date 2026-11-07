@@ -3,14 +3,19 @@
 from collections import deque
 import datetime
 import logging
-from PySide6.QtCore import QObject, QTimer, Signal, Slot
+import threading
+import time
+from PySide6.QtCore import QObject, QTimer, Qt, Signal, Slot
 from backend.handlers import TTSVoiceHandler, ChatFilterHandler, CommandHelpFormatter
 from backend.services import MessagePipeline, ChatMessageDTO, GiphyService
+from backend.utils import LatencyMonitor
 
 logger = logging.getLogger("minikick.controllers.chat")
 
 _SYSTTS_ON_KEYWORDS = frozenset({"on", "1", "enable", "activar", "encender"})
 _SYSTTS_OFF_KEYWORDS = frozenset({"off", "0", "disable", "desactivar", "apagar"})
+
+_MAX_PENDING_GIF_SEARCHES = 4
 
 _MUTE_REMOVE_KEYWORDS = frozenset({"unmute", "desilenciar", "quitar", "remove", "del", "-"})
 _MUTE_REMOVE_ALIASES = frozenset({"!unmutetts", "!desilenciartts", "!ttsunmute"})
@@ -168,6 +173,7 @@ class ChatController(QObject):
     widget_plugin_triggered = Signal(str, str, str, str, str)
     chat_overlay_config_changed = Signal(dict)
     tts_ignored_users_changed = Signal()
+    _gif_resolved = Signal(object)
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None, giphy_service=None):
         super().__init__()
@@ -210,6 +216,11 @@ class ChatController(QObject):
         self._save_timer.setSingleShot(True)
         self._save_timer.setInterval(200)
         self._save_timer.timeout.connect(self._flush_settings_save)
+
+        self._ui_queue_latency = LatencyMonitor("UI queue", warn_threshold_s=1.0)
+        self._pipeline_latency = LatencyMonitor("UI pipeline", warn_threshold_s=0.25)
+        self._gif_slots = threading.BoundedSemaphore(_MAX_PENDING_GIF_SEARCHES)
+        self._gif_resolved.connect(self._on_gif_resolved, Qt.ConnectionType.QueuedConnection)
 
         self.pipeline = MessagePipeline()
         self._build_pipeline()
@@ -404,7 +415,12 @@ class ChatController(QObject):
 
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO) -> None:
+        received_at = getattr(dto, "received_at", 0.0)
+        if received_at:
+            self._ui_queue_latency.record(time.monotonic() - received_at)
+        started = time.perf_counter()
         self.pipeline.execute(dto)
+        self._pipeline_latency.record(time.perf_counter() - started)
         platform = getattr(dto, "platform", "kick")
         if not dto.is_cancelled and self.timer_service and platform in ("kick", "twitch"):
             self.timer_service.increment_chat_lines()
@@ -602,26 +618,60 @@ class ChatController(QObject):
             return
         platform = getattr(dto, "platform", "kick")
         giphy_key = self._tts_settings_cache.get("giphy_api_key", "")
-        resolved_url = self.giphy_service.resolve_gif(raw_arg, api_key_override=giphy_key)
+
+        resolved_url = self.giphy_service.resolve_gif(raw_arg, api_key_override=giphy_key, allow_search=False)
         if resolved_url:
-            now_str = datetime.datetime.now().strftime("%H:%M:%S")
-            msg_dto = ChatMessageDTO(
-                user=dto.user,
-                content="",
-                badges=list(dto.badges) if dto.badges else [],
-                color=dto.color,
-                msg_id=dto.msg_id or "",
-                sender_id=dto.sender_id or 0,
-                timestamp=dto.timestamp or now_str,
-                platform=platform,
-                gif_url=resolved_url,
-                is_command=False
-            )
-            self._step_ui_render(msg_dto)
-        else:
-            if not raw_arg.startswith("http://") and not raw_arg.startswith("https://") and not self.giphy_service.has_active_key(giphy_key):
-                warn_msg = self.i18n.get("chat.status.giphy_key_required").replace("{user}", dto.user)
-                self.command_service.send_response(warn_msg, platform=platform)
+            self._render_gif_message(dto, platform, resolved_url)
+            return
+        if raw_arg.startswith(("http://", "https://")):
+            return
+        if not self.giphy_service.has_active_key(giphy_key):
+            warn_msg = self.i18n.get("chat.status.giphy_key_required").replace("{user}", dto.user)
+            self.command_service.send_response(warn_msg, platform=platform)
+            return
+        self._resolve_gif_in_background(dto, platform, raw_arg, giphy_key)
+
+    def _resolve_gif_in_background(self, dto: ChatMessageDTO, platform: str, query: str, api_key: str) -> None:
+        if not self._gif_slots.acquire(blocking=False):
+            logger.debug("[ChatController] Too many pending GIF searches; dropping '%s'", query)
+            return
+
+        def _task() -> None:
+            url = None
+            try:
+                url = self.giphy_service.resolve_gif(query, api_key_override=api_key)
+            except Exception as e:
+                logger.warning("[ChatController] GIF search failed for '%s': %s", query, e)
+            finally:
+                self._gif_slots.release()
+            if url:
+                try:
+                    self._gif_resolved.emit((dto, platform, url))
+                except RuntimeError:
+                    logger.debug("[ChatController] Controller destroyed before the GIF result was delivered.")
+
+        threading.Thread(target=_task, name="GiphyResolve", daemon=True).start()
+
+    @Slot(object)
+    def _on_gif_resolved(self, payload) -> None:
+        dto, platform, url = payload
+        self._render_gif_message(dto, platform, url)
+
+    def _render_gif_message(self, dto: ChatMessageDTO, platform: str, gif_url: str) -> None:
+        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        msg_dto = ChatMessageDTO(
+            user=dto.user,
+            content="",
+            badges=list(dto.badges) if dto.badges else [],
+            color=dto.color,
+            msg_id=dto.msg_id or "",
+            sender_id=dto.sender_id or 0,
+            timestamp=dto.timestamp or now_str,
+            platform=platform,
+            gif_url=gif_url,
+            is_command=False
+        )
+        self._step_ui_render(msg_dto)
 
     def _send_staggered_responses(self, messages: list[str], platform: str = "kick") -> None:
         for idx, message in enumerate(messages):

@@ -3,6 +3,7 @@
 from .command_utils import sanitize_command_trigger, validate_trigger_prefix, is_complete_valid_trigger
 from .emote_parser import extract_emotes
 from .json_utils import fast_loads, fast_dumps, fast_load, fast_dump, parse_kick_payload
+from .latency_monitor import LatencyMonitor
 from .paths import resource_path
 from .perf import elapsed_ms, perf_phase
 from .text_utils import is_speakable_text
@@ -17,6 +18,7 @@ __all__ = [
     "fast_load",
     "fast_dump",
     "parse_kick_payload",
+    "LatencyMonitor",
     "is_speakable_text",
     "extract_emotes",
     "resource_path",

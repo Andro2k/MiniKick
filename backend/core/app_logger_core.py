@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import threading
+import time
 import traceback
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
@@ -29,10 +30,32 @@ def _resolve_log_level() -> int:
     return resolved if isinstance(resolved, int) else _DEFAULT_LOG_LEVEL
 
 class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
+    _FLUSH_INTERVAL_S = 0.5
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._in_emit = False
+        self._last_flush = 0.0
+
     def emit(self, record: logging.LogRecord) -> None:
-        super().emit(record)
-        if record.levelno >= logging.INFO:
+        self._in_emit = True
+        try:
+            super().emit(record)
+        finally:
+            self._in_emit = False
+        now = time.monotonic()
+        if record.levelno >= logging.WARNING or now - self._last_flush >= self._FLUSH_INTERVAL_S:
+            self._last_flush = now
             self.flush()
+
+    def flush(self) -> None:
+        self.acquire()
+        try:
+            if self._in_emit:
+                return
+            super().flush()
+        finally:
+            self.release()
 
 logger = logging.getLogger("minikick.core.app_logger")
 

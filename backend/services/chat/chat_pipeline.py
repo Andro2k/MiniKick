@@ -21,6 +21,7 @@ class ChatMessageDTO:
     is_command: bool = False
     gif_url: str = ""
     avatar_url: str = ""
+    received_at: float = 0.0
 
 class MessagePipeline:
     def __init__(self):
