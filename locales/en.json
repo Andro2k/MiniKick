@@ -670,7 +670,7 @@
       "lbl_author": "By @{author}",
       "lbl_published": "Published on {date}",
       "loading": "Fetching release notes from GitHub...",
-      "subtitle": "Patch notes and changelog from the latest published version.",
+      "subtitle": "Notes and changes from the latest release, in the language published on GitHub.",
       "title": "Release Notes"
     },
     "tiktok_connect": {

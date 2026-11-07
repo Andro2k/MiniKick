@@ -1,12 +1,8 @@
 # frontend\common\theme.py
 
-import os
-import re
-import tempfile
 from functools import lru_cache
-from pathlib import Path
 from PySide6.QtGui import QPalette, QColor
-from .icons import get_assets_path, resolve_icon_path
+from .icons import get_assets_path, get_qss_colored_icon
 
 class Palette:
     NEUTRAL_999 = "#000000"
@@ -258,41 +254,6 @@ def get_qcolor_with_alpha(color_hex: str, alpha: int) -> QColor:
     color.setAlpha(alpha)
     return color
 
-_QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
-
-@lru_cache(maxsize=128)
-def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NEUTRAL_050) -> str:
-    clean_name = os.path.basename(icon_name_or_rel_path)
-    orig_path = resolve_icon_path(clean_name)
-    if not orig_path or not os.path.exists(orig_path):
-        orig_path = get_assets_path(icon_name_or_rel_path)
-        if not os.path.exists(orig_path):
-            return ""
-
-    try:
-        _QSS_ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        clean_hex = color_hex.lstrip("#")
-        stem = Path(clean_name).stem
-        cached_file = _QSS_ICON_CACHE_DIR / f"{stem}_{clean_hex}.svg"
-
-        if not cached_file.exists():
-            with open(orig_path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-
-            content = content.replace("currentColor", color_hex)
-            content = re.sub(r'stroke=["\'](?!none)[^"\']+["\']', f'stroke="{color_hex}"', content)
-            content = re.sub(r'fill=["\'](?!none)[^"\']+["\']', f'fill="{color_hex}"', content)
-
-            with open(cached_file, "w", encoding="utf-8") as f:
-                f.write(content)
-
-        return str(cached_file).replace('\\', '/')
-    except Exception:
-        return get_assets_path(icon_name_or_rel_path)
-
-def _get_qss_icon_url(relative_path: str) -> str:
-    return get_assets_path(relative_path)
-
 PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg")
 PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg")
 PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg")
@@ -300,9 +261,9 @@ PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg")
 PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg")
 PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg")
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
-PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
-PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
-PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
+PATH_ICON_CHECK         = get_assets_path("icons/check-filled.svg")
+PATH_ICON_MINUS         = get_assets_path("icons/minus-filled.svg")
+PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot.svg")
 
 
 def _build_reset_and_typography_qss(h1: int, h2: int, text1: int, text2: int) -> str:

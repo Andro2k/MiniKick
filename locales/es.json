@@ -670,7 +670,7 @@
       "lbl_author": "Por @{author}",
       "lbl_published": "Publicado el {date}",
       "loading": "Obteniendo novedades de la versión desde GitHub...",
-      "subtitle": "Notas de parche y cambios de la última versión publicada.",
+      "subtitle": "Notas y cambios de la última versión, en el idioma publicado en GitHub.",
       "title": "Novedades de la Versión"
     },
     "tiktok_connect": {

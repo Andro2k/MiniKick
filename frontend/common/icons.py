@@ -2,7 +2,10 @@
 
 import logging
 import os
+import re
+import tempfile
 from functools import lru_cache
+from pathlib import Path
 from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
@@ -10,6 +13,7 @@ from PySide6.QtSvg import QSvgRenderer
 from backend.utils import resource_path
 
 logger = logging.getLogger("minikick.icons")
+_QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
 
 def get_assets_path(subfolder: str = "") -> str:
@@ -37,7 +41,6 @@ def resolve_icon_path(name: str) -> str | None:
 
 def _default_icon_color() -> str:
     from .theme import Palette
-
     return Palette.NEUTRAL_050
 
 
@@ -45,6 +48,37 @@ def _default_icon_color() -> str:
 def _load_svg_raw(full_path: str) -> str:
     with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
+
+
+def _colorize_svg(svg_xml: str, color: str, force_explicit: bool = False) -> str:
+    svg_xml = svg_xml.replace("currentColor", color)
+    if force_explicit:
+        svg_xml = re.sub(r'stroke=["\'](?!none)[^"\']+["\']', f'stroke="{color}"', svg_xml)
+        svg_xml = re.sub(r'fill=["\'](?!none)[^"\']+["\']', f'fill="{color}"', svg_xml)
+    return svg_xml
+
+
+@lru_cache(maxsize=128)
+def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str | None = None) -> str:
+    clean_name = os.path.basename(icon_name_or_rel_path)
+    original_path = resolve_icon_path(clean_name)
+    if not original_path or not os.path.exists(original_path):
+        original_path = get_assets_path(icon_name_or_rel_path)
+        if not os.path.exists(original_path):
+            return ""
+
+    color = _default_icon_color() if color_hex is None else color_hex
+    try:
+        _QSS_ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        cached_file = _QSS_ICON_CACHE_DIR / f"{Path(clean_name).stem}_{color.lstrip('#')}.svg"
+        if not cached_file.exists():
+            svg_xml = _colorize_svg(_load_svg_raw(original_path), color, force_explicit=True)
+            cached_file.write_text(svg_xml, encoding="utf-8")
+        return str(cached_file).replace("\\", "/")
+    except OSError as exc:
+        logger.warning("Unable to cache QSS icon '%s': %s", icon_name_or_rel_path, exc)
+        return get_assets_path(icon_name_or_rel_path)
+
 
 @lru_cache(maxsize=128)
 def get_icon(name: str) -> QIcon:
@@ -62,7 +96,7 @@ def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> 
 
     try:
         raw_xml = _load_svg_raw(full_path)
-        colorized_xml = raw_xml.replace("currentColor", color_str)
+        colorized_xml = _colorize_svg(raw_xml, color_str)
         renderer = QSvgRenderer(QByteArray(colorized_xml.encode("utf-8")))
 
         colored_pixmap = QPixmap(physical_size, physical_size)
@@ -93,13 +127,19 @@ def _resolve_dpr(dpr: float | None) -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str | None = None, size: int = 16, dpr: float | None = None) -> QIcon:
+def _get_colored_icon(name: str, color_str: str | None, size: int, dpr: float | None) -> tuple[QIcon, float]:
     color = _default_icon_color() if color_str is None else color_str
-    return _get_icon_colored_impl(name, color, size, _resolve_dpr(dpr))
+    resolved_dpr = _resolve_dpr(dpr)
+    return _get_icon_colored_impl(name, color, size, resolved_dpr), resolved_dpr
+
+
+def get_icon_colored(name: str, color_str: str | None = None, size: int = 16, dpr: float | None = None) -> QIcon:
+    icon, _ = _get_colored_icon(name, color_str, size, dpr)
+    return icon
 
 def get_pixmap_colored(name: str, color_str: str | None = None, size: int = 16, dpr: float | None = None) -> QPixmap:
-    dpr = _resolve_dpr(dpr)
-    return get_icon_colored(name, color_str, size, dpr).pixmap(QSize(size, size), dpr)
+    icon, resolved_dpr = _get_colored_icon(name, color_str, size, dpr)
+    return icon.pixmap(QSize(size, size), resolved_dpr)
 
 def create_circular_pixmap(img_data: QByteArray, target_size: int | None = None) -> QPixmap:
     image = QImage.fromData(img_data)

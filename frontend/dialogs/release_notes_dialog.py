@@ -118,7 +118,7 @@ class ReleaseNotesDialog(ModernModal):
         published_date = published_raw.split("T")[0] if "T" in published_raw else published_raw
         author_raw = data.get("author", "")
         author = author_raw.get("login", "") if isinstance(author_raw, dict) else str(author_raw or "")
-        body_text = data.get("body", "")
+        body_text = data.get("body") or ""
         self._release_url = data.get("html_url", self._release_url)
 
         if release_name:
