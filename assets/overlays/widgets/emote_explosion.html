@@ -39,152 +39,176 @@
         const ctx = canvas.getContext('2d', { alpha: true });
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
+        const WIDGET_ID = 'explosion';
 
+        const MAX_ACTIVE_PARTICLES = 120;
+        const MAX_BURST = 40;
+        const SPRITE_SIZE = 96;
+        const MAX_DPR = 2;
+        const FRAME_MS = 1000 / 60;
+        const SPEED_MIN = 7;
+        const SPEED_MAX = 20;
+        const GRAVITY = 0.18;
+        const FRICTION = 0.975;
+
+        let widgetActive = true;
         let particles = [];
-        const MAX_ACTIVE_PARTICLES = 250;
+        let loopRunning = false;
+        let lastTs = 0;
         let screenWidth = window.innerWidth;
         let screenHeight = window.innerHeight;
+        let dpr = 1;
 
         function resizeCanvas() {
             screenWidth = window.innerWidth;
             screenHeight = window.innerHeight;
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = screenWidth * dpr;
-            canvas.height = screenHeight * dpr;
-            ctx.scale(dpr, dpr);
+            dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+            canvas.width = Math.round(screenWidth * dpr);
+            canvas.height = Math.round(screenHeight * dpr);
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        const imageCache = new Map();
+        /* ---------- Sprites: cada emote se reduce una sola vez a un canvas pequeño ---------- */
+        const spriteCache = new Map();
 
-        function getCachedImage(src) {
-            if (!src) return null;
-            if (imageCache.has(src)) {
-                return imageCache.get(src);
-            }
+        function getSprite(src) {
+            let entry = spriteCache.get(src);
+            if (entry) return entry;
+
+            entry = { canvas: null };
+            spriteCache.set(src, entry);
+
             const img = new Image();
-            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                const off = document.createElement('canvas');
+                off.width = off.height = SPRITE_SIZE;
+                const offCtx = off.getContext('2d');
+                const ratio = Math.min(SPRITE_SIZE / img.naturalWidth, SPRITE_SIZE / img.naturalHeight);
+                const w = img.naturalWidth * ratio;
+                const h = img.naturalHeight * ratio;
+                offCtx.drawImage(img, (SPRITE_SIZE - w) / 2, (SPRITE_SIZE - h) / 2, w, h);
+                entry.canvas = off;
+            };
+            img.onerror = () => spriteCache.delete(src);
             img.src = src;
-            imageCache.set(src, img);
-            return img;
+            return entry;
         }
 
-        class CanvasParticle {
+        /* Solo cuentan emotes reales (imagen). Emojis/texto se descartan. */
+        function isEmote(emote) {
+            return !!emote && emote.type === 'image' && typeof emote.src === 'string' && emote.src !== '';
+        }
+
+        class Particle {
             constructor(emote) {
-                this.type = emote.type || 'text';
-                this.src = emote.src || emote.name || '🔥';
-                this.name = emote.name || 'Emote';
-
-                this.img = (this.type === 'image' && this.src) ? getCachedImage(this.src) : null;
-
+                this.sprite = getSprite(emote.src);
                 this.size = 52 + Math.floor(Math.random() * 36);
-
-                this.x = screenWidth / 2 + (Math.random() - 0.5) * (screenWidth * 0.4);
-                this.y = screenHeight - 60;
-
-                this.vx = (Math.random() - 0.5) * 18;
-                this.vy = - (14 + Math.random() * 16);
-                this.gravity = 0.45;
-                this.bounce = 0.65;
-                this.friction = 0.985;
-
+                const angle = Math.random() * Math.PI * 2;
+                const speed = SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN);
+                this.x = screenWidth / 2 - this.size / 2;
+                this.y = screenHeight / 2 - this.size / 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
                 this.rotation = (Math.random() - 0.5) * 0.4;
                 this.vRot = (Math.random() - 0.5) * 0.12;
-
-                this.alpha = 1.0;
+                this.alpha = 1;
                 this.decay = 0.008 + Math.random() * 0.006;
                 this.life = 0;
             }
 
-            update() {
-                this.vy += this.gravity;
-                this.vx *= this.friction;
-                this.vy *= this.friction;
+            update(k) {
+                const friction = Math.pow(FRICTION, k);
+                const bounce = 0.65;
 
-                this.x += this.vx;
-                this.y += this.vy;
-                this.rotation += this.vRot;
+                this.vy += GRAVITY * k;
+                this.vx *= friction;
+                this.vy *= friction;
+                this.x += this.vx * k;
+                this.y += this.vy * k;
+                this.rotation += this.vRot * k;
 
                 if (this.x < 0) {
                     this.x = 0;
-                    this.vx = -this.vx * this.bounce;
+                    this.vx = -this.vx * bounce;
                 } else if (this.x + this.size > screenWidth) {
                     this.x = screenWidth - this.size;
-                    this.vx = -this.vx * this.bounce;
+                    this.vx = -this.vx * bounce;
                 }
 
                 if (this.y + this.size > screenHeight) {
                     this.y = screenHeight - this.size;
-                    this.vy = -this.vy * this.bounce;
+                    this.vy = -this.vy * bounce;
                     this.vx *= 0.8;
                 }
 
-                this.life += 1;
-                if (this.life > 90) {
-                    this.alpha -= this.decay;
-                }
+                this.life += k;
+                if (this.life > 90) this.alpha -= this.decay * k;
             }
 
-            draw(ctx) {
-                if (this.alpha <= 0) return;
+            draw() {
+                const sprite = this.sprite.canvas;
+                if (!sprite || this.alpha <= 0) return;
 
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, this.alpha);
-                ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
-                ctx.rotate(this.rotation);
-
-                if (this.type === 'image' && this.img && this.img.complete && this.img.naturalWidth > 0) {
-                    ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
-                } else {
-                    ctx.font = `900 ${Math.floor(this.size * 0.85)}px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-                    ctx.shadowBlur = 8;
-                    ctx.fillText(this.src, 0, 0);
-                }
-
-                ctx.restore();
+                const half = this.size / 2;
+                const cos = Math.cos(this.rotation) * dpr;
+                const sin = Math.sin(this.rotation) * dpr;
+                ctx.setTransform(cos, sin, -sin, cos, (this.x + half) * dpr, (this.y + half) * dpr);
+                ctx.globalAlpha = this.alpha;
+                ctx.drawImage(sprite, -half, -half, this.size, this.size);
             }
         }
 
-        function triggerExplosion(emotesList, count = 25) {
-            if (!emotesList || emotesList.length === 0) {
-                emotesList = [
-                    { type: 'text', src: '🔥', name: '🔥' },
-                    { type: 'text', src: '⚡', name: '⚡' },
-                    { type: 'text', src: '🎉', name: '🎉' }
-                ];
-            }
+        function frame(ts) {
+            const k = Math.min(ts - lastTs, 50) / FRAME_MS;
+            lastTs = ts;
 
-            const actualCount = Math.min(count, 150);
-
-            for (let i = 0; i < actualCount; i++) {
-                if (particles.length >= MAX_ACTIVE_PARTICLES) {
-                    particles.shift();
-                }
-                const randomEmote = emotesList[Math.floor(Math.random() * emotesList.length)];
-                particles.push(new CanvasParticle(randomEmote));
-            }
-        }
-
-        function animationLoop() {
-            ctx.clearRect(0, 0, screenWidth, screenHeight);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.update();
-                p.draw(ctx);
-
-                if (p.alpha <= 0) {
-                    particles.splice(i, 1);
-                }
+                p.update(k);
+                p.draw();
+                if (p.alpha <= 0) particles.splice(i, 1);
             }
-            requestAnimationFrame(animationLoop);
+            ctx.globalAlpha = 1;
+
+            if (particles.length > 0) {
+                requestAnimationFrame(frame);
+            } else {
+                loopRunning = false;
+            }
         }
-        requestAnimationFrame(animationLoop);
+
+        function ensureLoop() {
+            if (loopRunning) return;
+            loopRunning = true;
+            lastTs = performance.now();
+            requestAnimationFrame(frame);
+        }
+
+        function clearAll() {
+            particles = [];
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function triggerExplosion(emotesList, count = 25) {
+            if (!widgetActive) return;
+
+            const emotes = (emotesList || []).filter(isEmote);
+            if (emotes.length === 0) return;
+
+            const burst = Math.min(count, MAX_BURST);
+            const overflow = particles.length + burst - MAX_ACTIVE_PARTICLES;
+            if (overflow > 0) particles.splice(0, overflow);
+
+            for (let i = 0; i < burst; i++) {
+                particles.push(new Particle(emotes[Math.floor(Math.random() * emotes.length)]));
+            }
+            ensureLoop();
+        }
 
         let ws = null;
         let heartbeatTimer = null;
@@ -215,6 +239,11 @@
 
                     if (data.event === 'emote_explosion') {
                         triggerExplosion(data.emotes, data.count || 25);
+                    } else if (data.event === 'widget_toggle' && data.widget_id === WIDGET_ID) {
+                        widgetActive = data.is_active !== false;
+                        if (!widgetActive) clearAll();
+                    } else if (data.event === 'initial_state' && data.widgets && data.widgets[WIDGET_ID]) {
+                        widgetActive = data.widgets[WIDGET_ID].is_active !== false;
                     }
                 } catch (err) {
                     console.error("Error parsing emote explosion event:", err);

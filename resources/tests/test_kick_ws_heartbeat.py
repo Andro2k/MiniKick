@@ -3,7 +3,7 @@
 import socket
 import time
 from unittest.mock import MagicMock, patch
-from backend.providers.chat.kick_ws_provider import KickWebSocketManager
+from backend.providers.chat.kick_ws_provider import KickWebSocketManager, PONG_TIMEOUT_S
 from backend.utils.json_utils import fast_loads, fast_dumps
 
 
@@ -65,13 +65,14 @@ def test_heartbeat_watchdog_sends_proactive_ping_on_inactivity():
     mgr._running = True
     mgr._activity_timeout = 60
     mgr._last_activity_time = time.time() - 35
+    assert mgr._proactive_ping_interval() == 15
     mgr._pending_ping_time = 0.0
 
     mock_ws = MagicMock()
 
     with patch.object(mgr._stop_heartbeat_event, "wait", return_value=True):
         now = time.time()
-        ping_interval = min(mgr._activity_timeout // 2, 60)
+        ping_interval = mgr._proactive_ping_interval()
         assert (now - mgr._last_activity_time) >= ping_interval
 
         mgr._pending_ping_time = now
@@ -85,7 +86,7 @@ def test_heartbeat_watchdog_sends_proactive_ping_on_inactivity():
 def test_heartbeat_watchdog_aborts_zombie_socket_on_pong_timeout():
     mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
     mgr._running = True
-    mgr._pending_ping_time = time.time() - 35.0
+    mgr._pending_ping_time = time.time() - (PONG_TIMEOUT_S + 5.0)
 
     mock_ws = MagicMock()
     mock_sock = MagicMock()
@@ -93,7 +94,7 @@ def test_heartbeat_watchdog_aborts_zombie_socket_on_pong_timeout():
     mock_ws.sock = mock_sock
 
     now = time.time()
-    pong_timeout = 30.0
+    pong_timeout = PONG_TIMEOUT_S
 
     if mgr._pending_ping_time > 0.0 and (now - mgr._pending_ping_time) > pong_timeout:
         mock_ws.sock.close()
@@ -125,3 +126,47 @@ def test_stop_socket_stops_heartbeat_watchdog():
         mgr.stop_socket()
         assert mgr._running is False
         mock_stop_wd.assert_called_once()
+
+
+def test_proactive_ping_interval_is_bounded_and_faster_than_activity_timeout():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._activity_timeout = 120
+    assert mgr._proactive_ping_interval() == 25
+    mgr._activity_timeout = 60
+    assert mgr._proactive_ping_interval() == 15
+    mgr._activity_timeout = 30
+    assert mgr._proactive_ping_interval() == 10
+
+
+def test_start_socket_uses_tight_ping_settings():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    with patch("websocket.WebSocketApp") as mock_app_class:
+        app = MagicMock()
+        mock_app_class.return_value = app
+        mgr.start_socket(room_id=1)
+        kwargs = app.run_forever.call_args.kwargs
+        assert kwargs["ping_interval"] == 20
+        assert kwargs["ping_timeout"] == 10
+
+
+def test_transit_latency_parses_z_and_offset_and_rejects_garbage():
+    from datetime import datetime, timedelta, timezone
+    created = (datetime.now(timezone.utc) - timedelta(seconds=1.5)).isoformat()
+    assert 1.0 < KickWebSocketManager._transit_latency_seconds(created) < 3.0
+    assert 1.0 < KickWebSocketManager._transit_latency_seconds(created.replace("+00:00", "Z")) < 3.0
+    assert KickWebSocketManager._transit_latency_seconds("not-a-date") is None
+    assert KickWebSocketManager._transit_latency_seconds(None) is None
+    assert KickWebSocketManager._transit_latency_seconds(123) is None
+
+
+def test_chat_message_records_network_latency_even_without_debug_logging():
+    from datetime import datetime, timedelta, timezone
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._callback = MagicMock()
+    created = (datetime.now(timezone.utc) - timedelta(seconds=0.5)).isoformat()
+    inner = {"id": "m1", "content": "hola", "created_at": created, "sender": {"id": 1, "username": "u"}}
+    with patch.object(mgr._net_latency, "record") as record:
+        mgr._handle_chat_message(inner, MagicMock())
+    record.assert_called_once()
+    assert record.call_args.args[0] > 0.0
+    mgr._callback.assert_called_once()

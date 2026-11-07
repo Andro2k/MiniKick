@@ -31,6 +31,7 @@ class PlatformToggleItem(QWidget):
             lbl.setToolTip(tooltip)
             icon_lbl.setToolTip(tooltip)
 
+
 class VoiceSettingRow(QWidget):
     def __init__(self, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
@@ -88,6 +89,7 @@ class VoiceSettingRow(QWidget):
         self.combo.setEnabled(checked)
         if self.btn_test is not None:
             self.btn_test.setEnabled(checked)
+
 
 class ChatTtsSettingsPanel(QWidget):
     volume_changed = Signal(int)

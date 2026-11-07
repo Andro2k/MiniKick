@@ -2,8 +2,8 @@
 
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
-from PySide6.QtCore import Signal, Qt, QTimer
-from frontend.common import get_icon_colored, get_pixmap, BrandColors, Size
+from PySide6.QtCore import Signal, Qt, QTimer, QSize
+from frontend.common import get_icon, get_icon_colored, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout, create_text_label
 from .music_mockup import MusicOverlayMockupWidget
 
@@ -45,6 +45,7 @@ class MusicScrubberSlider(NoWheelSlider):
             val = int(self.minimum() + (self.maximum() - self.minimum()) * ratio)
             self.setToolTip(_format_time(val))
         super().mouseMoveEvent(event)
+
 
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)
@@ -99,7 +100,9 @@ class MusicPlayerSettingsPanel(QWidget):
         top_layout.setSpacing(Size.SPACING_LG)
 
         self.icon_music = QLabel()
-        self.icon_music.setPixmap(get_pixmap("youtube.svg", 56))
+        self.icon_music.setPixmap(
+            get_icon("youtube.svg").pixmap(QSize(56, 56), self.devicePixelRatioF())
+        )
 
         info_layout = QVBoxLayout()
         info_layout.setContentsMargins(*Size.Margin.MRG_NON)

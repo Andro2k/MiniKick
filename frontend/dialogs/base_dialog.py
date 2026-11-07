@@ -2,10 +2,9 @@
 
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
-from PySide6.QtCore import Qt, QSettings, QEvent, Signal, QRectF, QByteArray
-from PySide6.QtGui import QColor, QMouseEvent, QKeyEvent, QPainter, QPainterPath, QRegion
-from PySide6.QtSvg import QSvgRenderer
-from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, resolve_icon_path, Palette, BrandColors, Size
+from PySide6.QtCore import Qt, QSettings, QEvent, Signal
+from PySide6.QtGui import QColor, QMouseEvent, QKeyEvent, QPainter
+from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
 
@@ -358,6 +357,7 @@ class ModernFramelessShell(QDialog):
         if hasattr(self, 'container'):
             self.container.unsetCursor()
 
+
 class DialogHeader(QFrame):
     close_requested = Signal()
 
@@ -417,43 +417,14 @@ class DialogHeader(QFrame):
         self._refresh_layout()
 
 
-class _DialogSvgIconLabel(QLabel):
-    def __init__(
-        self,
-        icon_path: str,
-        color: str,
-        size: int,
-        fallback_dpr: float,
-        parent=None,
-    ):
-        super().__init__(parent)
-        self._svg_renderer = None
-        resolved_path = resolve_icon_path(icon_path)
-        if resolved_path:
-            with open(resolved_path, "r", encoding="utf-8", errors="ignore") as icon_file:
-                svg_data = icon_file.read().replace("currentColor", color)
-            renderer = QSvgRenderer(QByteArray(svg_data.encode("utf-8")))
-            if renderer.isValid():
-                self._svg_renderer = renderer
-                return
-
-        self.setPixmap(
-            get_pixmap_colored(
-                icon_path,
-                color_str=color,
-                size=size,
-                dpr=fallback_dpr,
-            )
-        )
-
-    def paintEvent(self, event):
-        if self._svg_renderer is None:
-            super().paintEvent(event)
-            return
-
+class _DialogIconBadgeFrame(QFrame):
+    def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self._svg_renderer.render(painter, QRectF(self.rect()))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self.palette().color(self.backgroundRole()))
+        painter.drawEllipse(self.rect())
+        painter.end()
 
 
 def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", icon_color: str = "",
@@ -470,28 +441,28 @@ def build_icon_badge(icon_path: str, bg_color: str = "", icon_role: str = "", ic
     }
     resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", Palette.NEUTRAL_999))
 
-    badge = QFrame()
+    badge = _DialogIconBadgeFrame()
     badge.setObjectName("dialog_icon_badge")
     badge.setFixedSize(box, box)
     badge.setProperty("role", icon_role or resolved_role)
-    radius = min(Size.Radius.RAD_FUL, box / 2)
-    shape = QPainterPath()
-    shape.addRoundedRect(QRectF(0, 0, box, box), radius, radius)
-    badge.setMask(QRegion(shape.toFillPolygon().toPolygon()))
+    badge.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     badge.style().unpolish(badge)
     badge.style().polish(badge)
     inner = QVBoxLayout(badge)
     inner.setContentsMargins(*Size.Margin.MRG_NON)
     inner.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    icon_lbl = _DialogSvgIconLabel(
-        icon_path,
-        icon_color or default_fg,
-        size=glyph,
-        fallback_dpr=dpr,
-    )
+    icon_lbl = QLabel()
     icon_lbl.setObjectName("dialog_icon_badge_glyph")
     icon_lbl.setFixedSize(glyph, glyph)
+    icon_lbl.setPixmap(
+        get_pixmap_colored(
+            icon_path,
+            color_str=icon_color or default_fg,
+            size=glyph,
+            dpr=dpr,
+        )
+    )
     inner.addWidget(icon_lbl)
     return badge
 
@@ -594,6 +565,7 @@ class ModernModal(ModernFramelessShell):
         self.footer_layout.addWidget(btn_confirm)
         self.footer.show()
         return self.footer_layout, btn_cancel, btn_confirm
+
 
 class ModernWizardPanel(ModernFramelessShell):
     def __init__(
@@ -742,6 +714,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
     def validate_step(self, _step_index: int) -> bool:
         return True
+
 
 class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):

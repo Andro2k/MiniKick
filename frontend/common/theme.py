@@ -1,12 +1,8 @@
 # frontend\common\theme.py
 
-import os
-import re
-import tempfile
 from functools import lru_cache
-from pathlib import Path
 from PySide6.QtGui import QPalette, QColor
-from .paths import get_assets_path, resolve_icon_path
+from .icons import get_assets_path, get_qss_colored_icon
 
 class Palette:
     NEUTRAL_999 = "#000000"
@@ -21,6 +17,7 @@ class Palette:
     NEUTRAL_200 = "#E4E5E5"
     NEUTRAL_050 = "#F4F4F4"
     NEUTRAL_000 = "#FFFFFF"
+
 
 class Semantic:
     BORDER_HOVER          = "#484C5A"
@@ -43,6 +40,7 @@ class Semantic:
     AMBER_GLOW            = "rgba(245, 158, 11, 0.10)"
     BLUE_GLOW             = "rgba(59, 130, 246, 0.10)"
     PURPLE_GLOW           = "rgba(168, 85, 247, 0.10)"
+
 
 class BrandColors:
     INDIGO         = "#818CF8"
@@ -93,6 +91,7 @@ class BrandColors:
     GREEN_800      = "#146133"
     GREEN_900      = "#0F4F29"
 
+
 class MusicTheme:
     MUSIC_VINYL_BG_TOP    = "#3E5238"
     MUSIC_VINYL_BG_BOTTOM = "#243129"
@@ -111,6 +110,7 @@ class MusicTheme:
     MUSIC_HEAD_BG         = "#111827"
     MUSIC_GROOVE          = "#303038"
 
+
 class AlertTheme:
     ALERT_PREVIEW_BG        = "#121317"
     ALERT_PREVIEW_TILE_A    = "#11141C"
@@ -118,6 +118,7 @@ class AlertTheme:
     ALERT_PREVIEW_BORDER    = "#1F242F"
     ALERT_PREVIEW_MEDIA     = "#12161E"
     ALERT_PREVIEW_MEDIA_TOP = "#222632"
+
 
 class ChatTheme:
     CHAT_PREVIEW_SURFACE = "#12121A"
@@ -128,12 +129,14 @@ class ChatTheme:
         (BrandColors.EMERALD, BrandColors.GREEN_600), (BrandColors.CYAN_500, BrandColors.CYAN_600),
     )
 
+
 class BadgeTheme:
     BADGE_STR = "#E64747"
     BADGE_MOD = "#3EC669"
     BADGE_VIP = "#E08338"
     BADGE_SUB = "#389CE0"
     BADGE_BCG = Palette.NEUTRAL_750
+
 
 class SwitchTheme:
     SWITCH_TRACK_ON_00  = "#1E8E4D"
@@ -146,6 +149,7 @@ class SwitchTheme:
     SWITCH_THUMB_DIS_0 = "#D4D2DC"
     SWITCH_THUMB_DIS_1 = "#9D9AA8"
 
+
 class Radius:
     RAD_XXS = 2
     RAD_XSM = 6
@@ -153,6 +157,7 @@ class Radius:
     RAD_LRG = 12
     RAD_XLG = 16
     RAD_FUL = 24
+
 
 class Margin:
     MRG_NON = (0, 0, 0, 0)
@@ -171,6 +176,7 @@ class Margin:
     SEC_HDR = (2, 12, 2, 4)
     SEC_BDG = (4, 4, 8, 4)
 
+
 class Padding:
     PAD_MINI  = "2px 2px"
     PAD_COMP  = "2px 6px"
@@ -181,8 +187,10 @@ class Padding:
     PAD_CORE  = "6px 10px"
     PAD_WIDE  = "6px 14px"
 
+
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
+
 
 class Size:
     Radius     = Radius
@@ -202,8 +210,10 @@ class Size:
     CONTENT_MIN_WIDTH = 520
     CONTENT_WIDE_MAX_WIDTH = 1440
 
+
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
     return f"{width:g}px {style} {color}"
+
 
 class Borders:
     BRD_BASE = get_border(Palette.NEUTRAL_750)
@@ -217,6 +227,7 @@ class Borders:
     BRD_FOCS = get_border(BrandColors.GREEN)
     BRD_FAIL = get_border(BrandColors.RED)
     BRD_SHIN = get_border(Semantic.BORDER_TOP_SHINE)
+
 
 class Gradients:
     ACCENT_FILL    = (
@@ -232,6 +243,7 @@ class Gradients:
         f"stop:0 {BrandColors.GREEN_800}, stop:1 {BrandColors.GREEN_900})"
     )
 
+
 def rgba(color_hex: str, alpha: float) -> str:
     h = color_hex.lstrip("#")
     r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
@@ -242,41 +254,6 @@ def get_qcolor_with_alpha(color_hex: str, alpha: int) -> QColor:
     color.setAlpha(alpha)
     return color
 
-_QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
-
-@lru_cache(maxsize=128)
-def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = Palette.NEUTRAL_050) -> str:
-    clean_name = os.path.basename(icon_name_or_rel_path)
-    orig_path = resolve_icon_path(clean_name)
-    if not orig_path or not os.path.exists(orig_path):
-        orig_path = get_assets_path(icon_name_or_rel_path)
-        if not os.path.exists(orig_path):
-            return ""
-
-    try:
-        _QSS_ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        clean_hex = color_hex.lstrip("#")
-        stem = Path(clean_name).stem
-        cached_file = _QSS_ICON_CACHE_DIR / f"{stem}_{clean_hex}.svg"
-
-        if not cached_file.exists():
-            with open(orig_path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-
-            content = content.replace("currentColor", color_hex)
-            content = re.sub(r'stroke=["\'](?!none)[^"\']+["\']', f'stroke="{color_hex}"', content)
-            content = re.sub(r'fill=["\'](?!none)[^"\']+["\']', f'fill="{color_hex}"', content)
-
-            with open(cached_file, "w", encoding="utf-8") as f:
-                f.write(content)
-
-        return str(cached_file).replace('\\', '/')
-    except Exception:
-        return get_assets_path(icon_name_or_rel_path)
-
-def _get_qss_icon_url(relative_path: str) -> str:
-    return get_assets_path(relative_path)
-
 PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg")
 PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg")
 PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg")
@@ -284,9 +261,9 @@ PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg")
 PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg")
 PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg")
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
-PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
-PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
-PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
+PATH_ICON_CHECK         = get_assets_path("icons/check-filled.svg")
+PATH_ICON_MINUS         = get_assets_path("icons/minus-filled.svg")
+PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot.svg")
 
 
 def _build_reset_and_typography_qss(h1: int, h2: int, text1: int, text2: int) -> str:

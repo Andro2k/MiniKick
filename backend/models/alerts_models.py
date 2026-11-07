@@ -4,6 +4,7 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 import time
 
+
 class AlertType(str, Enum):
     FOLLOW = "follow"
     SUBSCRIPTION = "subscription"
@@ -11,6 +12,7 @@ class AlertType(str, Enum):
     SUB_GIFT = "sub_gift"
     RAID = "raid"
     CHEER = "cheer"
+
 
 @dataclass(slots=True, frozen=True)
 class AlertEvent:
@@ -28,6 +30,7 @@ class AlertEvent:
         data = asdict(self)
         data["alert_type"] = self.alert_type.value
         return data
+
 
 @dataclass(slots=True)
 class AlertConfig:

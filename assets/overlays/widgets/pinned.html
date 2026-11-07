@@ -130,6 +130,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        let widgetActive = true;
+        let lastPinned = null;
         const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
 
         const pinnedContainer = document.getElementById('pinned-container');
@@ -169,11 +171,14 @@
                     if (data.event === 'pinned_created') {
                         renderPinned(data.pinned || data);
                     } else if (data.event === 'pinned_deleted') {
+                        lastPinned = null;
                         hidePinned();
                     } else if (data.event === 'widget_toggle' && data.widget_id === 'pinned') {
-                        if (data.is_active === false) {
-                            hidePinned();
-                        }
+                        widgetActive = data.is_active !== false;
+                        if (widgetActive && lastPinned) renderPinned(lastPinned);
+                        else hidePinned();
+                    } else if (data.event === 'initial_state' && data.widgets && data.widgets.pinned) {
+                        widgetActive = data.widgets.pinned.is_active !== false;
                     }
                 } catch (err) {}
             };
@@ -235,7 +240,8 @@
             authorName.style.color = userColor;
             pinnedText.textContent = content;
 
-            pinnedContainer.classList.add('visible');
+            lastPinned = pinned;
+            if (widgetActive) pinnedContainer.classList.add('visible');
         }
 
         function hidePinned() {

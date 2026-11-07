@@ -53,9 +53,10 @@ def _parse_json_emotes(emotes_tag: str, platform: str) -> list[dict]:
 def _parse_twitch_emotes(emotes_tag: str) -> list[dict]:
     result: list[dict] = []
     for group in emotes_tag.split("/"):
-        if ":" not in group:
+        e_id, _, ranges = group.partition(":")
+        if not e_id:
             continue
-        e_id = group.split(":")[0]
-        if e_id:
-            result.append(_emote("image", _TWITCH_EMOTE_URL.format(id=e_id), f"twitch_{e_id}"))
+        occurrences = len([r for r in ranges.split(",") if r])
+        url = _TWITCH_EMOTE_URL.format(id=e_id)
+        result.extend(_emote("image", url, f"twitch_{e_id}") for _ in range(occurrences))
     return result

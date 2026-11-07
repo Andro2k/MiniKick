@@ -132,6 +132,7 @@ class SearchableComboPopup(BaseFloatingListPopup):
         self.combo._on_popup_closed()
         super().hideEvent(event)
 
+
 class SearchableComboBox(NoWheelComboBox):
     def __init__(self, parent: QWidget = None, placeholder: str = "", empty_text: str = ""):
         super().__init__(parent)

@@ -20,6 +20,11 @@ def test_extracts_twitch_tag_emotes():
     assert emotes[0]["src"].endswith("/25/default/dark/2.0")
 
 
+def test_twitch_repeated_emote_counts_every_occurrence():
+    emotes = extract_emotes("UNOWild UNOWild UNOWild", "twitch", "300:0-7,9-16,18-25")
+    assert [e["name"] for e in emotes] == ["twitch_300"] * 3
+
+
 def test_extracts_youtube_json_emotes_and_ignores_invalid_payload():
     tag = '[{"url": "http://x/e.png", "name": "wow"}, {"name": "nourl"}]'
     assert extract_emotes("x", "youtube", tag) == [

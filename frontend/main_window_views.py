@@ -129,6 +129,8 @@ class MainWindowViewFactory:
                 pinned_overlay_url=window.overlay_server.get_pinned_overlay_url(),
                 chatters_overlay_url=window.overlay_server.get_chatters_overlay_url(),
                 clock_overlay_url=window.overlay_server.get_clock_overlay_url(),
+                timer_overlay_url=window.overlay_server.get_timer_overlay_url(),
+                stopwatch_overlay_url=window.overlay_server.get_stopwatch_overlay_url(),
                 parent=window.content_stack,
             )
             window.content_stack.addWidget(window.view_widgets)

@@ -104,7 +104,7 @@ class KickConnection(QObject):
         try:
             self._fetch_slot.start(self._build_fetch_worker)
         except Exception as error:
-            logger.exception(self._i18n.get("main.logs.api_error_setup").replace("{error}", str(error)))
+            logger.exception("Error preparing rewards query: %s", error)
 
     def _build_api(self):
         from backend.providers import KickAPIClient

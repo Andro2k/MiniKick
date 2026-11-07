@@ -2,12 +2,15 @@
 
 import logging
 import datetime
+import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient, KickWebSocketManager
 from backend.services.chat import ChatMessageDTO
 from backend.utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.kick_chat")
+
+STABLE_CONNECTION_SECONDS = 10.0
 
 class KickPollSyncWorker(QThread):
     poll_updated = Signal(object)
@@ -58,6 +61,7 @@ class KickPollSyncWorker(QThread):
 
             except Exception as e:
                 logger.debug("[KickPollSyncWorker] Error during poll reconciliation: %s", e)
+
 
 class KickChatWorker(QThread):
     message_received = Signal(object) 
@@ -111,6 +115,7 @@ class KickChatWorker(QThread):
                     logger.debug("[KickChatWorker] Error checking initial poll on startup: %s", e)
 
             while not self._is_stopped and not self.isInterruptionRequested():
+                connected_at = time.monotonic()
                 self.chat_manager.start_socket(
                     room_id,
                     channel_id=channel_id,
@@ -122,6 +127,8 @@ class KickChatWorker(QThread):
                     on_reward_redeemed=self._dispatch_reward,
                 )
                 if not self._is_stopped and not self.isInterruptionRequested():
+                    if time.monotonic() - connected_at >= STABLE_CONNECTION_SECONDS:
+                        self._backoff.reset()
                     delay_sec = self._backoff.next_delay()
                     logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
                     if not cooperative_sleep(self, delay_sec, step_ms=50):
@@ -148,7 +155,8 @@ class KickChatWorker(QThread):
                 sender_id=sender_id,
                 timestamp=now_str,
                 platform="kick",
-                avatar_url=avatar_url
+                avatar_url=avatar_url,
+                received_at=time.monotonic(),
             )
             self.message_received.emit(dto)
 

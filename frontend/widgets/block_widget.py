@@ -31,6 +31,7 @@ class ViewHeader(QFrame):
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
+
 class SectionHeader(QWidget):
     def __init__(self, text: str = "", parent=None, first: bool = False):
         super().__init__(parent)
@@ -44,6 +45,7 @@ class SectionHeader(QWidget):
 
     def setText(self, text: str):
         self.lbl.setText(text)
+
 
 class SettingRow(QWidget):
     def __init__(
@@ -99,10 +101,12 @@ class SettingRow(QWidget):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
             self.lbl_desc.setText(text)
 
+
 class ModernDivider(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setProperty("role", "divider")
+
 
 class SliderRow(QWidget):
     def __init__(
@@ -165,6 +169,7 @@ class SliderRow(QWidget):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
             self.lbl_desc.setText(text)
 
+
 class StatCard(QFrame):
     def __init__(self, title_text: str, icon_name: str, initial_value: str = "-", parent=None):
         super().__init__(parent)
@@ -200,6 +205,7 @@ class StatCard(QFrame):
     def set_value(self, value: str):
         self.lbl_value.setText(str(value))
 
+
 class ModernCard(QFrame):
     def __init__(self, parent=None, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="vertical"):
         super().__init__(parent)
@@ -231,6 +237,7 @@ class ModernCard(QFrame):
 
     def addStretch(self, stretch: int = 0):
         self.card_layout.addStretch(stretch)
+
 
 class FadingScrollArea(QScrollArea):
     def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
@@ -282,9 +289,11 @@ class FadingScrollArea(QScrollArea):
 
         painter.end()
 
+
 class ModernScrollArea(FadingScrollArea):
     def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
+
 
 class ExpandableCard(QFrame):
     def __init__(self, title: str, desc: str = "", icon_name: str = "", parent=None, switch_enabled: bool = True, description: str = "",
@@ -384,6 +393,7 @@ class ExpandableCard(QFrame):
             self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         else:
             self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+
 
 class ExpandableSettingCard(ExpandableCard):
     updated = Signal(str, object)
@@ -563,6 +573,7 @@ class ExpandableSettingCard(ExpandableCard):
             self.spin_amt.setValue(config.get("max_amount", default_amt))
         self._update_duration_state()
         self._is_loading = False
+
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)

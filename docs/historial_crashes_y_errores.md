@@ -59,6 +59,7 @@
 | **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
 | **INC-046** | `AttributeError` al abrir Settings por callbacks de YouTube y TikTok inexistentes en `MainWindowCore` | Log de usuario `minikick.log` (2026-11-01, líneas 84-111) | v1.6.6 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.6 |
 | **INC-047** | El generador de capturas llama a un handler de navegación eliminado y termina con un worker activo | Reporte del usuario al ejecutar `resources/tools/generate_screenshots.py` | v1.6.6 | `✅ Solventado` | `resources/tools/generate_screenshots.py`, `resources/tests/test_screenshot_generator.py` | v1.6.6 (`WT-1.6.6_12`) |
+| **INC-048** | Bordes dentados en los badges circulares de diálogos e icono de actualización recortado | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/base_dialog.py`, `frontend/dialogs/updater_dialog.py`, `frontend/common/icons.py` | v1.6.6 |
 >>>>>>> Stashed changes
 
 ---
@@ -1166,3 +1167,25 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solución Implementada**: El generador delega la navegación a `window.navigation.handle_navigation`. El flujo de capturas queda protegido con `finally` y solicita el apagado coordinado de la ventana incluso si una captura falla, esperando hasta 15 segundos a que finalice la secuencia.
 * **Pruebas y Verificación**: `resources/tests/test_screenshot_generator.py` pasó (2 pruebas); `python resources/tools/project_quality_suite.py --quick` pasó (12/12 auditorías); `git diff --check` pasó.
 >>>>>>> Stashed changes
+
+---
+
+### INC-048: Bordes dentados en badges de diálogo e icono de actualización recortado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (defecto visual; no se reportó pérdida de funcionalidad).
+* **Reportes Asociados**: Capturas compartidas por el usuario, 2026-11-07.
+* **Fecha y Versión del Fallo**: 2026-11-07 en MiniKick `v1.6.6`.
+* **Traza de la Excepción**: No aplica; no se reportó una excepción.
+* **Causa Raíz**: Los badges usaban una máscara `QRegion` creada desde un polígono, que recortaba sus bordes sin antialias. El updater además reemplazaba el glifo de 24 px por un pixmap de 36 px y lo asignaba a la etiqueta más pequeña, recortándolo.
+* **Archivos y Módulos Modificados**:
+  - `frontend/dialogs/base_dialog.py`
+  - `frontend/dialogs/updater_dialog.py`
+  - `frontend/common/icons.py`
+  - `frontend/common/theme.py`
+  - `frontend/common/__init__.py`
+  - `frontend/common/paths.py`
+  - `resources/tests/test_delete_confirmation_dialogs.py`
+  - `resources/tests/test_updater_dialog.py`
+* **Solución Implementada**: Los badges ahora se dibujan como círculos con `QPainter` antialias y fondo transparente. El updater encuentra el QLabel del glifo por su nombre y renderiza los iconos al tamaño de esa etiqueta. Las utilidades de rutas de frontend se consolidaron en `frontend/common/icons.py` y se actualizaron sus importaciones.
+* **Pruebas y Verificación**: Las 9 pruebas de `test_delete_confirmation_dialogs.py` y la prueba de tamaño de iconos del updater pasaron; la suite de calidad rápida pasó 12/12. `test_update_dialog_reserves_space_for_completed_content` conserva un fallo preexistente en su última aserción de margen (espera 20 px, frente a los 12 px definidos por `Size.Margin.MRG_LRG`).

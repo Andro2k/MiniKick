@@ -291,6 +291,7 @@ class TikTokChatProvider:
     ) -> None:
         if not unique_id or not unique_id.strip():
             err_msg = self.i18n.get("logs.tiktok.empty_user")
+            logger.error("[TikTokChatProvider] Cannot connect: TikTok username is empty.")
             if on_error:
                 on_error(err_msg)
             return
@@ -341,21 +342,27 @@ class TikTokChatProvider:
 
             except UserNotFoundError:
                 err = self.i18n.get("logs.tiktok.user_not_found").replace("{unique_id}", clean_user)
-                logger.warning("[TikTokChatProvider] %s", err)
+                logger.warning(
+                    "[TikTokChatProvider] User @%s does not exist or does not have Live enabled on TikTok.",
+                    clean_user,
+                )
                 if on_error:
                     on_error(err)
                 break
 
             except UserOfflineError:
                 err = self.i18n.get("logs.tiktok.stream_offline").replace("{unique_id}", clean_user)
-                logger.warning("[TikTokChatProvider] %s", err)
+                logger.warning("[TikTokChatProvider] @%s is not currently live on TikTok.", clean_user)
                 if on_error:
                     on_error(err)
                 break
 
             except AgeRestrictedError:
                 err = self.i18n.get("logs.tiktok.age_restricted").replace("{unique_id}", clean_user)
-                logger.warning("[TikTokChatProvider] %s", err)
+                logger.warning(
+                    "[TikTokChatProvider] The live stream for @%s has an age restriction (+18).",
+                    clean_user,
+                )
                 if on_error:
                     on_error(err)
                 break
@@ -379,10 +386,10 @@ class TikTokChatProvider:
                 is_ws_400 = is_invalid_status and status_code == 400
 
                 if is_ws_400 and attempt < self._WS_MAX_RETRIES and self._is_running:
-                    warn_msg = self.i18n.get("logs.tiktok.ws_rejected_400")
                     logger.warning(
-                        "[TikTokChatProvider] HTTP 400 on attempt %d/%d — %s",
-                        attempt + 1, self._WS_MAX_RETRIES + 1, warn_msg
+                        "[TikTokChatProvider] HTTP 400 on attempt %d/%d - "
+                        "WebSocket connection rejected (expired token). Retrying automatically.",
+                        attempt + 1, self._WS_MAX_RETRIES + 1
                     )
                     time.sleep(self._WS_RETRY_DELAY)
                     continue

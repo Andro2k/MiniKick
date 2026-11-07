@@ -36,6 +36,7 @@ class UpdateCheckWorker(QThread):
             logger.error("[UpdateCheckWorker] Error checking for updates: %s", e)
             self.error.emit(str(e))
 
+
 class UpdateDownloadWorker(QThread):
     download_completed = Signal(bool)
     error = Signal(str)
@@ -67,6 +68,7 @@ class UpdateDownloadWorker(QThread):
             logger.error("[UpdateDownloadWorker] Error downloading update: %s", e)
             self.error.emit(str(e))
 
+
 class ReleaseNotesWorker(QThread):
     release_fetched = Signal(object)
     error_occurred = Signal(str)
@@ -91,13 +93,14 @@ class ReleaseNotesWorker(QThread):
                 self.release_fetched.emit(data)
             else:
                 err_msg = self.i18n.get("dialogs.release_notes.error")
-                logger.error("[ReleaseNotesWorker] Failed to fetch release notes: %s", err_msg)
+                logger.error("[ReleaseNotesWorker] Failed to fetch release notes: no release data returned.")
                 self.error_occurred.emit(err_msg)
         except Exception as e:
             if self.isInterruptionRequested():
                 return
             logger.error("[ReleaseNotesWorker] Exception fetching release notes: %s", e)
             self.error_occurred.emit(str(e))
+
 
 class WhatsNewWorker(QThread):
     highlights_fetched = Signal(list)

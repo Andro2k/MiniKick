@@ -93,6 +93,7 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
 
+
 class OAuthCallbackServer:
     @staticmethod
     def capture_auth_code(
@@ -130,6 +131,7 @@ class OAuthCallbackServer:
             
         httpd.server_close()
         return httpd.auth_code
+
 
 class BaseOAuthManager:
     REQUIRED_SCOPES: dict[str, str] = {}
@@ -190,6 +192,7 @@ class BaseOAuthManager:
 
     def has_missing_scopes(self) -> bool:
         return len(self.get_missing_scopes()) > 0
+
 
 class KickAuthManager(BaseOAuthManager):
     REQUIRED_SCOPES = {
@@ -291,6 +294,7 @@ class KickAuthManager(BaseOAuthManager):
         )
         response.raise_for_status()
         return response.json()
+
 
 class TwitchAuthManager(BaseOAuthManager):
     REQUIRED_SCOPES = {

@@ -44,6 +44,7 @@ class _FloatingChatWindow(QWidget):
         self._return_to_chat()
         event.accept()
 
+
 class ChatView(BaseView):
     volume_changed = Signal(int)
     speed_changed = Signal(int)

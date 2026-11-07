@@ -5,9 +5,11 @@ import heapq
 import logging
 import threading
 import time
+from collections import deque
 from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
+from backend.services.system.clock_service import CountdownTimer, Stopwatch, parse_duration
 from backend.utils import extract_emotes
 
 logger = logging.getLogger("minikick.controllers.widgets")
@@ -16,6 +18,8 @@ _WIDGET_DEFAULT_ALIASES: dict[str, str] = {
     "score": "!win, !loss, !lose, !victoria, !derrota",
     "death": "!muerte, !death, !deaths, !muertes",
     "shoutout": "!shoutout",
+    "timer": "!temporizador",
+    "stopwatch": "!crono, !stopwatch",
 }
 
 _WIDGET_TITLE_KEYS: dict[str, str] = {
@@ -53,7 +57,8 @@ class WidgetsController(QObject):
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
         "explosion": "[PLUGIN_WIDGET_EXPLOSION]", "combo": "[PLUGIN_WIDGET_COMBO]",
-        "chatters": "[PLUGIN_WIDGET_CHATTERS]"
+        "chatters": "[PLUGIN_WIDGET_CHATTERS]",
+        "timer": "[PLUGIN_WIDGET_TIMER]", "stopwatch": "[PLUGIN_WIDGET_STOPWATCH]"
     }
 
     def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None, ignored_users_provider: Callable[[], set[str]] | None = None):
@@ -70,6 +75,9 @@ class WidgetsController(QObject):
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
         self._combo_count = 0
+        self._recent_image_emotes: deque[dict] = deque(maxlen=20)
+        self._timer = CountdownTimer()
+        self._stopwatch = Stopwatch()
         self._view_connected = False
 
         self._current_chatters_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -91,6 +99,8 @@ class WidgetsController(QObject):
             self.PLUGIN_TAGS["explosion"]: lambda user, args, action_word, prefix, platform: self._process_explosion_command(user, args, platform=platform),
             self.PLUGIN_TAGS["combo"]: lambda user, args, action_word, prefix, platform: self._process_combo_command(user, args, platform=platform),
             self.PLUGIN_TAGS["chatters"]: lambda user, args, action_word, prefix, platform: self._process_topchatters_command(user, args, platform=platform),
+            self.PLUGIN_TAGS["timer"]: lambda user, args, action_word, prefix, platform: self._process_timer_command(args),
+            self.PLUGIN_TAGS["stopwatch"]: lambda user, args, action_word, prefix, platform: self._process_stopwatch_command(args),
         }
 
         self._save_timer = QTimer(self)
@@ -176,6 +186,12 @@ class WidgetsController(QObject):
         ).start()
 
         if self.overlay_server:
+            for w_id, w_data in widgets.items():
+                self.overlay_server.trigger_widget_event("widget_toggle", {
+                    "widget_id": w_id,
+                    "is_active": w_data.get("is_active", True)
+                })
+
             death_w = widgets.get("death", {})
             score_w = widgets.get("score", {})
             chatters_w = widgets.get("chatters", {})
@@ -544,14 +560,19 @@ class WidgetsController(QObject):
         if not emotes_list:
             return
 
-        if explosion_on:
+        image_emotes = [e for e in emotes_list if e.get("type") == "image"]
+        self._recent_image_emotes.extend(image_emotes)
+
+        if explosion_on and image_emotes:
             cfg_exp = w_exp.get("config", {})
             min_emotes = int(cfg_exp.get("min_emotes", 1))
             particle_count = int(cfg_exp.get("particle_count", 15))
-            
-            if len(emotes_list) >= min_emotes:
+            platform_enabled = cfg_exp.get(f"show_{platform}", True)
+            logger.debug("[Widgets] explosion platform=%s emotes=%d enabled=%s", platform, len(image_emotes), platform_enabled)
+
+            if platform_enabled and len(image_emotes) >= min_emotes:
                 self.overlay_server.trigger_widget_event("emote_explosion", {
-                    "emotes": emotes_list,
+                    "emotes": image_emotes,
                     "count": particle_count
                 })
 
@@ -581,12 +602,9 @@ class WidgetsController(QObject):
 
     def _process_explosion_command(self, user: str, _args: str, platform: str = "kick"):
         if self.overlay_server:
-            sample_emotes = [
-                {"type": "text", "src": "🔥", "name": "🔥"},
-                {"type": "text", "src": "⚡", "name": "⚡"},
-                {"type": "text", "src": "🎉", "name": "🎉"},
-                {"type": "text", "src": "🚀", "name": "🚀"}
-            ]
+            sample_emotes = list(self._recent_image_emotes)
+            if not sample_emotes:
+                return
             self.overlay_server.trigger_widget_event("emote_explosion", {
                 "emotes": sample_emotes,
                 "count": 25
@@ -606,6 +624,35 @@ class WidgetsController(QObject):
             })
             msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
             self.command_service.send_response(msg, platform=platform)
+
+    def _publish_clock(self, event: str, snapshot: dict) -> None:
+        if self.overlay_server:
+            self.overlay_server.trigger_widget_event(event, snapshot)
+
+    def _process_timer_command(self, args: str) -> None:
+        action, _, label = args.strip().partition(" ")
+        action = action.lower()
+        simple_actions = {"pause": self._timer.pause, "resume": self._timer.resume, "stop": self._timer.stop}
+        if action in simple_actions:
+            simple_actions[action]()
+        else:
+            duration_ms = parse_duration(action)
+            if duration_ms is None:
+                return
+            self._timer.start(duration_ms, label.strip())
+        self._publish_clock("timer_update", self._timer.snapshot())
+
+    def _process_stopwatch_command(self, args: str) -> None:
+        actions = {
+            "start": self._stopwatch.start, "resume": self._stopwatch.start,
+            "pause": self._stopwatch.pause,
+            "reset": self._stopwatch.reset, "stop": self._stopwatch.reset,
+        }
+        action = actions.get(args.strip().lower())
+        if action is None:
+            return
+        action()
+        self._publish_clock("stopwatch_update", self._stopwatch.snapshot())
 
     def invalidate_ignored_bots_cache(self) -> None:
         self._cached_ignored_bots_set = None

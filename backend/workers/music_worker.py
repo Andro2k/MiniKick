@@ -259,6 +259,7 @@ class YouTubeResolveWorker(QThread):
                 return
             self.error.emit(str(e))
 
+
 class YouTubeSearchWorker(QThread):
     search_completed = Signal(bool, str)
 

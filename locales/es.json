@@ -670,7 +670,7 @@
       "lbl_author": "Por @{author}",
       "lbl_published": "Publicado el {date}",
       "loading": "Obteniendo novedades de la versión desde GitHub...",
-      "subtitle": "Notas de parche y cambios de la última versión publicada.",
+      "subtitle": "Notas y cambios de la última versión, en el idioma publicado en GitHub.",
       "title": "Novedades de la Versión"
     },
     "tiktok_connect": {
@@ -778,21 +778,16 @@
     }
   },
   "logs": {
-    "bootstrap": {
-      "crash_dialog_failed": "[Bootstrap] Falló la visualización del diálogo de crash: {error}"
-    },
     "tiktok": {
       "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
       "empty_user": "El usuario de TikTok no puede estar vacío.",
       "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
       "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok.",
       "ws_rejected": "TikTok rechazó la conexión WebSocket con código HTTP {code}.",
-      "ws_rejected_400": "TikTok rechazó la conexión WebSocket (token de firma expirado). Reintentando automáticamente...",
       "ws_rejected_400_final": "TikTok rechazó la conexión WebSocket repetidamente (HTTP 400). El token firmado puede estar expirando muy rápido. Intenta reconectar manualmente."
     },
     "twitch": {
-      "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
-      "user_not_found": "No se encontraron datos de usuario en Twitch Helix API."
+      "channel_empty": "El nombre del canal de Twitch no puede estar vacío."
     },
     "youtube": {
       "channel_empty": "El canal o enlace del directo de YouTube no puede estar vacío.",
@@ -813,11 +808,7 @@
       }
     },
     "logs": {
-      "api_error": "Fallo en la API de Recompensas de Kick: {error}",
-      "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
-      "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
-      "reward_file_missing": "El archivo multimedia para la recompensa '{reward_name}' no fue encontrado en: {filepath}",
-      "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada."
+      "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick."
     },
     "sidebar": {
       "profile": {
@@ -1575,6 +1566,14 @@
       "reset_success": "¡Ranking de chatters reiniciado con éxito!",
       "title": "Top Chatters (!topchatters)"
     },
+    "timer": {
+      "desc": "Cuenta regresiva en pantalla. Solo moderadores: !timer 5m [etiqueta], !timer pause|resume|stop.",
+      "title": "Temporizador (!timer)"
+    },
+    "stopwatch": {
+      "desc": "Cronómetro en pantalla. Solo moderadores: !cronometro start|pause|resume|reset.",
+      "title": "Cronómetro (!cronometro)"
+    },
     "clock": {
       "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
       "title": "Reloj y Fecha"
@@ -1602,6 +1601,7 @@
       "min_emotes_label": "Mínimo de Emotes por mensaje:",
       "msg_explosion": "💥 @{user} desató una explosión de emotes!",
       "particle_count_label": "Partículas por ráfaga:",
+      "platforms_label": "Plataformas que disparan emotes:",
       "title": "Explosión de Emotes (!explosion)"
     },
     "header": {

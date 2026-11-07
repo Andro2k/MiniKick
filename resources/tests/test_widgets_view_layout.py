@@ -20,7 +20,7 @@ def _view(qapp, width: int) -> WidgetsView:
 def test_widgets_view_is_a_single_centered_column(qapp):
     view = _view(qapp, 1600)
     cards = list(view.cards.values())
-    assert len(cards) == 9
+    assert len(cards) == 11
 
     geometries = [card.geometry() for card in cards]
     assert len({g.x() for g in geometries}) == 1 and len({g.width() for g in geometries}) == 1

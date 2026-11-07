@@ -14,6 +14,7 @@ class NoWheelSpinBox(QSpinBox):
         else:
             super().wheelEvent(event)
 
+
 class NoWheelDoubleSpinBox(QDoubleSpinBox):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -24,6 +25,7 @@ class NoWheelDoubleSpinBox(QDoubleSpinBox):
             event.ignore()
         else:
             super().wheelEvent(event)
+
 
 class NoWheelComboBox(QComboBox):
     def __init__(self, parent=None):
@@ -50,6 +52,7 @@ class NoWheelComboBox(QComboBox):
         else:
             super().wheelEvent(event)
 
+
 class NoWheelSlider(QSlider):
     def __init__(self, orientation=None, parent=None):
         if orientation is not None and not isinstance(orientation, QSlider):
@@ -63,6 +66,7 @@ class NoWheelSlider(QSlider):
             event.ignore()
         else:
             super().wheelEvent(event)
+
 
 class NoWheelDateEdit(QDateEdit):
     def __init__(self, *args, **kwargs):
@@ -115,6 +119,7 @@ class NoWheelDateEdit(QDateEdit):
 
     def wheelEvent(self, event):
         event.ignore()
+
 
 class NoWheelTimeEdit(QTimeEdit):
     def __init__(self, *args, **kwargs):

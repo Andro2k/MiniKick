@@ -13,7 +13,7 @@ class WidgetsView(BaseView):
     chatters_reset_requested = Signal()
     view_shown = Signal()
 
-    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", chatters_overlay_url: str = "", clock_overlay_url: str = "", parent=None):
+    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", chatters_overlay_url: str = "", clock_overlay_url: str = "", timer_overlay_url: str = "", stopwatch_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent, max_content_width=Size.CONTENT_MAX_WIDTH, min_content_width=Size.CONTENT_MIN_WIDTH)
         self.cards: dict[str, WidgetCard] = {}
         self.set_overlay_urls(
@@ -26,6 +26,8 @@ class WidgetsView(BaseView):
             pinned_url=pinned_overlay_url,
             chatters_url=chatters_overlay_url,
             clock_url=clock_overlay_url,
+            timer_url=timer_overlay_url,
+            stopwatch_url=stopwatch_overlay_url,
         )
         self._setup_ui()
 
@@ -39,6 +41,8 @@ class WidgetsView(BaseView):
         self.cards_layout.setSpacing(Size.SPACING_MD)
 
         self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), obs_url=self.clock_overlay_url)
+        self._add_card("timer", self.i18n.get("widgets.timer.title"), self.i18n.get("widgets.timer.desc"), obs_url=self.timer_overlay_url)
+        self._add_card("stopwatch", self.i18n.get("widgets.stopwatch.title"), self.i18n.get("widgets.stopwatch.desc"), obs_url=self.stopwatch_overlay_url)
         self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), obs_url=self.poll_overlay_url)
         self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), obs_url=self.chatters_overlay_url)
         self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), obs_url=self.shoutout_overlay_url)
@@ -51,7 +55,7 @@ class WidgetsView(BaseView):
         self.main_layout.addLayout(self.cards_layout)
         self.main_layout.addStretch()
 
-    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = "", poll_url: str = "", pinned_url: str = "", chatters_url: str = "", clock_url: str = ""):
+    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = "", poll_url: str = "", pinned_url: str = "", chatters_url: str = "", clock_url: str = "", timer_url: str = "", stopwatch_url: str = ""):
         self.shoutout_overlay_url = shoutout_url
         self.death_overlay_url = death_url
         self.score_overlay_url = score_url
@@ -61,6 +65,8 @@ class WidgetsView(BaseView):
         self.pinned_overlay_url = pinned_url
         self.chatters_overlay_url = chatters_url
         self.clock_overlay_url = clock_url
+        self.timer_overlay_url = timer_url
+        self.stopwatch_overlay_url = stopwatch_url
         if "pinned" in self.cards and pinned_url:
             self.cards["pinned"].set_obs_overlay_url(pinned_url)
         if "poll" in self.cards and poll_url:
@@ -69,6 +75,10 @@ class WidgetsView(BaseView):
             self.cards["chatters"].set_obs_overlay_url(chatters_url)
         if "clock" in self.cards and clock_url:
             self.cards["clock"].set_obs_overlay_url(clock_url)
+        if "timer" in self.cards and timer_url:
+            self.cards["timer"].set_obs_overlay_url(timer_url)
+        if "stopwatch" in self.cards and stopwatch_url:
+            self.cards["stopwatch"].set_obs_overlay_url(stopwatch_url)
         if "shoutout" in self.cards and shoutout_url:
             self.cards["shoutout"].set_obs_overlay_url(shoutout_url)
         if "death" in self.cards and death_url:

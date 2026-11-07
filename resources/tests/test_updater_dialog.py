@@ -36,6 +36,7 @@ def test_update_dialog_reserves_space_for_completed_content(qapp):
         dialog.show_complete()
         assert dialog.btn_primary.isVisible()
         assert dialog.btn_secondary.isVisible()
+        assert dialog.header_icon.pixmap().deviceIndependentSize().toSize() == dialog.header_icon.size()
 
         qapp.processEvents()
         assert dialog.body.height() >= dialog.body.sizeHint().height()
@@ -44,6 +45,24 @@ def test_update_dialog_reserves_space_for_completed_content(qapp):
         assert dialog.body.geometry().bottom() < dialog.footer.geometry().top()
         assert dialog.btn_secondary.geometry().right() < dialog.btn_primary.geometry().left()
         assert dialog.btn_primary.geometry().right() <= dialog.footer.width() - 20
+    finally:
+        dialog.close()
+        qapp.setStyleSheet(previous_stylesheet)
+
+
+def test_update_dialog_state_icons_fit_the_badge(qapp):
+    previous_stylesheet = qapp.styleSheet()
+    qapp.setStyleSheet(get_global_qss())
+    dialog = UpdateDialog(_Translations())
+    try:
+        for update_state in (
+            dialog.show_complete,
+            lambda: dialog.show_error("error"),
+            dialog.show_no_update,
+        ):
+            update_state()
+            pixmap = dialog.header_icon.pixmap()
+            assert pixmap.deviceIndependentSize().toSize() == dialog.header_icon.size()
     finally:
         dialog.close()
         qapp.setStyleSheet(previous_stylesheet)

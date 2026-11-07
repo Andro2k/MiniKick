@@ -1,6 +1,7 @@
 # backend\services\chat\giphy_service.py
 
 import re
+import threading
 import urllib.parse
 import urllib.request
 import logging
@@ -20,6 +21,7 @@ class GiphyService:
     def __init__(self, api_key: str = "", max_cache_size: int = 128):
         self._api_key = api_key
         self._cache: dict[str, str] = {}
+        self._cache_lock = threading.Lock()
         self._max_cache_size = max_cache_size
 
     @property
@@ -83,8 +85,10 @@ class GiphyService:
             return None
 
         cache_key = clean_query.lower()
-        if cache_key in self._cache:
-            return self._cache[cache_key]
+        with self._cache_lock:
+            cached = self._cache.get(cache_key)
+        if cached:
+            return cached
 
         return self._search_giphy(clean_query, active_key, cache_key)
 
@@ -117,9 +121,10 @@ class GiphyService:
                     gif_url = images["original"]["url"]
 
                 if gif_url:
-                    if len(self._cache) >= self._max_cache_size:
-                        self._cache.pop(next(iter(self._cache)))
-                    self._cache[cache_key] = gif_url
+                    with self._cache_lock:
+                        if len(self._cache) >= self._max_cache_size:
+                            self._cache.pop(next(iter(self._cache)))
+                        self._cache[cache_key] = gif_url
                     return gif_url
 
         except Exception as ex:

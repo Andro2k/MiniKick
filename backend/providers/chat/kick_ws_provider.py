@@ -5,7 +5,7 @@ import socket
 import threading
 import time
 from datetime import datetime, timezone
-from backend.utils import parse_kick_payload, fast_dumps
+from backend.utils import parse_kick_payload, fast_dumps, LatencyMonitor
 from collections import deque
 import websocket
 from typing import Callable
@@ -32,6 +32,14 @@ RFC_6455_CLOSE_CODES: dict[int, str] = {
 DEFAULT_KICK_COLOR = "#2ECD70"
 PUSHER_KEY_REJECTED_CODES = frozenset({4001, 4003, 4009})
 
+WS_PING_INTERVAL_S = 20
+WS_PING_TIMEOUT_S = 10
+PONG_TIMEOUT_S = 10.0
+WATCHDOG_TICK_S = 2.0
+MIN_PROACTIVE_PING_S = 10
+MAX_PROACTIVE_PING_S = 25
+NETWORK_LATENCY_WARN_S = 2.0
+
 class KickWebSocketManager(BaseChatSocketProvider):
     @property
     def is_running(self) -> bool:
@@ -54,6 +62,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._channel_id = 0
         self._seen_message_ids = deque(maxlen=1000)
         self._seen_message_ids_set = set()
+        self._net_latency = LatencyMonitor("Kick network", warn_threshold_s=NETWORK_LATENCY_WARN_S)
         self._warned_frame_events: set[str] = set()
         self._callback: Callable | None = None
         self._on_poll_update: Callable[[dict], None] | None = None
@@ -130,8 +139,8 @@ class KickWebSocketManager(BaseChatSocketProvider):
         ]
         self.ws.run_forever(
             sockopt=tuple(sockopts),
-            ping_interval=30,
-            ping_timeout=20
+            ping_interval=WS_PING_INTERVAL_S,
+            ping_timeout=WS_PING_TIMEOUT_S
         )
 
     def _on_error(self, _ws: websocket.WebSocketApp, err: Exception) -> None:
@@ -199,6 +208,21 @@ class KickWebSocketManager(BaseChatSocketProvider):
             else:
                 logger.debug("[KickWebSocket] Frame processing error (already reported for '%s'): %s", event_key, e)
 
+    @staticmethod
+    def _transit_latency_seconds(created_at) -> float | None:
+        if not created_at or not isinstance(created_at, str):
+            return None
+        try:
+            created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if created_dt.tzinfo is None:
+            created_dt = created_dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - created_dt).total_seconds()
+
+    def _proactive_ping_interval(self) -> float:
+        return float(max(MIN_PROACTIVE_PING_S, min(self._activity_timeout // 4, MAX_PROACTIVE_PING_S)))
+
     def _handle_chat_message(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         sender = inner.get("sender")
         if not isinstance(sender, dict):
@@ -219,17 +243,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
             self._seen_message_ids.append(msg_id)
             self._seen_message_ids_set.add(msg_id)
 
+        latency = self._transit_latency_seconds(inner.get("created_at"))
+        if latency is not None:
+            self._net_latency.record(latency)
         if logger.isEnabledFor(logging.DEBUG):
-            created_at = inner.get("created_at", "")
-            latency_info = ""
-            if created_at:
-                try:
-                    created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                    now_utc = datetime.now(timezone.utc)
-                    latency = (now_utc - created_dt).total_seconds()
-                    latency_info = f" (server latency: {latency:.3f}s)"
-                except Exception as latency_err:
-                    logger.debug("[KickWebSocket] Could not compute server latency: %s", latency_err)
+            latency_info = f" (server latency: {latency:.3f}s)" if latency is not None else ""
             logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
 
         identity = sender.get("identity")
@@ -373,11 +391,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._heartbeat_thread = None
 
     def _heartbeat_watchdog_loop(self, ws: websocket.WebSocketApp) -> None:
-        ping_interval = min(self._activity_timeout // 2, 60)
-        pong_timeout = 30.0
+        ping_interval = self._proactive_ping_interval()
+        pong_timeout = PONG_TIMEOUT_S
 
         while not self._stop_heartbeat_event.is_set() and self._running:
-            if self._stop_heartbeat_event.wait(timeout=5.0):
+            if self._stop_heartbeat_event.wait(timeout=WATCHDOG_TICK_S):
                 break
             if not self._running or not ws:
                 break

@@ -52,6 +52,7 @@ class FetchRewardsWorker(QThread):
             logger.error("[FetchRewardsWorker] Error fetching rewards (%s) for platform %s: %s", type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
 
+
 class CreateRewardWorker(QThread):
     reward_created = Signal(object)
     error_occurred = Signal(str)
@@ -100,6 +101,7 @@ class CreateRewardWorker(QThread):
                 return
             logger.error("[CreateRewardWorker] Error creating reward '%s' (%s) on platform %s: %s", title, type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
+
 
 class UpdateRewardWorker(QThread):
     reward_updated = Signal(object)

@@ -152,6 +152,7 @@ class ModernToast(QFrame):
         self.anim.setEndValue(QPoint(self.pos().x() + self.width() + 20, self.pos().y()))
         self.anim.start()
 
+
 class ToastManager(QObject):
     MAX_VISIBLE = 3
 

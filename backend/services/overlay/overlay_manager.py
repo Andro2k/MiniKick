@@ -44,6 +44,8 @@ class OverlayServerManager:
         self._last_poll_timestamp: float = 0.0
         self._last_pinned_data: dict | None = None
         self._last_top_chatters_data: dict | None = None
+        self._widget_active: dict[str, bool] = {}
+        self._clock_events: dict[str, tuple[dict, float]] = {}
         self._last_chat_config: dict | None = None
         self.settings_storage = settings_storage
         self.lock = threading.Lock()
@@ -135,6 +137,12 @@ class OverlayServerManager:
 
     def get_clock_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/widgets/clock?token={self.session_token}"
+
+    def get_timer_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/timer?token={self.session_token}"
+
+    def get_stopwatch_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/stopwatch?token={self.session_token}"
 
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()
@@ -289,8 +297,11 @@ class OverlayServerManager:
             self._last_pinned_data = None
         elif event_type == "top_chatters_update":
             self._last_top_chatters_data = data
+        elif event_type in ("timer_update", "stopwatch_update"):
+            self._clock_events[event_type] = (dict(data), time.time())
         elif event_type == "widget_toggle":
             w_id = data.get("widget_id")
+            self._widget_active[w_id] = data.get("is_active", True)
             if w_id == "death":
                 self._last_death_data["is_active"] = data.get("is_active", True)
             elif w_id == "score":
@@ -298,6 +309,23 @@ class OverlayServerManager:
 
         payload = {"event": event_type, **data}
         self._broadcast("widget_clients", "widgets", payload)
+
+    def get_widget_replay_events(self) -> list[dict]:
+        events = [
+            {"event": "widget_toggle", "widget_id": w_id, "is_active": active}
+            for w_id, active in list(self._widget_active.items())
+        ]
+        now = time.time()
+        for event_type, (data, ts) in list(self._clock_events.items()):
+            payload = {"event": event_type, **data}
+            if data.get("status") == "running":
+                elapsed_ms = int((now - ts) * 1000)
+                if event_type == "timer_update":
+                    payload["remaining_ms"] = max(0, data.get("remaining_ms", 0) - elapsed_ms)
+                else:
+                    payload["elapsed_ms"] = data.get("elapsed_ms", 0) + elapsed_ms
+            events.append(payload)
+        return events
 
     def stop(self):
         if self.server:

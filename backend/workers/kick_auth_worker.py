@@ -26,7 +26,7 @@ class KickAuthWorker(QThread):
                 self.auth_success.emit(tokens)
             else:
                 err_msg = self.i18n.get("main.workers.auth.error_failed")
-                logger.error("[KickAuthWorker] Kick OAuth failed: %s", err_msg)
+                logger.error("[KickAuthWorker] Kick OAuth failed: no tokens returned.")
                 self.auth_error.emit(err_msg)
         except Exception as e:
             logger.error("[KickAuthWorker] Exception in Kick OAuth flow: %s", e)

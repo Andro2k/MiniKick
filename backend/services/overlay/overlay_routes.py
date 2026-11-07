@@ -78,6 +78,10 @@ STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/widgets/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
     "/widgets/time": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
     "/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
+    "/widgets/timer": (os.path.join("assets", "overlays", "widgets", "timer.html"), "Timer Overlay HTML"),
+    "/timer": (os.path.join("assets", "overlays", "widgets", "timer.html"), "Timer Overlay HTML"),
+    "/widgets/stopwatch": (os.path.join("assets", "overlays", "widgets", "stopwatch.html"), "Stopwatch Overlay HTML"),
+    "/stopwatch": (os.path.join("assets", "overlays", "widgets", "stopwatch.html"), "Stopwatch Overlay HTML"),
     "/alerts": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alerts/": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alert": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
@@ -267,6 +271,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     ws_client.send_json({"event": "pinned_created", "pinned": self.server.manager._last_pinned_data})
                 if getattr(self.server.manager, "_last_top_chatters_data", None):
                     ws_client.send_json({"event": "top_chatters_update", **self.server.manager._last_top_chatters_data})
+                for replay_payload in self.server.manager.get_widget_replay_events():
+                    ws_client.send_json(replay_payload)
             elif topic == "chat":
                 chat_config = getattr(self.server.manager, "_last_chat_config", None)
                 if chat_config:

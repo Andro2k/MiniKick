@@ -15,6 +15,7 @@ class ChatConsoleEdit(QTextEdit):
             mime.setText(clean_text)
         return mime
 
+
 class ChatDisplayPanel(ModernCard):
     detach_requested = Signal()
     reattach_requested = Signal()

@@ -66,6 +66,7 @@ class ModernButton(QPushButton):
             
         self.setIcon(get_icon_colored(icon_name, color_str=color))
 
+
 class ModernSwitch(QAbstractButton):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -158,6 +159,7 @@ class ModernSwitch(QAbstractButton):
 
         painter.end()
 
+
 class CompactSpinBox(QSpinBox):
     def __init__(self, min_val: int = 0, max_val: int = 100, init_val: int = 0,
                  step: int = 1, suffix: str = "", prefix: str = "",
@@ -184,6 +186,7 @@ class CompactSpinBox(QSpinBox):
         else:
             super().wheelEvent(event)
 
+
 class VariableHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, pattern=r"\{[a-zA-Z_]+\}", color=None, bg_color=None):
         super().__init__(parent)
@@ -202,6 +205,7 @@ class VariableHighlighter(QSyntaxHighlighter):
         for match in self._regex.finditer(text):
             start, end = match.span()
             self.setFormat(start, end - start, fmt)
+
 
 class VariableTextEdit(QTextEdit):
     def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color=BrandColors.PURPLE_LIGHT, highlight_bg=None, parent=None):
