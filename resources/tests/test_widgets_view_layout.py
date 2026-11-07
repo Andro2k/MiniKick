@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QLabel
 
 from backend.services.system import TranslationService
-from frontend.common import Size
+from frontend.common import Palette, Size, get_global_qss
 from frontend.views.widgets_view import WidgetsView
 from frontend.widgets import ExpandableCard
 
@@ -66,9 +66,18 @@ def test_widget_cards_still_expand_load_data_and_emit_changes(qapp):
 def test_expandable_card_defaults_are_backward_compatible(qapp):
     card = ExpandableCard("Título", "Descripción", "star-filled.svg")
     assert card.lbl_icon is not None
+    assert card.body_widget.property("role") == "expandable_card_body"
     assert card.lbl_title.property("role") == "h3"
     assert card.lbl_desc.property("role") == "body"
     assert card.header_widget.layout().contentsMargins().left() == Size.Margin.MRG_MED[0]
+
+
+def test_expandable_card_body_uses_neutral_900_surface():
+    qss = get_global_qss()
+    assert (
+        f'QWidget[role="expandable_card_body"] {{ background-color: {Palette.NEUTRAL_900};'
+        in qss
+    )
 
 
 def test_expandable_card_accepts_custom_roles_and_margins(qapp):

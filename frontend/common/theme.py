@@ -528,6 +528,7 @@ QFrame[role="update_banner_card"] {{ background-color: {Palette.NEUTRAL_900}; bo
 QFrame[role="update_banner_card"]:hover {{ border-color: {Palette.NEUTRAL_700}; }}
 QFrame[role="update_icon_box"] {{ background-color: {Semantic.GREEN_GLOW}; border: {Borders.BRD_FOCS}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="card"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
+QWidget[role="expandable_card_body"] {{ background-color: {Palette.NEUTRAL_900}; border-bottom-left-radius: {Size.Radius.RAD_XLG}px; border-bottom-right-radius: {Size.Radius.RAD_XLG}px; }}
 QFrame[role="dashboard_welcome"] {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {Palette.NEUTRAL_850}, stop:1 {Palette.NEUTRAL_950}); border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
 QFrame[role="dashboard_distribution_panel"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
 QLabel[role="dashboard_channel_name"] {{ color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: 700; }}
@@ -649,7 +650,7 @@ QProgressBar[role="splash_progress"]                {{ background-color: {Palett
 QProgressBar[role="splash_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; }}
 
 /* Tab Widget */
-QTabWidget::pane                    {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px;  padding: {Size.SPACING_NN}px; }}
+QTabWidget::pane                    {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px;  padding: {Size.SPACING_NN}px; }}
 QTabBar::tab                        {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-top-left-radius: 0px; border-top-right-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_WIDE}; margin-right: 4px; font-weight: 500; }}
 QTabBar::tab:selected               {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; }}
 QTabBar::tab:hover:!selected        {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
