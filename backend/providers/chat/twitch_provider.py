@@ -2,12 +2,12 @@
 
 import logging
 import requests
+from backend.config import TWITCH_HELIX_BASE
 from backend.interfaces import TokenProvider
 from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.twitch_provider")
 
-TWITCH_HELIX_BASE = "https://api.twitch.tv/helix"
 
 class TwitchAPIClient:
     def __init__(self, auth_provider: TokenProvider, client_id: str = "", i18n=None):

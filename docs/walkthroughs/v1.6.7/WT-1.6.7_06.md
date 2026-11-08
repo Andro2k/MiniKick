@@ -7,7 +7,7 @@ Se amplió el diagnóstico de latencia de Kick sin alterar el procesamiento del 
 ## Novedades
 
 - Nuevo monitor `Kick pong RTT`, alimentado por pongs correlacionados con sondas Pusher.
-- El watchdog envía una sonda aproximadamente cada 20 segundos incluso cuando hay mensajes. Mantiene una sola sonda RTT pendiente; el timeout de heartbeat existente continúa activo.
+- El watchdog envía una sonda aproximadamente cada 20 segundos incluso cuando hay mensajes. Mantiene una sola sonda RTT pendiente. Las sondas de solo RTT no activan el cierre por timeout: ese cierre sigue aplicándose únicamente al ping por inactividad.
 - Las advertencias rate-limited de mensajes lentos incluyen ID, `created_at`, latencia cruda, tópico/canal, segundos desde el frame anterior, segundos desde el último pong y nombre del hilo.
 - El parser conserva el campo `channel` del sobre Pusher para que el registro identifique el tópico que entregó el mensaje.
 

@@ -157,7 +157,7 @@ def test_heartbeat_watchdog_sends_rtt_probe_while_chat_is_active():
     assert mock_ws.send.call_count == 1
     payload = fast_loads(mock_ws.send.call_args.args[0])
     assert payload["event"] == "pusher:ping"
-    assert mgr._pending_ping_time > 0.0
+    assert mgr._pending_ping_time == 0.0
     assert mgr._pending_rtt_ping_time is not None
 
 
@@ -264,3 +264,32 @@ def test_slow_chat_warning_includes_network_diagnostic_context(caplog):
         mgr._handle_chat_message(inner, MagicMock())
 
     assert len([entry for entry in caplog.records if "Slow chat message:" in entry.getMessage()]) == 1
+
+
+def test_rtt_only_probe_with_late_pong_does_not_close_the_socket():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    mgr._last_activity_time = time.time()
+    mgr._last_rtt_ping_time = time.monotonic() - 5.0
+    mgr._pending_rtt_ping_time = time.monotonic() - 30.0
+    mock_ws = MagicMock()
+
+    with patch.object(mgr._stop_heartbeat_event, "wait", side_effect=[False, True]):
+        mgr._heartbeat_watchdog_loop(mock_ws)
+
+    mock_ws.close.assert_not_called()
+    assert mgr._pending_rtt_ping_time is None
+
+
+def test_idle_ping_still_arms_the_zombie_socket_timeout():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    mgr._last_activity_time = time.time() - 60
+    mgr._last_rtt_ping_time = time.monotonic()
+    mock_ws = MagicMock()
+
+    with patch.object(mgr._stop_heartbeat_event, "wait", side_effect=[False, True]):
+        mgr._heartbeat_watchdog_loop(mock_ws)
+
+    assert mock_ws.send.call_count == 1
+    assert mgr._pending_ping_time > 0.0

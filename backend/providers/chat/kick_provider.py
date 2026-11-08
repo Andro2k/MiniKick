@@ -4,13 +4,14 @@ import logging
 import time
 import cloudscraper
 import requests
+from backend.config import (
+    KICK_API_URL, KICK_BANS_URL, KICK_CATEGORIES_URL, KICK_CATEGORIES_V2_URL, KICK_CHANNEL_URL,
+    KICK_CHANNELS_URL, KICK_CHAT_URL, KICK_POLLS_URL, KICK_REWARDS_URL, KICK_SUBCATEGORIES_URL,
+)
 from backend.interfaces import TokenProvider, TransientAuthError
 
 logger = logging.getLogger("minikick.providers.kick_provider")
 
-KICK_API_URL = "https://api.kick.com/public/v1/users"
-KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
-KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 
 
 class ScraperFactory:
@@ -113,7 +114,7 @@ class KickAPIClient:
     def fetch_active_poll(self, slug: str) -> dict | None:
         if not slug:
             return None
-        url = f"https://kick.com/api/v2/channels/{slug}/polls"
+        url = KICK_POLLS_URL.format(slug=slug)
         try:
             resp = self.scraper.get(url, timeout=5)
             if resp.status_code == 200:
@@ -225,7 +226,7 @@ class KickAPIClient:
         return resp.status_code == 204
     
     def post_chat_message(self, content: str, msg_type: str = "bot", broadcaster_id: int | None = None) -> dict:
-        url = "https://api.kick.com/public/v1/chat"
+        url = KICK_CHAT_URL
         payload = {"content": content, "type": msg_type}
         
         if msg_type == "user" and broadcaster_id is not None:
@@ -238,7 +239,7 @@ class KickAPIClient:
             return {}
     
     def delete_chat_message(self, message_id: str) -> bool:
-        url = f"https://api.kick.com/public/v1/chat/{message_id}"
+        url = f"{KICK_CHAT_URL}/{message_id}"
         try:
             resp = self._request("DELETE", url, timeout=10)
             return resp.status_code == 204
@@ -247,7 +248,7 @@ class KickAPIClient:
             return False
 
     def timeout_user(self, broadcaster_id: int, user_id: int, duration_minutes: int) -> bool:
-        url = "https://api.kick.com/public/v1/moderation/bans"
+        url = KICK_BANS_URL
         payload = {
             "broadcaster_user_id": broadcaster_id,
             "user_id": user_id,
@@ -261,7 +262,7 @@ class KickAPIClient:
             return False
 
     def ban_user(self, broadcaster_id: int, user_id: int) -> bool:
-        url = "https://api.kick.com/public/v1/moderation/bans"
+        url = KICK_BANS_URL
         payload = {
             "broadcaster_user_id": broadcaster_id,
             "user_id": user_id
@@ -304,7 +305,7 @@ class KickAPIClient:
             }
 
     def update_channel_metadata(self, category_id: int | None = None, stream_title: str | None = None, custom_tags: list[str] | None = None) -> bool:
-        url = "https://api.kick.com/public/v1/channels"
+        url = KICK_CHANNELS_URL
         payload = {}
         if category_id is not None:
             try:
@@ -329,7 +330,7 @@ class KickAPIClient:
             return False
 
     def get_channel_metadata(self) -> dict:
-        url = "https://api.kick.com/public/v1/channels"
+        url = KICK_CHANNELS_URL
         try:
             resp = self._request("GET", url, timeout=10)
             if resp.status_code == 200:
@@ -412,7 +413,7 @@ class KickAPIClient:
         encoded_q = requests.utils.quote(q)
         
         try:
-            url = f"https://api.kick.com/public/v1/categories?q={encoded_q}"
+            url = f"{KICK_CATEGORIES_URL}?q={encoded_q}"
             resp = self._request("GET", url, timeout=8)
             if resp.status_code == 200:
                 res_data = resp.json()
@@ -430,7 +431,7 @@ class KickAPIClient:
             logger.debug("[KickAPI] Error in public v1 category search: %s", e)
 
         try:
-            url = f"https://api.kick.com/public/v2/categories?name={encoded_q}&limit=50"
+            url = f"{KICK_CATEGORIES_V2_URL}?name={encoded_q}&limit=50"
             resp = self._request("GET", url, timeout=8)
             if resp.status_code == 200:
                 res_data = resp.json()
@@ -451,7 +452,7 @@ class KickAPIClient:
             if not getattr(self, "_cached_subcategories", None):
                 self._cached_subcategories = []
                 for page in (1, 2, 3):
-                    resp = self.scraper.get(f"https://kick.com/api/v1/subcategories?page={page}&limit=100", timeout=5)
+                    resp = self.scraper.get(f"{KICK_SUBCATEGORIES_URL}?page={page}&limit=100", timeout=5)
                     if resp.status_code == 200:
                         data = resp.json().get("data", [])
                         if isinstance(data, list):
