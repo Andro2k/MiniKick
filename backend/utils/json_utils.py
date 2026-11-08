@@ -90,6 +90,10 @@ def parse_kick_payload(raw: str | bytes | bytearray) -> tuple[str, dict]:
         else:
             inner_data = {}
 
+        channel = outer.get("channel")
+        if isinstance(channel, str):
+            inner_data["channel"] = channel
+
         return str(event), inner_data
 
     except Exception:

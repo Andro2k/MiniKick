@@ -60,6 +60,7 @@
 | **INC-046** | `AttributeError` al abrir Settings por callbacks de YouTube y TikTok inexistentes en `MainWindowCore` | Log de usuario `minikick.log` (2026-11-01, líneas 84-111) | v1.6.6 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.6 |
 | **INC-047** | El generador de capturas llama a un handler de navegación eliminado y termina con un worker activo | Reporte del usuario al ejecutar `resources/tools/generate_screenshots.py` | v1.6.6 | `✅ Solventado` | `resources/tools/generate_screenshots.py`, `resources/tests/test_screenshot_generator.py` | v1.6.6 (`WT-1.6.6_12`) |
 | **INC-048** | Bordes dentados en los badges circulares de diálogos e icono de actualización recortado | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/base_dialog.py`, `frontend/dialogs/updater_dialog.py`, `frontend/common/icons.py` | v1.6.6 |
+| **INC-049** | Diagnóstico insuficiente de episodios de latencia de chat Kick con WebSocket activo | Reporte de usuario / resumen de telemetría (15 arranques, ~9.5 h; adjunto `minikick.log` vacío) | v1.6.7 | `✅ Solventado` | `backend/providers/chat/kick_ws_provider.py`, `backend/utils/latency_monitor.py`, `backend/utils/json_utils.py` | v1.6.7 (`WT-1.6.7_06`) |
 >>>>>>> Stashed changes
 
 ---
@@ -1189,3 +1190,28 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `resources/tests/test_updater_dialog.py`
 * **Solución Implementada**: Los badges ahora se dibujan como círculos con `QPainter` antialias y fondo transparente. El updater encuentra el QLabel del glifo por su nombre y renderiza los iconos al tamaño de esa etiqueta. Las utilidades de rutas de frontend se consolidaron en `frontend/common/icons.py` y se actualizaron sus importaciones.
 * **Pruebas y Verificación**: Las 9 pruebas de `test_delete_confirmation_dialogs.py` y la prueba de tamaño de iconos del updater pasaron; la suite de calidad rápida pasó 12/12. `test_update_dialog_reserves_space_for_completed_content` conserva un fallo preexistente en su última aserción de margen (espera 20 px, frente a los 12 px definidos por `Size.Margin.MRG_LRG`).
+
+---
+
+### INC-049: Diagnóstico insuficiente de episodios de latencia de chat Kick con WebSocket activo
+
+* **Estado**: `✅ Solventado` (el déficit de diagnóstico; la demora reportada queda sin atribución).
+* **Severidad**: **MEDIA** (los episodios son transitorios y el diagnóstico previo no distinguía el retraso de entrega del tiempo de procesamiento en el hilo del socket).
+* **Reportes Asociados**: Reporte del usuario con resultados de telemetría de 15 arranques y aproximadamente 9.5 horas; el archivo adjunto `minikick.log` estaba vacío.
+* **Fecha y Versión del Fallo**: 2026-11-07 en MiniKick `v1.6.7`.
+* **Traza / Evidencia**:
+  ```text
+  Dos episodios de 1 a 2 minutos con latencia reportada de 15 a 25 segundos.
+  UI queue <= 2 ms y UI pipeline <= 148 ms; sin reconexiones, timeouts ni pongs registrados.
+  ```
+* **Causa Raíz**: La telemetría mostraba latencia entre `created_at` de Kick y la recepción local, pero no medía RTT de Pusher, intervalo entre frames ni edad del último pong. Además, `parse_kick_payload` descartaba el tópico `channel`. El desfase conocido del reloj local respecto a Kick podía producir latencias negativas; el máximo por intervalo se inicializaba en `0.0` y ocultaba que todas las muestras fueran negativas.
+* **Archivos y Módulos Modificados**:
+  - `backend/utils/latency_monitor.py` (líneas 36, 44-73)
+  - `backend/utils/json_utils.py` (líneas 93-95)
+  - `backend/providers/chat/kick_ws_provider.py` (líneas 43, 68, 194-205, 261-263, 299-317, 386-397, 461-509)
+  - `resources/tests/test_latency_monitor.py` (líneas 60-70)
+  - `resources/tests/test_json_utils.py` (líneas 57-68)
+  - `resources/tests/test_kick_ws_heartbeat.py` (líneas 54-57, 147-175, 225-264)
+  - `docs/walkthroughs/v1.6.7/WT-1.6.7_06.md` (líneas 1-31)
+* **Solución Implementada**: El monitor conserva máximos negativos correctamente. El watchdog envía sondas Pusher cada aproximadamente 20 segundos incluso con tráfico activo, con una sola sonda RTT pendiente y conservando el timeout existente. Los pongs correlacionados alimentan `Kick pong RTT`. Las advertencias de mensajes lentos incluyen ID, `created_at`, latencia cruda, tópico, separación entre frames, edad del último pong e hilo, con rate limit. El tópico se conserva desde el sobre Pusher. No se modificaron reconexiones, backoff ni la demora reportada, y no se implementó corrección por reloj porque el cliente actual no expone el encabezado `Date`.
+* **Pruebas y Verificación**: Las pruebas solicitadas de latencia, heartbeat, rotación de claves, controlador de chat y ruta de mensajes pasaron (57); `test_json_utils.py` pasó (6). La auditoría rápida pasó 11/12 herramientas; la única falla fue el falso positivo conocido `music.youtube.com` en `backend/utils/youtube_url.py`. Ver detalle en `docs/walkthroughs/v1.6.7/WT-1.6.7_06.md`.

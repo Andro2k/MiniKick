@@ -39,6 +39,8 @@ WATCHDOG_TICK_S = 2.0
 MIN_PROACTIVE_PING_S = 10
 MAX_PROACTIVE_PING_S = 25
 NETWORK_LATENCY_WARN_S = 2.0
+SLOW_MESSAGE_WARN_COOLDOWN_S = 30.0
+PONG_RTT_INTERVAL_S = 20.0
 
 class KickWebSocketManager(BaseChatSocketProvider):
     @property
@@ -63,6 +65,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._seen_message_ids = deque(maxlen=1000)
         self._seen_message_ids_set = set()
         self._net_latency = LatencyMonitor("Kick network", warn_threshold_s=NETWORK_LATENCY_WARN_S)
+        self._pong_rtt_latency = LatencyMonitor("Kick pong RTT", warn_threshold_s=NETWORK_LATENCY_WARN_S)
         self._warned_frame_events: set[str] = set()
         self._callback: Callable | None = None
         self._on_poll_update: Callable[[dict], None] | None = None
@@ -74,6 +77,12 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._on_user_banned: Callable[[str], None] | None = None
         self._last_activity_time: float = 0.0
         self._pending_ping_time: float = 0.0
+        self._pending_rtt_ping_time: float | None = None
+        self._last_rtt_ping_time: float | None = None
+        self._last_pong_time: float | None = None
+        self._last_socket_frame_time: float | None = None
+        self._last_frame_gap_s: float | None = None
+        self._last_slow_message_warning_time: float | None = None
         self._activity_timeout: int = 120
         self._heartbeat_thread: threading.Thread | None = None
         self._stop_heartbeat_event: threading.Event = threading.Event()
@@ -186,6 +195,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
         if not self._running:
             return
 
+        now = time.monotonic()
+        self._last_frame_gap_s = (
+            now - self._last_socket_frame_time if self._last_socket_frame_time is not None else None
+        )
+        self._last_socket_frame_time = now
         self._last_activity_time = time.time()
         self._pending_ping_time = 0.0
 
@@ -245,7 +259,8 @@ class KickWebSocketManager(BaseChatSocketProvider):
 
         latency = self._transit_latency_seconds(inner.get("created_at"))
         if latency is not None:
-            self._net_latency.record(latency)
+            self._net_latency.record(latency, warn=False)
+            self._warn_slow_message(inner, latency)
         if logger.isEnabledFor(logging.DEBUG):
             latency_info = f" (server latency: {latency:.3f}s)" if latency is not None else ""
             logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
@@ -280,6 +295,32 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 self._callback(user, msg, badges, color, msg_id, sender_id, avatar_url)
             except TypeError:
                 self._callback(user, msg, badges, color, msg_id, sender_id)
+
+    def _warn_slow_message(self, inner: dict, latency: float) -> None:
+        if latency <= NETWORK_LATENCY_WARN_S:
+                return
+
+        now = time.monotonic()
+        if (
+                self._last_slow_message_warning_time is not None
+                and now - self._last_slow_message_warning_time < SLOW_MESSAGE_WARN_COOLDOWN_S
+        ):
+                return
+        self._last_slow_message_warning_time = now
+
+        frame_gap = f"{self._last_frame_gap_s:.3f}" if self._last_frame_gap_s is not None else "n/a"
+        pong_age = f"{now - self._last_pong_time:.3f}" if self._last_pong_time is not None else "n/a"
+        logger.warning(
+                "[KickWebSocket] Slow chat message: id=%s created_at=%s latency=%.3fs channel=%s "
+                "frame_gap=%ss since_pong=%ss thread=%s",
+                inner.get("id") or "unknown",
+                inner.get("created_at") or "unknown",
+                latency,
+                inner.get("channel") or "unknown",
+                frame_gap,
+                pong_age,
+                threading.current_thread().name,
+        )
 
     def _handle_poll_update(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         poll_data = inner.get("poll") or inner
@@ -348,6 +389,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
 
         self._last_activity_time = time.time()
         self._pending_ping_time = 0.0
+        self._pending_rtt_ping_time = None
+        self._last_rtt_ping_time = time.monotonic()
+        self._last_pong_time = None
+        self._last_socket_frame_time = None
+        self._last_frame_gap_s = None
         self._start_heartbeat_watchdog(ws)
 
         logger.info(
@@ -401,6 +447,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 break
 
             now = time.time()
+            monotonic_now = time.monotonic()
 
             if self._pending_ping_time > 0.0 and (now - self._pending_ping_time) > pong_timeout:
                 logger.warning(
@@ -415,11 +462,32 @@ class KickWebSocketManager(BaseChatSocketProvider):
                     logger.debug("[KickWebSocket] Error closing zombie socket: %s", e)
                 break
 
-            if self._pending_ping_time == 0.0 and (now - self._last_activity_time) >= ping_interval:
+            if (
+                self._pending_rtt_ping_time is not None
+                and monotonic_now - self._pending_rtt_ping_time >= pong_timeout
+            ):
+                self._pending_rtt_ping_time = None
+
+            idle_ping_due = now - self._last_activity_time >= ping_interval
+            rtt_probe_due = (
+                self._last_rtt_ping_time is None
+                or monotonic_now - self._last_rtt_ping_time >= PONG_RTT_INTERVAL_S
+            )
+            if (
+                self._pending_ping_time == 0.0
+                and self._pending_rtt_ping_time is None
+                and (idle_ping_due or rtt_probe_due)
+            ):
                 try:
                     self._pending_ping_time = now
+                    self._pending_rtt_ping_time = monotonic_now
+                    self._last_rtt_ping_time = monotonic_now
                     ws.send(fast_dumps({"event": "pusher:ping", "data": {}}))
-                    logger.debug("[KickWebSocket] Dispatched pusher:proactive ping (idle %.1fs)", now - self._last_activity_time)
+                    logger.debug(
+                        "[KickWebSocket] Dispatched pusher:proactive ping (idle %.1fs, RTT probe due=%s)",
+                        now - self._last_activity_time,
+                        rtt_probe_due,
+                    )
                 except Exception as e:
                     logger.debug("[KickWebSocket] Error sending proactive pusher:ping: %s", e)
 
@@ -432,6 +500,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 logger.debug("[KickWebSocket] Error sending pusher:pong: %s", e)
 
     def _handle_pong(self, _inner: dict, _ws: websocket.WebSocketApp) -> None:
+        now = time.monotonic()
+        if self._pending_rtt_ping_time is not None:
+            self._pong_rtt_latency.record(now - self._pending_rtt_ping_time)
+            self._pending_rtt_ping_time = None
+        self._last_pong_time = now
         self._pending_ping_time = 0.0
         self._last_activity_time = time.time()
         logger.debug("[KickWebSocket] Pusher heartbeat verified (pusher:pong received)")

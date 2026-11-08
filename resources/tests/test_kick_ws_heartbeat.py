@@ -54,11 +54,17 @@ def test_pusher_ping_handler_sends_valid_pong_with_data():
 def test_pusher_pong_handler_resets_pending_ping():
     mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
     mgr._pending_ping_time = time.time()
+    mgr._pending_rtt_ping_time = time.monotonic() - 0.25
     mock_ws = MagicMock()
 
-    mgr._handle_pong({}, mock_ws)
+    with patch.object(mgr._pong_rtt_latency, "record") as record:
+        mgr._handle_pong({}, mock_ws)
+
     assert mgr._pending_ping_time == 0.0
+    assert mgr._pending_rtt_ping_time is None
     assert mgr._last_activity_time > 0
+    record.assert_called_once()
+    assert 0.0 <= record.call_args.args[0] < 2.0
 
 def test_heartbeat_watchdog_sends_proactive_ping_on_inactivity():
     mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
@@ -138,6 +144,50 @@ def test_proactive_ping_interval_is_bounded_and_faster_than_activity_timeout():
     assert mgr._proactive_ping_interval() == 10
 
 
+def test_heartbeat_watchdog_sends_rtt_probe_while_chat_is_active():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    mgr._last_activity_time = time.time()
+    mgr._last_rtt_ping_time = time.monotonic() - 21.0
+    mock_ws = MagicMock()
+
+    with patch.object(mgr._stop_heartbeat_event, "wait", side_effect=[False, True]):
+        mgr._heartbeat_watchdog_loop(mock_ws)
+
+    assert mock_ws.send.call_count == 1
+    payload = fast_loads(mock_ws.send.call_args.args[0])
+    assert payload["event"] == "pusher:ping"
+    assert mgr._pending_ping_time > 0.0
+    assert mgr._pending_rtt_ping_time is not None
+
+
+def test_heartbeat_watchdog_does_not_send_second_rtt_probe_while_one_is_pending():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    mgr._last_activity_time = time.time()
+    mgr._last_rtt_ping_time = time.monotonic() - 21.0
+    mgr._pending_rtt_ping_time = time.monotonic() - 1.0
+    mock_ws = MagicMock()
+
+    with patch.object(mgr._stop_heartbeat_event, "wait", side_effect=[False, True]):
+        mgr._heartbeat_watchdog_loop(mock_ws)
+
+    mock_ws.send.assert_not_called()
+
+
+def test_raw_frame_tracks_time_since_previous_socket_frame():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    mock_ws = MagicMock()
+
+    with patch("backend.providers.chat.kick_ws_provider.time.monotonic", side_effect=[10.0, 10.75]):
+        mgr._on_raw_frame(mock_ws, '{"event":"unknown:first","data":{}}')
+        assert mgr._last_frame_gap_s is None
+        mgr._on_raw_frame(mock_ws, '{"event":"unknown:second","data":{}}')
+
+    assert mgr._last_frame_gap_s == 0.75
+
+
 def test_start_socket_uses_tight_ping_settings():
     mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
     with patch("websocket.WebSocketApp") as mock_app_class:
@@ -170,3 +220,47 @@ def test_chat_message_records_network_latency_even_without_debug_logging():
     record.assert_called_once()
     assert record.call_args.args[0] > 0.0
     mgr._callback.assert_called_once()
+
+
+def test_slow_chat_warning_includes_network_diagnostic_context(caplog):
+    import logging
+
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._last_frame_gap_s = 0.125
+    mgr._last_pong_time = 98.75
+    inner = {
+        "id": "message-42",
+        "content": "hello",
+        "created_at": "2026-11-07T21:00:00Z",
+        "channel": "chatrooms.123.v2",
+        "sender": {"id": 1, "username": "viewer"},
+    }
+
+    with patch.object(mgr, "_transit_latency_seconds", return_value=3.5), \
+            patch("backend.providers.chat.kick_ws_provider.time.monotonic", return_value=100.0), \
+            patch.object(mgr._net_latency, "record") as record, \
+            caplog.at_level(logging.WARNING, logger="minikick.providers.kick_ws_provider"):
+        mgr._handle_chat_message(inner, MagicMock())
+
+    warning = next(
+        entry.getMessage()
+        for entry in caplog.records
+        if "Slow chat message:" in entry.getMessage()
+    )
+    assert "id=message-42" in warning
+    assert "created_at=2026-11-07T21:00:00Z" in warning
+    assert "latency=3.500s" in warning
+    assert "channel=chatrooms.123.v2" in warning
+    assert "frame_gap=0.125s" in warning
+    assert "since_pong=1.250s" in warning
+    assert "thread=MainThread" in warning
+    record.assert_called_once_with(3.5, warn=False)
+
+    inner["id"] = "message-43"
+    with patch.object(mgr, "_transit_latency_seconds", return_value=4.0), \
+            patch("backend.providers.chat.kick_ws_provider.time.monotonic", return_value=100.0), \
+            patch.object(mgr._net_latency, "record"), \
+            caplog.at_level(logging.WARNING, logger="minikick.providers.kick_ws_provider"):
+        mgr._handle_chat_message(inner, MagicMock())
+
+    assert len([entry for entry in caplog.records if "Slow chat message:" in entry.getMessage()]) == 1

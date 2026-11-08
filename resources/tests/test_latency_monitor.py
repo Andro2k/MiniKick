@@ -55,3 +55,16 @@ def test_report_is_skipped_when_no_samples(caplog):
         clock.now += 100
         mon._report(clock.now)
     assert not caplog.records
+
+
+def test_periodic_report_maximum_handles_all_negative_samples(caplog):
+    clock = FakeClock()
+    mon = LatencyMonitor("clock-skew", report_interval_s=10.0, clock=clock)
+    with caplog.at_level(logging.INFO, logger="minikick.utils.latency"):
+        mon.record(-2.0)
+        mon.record(-1.0)
+        clock.now += 11
+        mon.record(-3.0)
+
+    report = next(record.getMessage() for record in caplog.records if record.levelno == logging.INFO)
+    assert "max=-1.000s" in report

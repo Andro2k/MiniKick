@@ -33,7 +33,7 @@ class LatencyMonitor:
         self._samples: deque[float] = deque(maxlen=window)
         self._interval_count = 0
         self._interval_sum = 0.0
-        self._interval_max = 0.0
+        self._interval_max: float | None = None
         self._last_report = clock()
         self._last_warn: float | None = None
 
@@ -41,14 +41,14 @@ class LatencyMonitor:
     def p95(self) -> float:
         return _percentile_95(self._samples)
 
-    def record(self, seconds: float) -> None:
+    def record(self, seconds: float, *, warn: bool = True) -> None:
         now = self._clock()
         self._samples.append(seconds)
         self._interval_count += 1
         self._interval_sum += seconds
-        self._interval_max = max(self._interval_max, seconds)
+        self._interval_max = seconds if self._interval_max is None else max(self._interval_max, seconds)
 
-        if seconds >= self._warn_threshold_s and (
+        if warn and seconds >= self._warn_threshold_s and (
             self._last_warn is None or now - self._last_warn >= self._warn_cooldown_s
         ):
             self._last_warn = now
@@ -61,7 +61,7 @@ class LatencyMonitor:
             self._report(now)
 
     def _report(self, now: float) -> None:
-        if self._interval_count:
+        if self._interval_count and self._interval_max is not None:
             logger.info(
                 "[Latency/%s] Last %.0fs: n=%d avg=%.3fs p95=%.3fs max=%.3fs",
                 self._name, now - self._last_report, self._interval_count,
@@ -69,5 +69,5 @@ class LatencyMonitor:
             )
         self._interval_count = 0
         self._interval_sum = 0.0
-        self._interval_max = 0.0
+        self._interval_max = None
         self._last_report = now
