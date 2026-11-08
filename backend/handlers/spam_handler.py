@@ -3,7 +3,7 @@
 import re
 import logging
 from backend.services.system import TranslationService
-from backend.utils import strip_emojis
+from backend.utils import apply_pronunciations, normalize_symbols_for_speech, speakable_username, strip_emojis
 
 logger = logging.getLogger("minikick.handlers.chat_filter")
 
@@ -118,6 +118,8 @@ class ChatFilterHandler:
 
         cleaned = self._REPEAT_CHARS_REGEX.sub(r"\1\1\1", cleaned)
 
+        cleaned = apply_pronunciations(normalize_symbols_for_speech(cleaned))
+
         cleaned = self._SPACES_REGEX.sub(" ", cleaned).strip()
 
         if len(cleaned) > self.MAX_TTS_TEXT_LENGTH:
@@ -128,6 +130,12 @@ class ChatFilterHandler:
                 cleaned = cleaned[:self.MAX_TTS_TEXT_LENGTH] + "..."
 
         return cleaned
+
+    def build_spoken_text(self, user: str, message: str, read_name: bool = True) -> str:
+        if not read_name:
+            return message
+        spoken_user = speakable_username(user) or user
+        return self.i18n.get("chat.status.user_says").replace("{user}", spoken_user).replace("{message}", message)
 
     def add_bot(self, bot_name: str, view) -> bool:
         clean_name = bot_name.strip().lower()

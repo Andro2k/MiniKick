@@ -480,7 +480,7 @@ class ChatController(QObject):
         gif_url = getattr(dto, "gif_url", "")
         cleaned = self.filter_handler.clean_message_for_tts(msg_content, emotes_tag=emotes_tag, gif_url=gif_url)
         if cleaned:
-            text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
+            text = self.filter_handler.build_spoken_text(dto.user, cleaned, settings.get("read_name", True))
             voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)
             self.service.speak(text, voice_id=voice_id)
 
@@ -784,7 +784,7 @@ class ChatController(QObject):
             logger.debug("[TTS] Skipped '%s' from %s: Cleaned message is empty (only emotes/symbols/gifs)", msg[:30], dto.user)
             return
 
-        text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
+        text = self.filter_handler.build_spoken_text(dto.user, cleaned, settings.get("read_name", True))
         voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)
         self.service.speak(text, voice_id=voice_id)
 
