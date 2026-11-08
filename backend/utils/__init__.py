@@ -6,7 +6,7 @@ from .json_utils import fast_loads, fast_dumps, fast_load, fast_dump, parse_kick
 from .latency_monitor import LatencyMonitor
 from .paths import resource_path
 from .perf import elapsed_ms, perf_phase
-from .text_utils import is_speakable_text
+from .text_utils import is_speakable_text, strip_emojis
 from .worker_utils import ExponentialBackoff, cooperative_sleep, stop_provider_chat_worker
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "parse_kick_payload",
     "LatencyMonitor",
     "is_speakable_text",
+    "strip_emojis",
     "extract_emotes",
     "resource_path",
     "elapsed_ms",

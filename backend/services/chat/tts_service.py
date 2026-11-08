@@ -5,6 +5,7 @@ import queue
 import threading
 from typing import Dict
 from backend.interfaces import ITTSProvider
+from backend.utils import strip_emojis
 
 logger = logging.getLogger("minikick.services.chat.tts")
 
@@ -94,7 +95,10 @@ class TTSManager:
         if self._is_shutdown:
             logger.warning("[TTS Manager] Ignoring speech request after shutdown.")
         elif text and text.strip():
-            clean_t = text.strip()
+            clean_t = strip_emojis(text)
+            if not clean_t:
+                logger.debug("[TTS Manager] Ignoring text that only contains emojis.")
+                return
             self.text_queue.put((clean_t, voice_id))
             logger.debug("[TTS Manager] Enqueued text (qsize=%d): '%s' (voice=%s)", self.text_queue.qsize(), clean_t[:35], voice_id or "default")
 

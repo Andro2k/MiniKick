@@ -3,6 +3,7 @@
 import re
 import logging
 from backend.services.system import TranslationService
+from backend.utils import strip_emojis
 
 logger = logging.getLogger("minikick.handlers.chat_filter")
 
@@ -84,7 +85,7 @@ class ChatFilterHandler:
         return False
 
     def clean_message_for_tts(self, text: str, emotes_tag: str = "", gif_url: str = "") -> str:
-        cleaned = self._TWITCH_GIF_REGEX.sub("", text)
+        cleaned = self._TWITCH_GIF_REGEX.sub("", strip_emojis(text))
         if gif_url:
             cleaned = cleaned.replace(gif_url, "")
             if "giphy.com" in gif_url:
