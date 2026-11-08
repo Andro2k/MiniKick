@@ -1,15 +1,17 @@
 # backend\config\__init__.py
 
 import logging
+from dataclasses import dataclass
 
 from .version import APP_VERSION
 from .locale_defaults import DEFAULT_DICTIONARY
-from .pusher_config import KICK_PUSHER, PusherConfig
 from .toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
 
 logger = logging.getLogger("minikick.config")
 
 DEFAULT_REDIRECT_URI = "http://localhost:8080/auth/callback"
+_DEFAULT_KICK_PUSHER_CLUSTER = "us2"
+_DEFAULT_KICK_PUSHER_KEYS = ("34bf7a0ff419a2a775b9", "32cbd69e4b950bf97679")
 
 try:
     from . import api_keys as _keys
@@ -23,6 +25,19 @@ API_KEYS_MISSING = _keys is None
 def _key(name: str, default: str = "") -> str:
     return getattr(_keys, name, default)
 
+
+@dataclass(frozen=True)
+class PusherConfig:
+    cluster: str
+    keys: tuple[str, ...]
+
+
+_pusher_cluster = _key("KICK_PUSHER_CLUSTER", _DEFAULT_KICK_PUSHER_CLUSTER).strip()
+_pusher_key = _key("KICK_PUSHER_KEY").strip()
+KICK_PUSHER = PusherConfig(
+    cluster=_pusher_cluster or _DEFAULT_KICK_PUSHER_CLUSTER,
+    keys=(_pusher_key,) if _pusher_key else _DEFAULT_KICK_PUSHER_KEYS,
+)
 
 KICK_CLIENT_ID = _key("KICK_CLIENT_ID")
 KICK_CLIENT_SECRET = _key("KICK_CLIENT_SECRET")

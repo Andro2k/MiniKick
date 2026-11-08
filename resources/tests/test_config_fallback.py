@@ -28,5 +28,21 @@ class ConfigFallbackTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("OK", result.stdout)
 
+    def test_pusher_uses_the_centralized_local_settings(self) -> None:
+        code = (
+            "import sys, types; "
+            "keys = types.ModuleType('backend.config.api_keys'); "
+            "keys.KICK_PUSHER_CLUSTER = 'eu1'; "
+            "keys.KICK_PUSHER_KEY = 'configured-key'; "
+            "sys.modules['backend.config.api_keys'] = keys; "
+            "import backend.config as c; "
+            "assert c.KICK_PUSHER.cluster == 'eu1'; "
+            "assert c.KICK_PUSHER.keys == ('configured-key',)"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code], cwd=REPO_ROOT, capture_output=True, text=True, timeout=60
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 if __name__ == "__main__":
     unittest.main()

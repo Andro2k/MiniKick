@@ -3,14 +3,14 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
-from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, ChatTheme
+from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, MockupPalette
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
 DEFAULT_CHAT_THEME = "dark"
 
 class ChatOverlayMockupWidget(QWidget):
-    _AVATAR_GRADIENTS = ChatTheme.AVATAR_GRADIENTS
+    _AVATAR_GRADIENTS = MockupPalette.AVATAR_GRADIENTS
 
     _BADGE_CONFIG = {
         "twitch": ("\uf1e8", BrandColors.TWITCH, BrandColors.TWITCH_DARK, Palette.NEUTRAL_000),
@@ -234,7 +234,7 @@ class ChatOverlayMockupWidget(QWidget):
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
             p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 30), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(ChatTheme.CHAT_PREVIEW_SURFACE, 195)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(MockupPalette.CHAT_PREVIEW_SURFACE, 195)))
             p.drawRoundedRect(rect, 16, 16)
 
     def _draw_vertical(self, p: QPainter, w: int, h: int, user: str, msg1: str, msg2_data):
@@ -271,7 +271,7 @@ class ChatOverlayMockupWidget(QWidget):
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
             p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 28), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(ChatTheme.CHAT_PREVIEW_SURFACE, 195)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(MockupPalette.CHAT_PREVIEW_SURFACE, 195)))
             p.drawRoundedRect(rect, 14, 14)
         av_size = 38.0
         av_x = x + 10.0

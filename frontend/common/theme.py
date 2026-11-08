@@ -28,12 +28,8 @@ class Semantic:
     LIGHT_TEXT_MUTED      = "#64748B"
     DANGER_SURFACE        = "#2D1215"
     MEDIA_THUMB_BG        = "#1E293B"
-    CALLOUT_NOTE_LIGHT    = "#60A5FA"
     CALLOUT_WARNING_LIGHT = "#FACC15"
-    CALLOUT_TIP_LIGHT     = "#4ADE80"
-    CALLOUT_CAUTION_LIGHT = "#F87171"
     CODE_LINK             = "#38BDF8"
-    LATEX_MATH            = "#A5B4FC"
     WHITE_GLOW            = "rgba(250, 250, 250, 0.05)"
     GREEN_GLOW            = "rgba(46, 205, 112, 0.10)"
     RED_GLOW              = "rgba(239, 68, 68, 0.10)"
@@ -92,7 +88,7 @@ class BrandColors:
     GREEN_900      = "#0F4F29"
 
 
-class MusicTheme:
+class MockupPalette:
     MUSIC_VINYL_BG_TOP    = "#3E5238"
     MUSIC_VINYL_BG_BOTTOM = "#243129"
     MUSIC_VINYL_ACCENT    = "#A7BD89"
@@ -102,29 +98,25 @@ class MusicTheme:
     MUSIC_CARD_TEXT       = "#35272B"
     MUSIC_CARD_TEXT_SUB   = "#503D41"
     MUSIC_ART_ACCENT      = "#F43F5E"
-    MUSIC_VINYL_BLACK     = "#111114"
-    MUSIC_VINYL_HOLE      = "#09090B"
-    MUSIC_METAL_DARK      = "#1F2937"
-    MUSIC_TONEARM         = "#D1D5DB"
-    MUSIC_HEAD_BORDER     = "#374151"
-    MUSIC_HEAD_BG         = "#111827"
-    MUSIC_GROOVE          = "#303038"
+    MUSIC_VINYL_BLACK     = Palette.NEUTRAL_950
+    MUSIC_VINYL_HOLE      = Palette.NEUTRAL_999
+    MUSIC_METAL_DARK      = Palette.NEUTRAL_750
+    MUSIC_TONEARM         = Palette.NEUTRAL_200
+    MUSIC_HEAD_BORDER     = Palette.NEUTRAL_700
+    MUSIC_HEAD_BG         = Palette.NEUTRAL_950
+    MUSIC_GROOVE          = Palette.NEUTRAL_750
 
+    ALERT_PREVIEW_BG        = Palette.NEUTRAL_950
+    ALERT_PREVIEW_TILE_A    = Palette.NEUTRAL_900
+    ALERT_PREVIEW_TILE_B    = Palette.NEUTRAL_950
+    ALERT_PREVIEW_BORDER    = Palette.NEUTRAL_700
+    ALERT_PREVIEW_MEDIA     = Palette.NEUTRAL_900
+    ALERT_PREVIEW_MEDIA_TOP = Palette.NEUTRAL_750
 
-class AlertTheme:
-    ALERT_PREVIEW_BG        = "#121317"
-    ALERT_PREVIEW_TILE_A    = "#11141C"
-    ALERT_PREVIEW_TILE_B    = "#0B0D13"
-    ALERT_PREVIEW_BORDER    = "#1F242F"
-    ALERT_PREVIEW_MEDIA     = "#12161E"
-    ALERT_PREVIEW_MEDIA_TOP = "#222632"
-
-
-class ChatTheme:
-    CHAT_PREVIEW_SURFACE = "#12121A"
+    CHAT_PREVIEW_SURFACE = Palette.NEUTRAL_950
     AVATAR_GRADIENTS     = (
         (BrandColors.INDIGO_DARK, BrandColors.INDIGO_600), (BrandColors.PURPLE_500, BrandColors.PURPLE_600),
-        (BrandColors.PINK, BrandColors.PINK_600), (MusicTheme.MUSIC_ART_ACCENT, BrandColors.RED_600),
+        (BrandColors.PINK, BrandColors.PINK_600), (MUSIC_ART_ACCENT, BrandColors.RED_600),
         (BrandColors.ORANGE_500, BrandColors.ORANGE_DARK), (BrandColors.AMBER, BrandColors.AMBER_600),
         (BrandColors.EMERALD, BrandColors.GREEN_600), (BrandColors.CYAN_500, BrandColors.CYAN_600),
     )
@@ -306,7 +298,6 @@ def _tonal_role_qss(role: str, color: str) -> str:
         f"{sel}:disabled  {{ background-color: {Semantic.WHITE_GLOW}; border-color: {Palette.NEUTRAL_900}; }}\n"
     )
 
-_ROW_ACTION_QSS = "".join(_tonal_role_qss(role, color) for role, color in ROW_ACTION_COLORS.items())
 
 def _build_button_qss(text1: int) -> str:
     return f"""
@@ -337,7 +328,6 @@ QPushButton[role="action_accent_solid"]:focus       {{ border-color: {Palette.NE
 QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_900}; }}
 
 /* Row actions: tonal buttons for table cells */
-{_ROW_ACTION_QSS}
 /* Platform actions use their brand color without gradients or bevels. */
 QPushButton[role="action_kick"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Palette.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; }}
 QPushButton[role="action_kick"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}

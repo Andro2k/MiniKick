@@ -1,7 +1,7 @@
 ﻿# resources\tests\test_antigravity_ui_theme.py
 
 from PySide6.QtWidgets import QLabel, QPushButton
-from frontend.common import get_global_qss, Palette
+from frontend.common import get_global_qss, MockupPalette, Palette
 from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernDivider
 from frontend.views.settings_view import SettingsView
 from frontend.navigation import Sidebar
@@ -97,6 +97,14 @@ def test_theme_tokens_clean_and_complete():
         source = inspect.getsource(fn)
         matches = hex_pattern.findall(source)
         assert len(matches) == 0, f"Raw hex codes found in {fn.__name__}: {matches}"
+
+def test_mockup_palette_reuses_shared_surface_tokens():
+    assert MockupPalette.ALERT_PREVIEW_BG == Palette.NEUTRAL_950
+    assert MockupPalette.ALERT_PREVIEW_TILE_A == Palette.NEUTRAL_900
+    assert MockupPalette.ALERT_PREVIEW_TILE_B == Palette.NEUTRAL_950
+    assert MockupPalette.CHAT_PREVIEW_SURFACE == Palette.NEUTRAL_950
+    assert MockupPalette.MUSIC_VINYL_BLACK == Palette.NEUTRAL_950
+    assert len(MockupPalette.AVATAR_GRADIENTS) == 8
 
 def test_dashboard_view_profile_cards_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
