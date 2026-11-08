@@ -8,6 +8,7 @@ from typing import Callable
 import requests
 import websocket
 
+from backend.config import TWITCH_EVENTSUB_API_URL
 from backend.models import AlertEvent, AlertType
 from backend.services.system import TranslationService
 from backend.utils import fast_loads
@@ -16,7 +17,6 @@ from .base_chat_provider import BaseChatSocketProvider
 logger = logging.getLogger("minikick.providers.twitch_eventsub")
 
 TWITCH_EVENTSUB_WS_URL = "wss://eventsub.wss.twitch.tv/ws"
-TWITCH_EVENTSUB_API_URL = "https://api.twitch.tv/helix/eventsub/subscriptions"
 
 RFC_6455_CLOSE_CODES: dict[int, str] = {
     1000: "Normal Closure",

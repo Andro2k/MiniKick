@@ -49,6 +49,27 @@ DISCORD_WEBHOOK_URL = _key("DISCORD_WEBHOOK_URL")
 SIGN_API_KEY = _key("SIGN_API_KEY")
 GIPHY_API_KEY = _key("GIPHY_API_KEY")
 
+PUSHER_WS_URL_TEMPLATE = "wss://ws-{cluster}.pusher.com/app/{key}?protocol=7&client=js&version=7.6.0"
+
+KICK_API_BASE = "https://api.kick.com/public/v1"
+KICK_API_URL = f"{KICK_API_BASE}/users"
+KICK_CHANNELS_URL = f"{KICK_API_BASE}/channels"
+KICK_REWARDS_URL = f"{KICK_API_BASE}/channels/rewards"
+KICK_CHAT_URL = f"{KICK_API_BASE}/chat"
+KICK_BANS_URL = f"{KICK_API_BASE}/moderation/bans"
+KICK_CATEGORIES_URL = f"{KICK_API_BASE}/categories"
+KICK_CATEGORIES_V2_URL = "https://api.kick.com/public/v2/categories"
+KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
+KICK_POLLS_URL = "https://kick.com/api/v2/channels/{slug}/polls"
+KICK_SUBCATEGORIES_URL = "https://kick.com/api/v1/subcategories"
+KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
+KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
+
+TWITCH_AUTH_URL = "https://id.twitch.tv/oauth2/authorize"
+TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
+TWITCH_HELIX_BASE = "https://api.twitch.tv/helix"
+TWITCH_EVENTSUB_API_URL = f"{TWITCH_HELIX_BASE}/eventsub/subscriptions"
+
 __all__ = [
     "APP_VERSION",
     "API_KEYS_MISSING",
@@ -66,4 +87,22 @@ __all__ = [
     "CONFIG_FILE_NAME",
     "TomlConfigProvider",
     "DEFAULT_DICTIONARY",
+    "PUSHER_WS_URL_TEMPLATE",
+    "KICK_API_BASE",
+    "KICK_API_URL",
+    "KICK_CHANNELS_URL",
+    "KICK_REWARDS_URL",
+    "KICK_CHAT_URL",
+    "KICK_BANS_URL",
+    "KICK_CATEGORIES_URL",
+    "KICK_CATEGORIES_V2_URL",
+    "KICK_CHANNEL_URL",
+    "KICK_POLLS_URL",
+    "KICK_SUBCATEGORIES_URL",
+    "KICK_AUTH_URL",
+    "KICK_TOKEN_URL",
+    "TWITCH_AUTH_URL",
+    "TWITCH_TOKEN_URL",
+    "TWITCH_HELIX_BASE",
+    "TWITCH_EVENTSUB_API_URL",
 ]

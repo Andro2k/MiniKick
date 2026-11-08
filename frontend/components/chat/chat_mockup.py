@@ -234,7 +234,7 @@ class ChatOverlayMockupWidget(QWidget):
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
             p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 30), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(MockupPalette.CHAT_PREVIEW_SURFACE, 195)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(Palette.NEUTRAL_950, 195)))
             p.drawRoundedRect(rect, 16, 16)
 
     def _draw_vertical(self, p: QPainter, w: int, h: int, user: str, msg1: str, msg2_data):
@@ -271,7 +271,7 @@ class ChatOverlayMockupWidget(QWidget):
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
             p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 28), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(MockupPalette.CHAT_PREVIEW_SURFACE, 195)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(Palette.NEUTRAL_950, 195)))
             p.drawRoundedRect(rect, 14, 14)
         av_size = 38.0
         av_x = x + 10.0

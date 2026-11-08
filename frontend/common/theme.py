@@ -98,22 +98,7 @@ class MockupPalette:
     MUSIC_CARD_TEXT       = "#35272B"
     MUSIC_CARD_TEXT_SUB   = "#503D41"
     MUSIC_ART_ACCENT      = "#F43F5E"
-    MUSIC_VINYL_BLACK     = Palette.NEUTRAL_950
-    MUSIC_VINYL_HOLE      = Palette.NEUTRAL_999
-    MUSIC_METAL_DARK      = Palette.NEUTRAL_750
-    MUSIC_TONEARM         = Palette.NEUTRAL_200
-    MUSIC_HEAD_BORDER     = Palette.NEUTRAL_700
-    MUSIC_HEAD_BG         = Palette.NEUTRAL_950
-    MUSIC_GROOVE          = Palette.NEUTRAL_750
 
-    ALERT_PREVIEW_BG        = Palette.NEUTRAL_950
-    ALERT_PREVIEW_TILE_A    = Palette.NEUTRAL_900
-    ALERT_PREVIEW_TILE_B    = Palette.NEUTRAL_950
-    ALERT_PREVIEW_BORDER    = Palette.NEUTRAL_700
-    ALERT_PREVIEW_MEDIA     = Palette.NEUTRAL_900
-    ALERT_PREVIEW_MEDIA_TOP = Palette.NEUTRAL_750
-
-    CHAT_PREVIEW_SURFACE = Palette.NEUTRAL_950
     AVATAR_GRADIENTS     = (
         (BrandColors.INDIGO_DARK, BrandColors.INDIGO_600), (BrandColors.PURPLE_500, BrandColors.PURPLE_600),
         (BrandColors.PINK, BrandColors.PINK_600), (MUSIC_ART_ACCENT, BrandColors.RED_600),
@@ -127,7 +112,6 @@ class BadgeTheme:
     BADGE_MOD = "#3EC669"
     BADGE_VIP = "#E08338"
     BADGE_SUB = "#389CE0"
-    BADGE_BCG = Palette.NEUTRAL_750
 
 
 class SwitchTheme:
@@ -140,33 +124,6 @@ class SwitchTheme:
     SWITCH_THUMB_ON_01  = "#E4E3EA"
     SWITCH_THUMB_DIS_0 = "#D4D2DC"
     SWITCH_THUMB_DIS_1 = "#9D9AA8"
-
-
-class Radius:
-    RAD_XXS = 2
-    RAD_XSM = 6
-    RAD_MED = 8
-    RAD_LRG = 12
-    RAD_XLG = 16
-    RAD_FUL = 24
-
-
-class Margin:
-    MRG_NON = (0, 0, 0, 0)
-    MRG_XXS = (2, 2, 2, 2)
-    MRG_XSM = (6, 6, 6, 6)
-    MRG_MED = (8, 8, 8, 8)
-    MRG_LRG = (12, 12, 12, 12)
-    MRG_XLG = (16, 16, 16, 16)
-
-    MRG_HXS = (2, 0, 2, 0)
-    MRG_HSM = (6, 0, 6, 0)
-
-    MRG_VXS = (0, 2, 0, 2)
-    MRG_VSM = (0, 6, 0, 6)
-
-    SEC_HDR = (2, 12, 2, 4)
-    SEC_BDG = (4, 4, 8, 4)
 
 
 class Padding:
@@ -185,8 +142,31 @@ class Typography:
 
 
 class Size:
-    Radius     = Radius
-    Margin     = Margin
+    class Radius:
+        RAD_XXS = 2
+        RAD_XSM = 6
+        RAD_MED = 8
+        RAD_LRG = 12
+        RAD_XLG = 16
+        RAD_FUL = 24
+
+    class Margin:
+        MRG_NON = (0, 0, 0, 0)
+        MRG_XXS = (2, 2, 2, 2)
+        MRG_XSM = (6, 6, 6, 6)
+        MRG_MED = (8, 8, 8, 8)
+        MRG_LRG = (12, 12, 12, 12)
+        MRG_XLG = (16, 16, 16, 16)
+
+        MRG_HXS = (2, 0, 2, 0)
+        MRG_HSM = (6, 0, 6, 0)
+
+        MRG_VXS = (0, 2, 0, 2)
+        MRG_VSM = (0, 6, 0, 6)
+
+        SEC_HDR = (2, 12, 2, 4)
+        SEC_BDG = (4, 4, 8, 4)
+
     SPACING_NN  = 0
     SPACING_XS  = 2
     SPACING_XXS = 4
@@ -212,12 +192,9 @@ class Borders:
     BRD_SOFT = get_border(Palette.NEUTRAL_900)
     BRD_MUTE = get_border(Palette.NEUTRAL_700)
     BRD_THIN = get_border("transparent")
-    BRD_HOVR = get_border(Semantic.BORDER_HOVER)
     BRD_LITE = get_border(Semantic.BORDER_LIGHT)
-    BRD_KICK = get_border(BrandColors.KICK_BORDER)
     PRP_MEDM = get_border(BrandColors.PURPLE)
     BRD_FOCS = get_border(BrandColors.GREEN)
-    BRD_FAIL = get_border(BrandColors.RED)
     BRD_SHIN = get_border(Semantic.BORDER_TOP_SHINE)
 
 
@@ -615,15 +592,15 @@ QWidget[role="table_no_results"] {{ background-color: {Palette.NEUTRAL_950}; }}
 
 /* Scrollbars */
 QScrollBar:vertical                 {{ border: none; background: transparent; width: 9px; margin: 4px 1px 4px 1px; }}
-QScrollBar::handle:vertical         {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.RAD_XXS}px; min-height: 24px; }}
-QScrollBar::handle:vertical:hover   {{ background-color: rgba(255, 255, 255, 0.32); }}
-QScrollBar::handle:vertical:pressed {{ background-color: rgba(255, 255, 255, 0.48); }}
+QScrollBar::handle:vertical         {{ background-color: {rgba(Palette.NEUTRAL_000, 0.16)}; border-radius: {Size.Radius.RAD_XXS}px; min-height: 24px; }}
+QScrollBar::handle:vertical:hover   {{ background-color: {rgba(Palette.NEUTRAL_000, 0.32)}; }}
+QScrollBar::handle:vertical:pressed {{ background-color: {rgba(Palette.NEUTRAL_000, 0.48)}; }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 0px; background: none; }}
 
 QScrollBar:horizontal                   {{ border: none; background: transparent; height: 9px; margin: 1px 4px 1px 4px; }}
-QScrollBar::handle:horizontal           {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.RAD_XXS}px; min-width: 24px; }}
-QScrollBar::handle:horizontal:hover     {{ background-color: rgba(255, 255, 255, 0.32); }}
-QScrollBar::handle:horizontal:pressed   {{ background-color: rgba(255, 255, 255, 0.48); }}
+QScrollBar::handle:horizontal           {{ background-color: {rgba(Palette.NEUTRAL_000, 0.16)}; border-radius: {Size.Radius.RAD_XXS}px; min-width: 24px; }}
+QScrollBar::handle:horizontal:hover     {{ background-color: {rgba(Palette.NEUTRAL_000, 0.32)}; }}
+QScrollBar::handle:horizontal:pressed   {{ background-color: {rgba(Palette.NEUTRAL_000, 0.48)}; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 0px; background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 

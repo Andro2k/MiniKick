@@ -5,6 +5,7 @@ import socket
 import threading
 import time
 from datetime import datetime, timezone
+from backend.config import PUSHER_WS_URL_TEMPLATE
 from backend.utils import parse_kick_payload, fast_dumps, LatencyMonitor
 from collections import deque
 import websocket
@@ -130,7 +131,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._on_user_banned = on_user_banned
         self._running = True
         
-        url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
+        url = PUSHER_WS_URL_TEMPLATE.format(cluster=self.cluster, key=self.key)
         self._pusher_error_code = None
         logger.info(
             "[KickWebSocket] Connecting to Pusher WebSocket for room_id=%s (Pusher key %d/%d)...",
@@ -298,14 +299,14 @@ class KickWebSocketManager(BaseChatSocketProvider):
 
     def _warn_slow_message(self, inner: dict, latency: float) -> None:
         if latency <= NETWORK_LATENCY_WARN_S:
-                return
+            return
 
         now = time.monotonic()
         if (
                 self._last_slow_message_warning_time is not None
                 and now - self._last_slow_message_warning_time < SLOW_MESSAGE_WARN_COOLDOWN_S
         ):
-                return
+            return
         self._last_slow_message_warning_time = now
 
         frame_gap = f"{self._last_frame_gap_s:.3f}" if self._last_frame_gap_s is not None else "n/a"
@@ -479,7 +480,8 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 and (idle_ping_due or rtt_probe_due)
             ):
                 try:
-                    self._pending_ping_time = now
+                    if idle_ping_due:
+                        self._pending_ping_time = now
                     self._pending_rtt_ping_time = monotonic_now
                     self._last_rtt_ping_time = monotonic_now
                     ws.send(fast_dumps({"event": "pusher:ping", "data": {}}))

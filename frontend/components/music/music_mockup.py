@@ -121,10 +121,10 @@ class MusicOverlayMockupWidget(QWidget):
         vinyl_cy = disc_cy
         vinyl_r = disc_size / 2
         p.setPen(QPen(QColor(Palette.NEUTRAL_999), 1))
-        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_VINYL_BLACK)))
+        p.setBrush(QBrush(QColor(Palette.NEUTRAL_950)))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r, vinyl_r)
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(get_qcolor_with_alpha(MockupPalette.MUSIC_GROOVE, 180), 0.75))
+        p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_750, 180), 0.75))
         for ratio in (0.86, 0.76, 0.66):
             p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r * ratio, vinyl_r * ratio)
         label_radius = vinyl_r * 0.48
@@ -135,24 +135,24 @@ class MusicOverlayMockupWidget(QWidget):
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 60), 1))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), label_radius, label_radius)
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_VINYL_HOLE)))
+        p.setBrush(QBrush(QColor(Palette.NEUTRAL_999)))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), max(1.5, vinyl_r * 0.07), max(1.5, vinyl_r * 0.07))
         pivot_x = vinyl_cx + vinyl_r * 0.64
         pivot_y = vinyl_cy - vinyl_r * 0.72
         base_radius = max(2, vinyl_r * 0.095)
         base_grad = QLinearGradient(pivot_x - base_radius, pivot_y - base_radius, pivot_x + base_radius, pivot_y + base_radius)
         base_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_600))
-        base_grad.setColorAt(1.0, QColor(MockupPalette.MUSIC_METAL_DARK))
+        base_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_750))
         p.setBrush(QBrush(base_grad))
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 80), 1))
         p.drawEllipse(QPointF(pivot_x, pivot_y), base_radius, base_radius)
-        rod_pen = QPen(QBrush(QColor(MockupPalette.MUSIC_TONEARM)), max(1, 2.2 * scale), Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        rod_pen = QPen(QBrush(QColor(Palette.NEUTRAL_200)), max(1, 2.2 * scale), Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         p.setPen(rod_pen)
         head_x = vinyl_cx + vinyl_r * 0.08
         head_y = vinyl_cy - vinyl_r * 0.1
         p.drawLine(QPointF(pivot_x, pivot_y + base_radius * 0.5), QPointF(head_x + vinyl_r * 0.05, head_y - vinyl_r * 0.05))
-        p.setPen(QPen(QColor(MockupPalette.MUSIC_HEAD_BORDER), 1))
-        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_HEAD_BG)))
+        p.setPen(QPen(QColor(Palette.NEUTRAL_700), 1))
+        p.setBrush(QBrush(QColor(Palette.NEUTRAL_950)))
         head_path = QPainterPath()
         head_path.addRoundedRect(QRectF(head_x - vinyl_r * 0.07, head_y - vinyl_r * 0.09, vinyl_r * 0.14, vinyl_r * 0.2), 2, 2)
         p.save()

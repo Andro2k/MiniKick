@@ -11,14 +11,11 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
+from backend.config import KICK_AUTH_URL, KICK_TOKEN_URL, TWITCH_AUTH_URL, TWITCH_TOKEN_URL
 from backend.interfaces import TokenStorage, TransientAuthError
 
 logger = logging.getLogger("minikick.services.auth")
 
-KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
-KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
-TWITCH_AUTH_URL = "https://id.twitch.tv/oauth2/authorize"
-TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:

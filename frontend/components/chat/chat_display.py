@@ -20,7 +20,7 @@ class ChatDisplayPanel(ModernCard):
     detach_requested = Signal()
     reattach_requested = Signal()
     _MAX_CHAT_BLOCKS = 400
-    _PILL_BG = BadgeTheme.BADGE_BCG
+    _PILL_BG = Palette.NEUTRAL_750
     _CAP_LEFT = "\ue0b6"
     _CAP_RIGHT = "\ue0b4"
     _FONT_FMT = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
