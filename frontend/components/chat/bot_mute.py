@@ -167,8 +167,8 @@ class BotMutePanel(QWidget):
             configure_icon_only_button(btn_delete, size=btn_size)
 
             text_width = fm.horizontalAdvance(lbl_name.text())
-            total_width = btn_size + text_width + 20
-            total_height = max(btn_size, font_height) + 14
+            total_width = btn_size + text_width + 22
+            total_height = max(btn_size, font_height) + 10
 
             item.setSizeHint(QSize(total_width, total_height))
 

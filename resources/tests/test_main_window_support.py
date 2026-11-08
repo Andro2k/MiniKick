@@ -76,6 +76,7 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
         _instantiated_views={},
         content_stack=content_stack,
         i18n=MagicMock(),
+        settings_storage=MagicMock(),
         overlay_server=MagicMock(),
         chat_controller=MagicMock(),
         spam_controller=MagicMock(),
@@ -85,7 +86,11 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     assert factory.get_or_create("Chat") is view
     assert factory.get_or_create("Chat") is view
     import_module.assert_called_once_with(".views.chat_view", package="frontend")
-    chat_view_class.assert_called_once_with(window.i18n, parent=content_stack)
+    chat_view_class.assert_called_once_with(
+        window.i18n,
+        parent=content_stack,
+        config=window.settings_storage,
+    )
     content_stack.addWidget.assert_called_once_with(view)
     window.chat_controller.attach_view.assert_called_once_with(view)
 
@@ -124,6 +129,25 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
     window.platform_connections.on_live_chat_button_clicked.assert_any_call(window.tiktok)
     settings_view_class.assert_called_once_with(window.i18n, parent=window.content_stack)
     window.settings_controller.attach_view.assert_called_once_with(view)
+
+
+def test_dashboard_kick_connect_signal_matches_controller_contract(qapp):
+    from backend.controllers.dashboard_controller import DashboardController
+    from frontend.views.dashboard_view import DashboardView
+
+    class TestTranslations:
+        @staticmethod
+        def get(key):
+            return key
+
+    view = DashboardView(TestTranslations())
+    controller = DashboardController(view=view, avatar_service=None)
+    requested = []
+    controller.request_connection.connect(lambda: requested.append(True))
+
+    view.connect_requested.emit()
+
+    assert requested == [True]
 
 
 def test_views_package_defers_importing_unselected_views():

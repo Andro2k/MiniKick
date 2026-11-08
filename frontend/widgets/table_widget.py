@@ -338,8 +338,6 @@ class ModernTableCard(QFrame):
                 msg = message
                 if not msg and self.i18n:
                     msg = self.i18n.get("common.no_results_filter")
-                if not msg:
-                    msg = "No se encontraron resultados que coincidan con los filtros aplicados."
                 self.lbl_no_results.setText(msg)
 
                 btn_txt = self.i18n.get("common.buttons.clear_filters") if self.i18n else "Limpiar filtros"

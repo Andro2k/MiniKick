@@ -1,7 +1,7 @@
 # frontend\common\__init__.py
 
 from .icons import create_circular_pixmap, get_assets_path, get_icon, get_icon_colored, get_pixmap_colored, resolve_icon_path, resource_path
-from .theme import AlertTheme, BadgeTheme, Borders, BrandColors, ChatTheme, Gradients, MusicTheme, PATH_ICON_HELP, Palette, ROW_ACTION_COLORS, Semantic, Size, SwitchTheme, create_dark_palette, get_global_qss, get_qcolor_with_alpha, get_swatch_qss
+from .theme import BadgeTheme, Borders, BrandColors, Gradients, MockupPalette, PATH_ICON_HELP, Palette, ROW_ACTION_COLORS, Semantic, Size, SwitchTheme, create_dark_palette, get_global_qss, get_qcolor_with_alpha, get_swatch_qss
 from .markdown import markdown_to_github_html
 
 __all__ = [
@@ -16,9 +16,7 @@ __all__ = [
     "Palette",
     "Semantic",
     "BrandColors",
-    "MusicTheme",
-    "AlertTheme",
-    "ChatTheme",
+    "MockupPalette",
     "BadgeTheme",
     "SwitchTheme",
     "Size",

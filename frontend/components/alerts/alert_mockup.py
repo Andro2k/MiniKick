@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import QWidget, QSizePolicy
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QPainterPath, QPixmap, QLinearGradient
-from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, AlertTheme
+from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors, MockupPalette
 from frontend.components.mockup_helpers import init_mockup_painter
 
 class AlertOverlayMockupWidget(QWidget):
@@ -31,7 +31,7 @@ class AlertOverlayMockupWidget(QWidget):
         self.font_family = "Outfit"
         self.font_size = 24
         self.text_align = "center"
-        self.bg_color = AlertTheme.ALERT_PREVIEW_BG
+        self.bg_color = MockupPalette.ALERT_PREVIEW_BG
         self.bg_opacity = 88
         self.border_radius = 20
         self.padding_px = 24
@@ -65,7 +65,7 @@ class AlertOverlayMockupWidget(QWidget):
         font_family: str = "Outfit",
         font_size: int = 24,
         text_align: str = "center",
-        bg_color: str = AlertTheme.ALERT_PREVIEW_BG,
+        bg_color: str = MockupPalette.ALERT_PREVIEW_BG,
         bg_opacity: int = 88,
         border_radius: int = 20,
         padding_px: int = 24,
@@ -86,7 +86,7 @@ class AlertOverlayMockupWidget(QWidget):
         new_font = font_family or "Outfit"
         new_font_size = font_size or 24
         new_align = text_align or "center"
-        new_bg = bg_color or AlertTheme.ALERT_PREVIEW_BG
+        new_bg = bg_color or MockupPalette.ALERT_PREVIEW_BG
         new_opacity = bg_opacity if bg_opacity is not None else 88
         new_radius = border_radius if border_radius is not None else 20
         new_padding = padding_px if padding_px is not None else 24
@@ -158,8 +158,8 @@ class AlertOverlayMockupWidget(QWidget):
         p.setClipPath(canvas_path)
 
         tile_size = 16
-        c1 = QColor(AlertTheme.ALERT_PREVIEW_TILE_A)
-        c2 = QColor(AlertTheme.ALERT_PREVIEW_TILE_B)
+        c1 = QColor(MockupPalette.ALERT_PREVIEW_TILE_A)
+        c2 = QColor(MockupPalette.ALERT_PREVIEW_TILE_B)
         start_x = int(cx)
         start_y = int(cy)
         for x in range(start_x, start_x + int(side) + tile_size, tile_size):
@@ -168,7 +168,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         p.restore()
 
-        p.setPen(QPen(QColor(AlertTheme.ALERT_PREVIEW_BORDER), 1, Qt.PenStyle.SolidLine))
+        p.setPen(QPen(QColor(MockupPalette.ALERT_PREVIEW_BORDER), 1, Qt.PenStyle.SolidLine))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRoundedRect(canvas_rect, 10, 10)
 
@@ -257,7 +257,7 @@ class AlertOverlayMockupWidget(QWidget):
                     drawn_media = True
 
         if not drawn_media:
-            p.setBrush(QBrush(get_qcolor_with_alpha(AlertTheme.ALERT_PREVIEW_MEDIA, 240)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(MockupPalette.ALERT_PREVIEW_MEDIA, 240)))
             p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
             p.drawRoundedRect(rect, 8.0, 8.0)
 
@@ -400,8 +400,8 @@ class AlertOverlayMockupWidget(QWidget):
 
         if not drawn_media:
             grad = QLinearGradient(card_rect.topLeft(), card_rect.bottomRight())
-            grad.setColorAt(0, QColor(AlertTheme.ALERT_PREVIEW_MEDIA_TOP))
-            grad.setColorAt(1, QColor(AlertTheme.ALERT_PREVIEW_MEDIA))
+            grad.setColorAt(0, QColor(MockupPalette.ALERT_PREVIEW_MEDIA_TOP))
+            grad.setColorAt(1, QColor(MockupPalette.ALERT_PREVIEW_MEDIA))
             p.fillRect(card_rect, grad)
             if not self.media_path:
                 p.setFont(QFont("GoogleSansCode Nerd Font", int(min(card_w, card_h) * 0.3)))

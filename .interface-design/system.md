@@ -20,8 +20,9 @@ keeps visual priority.
 
 ## Tokens and surfaces
 
-- Use `Palette` and `Size` from `frontend.common.theme`; do not introduce
-  one-off color or spacing values for standard surfaces.
+- Use `Palette` and `Size` from `frontend.common.theme`; use `MockupPalette`
+  for preview artwork. Do not introduce one-off color or spacing values for
+  standard surfaces.
 - Card exterior: `Palette.NEUTRAL_950` (`#101010`), `Borders.BRD_BASE`, and
   `Size.Radius.RAD_XLG`.
 - Expanded `ExpandableCard` body: `Palette.NEUTRAL_900` (`#171717`) with

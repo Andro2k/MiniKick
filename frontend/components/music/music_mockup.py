@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
-from frontend.common import get_qcolor_with_alpha, Palette, BrandColors, MusicTheme
+from frontend.common import get_qcolor_with_alpha, Palette, BrandColors, MockupPalette
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 class MusicOverlayMockupWidget(QWidget):
@@ -36,20 +36,20 @@ class MusicOverlayMockupWidget(QWidget):
     def _get_theme_palette(self):
         if self.layout_mode == "vinyl":
             gradient = QLinearGradient(0, 0, self.width(), self.height())
-            gradient.setColorAt(0.0, QColor(MusicTheme.MUSIC_VINYL_BG_TOP))
-            gradient.setColorAt(1.0, QColor(MusicTheme.MUSIC_VINYL_BG_BOTTOM))
+            gradient.setColorAt(0.0, QColor(MockupPalette.MUSIC_VINYL_BG_TOP))
+            gradient.setColorAt(1.0, QColor(MockupPalette.MUSIC_VINYL_BG_BOTTOM))
             return (
                 QBrush(gradient),
                 QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 70), 1.25),
-                QColor(MusicTheme.MUSIC_VINYL_ACCENT),
+                QColor(MockupPalette.MUSIC_VINYL_ACCENT),
                 QColor(Palette.NEUTRAL_000),
                 get_qcolor_with_alpha(Palette.NEUTRAL_000, 170),
             )
-        bg_brush = QBrush(QColor(MusicTheme.MUSIC_CARD_LIGHT))
-        border_pen = QPen(QColor(MusicTheme.MUSIC_CARD_BORDER), 1.25)
-        accent_color = QColor(MusicTheme.MUSIC_CARD_ACCENT)
-        text_main = QColor(MusicTheme.MUSIC_CARD_TEXT)
-        text_sub = QColor(MusicTheme.MUSIC_CARD_TEXT_SUB)
+        bg_brush = QBrush(QColor(MockupPalette.MUSIC_CARD_LIGHT))
+        border_pen = QPen(QColor(MockupPalette.MUSIC_CARD_BORDER), 1.25)
+        accent_color = QColor(MockupPalette.MUSIC_CARD_ACCENT)
+        text_main = QColor(MockupPalette.MUSIC_CARD_TEXT)
+        text_sub = QColor(MockupPalette.MUSIC_CARD_TEXT_SUB)
         return bg_brush, border_pen, accent_color, text_main, text_sub
 
     @staticmethod
@@ -69,7 +69,7 @@ class MusicOverlayMockupWidget(QWidget):
 
     def _draw_album_art_placeholder(self, p: QPainter, art_x: float, art_y: float, art_size: float, corner_radius: float, with_third_stop: bool = False):
         art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
-        art_grad.setColorAt(0.0, QColor(MusicTheme.MUSIC_ART_ACCENT))
+        art_grad.setColorAt(0.0, QColor(MockupPalette.MUSIC_ART_ACCENT))
         if with_third_stop:
             art_grad.setColorAt(0.5, QColor(BrandColors.PURPLE))
             art_grad.setColorAt(1.0, QColor(BrandColors.INDIGO_DARK))
@@ -121,38 +121,38 @@ class MusicOverlayMockupWidget(QWidget):
         vinyl_cy = disc_cy
         vinyl_r = disc_size / 2
         p.setPen(QPen(QColor(Palette.NEUTRAL_999), 1))
-        p.setBrush(QBrush(QColor(MusicTheme.MUSIC_VINYL_BLACK)))
+        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_VINYL_BLACK)))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r, vinyl_r)
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(get_qcolor_with_alpha(MusicTheme.MUSIC_GROOVE, 180), 0.75))
+        p.setPen(QPen(get_qcolor_with_alpha(MockupPalette.MUSIC_GROOVE, 180), 0.75))
         for ratio in (0.86, 0.76, 0.66):
             p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r * ratio, vinyl_r * ratio)
         label_radius = vinyl_r * 0.48
         label_grad = QLinearGradient(vinyl_cx - label_radius, vinyl_cy - label_radius, vinyl_cx + label_radius, vinyl_cy + label_radius)
-        label_grad.setColorAt(0.0, QColor(MusicTheme.MUSIC_ART_ACCENT))
+        label_grad.setColorAt(0.0, QColor(MockupPalette.MUSIC_ART_ACCENT))
         label_grad.setColorAt(1.0, QColor(BrandColors.PURPLE))
         p.setBrush(QBrush(label_grad))
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 60), 1))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), label_radius, label_radius)
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QBrush(QColor(MusicTheme.MUSIC_VINYL_HOLE)))
+        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_VINYL_HOLE)))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), max(1.5, vinyl_r * 0.07), max(1.5, vinyl_r * 0.07))
         pivot_x = vinyl_cx + vinyl_r * 0.64
         pivot_y = vinyl_cy - vinyl_r * 0.72
         base_radius = max(2, vinyl_r * 0.095)
         base_grad = QLinearGradient(pivot_x - base_radius, pivot_y - base_radius, pivot_x + base_radius, pivot_y + base_radius)
         base_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_600))
-        base_grad.setColorAt(1.0, QColor(MusicTheme.MUSIC_METAL_DARK))
+        base_grad.setColorAt(1.0, QColor(MockupPalette.MUSIC_METAL_DARK))
         p.setBrush(QBrush(base_grad))
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 80), 1))
         p.drawEllipse(QPointF(pivot_x, pivot_y), base_radius, base_radius)
-        rod_pen = QPen(QBrush(QColor(MusicTheme.MUSIC_TONEARM)), max(1, 2.2 * scale), Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        rod_pen = QPen(QBrush(QColor(MockupPalette.MUSIC_TONEARM)), max(1, 2.2 * scale), Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
         p.setPen(rod_pen)
         head_x = vinyl_cx + vinyl_r * 0.08
         head_y = vinyl_cy - vinyl_r * 0.1
         p.drawLine(QPointF(pivot_x, pivot_y + base_radius * 0.5), QPointF(head_x + vinyl_r * 0.05, head_y - vinyl_r * 0.05))
-        p.setPen(QPen(QColor(MusicTheme.MUSIC_HEAD_BORDER), 1))
-        p.setBrush(QBrush(QColor(MusicTheme.MUSIC_HEAD_BG)))
+        p.setPen(QPen(QColor(MockupPalette.MUSIC_HEAD_BORDER), 1))
+        p.setBrush(QBrush(QColor(MockupPalette.MUSIC_HEAD_BG)))
         head_path = QPainterPath()
         head_path.addRoundedRect(QRectF(head_x - vinyl_r * 0.07, head_y - vinyl_r * 0.09, vinyl_r * 0.14, vinyl_r * 0.2), 2, 2)
         p.save()

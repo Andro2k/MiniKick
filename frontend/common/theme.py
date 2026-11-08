@@ -28,12 +28,8 @@ class Semantic:
     LIGHT_TEXT_MUTED      = "#64748B"
     DANGER_SURFACE        = "#2D1215"
     MEDIA_THUMB_BG        = "#1E293B"
-    CALLOUT_NOTE_LIGHT    = "#60A5FA"
     CALLOUT_WARNING_LIGHT = "#FACC15"
-    CALLOUT_TIP_LIGHT     = "#4ADE80"
-    CALLOUT_CAUTION_LIGHT = "#F87171"
     CODE_LINK             = "#38BDF8"
-    LATEX_MATH            = "#A5B4FC"
     WHITE_GLOW            = "rgba(250, 250, 250, 0.05)"
     GREEN_GLOW            = "rgba(46, 205, 112, 0.10)"
     RED_GLOW              = "rgba(239, 68, 68, 0.10)"
@@ -92,7 +88,7 @@ class BrandColors:
     GREEN_900      = "#0F4F29"
 
 
-class MusicTheme:
+class MockupPalette:
     MUSIC_VINYL_BG_TOP    = "#3E5238"
     MUSIC_VINYL_BG_BOTTOM = "#243129"
     MUSIC_VINYL_ACCENT    = "#A7BD89"
@@ -102,29 +98,25 @@ class MusicTheme:
     MUSIC_CARD_TEXT       = "#35272B"
     MUSIC_CARD_TEXT_SUB   = "#503D41"
     MUSIC_ART_ACCENT      = "#F43F5E"
-    MUSIC_VINYL_BLACK     = "#111114"
-    MUSIC_VINYL_HOLE      = "#09090B"
-    MUSIC_METAL_DARK      = "#1F2937"
-    MUSIC_TONEARM         = "#D1D5DB"
-    MUSIC_HEAD_BORDER     = "#374151"
-    MUSIC_HEAD_BG         = "#111827"
-    MUSIC_GROOVE          = "#303038"
+    MUSIC_VINYL_BLACK     = Palette.NEUTRAL_950
+    MUSIC_VINYL_HOLE      = Palette.NEUTRAL_999
+    MUSIC_METAL_DARK      = Palette.NEUTRAL_750
+    MUSIC_TONEARM         = Palette.NEUTRAL_200
+    MUSIC_HEAD_BORDER     = Palette.NEUTRAL_700
+    MUSIC_HEAD_BG         = Palette.NEUTRAL_950
+    MUSIC_GROOVE          = Palette.NEUTRAL_750
 
+    ALERT_PREVIEW_BG        = Palette.NEUTRAL_950
+    ALERT_PREVIEW_TILE_A    = Palette.NEUTRAL_900
+    ALERT_PREVIEW_TILE_B    = Palette.NEUTRAL_950
+    ALERT_PREVIEW_BORDER    = Palette.NEUTRAL_700
+    ALERT_PREVIEW_MEDIA     = Palette.NEUTRAL_900
+    ALERT_PREVIEW_MEDIA_TOP = Palette.NEUTRAL_750
 
-class AlertTheme:
-    ALERT_PREVIEW_BG        = "#121317"
-    ALERT_PREVIEW_TILE_A    = "#11141C"
-    ALERT_PREVIEW_TILE_B    = "#0B0D13"
-    ALERT_PREVIEW_BORDER    = "#1F242F"
-    ALERT_PREVIEW_MEDIA     = "#12161E"
-    ALERT_PREVIEW_MEDIA_TOP = "#222632"
-
-
-class ChatTheme:
-    CHAT_PREVIEW_SURFACE = "#12121A"
+    CHAT_PREVIEW_SURFACE = Palette.NEUTRAL_950
     AVATAR_GRADIENTS     = (
         (BrandColors.INDIGO_DARK, BrandColors.INDIGO_600), (BrandColors.PURPLE_500, BrandColors.PURPLE_600),
-        (BrandColors.PINK, BrandColors.PINK_600), (MusicTheme.MUSIC_ART_ACCENT, BrandColors.RED_600),
+        (BrandColors.PINK, BrandColors.PINK_600), (MUSIC_ART_ACCENT, BrandColors.RED_600),
         (BrandColors.ORANGE_500, BrandColors.ORANGE_DARK), (BrandColors.AMBER, BrandColors.AMBER_600),
         (BrandColors.EMERALD, BrandColors.GREEN_600), (BrandColors.CYAN_500, BrandColors.CYAN_600),
     )
@@ -306,38 +298,36 @@ def _tonal_role_qss(role: str, color: str) -> str:
         f"{sel}:disabled  {{ background-color: {Semantic.WHITE_GLOW}; border-color: {Palette.NEUTRAL_900}; }}\n"
     )
 
-_ROW_ACTION_QSS = "".join(_tonal_role_qss(role, color) for role, color in ROW_ACTION_COLORS.items())
 
 def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Flat Buttons --- */
-QPushButton                     {{ background-color: transparent; color: {Palette.NEUTRAL_000}; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; font-size: {text1}px; font-weight: 500; outline: none; }}
+QPushButton                     {{ background-color: transparent; color: {Palette.NEUTRAL_000}; border: {Borders.BRD_THIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; font-size: {text1}px; font-weight: 500; }}
 QPushButton[icon_only="true"]   {{ padding: {Size.SPACING_NN}px; }}
-QPushButton:focus               {{ border-color: {BrandColors.GREEN}; background-color: {Palette.NEUTRAL_950}; outline: none; }}
-QPushButton:default             {{ border-color: transparent; outline: none; }}
+QPushButton:focus               {{ border-color: {BrandColors.GREEN}; background-color: {Palette.NEUTRAL_950}; }}
+QPushButton:default             {{ border-color: transparent; }}
 
 /* Neutral Action */
 QPushButton[role="action_outlined"]         {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_000}; border: {Borders.BRD_BASE}; }}
 QPushButton[role="action_outlined"]:hover   {{ background-color: {Palette.NEUTRAL_750}; border-color: {Palette.NEUTRAL_600}; }}
 QPushButton[role="action_outlined"]:pressed {{ background-color: {Palette.NEUTRAL_850}; border-color: {Palette.NEUTRAL_750}; }}
-QPushButton[role="action_outlined"]:focus   {{ background-color: {Palette.NEUTRAL_750}; border-color: {BrandColors.GREEN}; outline: none; }}
+QPushButton[role="action_outlined"]:focus   {{ background-color: {Palette.NEUTRAL_750}; border-color: {BrandColors.GREEN}; }}
 
 /* Destructive Action */
 QPushButton[role="action_danger_solid"]         {{ background-color: {BrandColors.RED_DARK}; color: {Palette.NEUTRAL_000}; border-color: {BrandColors.RED_DARK}; font-weight: 600; }}
 QPushButton[role="action_danger_solid"]:hover   {{ background-color: {BrandColors.RED_PRESS}; border-color: {BrandColors.RED_PRESS}; }}
 QPushButton[role="action_danger_solid"]:pressed {{ background-color: {BrandColors.RED_SOLID}; border-color: {BrandColors.RED_SOLID}; }}
-QPushButton[role="action_danger_solid"]:focus   {{ border-color: {Palette.NEUTRAL_050}; outline: none; }}
+QPushButton[role="action_danger_solid"]:focus   {{ border-color: {Palette.NEUTRAL_050}; }}
 
 /* Primary Action */
 QPushButton[role="action_accent_solid"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Palette.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; font-weight: 600; }}
 QPushButton[role="action_accent_solid"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}
 QPushButton[role="action_accent_solid"]:pressed     {{ background-color: {BrandColors.GREEN_PRESS}; border-color: {BrandColors.GREEN_PRESS}; }}
-QPushButton[role="action_accent_solid"]:focus       {{ border-color: {Palette.NEUTRAL_050}; outline: none; }}
+QPushButton[role="action_accent_solid"]:focus       {{ border-color: {Palette.NEUTRAL_050}; }}
 
 QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_900}; }}
 
 /* Row actions: tonal buttons for table cells */
-{_ROW_ACTION_QSS}
 /* Platform actions use their brand color without gradients or bevels. */
 QPushButton[role="action_kick"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Palette.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; }}
 QPushButton[role="action_kick"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}
@@ -383,10 +373,10 @@ QPushButton[icon_only="true"]:disabled {{ padding: {Size.SPACING_NN}px; }}
 def _build_input_qss(text1: int, text2: int) -> str:
     return f"""
 /* Form Controls & Inputs */
-QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
+QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 QTextEdit, QPlainTextEdit {{ background-color: {Palette.NEUTRAL_950}; }}
 QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover {{ border-color: {Palette.NEUTRAL_700}; }}
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border-color: {BrandColors.GREEN}; }}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ background-color: {Palette.NEUTRAL_850}; color: {Palette.NEUTRAL_050}; border-color: {BrandColors.GREEN}; }}
 QLineEdit:read-only, QTextEdit:read-only, QPlainTextEdit:read-only {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border-color: {Palette.NEUTRAL_900}; }}
 QLineEdit:read-only:focus, QTextEdit:read-only:focus, QPlainTextEdit:read-only:focus {{ border-color: {Palette.NEUTRAL_900}; background-color: {Palette.NEUTRAL_950}; }}
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border-color: {BrandColors.RED}; }}
@@ -405,7 +395,7 @@ QComboBox::drop-down:hover, QComboBox::drop-down:focus {{ background-color: tran
 QComboBox::down-arrow               {{ image: url("{PATH_ICON_CHEVRON_DW}"); width: 16px; height: 16px; }}
 QComboBox::down-arrow:on, QComboBox[state="active"]::down-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); }}
 QComboBox:disabled::down-arrow      {{ opacity: 0.4; }}
-QComboBox QAbstractItemView         {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; font-size: {text1}px; border: {Borders.BRD_MUTE}; border-radius: {Size.Radius.RAD_MED}px; selection-background-color: {Palette.NEUTRAL_750}; selection-color: {Palette.NEUTRAL_050}; outline: none; }}
+QComboBox QAbstractItemView         {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; font-size: {text1}px; border: {Borders.BRD_MUTE}; border-radius: {Size.Radius.RAD_MED}px; selection-background-color: {Palette.NEUTRAL_750}; selection-color: {Palette.NEUTRAL_050}; }}
 QComboBox QAbstractItemView::item   {{ font-size: {text1}px; border-radius: {Size.Radius.RAD_XSM}px; margin: 4px 4px ; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:focus, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
 
@@ -414,9 +404,9 @@ QFrame[role="searchable_combo_popup"] {{ background-color: {Palette.NEUTRAL_900}
 QFrame[role="searchable_combo_search_bar"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}
 QLineEdit[role="searchable_combo_input"] {{ background-color: {Palette.NEUTRAL_900}; border: none; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_BASE}; }}
 QLineEdit[role="searchable_combo_input"]:focus {{ background-color: transparent; }}
-QListWidget[role="searchable_combo_list"] {{ background-color: {Palette.NEUTRAL_900}; border: none; outline: none; icon-size: 64px 24px; }}
-QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; border: none; outline: none; }}
-QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; outline: none; }}
+QListWidget[role="searchable_combo_list"] {{ background-color: {Palette.NEUTRAL_900}; border: none; icon-size: 64px 24px; }}
+QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; border: none; }}
+QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
 QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; border-radius: {Size.Radius.RAD_XXS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {Palette.NEUTRAL_700}; min-height: 20px; border-radius: {Size.Radius.RAD_XXS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}
@@ -651,7 +641,7 @@ QProgressBar[role="splash_progress"]::chunk         {{ background-color: {BrandC
 
 /* Tab Widget */
 QTabWidget::pane                    {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px;  padding: {Size.SPACING_NN}px; }}
-QTabBar::tab                        {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-top-left-radius: 0px; border-top-right-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_WIDE}; margin-right: 4px; font-weight: 500; }}
+QTabBar::tab                        {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-top-left-radius: {Size.Radius.RAD_MED}px; border-top-right-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_WIDE}; margin-right: 4px; font-weight: 500; }}
 QTabBar::tab:selected               {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; }}
 QTabBar::tab:hover:!selected        {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
 QTabBar::tab:pressed:!selected      {{ background-color: {Palette.NEUTRAL_750}; }}
@@ -682,7 +672,7 @@ QFrame[role="search_bar"] QPushButton:pressed   {{ background-color: {Palette.NE
 
 /* Category Dropdown */
 QFrame[role="category_dropdown"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_MUTE}; border-radius: {Size.Radius.RAD_MED}px; }}
-QListWidget[role="category_list"] {{ background: transparent; border: none; outline: none; }}
+QListWidget[role="category_list"] {{ background: transparent; border: none; }}
 QListWidget[role="category_list"]::item {{ background: transparent; border-radius: {Size.Radius.RAD_XSM}px; padding: {Padding.PAD_COMP}px; }}
 QListWidget[role="category_list"]::item:hover, QListWidget[role="category_list"]::item:selected {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; }}
 
@@ -721,7 +711,7 @@ QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton
 QCalendarWidget QMenu {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 QCalendarWidget QSpinBox {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; padding: {Padding.PAD_BASE}; font-weight: 500; }}
 QCalendarWidget QSpinBox:focus {{ border-color: {BrandColors.GREEN}; }}
-QCalendarWidget QTableView {{ background-color: {Palette.NEUTRAL_950}; border: none; gridline-color: transparent; selection-background-color: {Palette.NEUTRAL_050}; selection-color: {Palette.NEUTRAL_900}; outline: none; }}
+QCalendarWidget QTableView {{ background-color: {Palette.NEUTRAL_950}; border: none; gridline-color: transparent; selection-background-color: {Palette.NEUTRAL_050}; selection-color: {Palette.NEUTRAL_900}; }}
 QCalendarWidget QTableView QWidget {{ background-color: {Palette.NEUTRAL_950}; }}
 QCalendarWidget QTableView:enabled {{ color: {Palette.NEUTRAL_400}; }}
 QCalendarWidget QTableView:disabled {{ color: {Palette.NEUTRAL_700}; }}
@@ -731,7 +721,7 @@ QCalendarWidget QTableView::item:hover {{ background-color: {Palette.NEUTRAL_900
 QCalendarWidget QTableView::item:selected {{ background-color: {Palette.NEUTRAL_050}; color: {Palette.NEUTRAL_900}; font-weight: 700; border-radius: {Size.Radius.RAD_MED}px; }}
 
 /* Autocomplete Pop-up (VariableTextEdit) */
-QListWidget[role="variable_autocomplete_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; outline: none; color: {Palette.NEUTRAL_050}; }}
+QListWidget[role="variable_autocomplete_popup"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SHIN}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; color: {Palette.NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item {{ height: 28px; padding: {Padding.PAD_BASE}; border-radius: {Size.Radius.RAD_XSM}px; color: {Palette.NEUTRAL_200}; font-weight: 500; }}
 QListWidget[role="variable_autocomplete_popup"]::item:hover {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; font-weight: 600; }}
