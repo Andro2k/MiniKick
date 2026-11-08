@@ -3,7 +3,7 @@
 import os
 from PySide6.QtWidgets import QWidget, QSizePolicy
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize
-from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QPainterPath, QPixmap, QLinearGradient
+from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QPainterPath, QPixmap
 from frontend.common import get_qcolor_with_alpha, Palette, Semantic, BrandColors
 from frontend.components.mockup_helpers import init_mockup_painter
 
@@ -399,10 +399,7 @@ class AlertOverlayMockupWidget(QWidget):
                     drawn_media = True
 
         if not drawn_media:
-            grad = QLinearGradient(card_rect.topLeft(), card_rect.bottomRight())
-            grad.setColorAt(0, QColor(Palette.NEUTRAL_900))
-            grad.setColorAt(1, QColor(Palette.NEUTRAL_900))
-            p.fillRect(card_rect, grad)
+            p.fillRect(card_rect, QColor(Palette.NEUTRAL_900))
             if not self.media_path:
                 p.setFont(QFont("GoogleSansCode Nerd Font", int(min(card_w, card_h) * 0.3)))
                 p.setPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 35))
