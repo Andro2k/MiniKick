@@ -400,7 +400,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         if not drawn_media:
             grad = QLinearGradient(card_rect.topLeft(), card_rect.bottomRight())
-            grad.setColorAt(0, QColor(Palette.NEUTRAL_900_TOP))
+            grad.setColorAt(0, QColor(Palette.NEUTRAL_900))
             grad.setColorAt(1, QColor(Palette.NEUTRAL_900))
             p.fillRect(card_rect, grad)
             if not self.media_path:
