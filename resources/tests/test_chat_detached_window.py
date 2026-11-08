@@ -7,9 +7,10 @@ from PySide6.QtWidgets import QMainWindow, QSizeGrip
 from PySide6.QtCore import Qt
 from shiboken6 import isValid
 
+from backend.config.toml_config_provider import TomlConfigProvider
 from backend.services.system import TranslationService
 from frontend.window.shutdown import MainWindowShutdown
-from frontend.views.chat_view import ChatView, _FloatingChatWindow
+from frontend.views.chat_view import ChatView, SETTING_FLOATING_CHAT_GEOMETRY, _FloatingChatWindow
 
 
 def test_floating_chat_window_exposes_windows_snap_controls(qapp):
@@ -94,6 +95,72 @@ def test_close_floating_chat_returns_panel_to_main_view(qapp):
     assert view._floating_chat_dialog is None
     assert view.chat_display_panel.window() is host
     host.close()
+
+
+def test_redetaching_chat_restores_last_floating_position_and_size(qapp):
+    host, view, floating = _detached_chat(qapp)
+    floating.resize(720, 640)
+    floating.move(80, 90)
+    qapp.processEvents()
+    expected_geometry = floating.geometry()
+
+    view._reattach_chat_display()
+    qapp.processEvents()
+    view._detach_chat_display()
+    qapp.processEvents()
+
+    restored = view._floating_chat_dialog
+    assert restored is not None
+    actual_geometry = restored.geometry()
+    assert abs(actual_geometry.x() - expected_geometry.x()) <= 5
+    assert abs(actual_geometry.y() - expected_geometry.y()) <= 5
+    assert (actual_geometry.width(), actual_geometry.height()) == (
+        expected_geometry.width(), expected_geometry.height()
+    )
+
+    view.close_floating_chat()
+    host.close()
+
+
+def test_floating_chat_geometry_persists_across_chat_view_instances(qapp, tmp_path):
+    config_path = tmp_path / "config.toml"
+    config = TomlConfigProvider(config_path)
+    first_host = QMainWindow()
+    first_view = ChatView(TranslationService(default_lang="es"), config=config)
+    first_host.setCentralWidget(first_view)
+    first_host.show()
+    first_view._detach_chat_display()
+    qapp.processEvents()
+
+    floating = first_view._floating_chat_dialog
+    floating.resize(560, 500)
+    floating.move(20, 20)
+    qapp.processEvents()
+    expected_geometry = floating.geometry()
+    first_view.close_floating_chat()
+    qapp.processEvents()
+
+    saved_geometry = config.load_string(SETTING_FLOATING_CHAT_GEOMETRY, "")
+    assert saved_geometry
+    config = TomlConfigProvider(config_path)
+
+    second_host = QMainWindow()
+    second_view = ChatView(TranslationService(default_lang="es"), config=config)
+    second_host.setCentralWidget(second_view)
+    second_host.show()
+    second_view._detach_chat_display()
+    qapp.processEvents()
+
+    restored_geometry = second_view._floating_chat_dialog.geometry()
+    assert abs(restored_geometry.x() - expected_geometry.x()) <= 5
+    assert abs(restored_geometry.y() - expected_geometry.y()) <= 5
+    assert (restored_geometry.width(), restored_geometry.height()) == (
+        expected_geometry.width(), expected_geometry.height()
+    )
+
+    second_view.close_floating_chat()
+    first_host.close()
+    second_host.close()
 
 
 def test_close_floating_chat_without_window_is_a_noop(qapp):

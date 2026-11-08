@@ -81,6 +81,7 @@ class MainWindowViewFactory:
             window.view_chat = _load_view_class("ChatView")(
                 window.i18n,
                 parent=window.content_stack,
+                config=window.settings_storage,
             )
             window.content_stack.addWidget(window.view_chat)
             window.view_chat.chat_overlay_url = window.overlay_server.get_chat_overlay_url()

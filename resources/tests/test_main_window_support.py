@@ -76,6 +76,7 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
         _instantiated_views={},
         content_stack=content_stack,
         i18n=MagicMock(),
+        settings_storage=MagicMock(),
         overlay_server=MagicMock(),
         chat_controller=MagicMock(),
         spam_controller=MagicMock(),
@@ -85,7 +86,11 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
     assert factory.get_or_create("Chat") is view
     assert factory.get_or_create("Chat") is view
     import_module.assert_called_once_with(".views.chat_view", package="frontend")
-    chat_view_class.assert_called_once_with(window.i18n, parent=content_stack)
+    chat_view_class.assert_called_once_with(
+        window.i18n,
+        parent=content_stack,
+        config=window.settings_storage,
+    )
     content_stack.addWidget.assert_called_once_with(view)
     window.chat_controller.attach_view.assert_called_once_with(view)
 

@@ -1,15 +1,22 @@
 # frontend\views\chat_view.py
 
+import logging
+
 from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel, ChatSpamPanel
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QByteArray, Qt, Signal
+from backend.interfaces import IConfigProvider
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
 from frontend.common import Size
 
+logger = logging.getLogger(__name__)
+
+SETTING_FLOATING_CHAT_GEOMETRY = "floating_chat_geometry"
+
 
 class _FloatingChatWindow(QWidget):
-    def __init__(self, title: str, on_close):
+    def __init__(self, title: str, on_close, geometry: QByteArray | None = None):
         window_flags = (
             Qt.WindowType.Window
             | Qt.WindowType.WindowTitleHint
@@ -24,6 +31,9 @@ class _FloatingChatWindow(QWidget):
         self.setWindowTitle(title)
         self.setMinimumSize(305, 420)
         self.resize(640, 720)
+        if geometry:
+            if not self.restoreGeometry(geometry):
+                logger.warning("[ChatView] Could not restore floating chat geometry; using the default window size.")
         self._layout = QVBoxLayout(self)
         self._resize_grip = QSizeGrip(self)
         resize_layout = QHBoxLayout()
@@ -59,14 +69,27 @@ class ChatView(BaseView):
     voice_test_requested = Signal(str)
     view_shown = Signal()
 
-    def __init__(self, i18n, parent=None):
+    def __init__(self, i18n, parent=None, config: IConfigProvider | None = None):
         super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
+        self._config = config
         self._last_body_dir = None
         self._floating_chat_dialog = None
+        self._floating_chat_geometry = self._load_floating_chat_geometry()
         self._chat_layout_index = None
         self._chat_layout_stretch = None
         self._setup_ui()
         self._connect_internal_signals()
+
+    def _load_floating_chat_geometry(self) -> QByteArray | None:
+        if self._config is None:
+            return None
+        geometry_hex = self._config.load_string(SETTING_FLOATING_CHAT_GEOMETRY, "") or ""
+        try:
+            geometry = QByteArray.fromHex(geometry_hex.encode("ascii"))
+        except UnicodeEncodeError:
+            logger.warning("[ChatView] Saved floating chat geometry is not valid ASCII; ignoring it.")
+            return None
+        return geometry if geometry else None
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -142,6 +165,7 @@ class ChatView(BaseView):
         self._floating_chat_dialog = _FloatingChatWindow(
             self.i18n.get("chat.display.window_title"),
             self._reattach_chat_display,
+            self._floating_chat_geometry,
         )
         self._floating_chat_dialog.add_chat_display(self.chat_display_panel)
         self.chat_display_panel.set_detached(True)
@@ -156,6 +180,12 @@ class ChatView(BaseView):
         if floating_dialog is None:
             return
 
+        self._floating_chat_geometry = QByteArray(floating_dialog.saveGeometry())
+        if self._config is not None:
+            self._config.save_string(
+                SETTING_FLOATING_CHAT_GEOMETRY,
+                bytes(self._floating_chat_geometry).hex(),
+            )
         floating_layout = floating_dialog.layout()
         if floating_layout is not None:
             floating_layout.removeWidget(self.chat_display_panel)
