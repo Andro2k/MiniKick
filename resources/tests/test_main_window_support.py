@@ -131,6 +131,25 @@ def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monke
     window.settings_controller.attach_view.assert_called_once_with(view)
 
 
+def test_dashboard_kick_connect_signal_matches_controller_contract(qapp):
+    from backend.controllers.dashboard_controller import DashboardController
+    from frontend.views.dashboard_view import DashboardView
+
+    class TestTranslations:
+        @staticmethod
+        def get(key):
+            return key
+
+    view = DashboardView(TestTranslations())
+    controller = DashboardController(view=view, avatar_service=None)
+    requested = []
+    controller.request_connection.connect(lambda: requested.append(True))
+
+    view.connect_requested.emit()
+
+    assert requested == [True]
+
+
 def test_views_package_defers_importing_unselected_views():
     project_root = Path(__file__).resolve().parents[2]
     code = (

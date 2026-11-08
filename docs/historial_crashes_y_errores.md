@@ -63,6 +63,7 @@
 | **INC-049** | Diagnóstico insuficiente de episodios de latencia de chat Kick con WebSocket activo | Reporte de usuario / resumen de telemetría (15 arranques, ~9.5 h; adjunto `minikick.log` vacío) | v1.6.7 | `✅ Solventado` | `backend/providers/chat/kick_ws_provider.py`, `backend/utils/latency_monitor.py`, `backend/utils/json_utils.py` | v1.6.7 (`WT-1.6.7_06`) |
 >>>>>>> Stashed changes
 | **INC-050** | Ventana flotante del chat pierde posición y tamaño al volver a desacoplar o reiniciar | Reporte de usuario / `minikick.log` sin eventos asociados | v1.6.7 | `✅ Solventado` | `frontend/views/chat_view.py`, `frontend/main_window_views.py`, `resources/tests/test_chat_detached_window.py` | v1.6.7 (`WT-1.6.7_07`, `WT-1.6.7_08`) |
+| **INC-051** | `AttributeError: 'DashboardView' object has no attribute 'connect_requested'` al iniciar MiniKick | Log de usuario `minikick.log` (2026-11-08, línea 1349) | v1.6.7 | `✅ Solventado` | `frontend/views/dashboard_view.py`, `resources/tests/test_main_window_support.py` | v1.6.7 |
 
 ---
 
@@ -1239,3 +1240,25 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/walkthroughs/v1.6.7/WT-1.6.7_08.md`
 * **Solución Implementada**: `ChatView` usa el `IConfigProvider` existente para cargar la geometría hex al inicializarse y guardarla al reanclar o cerrar la ventana flotante. La fábrica de vistas inyecta el almacenamiento de configuración de la aplicación. La primera apertura sin preferencia guardada conserva el tamaño inicial.
 * **Pruebas y Verificación**: `resources/tests/test_chat_detached_window.py` y `resources/tests/test_main_window_support.py`: 19 pruebas aprobadas, incluida persistencia mediante dos instancias del proveedor TOML sobre el mismo archivo temporal. La suite rápida aprobó 11/12 herramientas; falla únicamente el falso positivo conocido `music.youtube.com` en `backend/utils/youtube_url.py`. `git diff --check` pasó. Walkthroughs: `WT-1.6.7_07.md` (restauración en sesión) y `WT-1.6.7_08.md` (persistencia entre ejecuciones).
+
+---
+
+### INC-051: Crash de arranque por señal de conexión de Kick renombrada
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (la aplicación terminaba durante la creación del controlador del dashboard).
+* **Reportes Asociados**: Log de usuario `minikick.log`, 2026-11-08, líneas 1314-1386.
+* **Fecha y Versión del Fallo**: 2026-11-08 en MiniKick `v1.6.7`.
+* **Traza de la Excepción**:
+  ```text
+  File "backend/controllers/dashboard_controller.py", line 91, in _connect_signals
+    self.view.connect_requested.connect(self.request_connection.emit)
+  AttributeError: 'DashboardView' object has no attribute 'connect_requested'. Did you mean: 'kick_connect_requested'?
+  ```
+* **Causa Raíz**: La señal `DashboardView.connect_requested`, utilizada por `DashboardController`, se renombró a `kick_connect_requested` solo en la vista, dejando desincronizado el contrato entre ambos módulos. La excepción ocurría durante el arranque.
+* **Archivos y Módulos Modificados**:
+  - `frontend/views/dashboard_view.py`
+  - `resources/tests/test_main_window_support.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: Se restauró el nombre `connect_requested` en la declaración de la señal y en la conexión del botón Kick, manteniendo el contrato ya utilizado por el controlador.
+* **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` incluye una prueba de integración que verifica la propagación de la señal hasta `DashboardController.request_connection`.
