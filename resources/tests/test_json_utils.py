@@ -53,3 +53,15 @@ def test_parse_kick_payload():
     event, data = parse_kick_payload(raw_empty_data)
     assert event == "subscription_succeeded"
     assert data == {}
+
+def test_parse_kick_payload_preserves_pusher_channel():
+    raw_event = fast_dumps({
+        "event": "ChatMessageEvent",
+        "channel": "chatrooms.123.v2",
+        "data": fast_dumps({"id": "message-1"}),
+    })
+
+    event, data = parse_kick_payload(raw_event)
+
+    assert event == "ChatMessageEvent"
+    assert data == {"id": "message-1", "channel": "chatrooms.123.v2"}

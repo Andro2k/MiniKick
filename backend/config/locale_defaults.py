@@ -672,7 +672,7 @@ DEFAULT_DICTIONARY = {
       "lbl_author": "By @{author}",
       "lbl_published": "Published on {date}",
       "loading": "Fetching release notes from GitHub...",
-      "subtitle": "Patch notes and changelog from the latest published version.",
+      "subtitle": "Notes and changes from the latest release, in the language published on GitHub.",
       "title": "Release Notes"
     },
     "tiktok_connect": {
@@ -780,21 +780,16 @@ DEFAULT_DICTIONARY = {
     }
   },
   "logs": {
-    "bootstrap": {
-      "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
-    },
     "tiktok": {
       "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
       "empty_user": "TikTok username cannot be empty.",
       "stream_offline": "@{unique_id} is not currently live on TikTok.",
       "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok.",
       "ws_rejected": "TikTok rejected the WebSocket connection with HTTP code {code}.",
-      "ws_rejected_400": "TikTok rejected the WebSocket connection (expired token). Retrying automatically...",
       "ws_rejected_400_final": "TikTok repeatedly rejected the WebSocket connection (HTTP 400). The signed URL may be expiring too quickly. Try reconnecting manually."
     },
     "twitch": {
-      "channel_empty": "Twitch channel name cannot be empty.",
-      "user_not_found": "No user data found in Twitch Helix API."
+      "channel_empty": "Twitch channel name cannot be empty."
     },
     "youtube": {
       "channel_empty": "YouTube target stream or channel cannot be empty.",
@@ -815,11 +810,7 @@ DEFAULT_DICTIONARY = {
       }
     },
     "logs": {
-      "api_error": "Kick Rewards API failure: {error}",
-      "api_error_setup": "Error preparing rewards query: {error}",
-      "api_offline": "Attempted to update rewards while offline from Kick.",
-      "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
-      "reward_no_rewards": "Reward '{reward_name}' has no reward configured."
+      "api_offline": "Attempted to update rewards while offline from Kick."
     },
     "sidebar": {
       "profile": {

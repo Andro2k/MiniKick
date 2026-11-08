@@ -229,8 +229,9 @@ def test_chat_controller_pipeline_tts_execution(qapp, mock_dependencies):
     assert dto.is_cancelled is False
     d["service"].speak.assert_called_once()
     spoken_text = d["service"].speak.call_args[0][0]
-    assert "Viewer123" in spoken_text
-    assert "Hola a todos en el stream!" in spoken_text
+    assert "Viewer123" not in spoken_text
+    assert spoken_text.startswith("Viewer")
+    assert "Hola a todos en el estrim!" in spoken_text
 
 def test_chat_controller_pipeline_tts_skipped_for_bot_and_banned(qapp, mock_dependencies):
     d = mock_dependencies

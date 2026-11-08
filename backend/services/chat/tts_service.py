@@ -3,10 +3,14 @@
 import logging
 import queue
 import threading
+import time
 from typing import Dict
 from backend.interfaces import ITTSProvider
+from backend.utils import strip_emojis
 
 logger = logging.getLogger("minikick.services.chat.tts")
+
+DEFAULT_MESSAGE_GAP_S = 0.7
 
 class TTSManager:
     def __init__(self):
@@ -26,6 +30,10 @@ class TTSManager:
         self.on_speech_finished = None
         self._is_speaking = False       
         self._is_shutdown = False
+        self._message_gap_s = DEFAULT_MESSAGE_GAP_S
+        self._last_speech_end = 0.0
+        self._stop_generation = 0
+        self._interrupt_event = threading.Event()
         self._downloader_thread = threading.Thread(target=self._downloader_worker, daemon=True)
         self._downloader_thread.start()
         self._thread = threading.Thread(target=self._worker, daemon=True)
@@ -94,14 +102,30 @@ class TTSManager:
         if self._is_shutdown:
             logger.warning("[TTS Manager] Ignoring speech request after shutdown.")
         elif text and text.strip():
-            clean_t = text.strip()
+            clean_t = strip_emojis(text)
+            if not clean_t:
+                logger.debug("[TTS Manager] Ignoring text that only contains emojis.")
+                return
             self.text_queue.put((clean_t, voice_id))
             logger.debug("[TTS Manager] Enqueued text (qsize=%d): '%s' (voice=%s)", self.text_queue.qsize(), clean_t[:35], voice_id or "default")
 
     def speak(self, text: str, voice_id: str = None) -> None:
         self.say(text, voice_id=voice_id)
 
+    def set_message_gap(self, seconds: float) -> None:
+        self._message_gap_s = max(0.0, float(seconds))
+
+    def _wait_message_gap(self, generation: int) -> bool:
+        if self._message_gap_s > 0 and self._last_speech_end > 0:
+            remaining = self._message_gap_s - (time.monotonic() - self._last_speech_end)
+            if remaining > 0:
+                self._interrupt_event.clear()
+                self._interrupt_event.wait(remaining)
+        return generation == self._stop_generation
+
     def stop(self) -> None:
+        self._stop_generation += 1
+        self._interrupt_event.set()
         discarded_text = 0
         while not self.text_queue.empty():
             try:
@@ -187,6 +211,7 @@ class TTSManager:
             try:
                 if item is None:
                     break 
+                generation = self._stop_generation
                 text, voice_id, target_voice = item
                 active_provider = self._provider
                 
@@ -204,7 +229,9 @@ class TTSManager:
                         except Exception as start_err:
                             logger.debug("[TTS Manager] on_speech_started error: %s", start_err)
 
-                active_provider.speak(text, voice_id=target_voice)
+                if self._wait_message_gap(generation):
+                    active_provider.speak(text, voice_id=target_voice)
+                    self._last_speech_end = time.monotonic()
                 
             except Exception as e:
                 logger.error("[TTS Manager] Critical engine failure avoided (%s): %s", type(e).__name__, e, exc_info=True)
