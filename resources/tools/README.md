@@ -42,7 +42,7 @@ python resources/tools/project_quality_suite.py --json
 | `frontend_design_token_auditor.py` | Frontend | Raw colors and style values that bypass theme tokens |
 | `frontend_qss_role_state_auditor.py` | Frontend | QSS roles and states versus their widget use |
 | `frontend_qt_signal_lifecycle_auditor.py` | Frontend | Signal connection patterns that can duplicate listeners or retain closures |
-| `frontend_qt_window_lifecycle_auditor.py` | Frontend | Window parenting, prewarming, and ghost-window risks |
+| `frontend_qt_window_lifecycle_auditor.py` | Frontend and bootstrap | Static parent checks plus isolated runtime checks for the visible splash and UI views; it does not launch `Application`/`MainWindowCore`, and `--static-only` cannot detect runtime-created windows |
 | `frontend_layout_responsiveness_auditor.py` | Frontend | Layout flexibility, clipping, and view sizing |
 
 There is no general backend-only suite today. Use project-wide checks for backend changes; `project_unused_parameter_auditor.py --target backend` narrows that specific analysis to the backend.

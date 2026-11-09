@@ -128,6 +128,7 @@ class AstParentScanner(ast.NodeVisitor):
 
 class RuntimeWindowAuditor:
     VIEWS_TO_TEST = [
+        ("Splash", "frontend.dialogs.splash_screen", "SplashScreen"),
         ("Dashboard", "frontend.views.dashboard_view", "DashboardView"),
         ("Chat", "frontend.views.chat_view", "ChatView"),
         ("Alerts", "frontend.views.alerts_view", "AlertsView"),
@@ -164,6 +165,7 @@ class RuntimeWindowAuditor:
         for view_name, mod_path, cls_name in self.VIEWS_TO_TEST:
             before_widgets = set(QApplication.topLevelWidgets())
             view_instance = None
+            is_splash = cls_name == "SplashScreen"
             try:
                 mod = __import__(mod_path, fromlist=[cls_name])
                 cls = getattr(mod, cls_name)
@@ -177,6 +179,11 @@ class RuntimeWindowAuditor:
                     line=None, description=f"Error instanciando vista: {e}"
                 ))
                 continue
+
+            if is_splash:
+                view_instance.showMaximized()
+                view_instance.set_progress(15, self.i18n.get("splash.init_app"))
+                QApplication.processEvents()
 
             after_widgets = set(QApplication.topLevelWidgets())
             new_top_levels = [w for w in (after_widgets - before_widgets) if w != view_instance]
@@ -194,11 +201,20 @@ class RuntimeWindowAuditor:
                         line=None, description=f"Rogue Top-Level Widget ({class_name}) creado en init."
                     ))
                     view_clean = False
+                elif is_splash:
+                    violations.append(WindowViolation(
+                        severity="CRITICAL", source="Runtime", target=f"{view_name} ({cls_name})",
+                        line=None, description=f"Top-Level Widget inesperado ({class_name}) durante la presentación del splash."
+                    ))
+                    view_clean = False
 
             if view_clean:
                 clean_views.append(view_name)
             if view_instance:
+                view_instance.close()
                 view_instance.deleteLater()
+                if is_splash:
+                    QApplication.processEvents()
 
         return violations, clean_views
 
@@ -210,9 +226,11 @@ class WindowAuditManager:
     def scan_static(self) -> Tuple[List[WindowViolation], int]:
         violations: List[WindowViolation] = []
         files_scanned = 0
-        target_dir = PROJECT_ROOT / "frontend"
+        target_dirs = (PROJECT_ROOT / "frontend", PROJECT_ROOT / "bootstrap")
 
-        if target_dir.exists():
+        for target_dir in target_dirs:
+            if not target_dir.exists():
+                continue
             for file_path in target_dir.rglob("*.py"):
                 if file_path.name.startswith("test_") or any(p in IGNORED_DIRS for p in file_path.parts):
                     continue
@@ -259,7 +277,9 @@ class WindowAuditManager:
         print(f"{COLOR_BOLD}{COLOR_CYAN}{'='*70}{COLOR_RESET}\n")
 
         print(f"Archivos frontend escaneados (AST): {COLOR_BOLD}{summary.total_files_scanned}{COLOR_RESET}")
-        print(f"Vistas del sistema auditadas (Runtime): {COLOR_BOLD}{summary.total_views_tested}{COLOR_RESET}")
+        print(f"Escenarios Splash + vistas (Runtime): {COLOR_BOLD}{summary.total_views_tested}{COLOR_RESET}")
+        if summary.total_views_tested:
+            print("Alcance runtime: splash visible y vistas aisladas; no se inicia Application/MainWindowCore.")
         print(f"Vistas totalmente limpias (0 HWND fugados): {COLOR_BOLD}{COLOR_GREEN}{len(summary.clean_views)}{COLOR_RESET}")
         print(f"Violaciones Críticas (Ghost Windows): {COLOR_BOLD}{COLOR_GREEN if summary.critical_count == 0 else COLOR_RED}{summary.critical_count}{COLOR_RESET}")
         print(f"Advertencias de Jerarquía / Parent: {COLOR_BOLD}{COLOR_GREEN if summary.warning_count == 0 else COLOR_YELLOW}{summary.warning_count}{COLOR_RESET}\n")
@@ -273,8 +293,17 @@ class WindowAuditManager:
                 print(f"[{color}{v.severity}{COLOR_RESET}] [{v.source}] {COLOR_BOLD}{v.target}{loc}{COLOR_RESET}")
                 print(f"   -> {v.description}")
             print("-" * 70)
+        elif summary.total_views_tested == 0:
+            print(
+                f"{COLOR_YELLOW}{COLOR_BOLD}⚠ Auditoría runtime no ejecutada: "
+                "el análisis estático no descarta ventanas fantasma creadas en ejecución."
+                f"{COLOR_RESET}\n"
+            )
         else:
-            print(f"{COLOR_GREEN}{COLOR_BOLD}✅ ESTADO PERFECTO: No se detectaron micro-ventanas fantasma ni HWNDs huérfanos.{COLOR_RESET}\n")
+            print(
+                f"{COLOR_GREEN}{COLOR_BOLD}✅ Sin ventanas fantasma detectadas en los escenarios auditados."
+                f"{COLOR_RESET}\n"
+            )
 
 
 def main():

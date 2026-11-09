@@ -203,10 +203,6 @@
       "empty_category": "No hay comandos disponibles en {category}.",
       "empty_general": "No hay comandos configurados actualmente.",
       "inactive_tag": "Inactivos",
-      "sec_chat": "💬 Chat",
-      "sec_moderation": "🛡️ Moderación",
-      "sec_music": "🎵 Música",
-      "sec_widgets": "🎮 Widgets",
       "status_header": "📋 Estado de comandos:"
     },
     "display": {

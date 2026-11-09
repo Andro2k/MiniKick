@@ -1,7 +1,8 @@
 # resources\tests\test_sidebar_profile_card.py
 
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QEvent, QObject, QPoint, Qt
 from PySide6.QtTest import QTest
+from PySide6.QtWidgets import QLabel
 
 from frontend.common import Size
 from frontend.navigation import Sidebar
@@ -61,3 +62,29 @@ def test_sidebar_sizes_come_from_the_theme(qapp):
     assert sidebar.collapsed_width == Size.SIDEBAR_COLLAPSED == 60
     assert sidebar.profile_avatar.width() == Size.AVATAR_SM
     assert all(btn.height() == Size.NAV_BUTTON_HEIGHT for btn in sidebar.nav_buttons)
+
+
+def test_sidebar_version_label_is_not_shown_as_a_top_level_window(qapp):
+    class TopLevelLabelProbe(QObject):
+        def __init__(self):
+            super().__init__()
+            self.shown_labels = []
+
+        def eventFilter(self, watched, event):
+            if (
+                event.type() == QEvent.Type.Show
+                and isinstance(watched, QLabel)
+                and watched.isWindow()
+            ):
+                self.shown_labels.append(watched)
+            return super().eventFilter(watched, event)
+
+    probe = TopLevelLabelProbe()
+    qapp.installEventFilter(probe)
+    try:
+        sidebar = _sidebar()
+    finally:
+        qapp.removeEventFilter(probe)
+
+    assert probe.shown_labels == []
+    assert sidebar.lbl_version.parentWidget() is sidebar.header_container

@@ -62,7 +62,7 @@ class Sidebar(QFrame):
         self.title_label.setProperty("role", "h2")
 
         plain_version = self.app_version.lstrip("vV")
-        self.lbl_version = QLabel(f"v{plain_version}")
+        self.lbl_version = QLabel(f"v{plain_version}", self.header_container)
         self.lbl_version.setProperty("role", "badge_kick")
         self.lbl_version.setToolTip(self.i18n.get("main.sidebar.version").replace("{version}", plain_version))
         self.lbl_version.setVisible(self._has_version)

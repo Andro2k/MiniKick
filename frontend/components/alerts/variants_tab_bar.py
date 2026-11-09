@@ -7,9 +7,10 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QScrollArea,
 from PySide6.QtCore import Qt, Signal
 
 from frontend.common import get_pixmap_colored, BrandColors, Size
-from frontend.widgets import ModernSwitch, ModernCard
+from frontend.widgets import ClickableFrame, ModernSwitch, ModernCard
 
-class AlertVariantTabPill(QFrame):
+
+class AlertVariantTabPill(ClickableFrame):
     clicked = Signal(str)
     toggled = Signal(str, bool)
 
@@ -92,10 +93,8 @@ class AlertVariantTabPill(QFrame):
             self.lbl_title.style().unpolish(self.lbl_title)
             self.lbl_title.style().polish(self.lbl_title)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit(self.alert_type)
-        super().mousePressEvent(event)
+    def _emit_clicked(self):
+        self.clicked.emit(self.alert_type)
 
 
 class AlertVariantsTabBar(ModernCard):

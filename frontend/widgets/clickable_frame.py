@@ -9,5 +9,8 @@ class ClickableFrame(QFrame):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit()
+            self._emit_clicked()
         super().mousePressEvent(event)
+
+    def _emit_clicked(self):
+        self.clicked.emit()
