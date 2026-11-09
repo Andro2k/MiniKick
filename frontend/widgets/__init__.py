@@ -19,11 +19,13 @@ from .inspector_widgets import InspectorPropertyRow
 from .layout_helpers import create_card_frame, create_row_layout, create_col_layout, create_labeled_field, create_switch_field, create_box_layout, create_text_label, create_error_label
 from .stream_platform_widgets import create_platform_switches, sync_dual_platform_switches
 from .action_line_edit import ActionLineEdit
+from .clickable_frame import ClickableFrame
 from .floating_list_popup import BaseFloatingListPopup
 
 __all__ = [
     "RowActionMenu",
     "RowMenuAction",
+    "ClickableFrame",
     "create_card_frame",
     "create_row_layout",
     "create_col_layout",

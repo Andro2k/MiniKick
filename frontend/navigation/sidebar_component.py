@@ -4,7 +4,11 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLa
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
-from frontend.widgets import configure_icon_only_button
+from frontend.widgets import ClickableFrame, configure_icon_only_button
+
+_BADGE_INSET = 2
+_BADGE_RIGHT_MARGIN = 10
+_LAYOUT_PENDING_SIZE = 10
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
@@ -24,12 +28,12 @@ class Sidebar(QFrame):
         self._has_version = bool(app_version)
         self.setProperty("role", "sidebar")
         self.is_expanded = True
-        self.expanded_width = 230
-        self.collapsed_width = 60
+        self.expanded_width = Size.SIDEBAR_EXPANDED
+        self.collapsed_width = Size.SIDEBAR_COLLAPSED
         self.setFixedWidth(self.expanded_width)
 
-        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, 24)
-        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", Palette.NEUTRAL_050, 24)
+        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
+        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
 
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
@@ -50,7 +54,7 @@ class Sidebar(QFrame):
 
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg"))
-        self.logo_btn.setIconSize(QSize(32, 32))
+        self.logo_btn.setIconSize(QSize(Size.ICON_BASIC, Size.ICON_BASIC))
         configure_icon_only_button(self.logo_btn)
         self.logo_btn.setProperty("role", "btn_ghost")
 
@@ -68,7 +72,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", size=24))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", size=Size.ICON_SMALL))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -77,8 +81,8 @@ class Sidebar(QFrame):
         self.toggle_badge.setProperty("role", "badge_new")
         self.toggle_badge.setProperty("state", "collapsed")
         self.toggle_badge.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-        self.toggle_badge.setFixedSize(12, 12)
-        self.toggle_badge.move(22, 2)
+        self.toggle_badge.setFixedSize(Size.BADGE_DOT, Size.BADGE_DOT)
+        self.toggle_badge.move(Size.ICON_BASIC - Size.BADGE_DOT + _BADGE_INSET, _BADGE_INSET)
         self.toggle_badge.setVisible(False)
 
         self.header_layout.addWidget(self.logo_btn)
@@ -154,7 +158,7 @@ class Sidebar(QFrame):
 
         icon_box = QFrame()
         icon_box.setProperty("role", "update_icon_box")
-        icon_box.setFixedSize(28, 28)
+        icon_box.setFixedSize(Size.UPDATE_ICON_BOX, Size.UPDATE_ICON_BOX)
         icon_box_layout = QHBoxLayout(icon_box)
         icon_box_layout.setContentsMargins(*Size.Margin.MRG_NON)
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -198,7 +202,7 @@ class Sidebar(QFrame):
         self.update_card.setVisible(False)
 
     def _setup_profile_card(self):
-        self.profile_card = QFrame()
+        self.profile_card = ClickableFrame()
         self.profile_card.setProperty("role", "profile_card")
 
         self.profile_layout = QHBoxLayout(self.profile_card)
@@ -207,7 +211,7 @@ class Sidebar(QFrame):
         self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         self.profile_avatar = QLabel()
-        self.profile_avatar.setFixedSize(36, 36)
+        self.profile_avatar.setFixedSize(Size.AVATAR_SM, Size.AVATAR_SM)
         self.profile_avatar.setScaledContents(True)
         self.reset_profile_avatar()
 
@@ -229,16 +233,15 @@ class Sidebar(QFrame):
         self.profile_layout.addWidget(self.profile_text_widget, stretch=1)
 
         self.profile_card.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.profile_card.mousePressEvent = self._on_profile_card_clicked
+        self.profile_card.clicked.connect(self._on_profile_card_clicked)
         self.reset_profile_info()
 
-    def _on_profile_card_clicked(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.view_selected.emit("Dashboard")
-            for btn in self.nav_buttons:
-                if btn.property("view_name") == "Dashboard":
-                    btn.setChecked(True)
-                    break
+    def _on_profile_card_clicked(self):
+        for btn in self.nav_buttons:
+            if btn.property("view_name") == "Dashboard":
+                btn.setChecked(True)
+                break
+        self.view_selected.emit("Dashboard")
 
     def update_profile_info(self, username: str, status_or_role: str):
         self.profile_name_lbl.setText(username)
@@ -249,7 +252,7 @@ class Sidebar(QFrame):
             return
         self._current_avatar_bytes = image_data
         dpr = self.devicePixelRatio()
-        target_physical = int(36 * dpr)
+        target_physical = int(Size.AVATAR_SM * dpr)
         pixmap = create_circular_pixmap(image_data, target_size=target_physical)
         if not pixmap.isNull():
             scaled_pixmap = pixmap.scaled(
@@ -270,10 +273,10 @@ class Sidebar(QFrame):
             return
 
         dpr = self.devicePixelRatio()
-        logical_size = 36
+        logical_size = Size.AVATAR_SM
         physical_size = int(logical_size * dpr)
 
-        icon_pixmap = get_pixmap_colored("user-filled.svg", size=24, dpr=dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", size=Size.ICON_SMALL, dpr=dpr)
 
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)
@@ -286,7 +289,8 @@ class Sidebar(QFrame):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(0, 0, logical_size, logical_size)
 
-        painter.drawPixmap(6, 6, icon_pixmap)
+        icon_inset = (logical_size - Size.ICON_SMALL) // 2
+        painter.drawPixmap(icon_inset, icon_inset, icon_pixmap)
         painter.end()
 
         self._default_avatar_pixmap = circle_pixmap
@@ -337,8 +341,8 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)
 
-        btn.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, 24))
-        btn.setFixedHeight(36)
+        btn.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, Size.ICON_SMALL))
+        btn.setFixedHeight(Size.NAV_BUTTON_HEIGHT)
         btn.setToolTip("" if self.is_expanded else display_name)
 
         if is_active:
@@ -385,14 +389,14 @@ class Sidebar(QFrame):
         if not hasattr(btn, "badge_label") or not btn.badge_label.isVisible():
             return
         if not self.is_expanded:
-            self._set_badge_state(btn.badge_label, "collapsed", 12)
-            btn_w = btn.width() if btn.width() > 10 else self.collapsed_width
-            btn.badge_label.move(btn_w - 14, 2)
+            self._set_badge_state(btn.badge_label, "collapsed", Size.BADGE_DOT)
+            btn_w = btn.width() if btn.width() > _LAYOUT_PENDING_SIZE else self.collapsed_width
+            btn.badge_label.move(btn_w - (Size.BADGE_DOT + _BADGE_INSET), _BADGE_INSET)
         else:
-            self._set_badge_state(btn.badge_label, "normal", 18)
-            btn_w = btn.width() if btn.width() > 60 else (self.expanded_width - 16)
-            btn_h = btn.height() if btn.height() > 10 else 36
-            btn.badge_label.move(btn_w - 28, (btn_h - 18) // 2)
+            self._set_badge_state(btn.badge_label, "normal", Size.BADGE_MIN)
+            btn_w = btn.width() if btn.width() > self.collapsed_width else (self.expanded_width - Size.SPACING_XL)
+            btn_h = btn.height() if btn.height() > _LAYOUT_PENDING_SIZE else Size.NAV_BUTTON_HEIGHT
+            btn.badge_label.move(btn_w - (Size.BADGE_MIN + _BADGE_RIGHT_MARGIN), (btn_h - Size.BADGE_MIN) // 2)
         btn.badge_label.raise_()
 
     def _update_toggle_badge(self):
@@ -462,7 +466,7 @@ class Sidebar(QFrame):
                 btn.setProperty("icon_only", False)
                 btn.setMinimumWidth(0)
                 btn.setMaximumWidth(16777215)
-                btn.setFixedHeight(36)
+                btn.setFixedHeight(Size.NAV_BUTTON_HEIGHT)
             else:
                 configure_icon_only_button(btn)
             btn.style().unpolish(btn)
