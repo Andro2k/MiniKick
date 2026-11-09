@@ -307,18 +307,6 @@ class ChatView(BaseView):
         self.tts_settings_panel.slider_speed.blockSignals(False)
 
     @property
-    def overlay_theme(self) -> str:
-        return self.overlay_settings_panel.combo_overlay_theme.currentData() or "glass"
-
-    @property
-    def overlay_size(self) -> int:
-        return self.overlay_settings_panel.spin_overlay_size.value()
-
-    @property
-    def overlay_fade(self) -> int:
-        return self.overlay_settings_panel.spin_overlay_fade.value()
-
-    @property
     def overlay_show_bots(self) -> bool:
         return self.overlay_settings_panel.sw_overlay_show_bots.isChecked()
 

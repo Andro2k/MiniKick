@@ -37,3 +37,13 @@ dev = [
     "pytest-timeout>=2.3.1",
 ]
 
+
+[tool.ruff]
+target-version = "py314"
+extend-exclude = [".agents", ".interface-design"]
+
+[tool.ruff.lint]
+select = ["F", "B", "S110", "RUF013", "ASYNC", "PERF"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]

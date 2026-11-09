@@ -14,16 +14,10 @@ Run the fast static suite:
 python resources/tools/project_quality_suite.py --quick --verbose
 ```
 
-Run the suite including runtime UI checks:
+Run the full suite, including runtime UI checks (Windows, requires PySide6):
 
 ```powershell
-python resources/tools/project_quality_suite.py --all --verbose
-```
-
-Export the consolidated report as JSON:
-
-```powershell
-python resources/tools/project_quality_suite.py --json
+python resources/tools/project_quality_suite.py --verbose
 ```
 
 ## Audit coverage
@@ -50,28 +44,6 @@ There is no general backend-only suite today. Use project-wide checks for backen
 ## Related checks and why they stay separate
 
 Some checks belong to the same quality area but inspect different code constructs. The dead-code auditor checks files, symbols, and imports; the unused-parameter auditor checks function signatures and callback contracts. The translation-integrity auditor checks locale keys and placeholders; the hardcoded-text auditor finds UI literals that bypass translations. Design tokens and QSS roles likewise validate different parts of the UI theme contract. Keeping these scanners separate preserves focused reports and lets the quality suite run each independently.
-
-## Compatibility
-
-The previous filenames remain as command and import compatibility shims. New scripts, documentation, and automation should use the canonical names in the table above. Historical walkthroughs may still show the older names.
-
-| Previous name | Canonical name |
-|---|---|
-| `anti_hardcode_auditor.py` | `frontend_hardcoded_text_auditor.py` |
-| `architecture_boundary_auditor.py` | `project_architecture_boundary_auditor.py` |
-| `dead_code_manager.py` | `project_dead_code_auditor.py` |
-| `design_token_auditor.py` | `frontend_design_token_auditor.py` |
-| `dry_duplication_auditor.py` | `project_code_duplication_auditor.py` |
-| `file_placement_auditor.py` | `project_file_placement_auditor.py` |
-| `i18n_manager.py` | `project_translation_integrity_auditor.py` |
-| `icon_manager.py` | `project_icon_integrity_tool.py` |
-| `profiler_audit.py` | `project_performance_profiler.py` |
-| `qt_signal_leak_auditor.py` | `frontend_qt_signal_lifecycle_auditor.py` |
-| `role_manager.py` | `frontend_qss_role_state_auditor.py` |
-| `system_health_audit.py` | `project_quality_suite.py` |
-| `ui_flex_inspector.py` | `frontend_layout_responsiveness_auditor.py` |
-| `unused_parameter_manager.py` | `project_unused_parameter_auditor.py` |
-| `window_audit_manager.py` | `frontend_qt_window_lifecycle_auditor.py` |
 
 ## Commands that modify files
 
