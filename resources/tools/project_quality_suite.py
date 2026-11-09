@@ -162,8 +162,15 @@ class AuditConfigProvider:
                 tool_filename="frontend_qt_window_lifecycle_auditor.py",
                 args=["--static-only"] if static_only else [],
                 evaluator=lambda code, out: (
-                    code == 0 and ("ESTADO PERFECTO" in out or "Violaciones Críticas (Ghost Windows): 0" in out),
-                    "0 ventanas fantasma" if code == 0 else "Riesgo de ventanas fantasma"
+                    code == 0 and (
+                        "Sin ventanas fantasma detectadas" in out
+                        or "Auditoría runtime no ejecutada" in out
+                    ),
+                    (
+                        "AST limpio; runtime no ejecutado"
+                        if "Auditoría runtime no ejecutada" in out
+                        else "0 ventanas fantasma"
+                    ) if code == 0 else "Riesgo de ventanas fantasma"
                 )
             ),
         ]

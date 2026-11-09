@@ -1,11 +1,12 @@
 # frontend\components\dialogs\severity_card.py
 
-from PySide6.QtWidgets import QFrame, QLabel
+from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt, Signal
 from frontend.common import Size
-from frontend.widgets import create_row_layout, create_col_layout
+from frontend.widgets import ClickableFrame, create_row_layout, create_col_layout
 
-class SeverityCard(QFrame):
+
+class SeverityCard(ClickableFrame):
     clicked = Signal(str)
 
     def __init__(self, key: str, title: str, subtitle: str, parent=None):
@@ -37,7 +38,5 @@ class SeverityCard(QFrame):
         self.lbl_title.style().unpolish(self.lbl_title)
         self.lbl_title.style().polish(self.lbl_title)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit(self.key)
-        super().mousePressEvent(event)
+    def _emit_clicked(self):
+        self.clicked.emit(self.key)
