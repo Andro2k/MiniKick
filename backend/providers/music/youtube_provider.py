@@ -6,6 +6,7 @@ import re
 import weakref
 from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from backend.providers.audio import audio_output_exists, resolve_audio_output
 from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
 
 logger = logging.getLogger("minikick.providers.youtube_provider")
@@ -363,17 +364,7 @@ class YouTubeMusicProvider(QObject):
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
         try:
-            from PySide6.QtMultimedia import QMediaDevices
-            outputs = QMediaDevices.audioOutputs()
-            target_device = None
-            if device_id and device_id != "default":
-                for dev in outputs:
-                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
-                    if dev_id_str == device_id or dev.description() == device_id:
-                        target_device = dev
-                        break
-            if not target_device:
-                target_device = QMediaDevices.defaultAudioOutput()
+            target_device = resolve_audio_output(device_id)
             if target_device:
                 self.audio_output.setDevice(target_device)
                 logger.info("[YouTubeMusicProvider] Audio output device set to: %s", target_device.description())
@@ -640,18 +631,7 @@ class YouTubeMusicProvider(QObject):
     @Slot()
     def _on_audio_outputs_changed(self):
         try:
-            from PySide6.QtMultimedia import QMediaDevices
-            outputs = QMediaDevices.audioOutputs()
-            
-            device_still_exists = False
-            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
-                for dev in outputs:
-                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
-                    if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
-                        device_still_exists = True
-                        break
-            else:
-                device_still_exists = True
+            device_still_exists = audio_output_exists(getattr(self, "_audio_device_id", None))
 
             if not device_still_exists:
                 logger.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")
