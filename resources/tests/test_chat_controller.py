@@ -171,6 +171,24 @@ def test_chat_service_can_defer_provider_warmup():
     tts.set_voice.assert_called_once_with("voice-id")
     tts.warm_up.assert_not_called()
 
+def test_chat_service_debounces_audio_params_with_injected_scheduler():
+    tts = MagicMock()
+    storage = MagicMock(spec=["load_string", "save_string", "save_all"])
+    storage.load_string.return_value = "1.0"
+    fired = []
+
+    def fake_debounce(callback, delay_ms):
+        assert delay_ms == 300
+        return lambda: fired.append(callback)
+
+    service = ChatService(tts, storage, debounce=fake_debounce)
+    service.set_volume(40)
+    service.set_speed(120)
+
+    storage.save_all.assert_not_called()
+    fired[-1]()
+    storage.save_all.assert_called_once_with({"tts_volume": "40", "tts_speed": "120"})
+
 def test_chat_controller_pipeline_spam_blocking(qapp, mock_dependencies):
     d = mock_dependencies
     controller = ChatController(

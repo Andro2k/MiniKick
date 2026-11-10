@@ -1,20 +1,22 @@
 # backend\services\chat\chat_service.py
 
 import logging
-from PySide6.QtCore import QTimer
+from typing import Callable
 
 logger = logging.getLogger("minikick.services.chat")
 
+Debounce = Callable[[Callable[[], None], int], Callable[[], None]]
+
+def _no_debounce(callback: Callable[[], None], _delay_ms: int) -> Callable[[], None]:
+    return callback
+
 class ChatService:
-    def __init__(self, tts_manager, settings_storage):
+    def __init__(self, tts_manager, settings_storage, debounce: Debounce = _no_debounce):
         self.tts = tts_manager
         self.storage = settings_storage
         self._pending_volume: int | None = None
         self._pending_speed: int | None = None
-        self._audio_timer = QTimer()
-        self._audio_timer.setSingleShot(True)
-        self._audio_timer.setInterval(300)
-        self._audio_timer.timeout.connect(self._flush_audio_params)
+        self._schedule_audio_flush = debounce(self._flush_audio_params, 300)
         self._init_tts_params()
 
     def _init_tts_params(self):
@@ -328,12 +330,12 @@ class ChatService:
     def set_volume(self, volume: int):
         self.tts.set_volume(volume / 100.0)
         self._pending_volume = volume
-        self._audio_timer.start()
+        self._schedule_audio_flush()
 
     def set_speed(self, speed: int):
         self.tts.set_speed(speed / 100.0)
         self._pending_speed = speed
-        self._audio_timer.start()
+        self._schedule_audio_flush()
 
     def _flush_audio_params(self):
         batch = {}

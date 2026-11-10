@@ -213,17 +213,6 @@ class BrowserService:
             except Exception as e:
                 logger.debug("[BrowserService] os.startfile failed: %s", e)
 
-        try:
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
-            qurl = QUrl(url)
-            if qurl.isValid():
-                if QDesktopServices.openUrl(qurl):
-                    logger.debug("[BrowserService] Launched successfully via QDesktopServices.openUrl")
-                    return True
-        except Exception as e:
-            logger.debug("[BrowserService] QDesktopServices.openUrl attempt failed: %s", e)
-
         if sys.platform.startswith("linux") or "bsd" in sys.platform:
             for opener in ("xdg-open", "gio"):
                 bin_path = shutil.which(opener)
