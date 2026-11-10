@@ -163,7 +163,7 @@ def test_chat_service_can_defer_provider_warmup():
     tts = MagicMock()
     storage = MagicMock()
     storage.load_string.return_value = "voice-id"
-    service = ChatService(tts, storage)
+    service = ChatService(tts, storage, debounce=lambda callback, _delay_ms: callback)
 
     service.set_provider("piper", warm_up=False)
 

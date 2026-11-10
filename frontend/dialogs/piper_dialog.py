@@ -7,6 +7,7 @@ from .base_dialog import ModernFramelessShell, DialogHeader, build_dialog_footer
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
 from frontend.common import get_icon_colored, get_pixmap_colored, Size
+from frontend.common.gui_bridge import run_on_gui
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
@@ -403,6 +404,11 @@ class PiperVoicesDialog(ModernFramelessShell):
             self.voices_updated.emit()
             self._refresh_catalog()
 
+    def done(self, result: int) -> None:
+        for worker in self._active_workers.values():
+            worker.cancel()
+        super().done(result)
+
     @Slot(str)
     def _start_download(self, voice_id: str):
         if voice_id in self._active_workers or not self.manager:
@@ -419,9 +425,12 @@ class PiperVoicesDialog(ModernFramelessShell):
         if item:
             item.set_downloading(True, 0)
 
-        worker = worker_cls(voice_id, self.manager, parent=self)
-        worker.progress.connect(self._on_download_progress)
-        worker.finished.connect(self._on_download_finished)
+        worker = worker_cls(
+            voice_id,
+            self.manager,
+            on_progress=lambda *a: run_on_gui(self._on_download_progress, *a),
+            on_finished=lambda *a: run_on_gui(self._on_download_finished, *a),
+        )
         self._active_workers[voice_id] = worker
         worker.start()
 
@@ -433,9 +442,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
     @Slot(str, bool, str)
     def _on_download_finished(self, voice_id: str, success: bool, _err_msg: str):
-        if voice_id in self._active_workers:
-            worker = self._active_workers.pop(voice_id)
-            worker.deleteLater()
+        self._active_workers.pop(voice_id, None)
 
         item = self._item_widgets.get(voice_id)
         if item:
