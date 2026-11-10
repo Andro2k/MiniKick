@@ -1,3 +1,5 @@
+# resources\tests\test_integrations_status.py
+
 from unittest.mock import MagicMock
 
 from PySide6.QtCore import QObject, Signal
