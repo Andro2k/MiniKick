@@ -137,6 +137,26 @@ class AuditConfigProvider:
                 )
             ),
             AuditSpec(
+                name="Project Duplicate Defs",
+                command_desc="Definiciones pisadas en el mismo ámbito",
+                tool_filename="project_duplicate_definition_auditor.py",
+                args=["--check"],
+                evaluator=lambda code, out: (
+                    code == 0 and "Duplicados detectados: 0" in out,
+                    "0 definiciones duplicadas" if code == 0 else "Definiciones duplicadas detectadas"
+                )
+            ),
+            AuditSpec(
+                name="Project Scope Coverage",
+                command_desc="Archivos nuevos o renombrados sin cobertura",
+                tool_filename="project_scope_coverage_auditor.py",
+                args=["--check"],
+                evaluator=lambda code, out: (
+                    code == 0 and "Problemas de cobertura: 0" in out,
+                    "Todos los .py cubiertos" if code == 0 else "Cobertura de herramientas rota"
+                )
+            ),
+            AuditSpec(
                 name="Project Architecture",
                 command_desc="Separación SoR",
                 tool_filename="project_architecture_boundary_auditor.py",
@@ -240,7 +260,7 @@ class ConsoleDashboardUI:
     C_GRY = "\033[90m"
 
     @staticmethod
-    def print_dashboard(results: List[CheckResult]):
+    def print_dashboard(results: List[CheckResult], verbose: bool = False):
         total_time = sum(r.duration_sec for r in results)
         failed_results = [r for r in results if not r.passed]
         passed_count = len(results) - len(failed_results)
@@ -267,6 +287,12 @@ class ConsoleDashboardUI:
         print(f" {ConsoleDashboardUI.C_GRY}Tiempo Total Acumulado (Threads): {total_time:.2f} segundos{ConsoleDashboardUI.C_RST}")
         print(f"{ConsoleDashboardUI.C_BLD}{ConsoleDashboardUI.C_CYN}{'='*92}{ConsoleDashboardUI.C_RST}\n")
 
+        if verbose:
+            for r in results:
+                if r.passed:
+                    print(f"\n{ConsoleDashboardUI.C_BLD}[OK] {r.name} ({r.target_tool}){ConsoleDashboardUI.C_RST}")
+                    print(r.stdout or "Sin salida capturada.")
+
         if failed_results:
             print(f"{ConsoleDashboardUI.C_BLD}{ConsoleDashboardUI.C_RED}--- 🚨 DETALLE ESTRICTO DE ERRORES/ADVERTENCIAS ---{ConsoleDashboardUI.C_RST}")
             for r in failed_results:
@@ -280,6 +306,7 @@ class ConsoleDashboardUI:
 def main():
     parser = argparse.ArgumentParser(description="Ejecuta las auditorías de calidad de forma paralela y estricta.")
     parser.add_argument("--quick", "-q", action="store_true", help="Auditoría estática rápida (omite UI runtime)")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Muestra la salida completa también de las auditorías aprobadas")
     args = parser.parse_args()
 
     specs = AuditConfigProvider.get_specs(static_only=args.quick)
@@ -288,7 +315,7 @@ def main():
     auditor = ParallelAuditorService()
     results = auditor.run_all(specs)
     
-    ConsoleDashboardUI.print_dashboard(results)
+    ConsoleDashboardUI.print_dashboard(results, verbose=args.verbose)
 
     if not all(r.passed for r in results):
         print("\n❌ CÓDIGO DE SALIDA 1: Corrige las advertencias de arriba para que el código sea admitido.")

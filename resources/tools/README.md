@@ -14,16 +14,10 @@ Run the fast static suite:
 python resources/tools/project_quality_suite.py --quick --verbose
 ```
 
-Run the suite including runtime UI checks:
+Run the full suite, including runtime UI checks (Windows, requires PySide6):
 
 ```powershell
-python resources/tools/project_quality_suite.py --all --verbose
-```
-
-Export the consolidated report as JSON:
-
-```powershell
-python resources/tools/project_quality_suite.py --json
+python resources/tools/project_quality_suite.py --verbose
 ```
 
 ## Audit coverage
@@ -32,6 +26,8 @@ python resources/tools/project_quality_suite.py --json
 |---|---|---|
 | `project_architecture_boundary_auditor.py` | Backend and frontend | Layer boundaries, forbidden dependencies, and separation of responsibilities |
 | `project_code_duplication_auditor.py` | Backend and frontend | Repeated statement sequences and AST clones |
+| `project_duplicate_definition_auditor.py` | Backend, frontend, bootstrap, resources; selectable | Functions, methods, classes, class attributes, and dict keys defined twice in the same scope (the last one silently wins) |
+| `project_scope_coverage_auditor.py` | Whole project (tracked and new untracked `.py`) | Top-level folders no tool covers, unparsable files, tool exceptions that cite renamed/deleted files, auditors missing from the suite |
 | `project_dead_code_auditor.py` | Backend and frontend; selectable | Orphan Python files, unused symbols, and unused imports |
 | `project_file_placement_auditor.py` | Backend and frontend | Canonical folder placement and file naming rules |
 | `project_unused_parameter_auditor.py` | Backend and frontend; selectable | Unused parameters, base-class hooks, and Qt callback parameters |
@@ -51,28 +47,12 @@ There is no general backend-only suite today. Use project-wide checks for backen
 
 Some checks belong to the same quality area but inspect different code constructs. The dead-code auditor checks files, symbols, and imports; the unused-parameter auditor checks function signatures and callback contracts. The translation-integrity auditor checks locale keys and placeholders; the hardcoded-text auditor finds UI literals that bypass translations. Design tokens and QSS roles likewise validate different parts of the UI theme contract. Keeping these scanners separate preserves focused reports and lets the quality suite run each independently.
 
-## Compatibility
-
-The previous filenames remain as command and import compatibility shims. New scripts, documentation, and automation should use the canonical names in the table above. Historical walkthroughs may still show the older names.
-
-| Previous name | Canonical name |
-|---|---|
-| `anti_hardcode_auditor.py` | `frontend_hardcoded_text_auditor.py` |
-| `architecture_boundary_auditor.py` | `project_architecture_boundary_auditor.py` |
-| `dead_code_manager.py` | `project_dead_code_auditor.py` |
-| `design_token_auditor.py` | `frontend_design_token_auditor.py` |
-| `dry_duplication_auditor.py` | `project_code_duplication_auditor.py` |
-| `file_placement_auditor.py` | `project_file_placement_auditor.py` |
-| `i18n_manager.py` | `project_translation_integrity_auditor.py` |
-| `icon_manager.py` | `project_icon_integrity_tool.py` |
-| `profiler_audit.py` | `project_performance_profiler.py` |
-| `qt_signal_leak_auditor.py` | `frontend_qt_signal_lifecycle_auditor.py` |
-| `role_manager.py` | `frontend_qss_role_state_auditor.py` |
-| `system_health_audit.py` | `project_quality_suite.py` |
-| `ui_flex_inspector.py` | `frontend_layout_responsiveness_auditor.py` |
-| `unused_parameter_manager.py` | `project_unused_parameter_auditor.py` |
-| `window_audit_manager.py` | `frontend_qt_window_lifecycle_auditor.py` |
-
 ## Commands that modify files
 
 Most audit commands are read-only. `project_dead_code_auditor.py --clean-orphans` can delete source files, and `project_icon_integrity_tool.py --clean` can delete unused icon assets. Review their dry-run or report output before using cleanup options.
+
+## File discovery
+
+`_project_sources.py` is the shared file discovery for the project-wide auditors (`project_code_duplication_auditor.py`, `project_unused_parameter_auditor.py`, `project_duplicate_definition_auditor.py`, `project_scope_coverage_auditor.py`). It lists every tracked `.py` plus new untracked ones (`git ls-files --cached --others --exclude-standard`), so a new or renamed file is covered without touching any tool. Outside a git checkout it falls back to scanning the folder tree. `IGNORED_DIRS` is matched against the path relative to the project root, never against the absolute path.
+
+Layer-specific auditors (`frontend_*`, architecture boundaries, file placement) still scan `frontend/` and `backend/` on purpose. A new top-level folder with `.py` files fails `project_scope_coverage_auditor.py` until it is added to `KNOWN_ZONES`.

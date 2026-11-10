@@ -18,11 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-IGNORED_DIRS = {
-    ".venv", "venv", "__pycache__", ".git", ".pytest_cache",
-    ".agents", "build", "dist", "walkthroughs", "locales",
-    "scratch", "node_modules", ".idea", ".vscode"
-}
+from resources.tools._project_sources import APPLICATION_ZONES, iter_python_files
 
 QT_EVENT_PATTERNS = {
     "resizeEvent", "paintEvent", "closeEvent", "showEvent", "hideEvent",
@@ -151,12 +147,10 @@ class ParameterUsageVisitor(ast.NodeVisitor):
                 return True
         return False
 
-def scan_directory(target_dir: Path) -> List[UnusedParamOccurrence]:
+def scan_zones(zones) -> List[UnusedParamOccurrence]:
     results = []
-    if not target_dir.exists():
-        return results
-    for file_path in target_dir.rglob("*.py"):
-        if file_path.name.startswith("test_") or any(p in IGNORED_DIRS for p in file_path.parts):
+    for file_path in iter_python_files(zones):
+        if file_path.name.startswith("test_"):
             continue
         try:
             content = file_path.read_text(encoding="utf-8")
@@ -249,29 +243,21 @@ def print_report(occurrences: List[UnusedParamOccurrence], target: str, category
 
 def main():
     parser = argparse.ArgumentParser(description="Audita parámetros no usados en backend y frontend, incluidos contratos y callbacks Qt.")
-    parser.add_argument("--target", choices=["all", "backend", "frontend"], default="all", help="Directorio a escanear (default: all)")
+    parser.add_argument("--target", choices=["all", "backend", "frontend", "bootstrap"], default="all", help="Zona a escanear (default: all = toda la aplicación, incluidos archivos nuevos)")
     parser.add_argument("--category", choices=["all", "dead", "hooks", "qt"], default="all", help="Filtrar por categoría (default: all)")
     parser.add_argument("--fix-hooks", action="store_true", help="Aplica automáticamente el prefijo '_' a los parámetros en contratos base")
     parser.add_argument("--json", action="store_true", help="Imprime el reporte en formato JSON")
 
     args = parser.parse_args()
 
-    targets_to_scan = []
-    if args.target in ("all", "backend"):
-        targets_to_scan.append(PROJECT_ROOT / "backend")
-    if args.target in ("all", "frontend"):
-        targets_to_scan.append(PROJECT_ROOT / "frontend")
+    zones = APPLICATION_ZONES if args.target == "all" else (args.target,)
 
-    all_occurrences: List[UnusedParamOccurrence] = []
-    for t in targets_to_scan:
-        all_occurrences.extend(scan_directory(t))
+    all_occurrences: List[UnusedParamOccurrence] = scan_zones(zones)
 
     if args.fix_hooks:
         fixed = fix_contract_hooks(all_occurrences)
         print(f"\n{COLOR_GREEN}✨ Se aplicó el prefijo '_' a {fixed} parámetro(s) en métodos base.{COLOR_RESET}\n")
-        all_occurrences = []
-        for t in targets_to_scan:
-            all_occurrences.extend(scan_directory(t))
+        all_occurrences = scan_zones(zones)
 
     if args.json:
         print(json.dumps([asdict(o) for o in all_occurrences], indent=2, ensure_ascii=False))

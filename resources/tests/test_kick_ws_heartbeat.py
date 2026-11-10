@@ -188,15 +188,15 @@ def test_raw_frame_tracks_time_since_previous_socket_frame():
     assert mgr._last_frame_gap_s == 0.75
 
 
-def test_start_socket_uses_tight_ping_settings():
+def test_start_socket_relies_on_pusher_heartbeat_not_library_pings():
     mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
     with patch("websocket.WebSocketApp") as mock_app_class:
         app = MagicMock()
         mock_app_class.return_value = app
         mgr.start_socket(room_id=1)
         kwargs = app.run_forever.call_args.kwargs
-        assert kwargs["ping_interval"] == 20
-        assert kwargs["ping_timeout"] == 10
+        assert not kwargs.get("ping_interval")
+        assert "ping_timeout" not in kwargs
 
 
 def test_transit_latency_parses_z_and_offset_and_rejects_garbage():

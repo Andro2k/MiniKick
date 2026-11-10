@@ -116,11 +116,12 @@ class GithubUpdateProvider:
 class WindowsInstaller:
     def install_and_restart(self, installer_path: str) -> None:
         CREATE_NO_WINDOW = 0x08000000        
-        cmd = f'ping 127.0.0.1 -n 2 > nul && start "" "{installer_path}" /SILENT'
+        cmd = 'ping 127.0.0.1 -n 2 > nul && start "" "%MINIKICK_INSTALLER%" /SILENT'
         logger.info("[WindowsInstaller] Launching installer: %s", installer_path)
         subprocess.Popen(
             cmd,
             shell=True,
+            env={**os.environ, "MINIKICK_INSTALLER": installer_path},
             creationflags=CREATE_NO_WINDOW,
             close_fds=True 
         )

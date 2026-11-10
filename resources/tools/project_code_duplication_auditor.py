@@ -17,6 +17,10 @@ if hasattr(sys.stdout, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from resources.tools._project_sources import APPLICATION_ZONES, iter_python_files
 
 COLOR_RESET   = "\033[0m"
 COLOR_BOLD    = "\033[1m"
@@ -25,13 +29,6 @@ COLOR_YELLOW  = "\033[93m"
 COLOR_CYAN    = "\033[96m"
 COLOR_MAGENTA = "\033[95m"
 COLOR_GRAY    = "\033[90m"
-
-IGNORED_DIRECTORIES = {
-    ".venv", "venv", "__pycache__", ".git", ".pytest_cache",
-    ".agents", "build", "dist", "walkthroughs", "locales",
-    "scratch", "node_modules", "tools", "tests"
-}
-
 
 @dataclass(slots=True)
 class CodeOccurrence:
@@ -111,13 +108,6 @@ class DuplicationScanner:
                         )
                     )
 
-    def scan_directory(self, target_dir: Path):
-        if not target_dir.exists():
-            return
-        for file_path in target_dir.rglob("*.py"):
-            if not any(part in IGNORED_DIRECTORIES for part in file_path.parts):
-                self.scan_file(file_path)
-
     def get_duplicate_clusters(self) -> List[DuplicateCloneCluster]:
         clusters: List[DuplicateCloneCluster] = []
         for h, occs in self.hash_to_occurrences.items():
@@ -177,8 +167,8 @@ def main():
     args = parser.parse_args()
 
     scanner = DuplicationScanner(min_statements=args.min_statements)
-    scanner.scan_directory(PROJECT_ROOT / "backend")
-    scanner.scan_directory(PROJECT_ROOT / "frontend")
+    for file_path in iter_python_files(APPLICATION_ZONES):
+        scanner.scan_file(file_path)
 
     clusters = scanner.get_duplicate_clusters()
 

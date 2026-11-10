@@ -31,7 +31,6 @@ HEX_COLOR_REGEX = re.compile(r"#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})
 EXCLUDED_FILES = {
     "theme.py",
     "color_picker.py",
-    "color_picker_widget.py",
     "chat_mockup.py",
     "alert_mockup.py",
     "music_mockup.py"

@@ -55,7 +55,7 @@ class CrashHandler:
                 initial_contact=self._get_initial_contact(),
             ).exec()
         except Exception as dialog_err:
-            print(self._dialog_error_message(i18n, dialog_err), file=sys.stderr)
+            print(self._dialog_error_message(dialog_err), file=sys.stderr)
 
     @staticmethod
     def _get_initial_contact() -> str:
@@ -66,5 +66,5 @@ class CrashHandler:
             return ""
 
     @staticmethod
-    def _dialog_error_message(i18n, error: Exception) -> str:
+    def _dialog_error_message(error: Exception) -> str:
         return f"[Bootstrap] Failed to display crash dialog: {error}"
