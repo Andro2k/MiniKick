@@ -29,6 +29,7 @@ from backend.services import (
     TimerService,
 )
 from backend.workers import GlobalMediaWorker
+from frontend.common.qt_debounce import qt_debounce
 from frontend.window.integrations_status import IntegrationsStatusPresenter
 from frontend.window.media_keys import MediaKeysHandler
 from frontend.window.messages import ChatMessageRouter
@@ -45,7 +46,7 @@ class MainWindowComposition:
     def create_services(self) -> None:
         w = self._window
         w.avatar_service = AvatarService(avatar_storage=w.container.avatar_storage)
-        w.chat_service = ChatService(w.tts_manager, w.settings_storage)
+        w.chat_service = ChatService(w.tts_manager, w.settings_storage, debounce=qt_debounce)
         w.settings_service = SettingsService(w.settings_storage, w.backup_service)
         w.rewards_service = RewardsService(w.rewards_storage, w.overlay_server)
         w.reward_redemption_handler = RewardRedemptionHandler(

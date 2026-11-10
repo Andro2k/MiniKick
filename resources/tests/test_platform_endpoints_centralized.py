@@ -1,4 +1,4 @@
-# resources\\tests\\test_platform_endpoints_centralized.py
+# resources\tests\test_platform_endpoints_centralized.py
 
 from pathlib import Path
 

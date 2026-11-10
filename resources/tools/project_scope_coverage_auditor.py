@@ -23,7 +23,6 @@ from resources.tools._project_sources import KNOWN_ZONES, iter_python_files, unc
 TOOLS_DIR = PROJECT_ROOT / "resources" / "tools"
 SUITE_FILE = TOOLS_DIR / "project_quality_suite.py"
 
-# Nombres que las herramientas mencionan pero que no están versionados a propósito.
 UNTRACKED_REFERENCES = {"__init__.py", "api_keys.py"}
 FILE_REFERENCE_RE = re.compile(r"""["']([A-Za-z0-9_./-]+\.py)["']""")
 

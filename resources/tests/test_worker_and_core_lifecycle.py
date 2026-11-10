@@ -293,7 +293,6 @@ def test_chat_and_reward_workers_stop_sets_interruption_and_quit():
     twitch_worker = TwitchChatWorker(channel_name="", oauth_token="")
     twitch_worker.start()
     twitch_worker.stop()
-    # Con canal vacío el hilo termina al instante: requestInterruption() no tiene efecto sobre un hilo ya finalizado.
     assert twitch_worker._is_stopped is True
     assert twitch_worker.wait(1000)
 

@@ -1,4 +1,4 @@
-# resources\\tests\\test_windows_installer.py
+# resources\tests\test_windows_installer.py
 
 from unittest import mock
 
