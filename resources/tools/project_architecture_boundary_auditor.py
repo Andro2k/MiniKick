@@ -38,8 +38,6 @@ EXEMPT_FILES: Dict[str, Set[str]] = {
     "banned_json_import": {
         os.path.normpath("backend/utils/json_utils.py")
     },
-    # Deuda conocida: servicios que aún dependen de Qt. Migrar con el patrón de frontend/common/qt_debounce.py
-    # y quitar de esta lista a medida que se desacoplen.
     "service_qt_import": {
         os.path.normpath("backend/services/rewards/thumbnail_service.py"),
         os.path.normpath("backend/services/chat/commands_service.py"),
