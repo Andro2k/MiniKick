@@ -35,6 +35,7 @@ class YouTubeMusicProvider(QObject):
                  settings_storage: IConfigProvider | None = None):
         super().__init__()
         self.i18n = i18n
+        self._audio_device_id = "default"
         self.db_manager = db_manager
         self.settings_storage = settings_storage
         if music_storage:
@@ -631,7 +632,7 @@ class YouTubeMusicProvider(QObject):
     @Slot()
     def _on_audio_outputs_changed(self):
         try:
-            device_still_exists = audio_output_exists(getattr(self, "_audio_device_id", None))
+            device_still_exists = audio_output_exists(self._audio_device_id)
 
             if not device_still_exists:
                 logger.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")

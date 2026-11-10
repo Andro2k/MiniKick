@@ -281,7 +281,7 @@ class PiperTTSProvider:
             with self._playback_lock:
                 self._current_player = player
             try:
-                target_dev = resolve_audio_output(getattr(self, "_audio_device_id", None))
+                target_dev = resolve_audio_output(self._audio_device_id)
                 if target_dev:
                     audio_output.setDevice(target_dev)
                     logger.debug("[Piper TTS] Audio output device routed to: '%s' (configured: '%s')", target_dev.description(), self._audio_device_id)

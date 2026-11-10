@@ -1,9 +1,9 @@
 # backend\providers\audio\devices.py
 
-from PySide6.QtMultimedia import QMediaDevices
+from PySide6.QtMultimedia import QAudioDevice, QMediaDevices
 
 
-def _device_id(dev) -> str:
+def _device_id(dev: QAudioDevice) -> str:
     raw = dev.id()
     return raw.data().decode("utf-8", errors="ignore") if hasattr(raw, "data") else str(raw)
 
@@ -12,7 +12,7 @@ def _is_default(device_id: str | None) -> bool:
     return not device_id or device_id == "default"
 
 
-def find_audio_output(device_id: str | None):
+def find_audio_output(device_id: str | None) -> QAudioDevice | None:
     if _is_default(device_id):
         return None
     for dev in QMediaDevices.audioOutputs():
@@ -21,7 +21,7 @@ def find_audio_output(device_id: str | None):
     return None
 
 
-def resolve_audio_output(device_id: str | None):
+def resolve_audio_output(device_id: str | None) -> QAudioDevice:
     return find_audio_output(device_id) or QMediaDevices.defaultAudioOutput()
 
 

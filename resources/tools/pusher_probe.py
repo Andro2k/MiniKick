@@ -1,4 +1,4 @@
-# resources\tools\pusher_probe.py\
+# resources\tools\pusher_probe.py
 
 import argparse
 import json

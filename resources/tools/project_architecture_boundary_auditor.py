@@ -1,4 +1,4 @@
-# resources\tools\project_architecture_boundary_auditor.py\
+# resources\tools\project_architecture_boundary_auditor.py
 
 import ast
 import json
@@ -32,10 +32,17 @@ IGNORED_DIRECTORIES = {
     "scratch", "node_modules", "tools", "tests"
 }
 
+QT_PREFIXES = ("PySide6", "PySide2", "PyQt6", "PyQt5")
+
 EXEMPT_FILES: Dict[str, Set[str]] = {
     "banned_json_import": {
         os.path.normpath("backend/utils/json_utils.py")
-    }
+    },
+    "service_qt_import": {
+        os.path.normpath("backend/services/rewards/thumbnail_service.py"),
+        os.path.normpath("backend/services/chat/commands_service.py"),
+        os.path.normpath("backend/services/system/dashboard_service.py"),
+    },
 }
 
 @dataclass
@@ -83,9 +90,20 @@ class ArchitectureASTVisitor(ast.NodeVisitor):
             )
         )
 
+    def _check_service_qt(self, node: ast.AST, module: str):
+        if not self.is_backend_service or not module.startswith(QT_PREFIXES):
+            return
+        if os.path.normpath(self.rel_path) in EXEMPT_FILES["service_qt_import"]:
+            return
+        self._add_violation(
+            node, "SOR_SERVICE_QT", "Decoupled Architecture",
+            f"Importación de Qt ('{module}') en un servicio. Inyecta la dependencia desde frontend/ (ver frontend/common/qt_debounce.py)."
+        )
+
     def visit_Import(self, node: ast.Import):
         for alias in node.names:
             name = alias.name
+            self._check_service_qt(node, name)
 
             if self.is_frontend:
                 if name == "sqlite3" or name.startswith("sqlite3."):
@@ -132,6 +150,7 @@ class ArchitectureASTVisitor(ast.NodeVisitor):
 
     def visit_ImportFrom(self, node: ast.ImportFrom):
         mod = node.module or ""
+        self._check_service_qt(node, mod)
 
         if self.is_frontend:
             if mod == "sqlite3" or mod.startswith("sqlite3."):

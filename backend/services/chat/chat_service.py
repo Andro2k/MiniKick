@@ -7,11 +7,8 @@ logger = logging.getLogger("minikick.services.chat")
 
 Debounce = Callable[[Callable[[], None], int], Callable[[], None]]
 
-def _no_debounce(callback: Callable[[], None], _delay_ms: int) -> Callable[[], None]:
-    return callback
-
 class ChatService:
-    def __init__(self, tts_manager, settings_storage, debounce: Debounce = _no_debounce):
+    def __init__(self, tts_manager, settings_storage, debounce: Debounce):
         self.tts = tts_manager
         self.storage = settings_storage
         self._pending_volume: int | None = None

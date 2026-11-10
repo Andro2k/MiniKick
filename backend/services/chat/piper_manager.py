@@ -4,8 +4,8 @@ import os
 import logging
 import urllib.request
 import tarfile
+import threading
 from typing import Dict, List, Optional, Tuple, Callable
-from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger("minikick.services.piper_voice_manager")
 
@@ -364,26 +364,45 @@ class PiperVoiceManager:
         return success
 
 
-class PiperVoiceDownloadWorker(QThread):
-    progress = Signal(str, int, float, float)
-    finished = Signal(str, bool, str)
-
-    def __init__(self, voice_id: str, manager: PiperVoiceManager, parent=None):
-        super().__init__(parent)
+class PiperVoiceDownloadWorker:
+    def __init__(
+        self,
+        voice_id: str,
+        manager: PiperVoiceManager,
+        on_progress: Optional[Callable[[str, int, float, float], None]] = None,
+        on_finished: Optional[Callable[[str, bool, str], None]] = None,
+    ):
         self.voice_id = voice_id
         self.manager = manager
+        self.on_progress = on_progress
+        self.on_finished = on_finished
+        self._cancel = threading.Event()
+        self._thread = threading.Thread(
+            target=self._run, name=f"piper-download-{voice_id}", daemon=True
+        )
 
-    def run(self):
+    def start(self) -> None:
+        self._thread.start()
+
+    def cancel(self) -> None:
+        self._cancel.set()
+
+    def _emit_finished(self, ok: bool, message: str) -> None:
+        if self.on_finished:
+            self.on_finished(self.voice_id, ok, message)
+
+    def _run(self) -> None:
         def _on_prog(percent: int, down_mb: float, tot_mb: float):
-            if self.isInterruptionRequested():
+            if self._cancel.is_set():
                 raise InterruptedError("Download cancelled by user")
-            self.progress.emit(self.voice_id, percent, down_mb, tot_mb)
+            if self.on_progress:
+                self.on_progress(self.voice_id, percent, down_mb, tot_mb)
 
         try:
             ok = self.manager.download_voice_sync(self.voice_id, progress_callback=_on_prog)
-            if ok:
-                self.finished.emit(self.voice_id, True, "")
+            if not ok and self._cancel.is_set():
+                self._emit_finished(False, "Download cancelled by user")
             else:
-                self.finished.emit(self.voice_id, False, "Download failed")
+                self._emit_finished(ok, "" if ok else "Download failed")
         except Exception as e:
-            self.finished.emit(self.voice_id, False, str(e))
+            self._emit_finished(False, str(e))
