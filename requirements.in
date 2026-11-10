@@ -14,8 +14,6 @@ anyio==4.15.1
     # via httpx
 async-timeout==5.0.1
     # via tiktoklive
-asyncio==4.0.0
-    # via minikick (pyproject.toml)
 attrs==26.1.0
     # via
     #   aiohttp

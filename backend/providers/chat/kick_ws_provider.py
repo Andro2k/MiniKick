@@ -32,10 +32,7 @@ RFC_6455_CLOSE_CODES: dict[int, str] = {
 
 DEFAULT_KICK_COLOR = "#2ECD70"
 PUSHER_KEY_REJECTED_CODES = frozenset({4001, 4003, 4009})
-
-WS_PING_INTERVAL_S = 20
-WS_PING_TIMEOUT_S = 10
-PONG_TIMEOUT_S = 10.0
+PONG_TIMEOUT_S = 20.0
 WATCHDOG_TICK_S = 2.0
 MIN_PROACTIVE_PING_S = 10
 MAX_PROACTIVE_PING_S = 25
@@ -149,8 +146,6 @@ class KickWebSocketManager(BaseChatSocketProvider):
         ]
         self.ws.run_forever(
             sockopt=tuple(sockopts),
-            ping_interval=WS_PING_INTERVAL_S,
-            ping_timeout=WS_PING_TIMEOUT_S
         )
 
     def _on_error(self, _ws: websocket.WebSocketApp, err: Exception) -> None:
