@@ -8,6 +8,7 @@ import logging
 from typing import Dict, List, Optional
 from PySide6.QtCore import QUrl, QEventLoop
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from backend.providers.audio import resolve_audio_output
 from backend.services.chat import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
 from backend.utils import is_speakable_text
 
@@ -280,16 +281,7 @@ class PiperTTSProvider:
             with self._playback_lock:
                 self._current_player = player
             try:
-                from PySide6.QtMultimedia import QMediaDevices
-                target_dev = None
-                if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
-                    for dev in QMediaDevices.audioOutputs():
-                        dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
-                        if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
-                            target_dev = dev
-                            break
-                if not target_dev:
-                    target_dev = QMediaDevices.defaultAudioOutput()
+                target_dev = resolve_audio_output(getattr(self, "_audio_device_id", None))
                 if target_dev:
                     audio_output.setDevice(target_dev)
                     logger.debug("[Piper TTS] Audio output device routed to: '%s' (configured: '%s')", target_dev.description(), self._audio_device_id)
