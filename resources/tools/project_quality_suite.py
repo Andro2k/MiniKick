@@ -137,6 +137,26 @@ class AuditConfigProvider:
                 )
             ),
             AuditSpec(
+                name="Project Duplicate Defs",
+                command_desc="Definiciones pisadas en el mismo ámbito",
+                tool_filename="project_duplicate_definition_auditor.py",
+                args=["--check"],
+                evaluator=lambda code, out: (
+                    code == 0 and "Duplicados detectados: 0" in out,
+                    "0 definiciones duplicadas" if code == 0 else "Definiciones duplicadas detectadas"
+                )
+            ),
+            AuditSpec(
+                name="Project Scope Coverage",
+                command_desc="Archivos nuevos o renombrados sin cobertura",
+                tool_filename="project_scope_coverage_auditor.py",
+                args=["--check"],
+                evaluator=lambda code, out: (
+                    code == 0 and "Problemas de cobertura: 0" in out,
+                    "Todos los .py cubiertos" if code == 0 else "Cobertura de herramientas rota"
+                )
+            ),
+            AuditSpec(
                 name="Project Architecture",
                 command_desc="Separación SoR",
                 tool_filename="project_architecture_boundary_auditor.py",

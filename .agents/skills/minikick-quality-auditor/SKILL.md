@@ -44,6 +44,8 @@ La suite evalúa:
 * **Frontend Qt Signal Lifecycle** (`frontend_qt_signal_lifecycle_auditor.py`)
 * **Frontend Design Tokens** (`frontend_design_token_auditor.py`)
 * **Project Code Duplication** (`project_code_duplication_auditor.py`)
+* **Project Duplicate Definitions** (`project_duplicate_definition_auditor.py`)
+* **Project Scope Coverage** (`project_scope_coverage_auditor.py`)
 * **Project Architecture Boundaries** (`project_architecture_boundary_auditor.py`)
 * **Project File Placement** (`project_file_placement_auditor.py`)
 * **Frontend Qt Window Lifecycle** (`frontend_qt_window_lifecycle_auditor.py`)
@@ -93,6 +95,26 @@ Si alguna herramienta reporta `❌ FAIL`, ejecuta la herramienta específica dir
 * **Protocolo de Corrección:**
   - Extraer lógica repetida a métodos auxiliares privados o utilidades compartidas si se repite en 3 o más lugares (Regla del 3).
   - Mantener la legibilidad y simplicidad (KISS).
+
+### D2. Definiciones Duplicadas (`project_duplicate_definition_auditor.py`)
+* **Comando:**
+  ```powershell
+  python resources/tools/project_duplicate_definition_auditor.py --check
+  ```
+* **Protocolo de Corrección:**
+  - La última definición de un nombre en el mismo ámbito pisa a las anteriores: la primera es código muerto.
+  - `IDÉNTICA`: borrar la primera. `DIVERGENTE`: decidir cuál lógica es la correcta antes de borrar (la que corre hoy es la última).
+
+### D3. Cobertura de Herramientas (`project_scope_coverage_auditor.py`)
+* **Comando:**
+  ```powershell
+  python resources/tools/project_scope_coverage_auditor.py --check
+  ```
+* **Protocolo de Corrección:**
+  - `UNCLASSIFIED_ZONE`: carpeta nueva con `.py`; añádela a `KNOWN_ZONES` en `_project_sources.py` o muévela a una zona existente.
+  - `STALE_FILE_REFERENCE`: una herramienta cita un archivo renombrado o borrado; actualiza o elimina la excepción.
+  - `UNREGISTERED_AUDITOR`: registra el auditor en `project_quality_suite.py`.
+  - `UNPARSABLE_FILE`: corrige el error de sintaxis; las demás auditorías lo ignoran en silencio.
 
 ### E. Ubicación y Nomenclatura (`project_file_placement_auditor.py`)
 * **Comando:**

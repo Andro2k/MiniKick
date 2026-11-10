@@ -1,0 +1,21 @@
+# Instalar una vez por clon:  pre-commit install
+# Ejecutar sobre todo el repo: pre-commit run --all-files
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.4
+    hooks:
+      - id: ruff-check
+        # Solo reglas de errores reales que hoy están en cero (nombres sin definir, definiciones pisadas,
+        # defaults mutables, etc.). La deuda restante (S110, RUF013, PERF...) se revisa con `ruff check .`
+        # y se añade aquí a medida que se corrige.
+        args:
+          - --select=E9,F63,F7,F82,F811,F601,F632,F402,F50,F52,B002,B006,B015,B017,B018,B020,B023,B025,B026,B031,B033,B904
+
+  - repo: local
+    hooks:
+      - id: minikick-quality-suite
+        name: MiniKick quality suite (--quick)
+        entry: python resources/tools/project_quality_suite.py --quick
+        language: system
+        types: [python]
+        pass_filenames: false

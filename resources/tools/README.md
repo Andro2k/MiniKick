@@ -26,6 +26,8 @@ python resources/tools/project_quality_suite.py --verbose
 |---|---|---|
 | `project_architecture_boundary_auditor.py` | Backend and frontend | Layer boundaries, forbidden dependencies, and separation of responsibilities |
 | `project_code_duplication_auditor.py` | Backend and frontend | Repeated statement sequences and AST clones |
+| `project_duplicate_definition_auditor.py` | Backend, frontend, bootstrap, resources; selectable | Functions, methods, classes, class attributes, and dict keys defined twice in the same scope (the last one silently wins) |
+| `project_scope_coverage_auditor.py` | Whole project (tracked and new untracked `.py`) | Top-level folders no tool covers, unparsable files, tool exceptions that cite renamed/deleted files, auditors missing from the suite |
 | `project_dead_code_auditor.py` | Backend and frontend; selectable | Orphan Python files, unused symbols, and unused imports |
 | `project_file_placement_auditor.py` | Backend and frontend | Canonical folder placement and file naming rules |
 | `project_unused_parameter_auditor.py` | Backend and frontend; selectable | Unused parameters, base-class hooks, and Qt callback parameters |
@@ -48,3 +50,9 @@ Some checks belong to the same quality area but inspect different code construct
 ## Commands that modify files
 
 Most audit commands are read-only. `project_dead_code_auditor.py --clean-orphans` can delete source files, and `project_icon_integrity_tool.py --clean` can delete unused icon assets. Review their dry-run or report output before using cleanup options.
+
+## File discovery
+
+`_project_sources.py` is the shared file discovery for the project-wide auditors (`project_code_duplication_auditor.py`, `project_unused_parameter_auditor.py`, `project_duplicate_definition_auditor.py`, `project_scope_coverage_auditor.py`). It lists every tracked `.py` plus new untracked ones (`git ls-files --cached --others --exclude-standard`), so a new or renamed file is covered without touching any tool. Outside a git checkout it falls back to scanning the folder tree. `IGNORED_DIRS` is matched against the path relative to the project root, never against the absolute path.
+
+Layer-specific auditors (`frontend_*`, architecture boundaries, file placement) still scan `frontend/` and `backend/` on purpose. A new top-level folder with `.py` files fails `project_scope_coverage_auditor.py` until it is added to `KNOWN_ZONES`.

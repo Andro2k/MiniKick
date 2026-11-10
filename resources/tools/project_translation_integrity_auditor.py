@@ -52,7 +52,7 @@ class DataLoader:
         for file_path in base_dir.rglob("*.py"):
             if any(part in DataLoader.IGNORED_DIRS for part in file_path.parts):
                 continue
-            if file_path.name not in {"project_translation_integrity_auditor.py", "i18n_manager.py"}:
+            if file_path.name != "project_translation_integrity_auditor.py":
                 rel_p = file_path.relative_to(base_dir).as_posix()
                 py_files.append((file_path, rel_p))
         return py_files

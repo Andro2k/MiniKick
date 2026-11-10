@@ -6,12 +6,12 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "requests",
+    "httpx",
     "websocket-client",
     "python-dotenv",
     "cloudscraper",
     "pyttsx3",
     "PySide6",
-    "pyinstaller",
     "edge-tts>=7.3.1",
     "yt-dlp",
     "piper-tts",
@@ -22,7 +22,6 @@ dependencies = [
     "tomli-w>=1.0.0",
     "tomli>=2.0.1; python_version < '3.11'",
     "tomli>=2.5.0",
-    "questionary>=2.1.1",
 ]
 
 [tool.pytest.ini_options]
@@ -34,6 +33,10 @@ addopts = "-v -s -p resources.tests.conftest --timeout=30"
 dev = [
     "pytest>=9.1.1",
     "pytest-timeout>=2.3.1",
+    "pyinstaller",
+    "questionary>=2.1.1",
+    "ruff>=0.17.4",
+    "pre-commit>=4.0.0",
 ]
 
 

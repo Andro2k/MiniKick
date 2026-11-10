@@ -274,7 +274,7 @@ def scan_icons_in_project(
             if os.path.abspath(root).startswith(os.path.abspath(icons_dir)):
                 continue
             for f in files:
-                if f in {"project_icon_integrity_tool.py", "icon_manager.py"}:
+                if f == "project_icon_integrity_tool.py":
                     continue
                 if f.endswith(VALID_EXTENSIONS):
                     files_to_scan.append(os.path.join(root, f))
