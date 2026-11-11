@@ -5,12 +5,14 @@ import contextlib
 import ctypes
 from ctypes import wintypes
 from datetime import datetime
+import gc
 import json
 import os
 from pathlib import Path
 import sys
 import tempfile
 import time
+import tracemalloc
 from types import SimpleNamespace
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
@@ -37,7 +39,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from PySide6.QtWidgets import QApplication
 from backend.database import DatabaseManager
-from backend.services import CommandService, SpamService, TranslationService
+from backend.services import ChatMessageDTO, CommandService, MessagePipeline, SpamService, TranslationService
 from frontend.components.chat.chat_display import ChatDisplayPanel
 
 
@@ -55,6 +57,82 @@ class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
         ("PeakPagefileUsage", ctypes.c_size_t),
         ("PrivateUsage", ctypes.c_size_t),
     ]
+
+
+SPAM_FILTERS = {
+    "caps_protection": {"is_active": 1, "max_amount": 5, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
+    "symbol_protection": {"is_active": 1, "max_amount": 10, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
+    "link_protection": {"is_active": 1, "allowlist": "kick.com, youtube.com", "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
+    "paragraph_protection": {"is_active": 1, "max_amount": 250, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
+    "repetition_protection": {"is_active": 1, "max_amount": 3, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
+}
+
+SAMPLE_COMMANDS = [
+    {"trigger": "!discord", "response": "Join https://discord.gg/test", "is_active": 1, "cooldown": 0, "aliases": "!dc,!comunidad", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
+    {"trigger": "!socials", "response": "Twitter: @test, Youtube: @test", "is_active": 1, "cooldown": 0, "aliases": "!redes", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
+    {"trigger": "!lurk", "response": "Thanks {user} for lurking!", "is_active": 1, "cooldown": 0, "aliases": "", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
+]
+
+PIPELINE_SAMPLES = [
+    "Hola a todos bienvenidos al stream! [emote:123:pepe]",
+    "HOLA CHICOS QUE TAL TODO TODO BIEN???",
+    "!discord",
+    "Chequeen este link sospechoso: http://free-robux-hack.ru/free",
+    "Mensaje repetido hola hola hola hola hola hola",
+    "Normal message with normal characters and nice vibe",
+]
+
+
+def build_spam_service() -> SpamService:
+    mock_spam_storage = SimpleNamespace(load_all=lambda: {}, save_filter=lambda f, c: None, db_manager=None)
+    spam_service = SpamService(storage=mock_spam_storage, max_history_size=1000)
+    spam_service.filters = {name: dict(cfg) for name, cfg in SPAM_FILTERS.items()}
+    return spam_service
+
+
+def build_command_service() -> CommandService:
+    mock_cmd_storage = SimpleNamespace(
+        load_all=lambda: [],
+        save_command=lambda *a, **kw: None,
+        log_command_execution=lambda *a, **kw: None,
+        delete_command=lambda t: None,
+        get_command_by_trigger=lambda t: None,
+    )
+    cmd_service = CommandService(commands_storage=mock_cmd_storage)
+    cmd_service._all_commands_cache = [dict(cmd) for cmd in SAMPLE_COMMANDS]
+    cmd_service._rebuild_dispatch_table_from_cache()
+    return cmd_service
+
+
+def build_message_pipeline() -> MessagePipeline:
+    spam_service = build_spam_service()
+    cmd_service = build_command_service()
+
+    def spam_step(dto: ChatMessageDTO) -> None:
+        if spam_service.is_spam(user=dto.user, message=dto.content, badges=dto.badges,
+                                msg_id=dto.msg_id, sender_id=dto.sender_id, platform=dto.platform):
+            dto.is_cancelled = True
+
+    def command_step(dto: ChatMessageDTO) -> None:
+        dto.is_command = bool(cmd_service.process_incoming_message(
+            user=dto.user, message=dto.content, badges=dto.badges, platform=dto.platform)[0])
+
+    return MessagePipeline().register(spam_step).register(command_step)
+
+
+def make_dto(index: int, users: int = 500) -> ChatMessageDTO:
+    return ChatMessageDTO(
+        user=f"user_{index % users}",
+        content=PIPELINE_SAMPLES[index % len(PIPELINE_SAMPLES)],
+        badges=[],
+        color="#ffffff",
+        msg_id=str(index),
+        sender_id=index,
+    )
+
+
+def percentile(sorted_values: list, fraction: float) -> float:
+    return sorted_values[min(len(sorted_values) - 1, int(len(sorted_values) * fraction))]
 
 
 class MiniKickProfiler:
@@ -84,7 +162,7 @@ class MiniKickProfiler:
 
     def benchmark_bootstrap_footprint(self, app):
         print("\n========================================================", flush=True)
-        print(" [1/5] AUDITORÍA DE CONSUMO BASE (BOOTSTRAP)", flush=True)
+        print(" [1/6] AUDITORÍA DE CONSUMO BASE (BOOTSTRAP)", flush=True)
         print("========================================================", flush=True)
         mem = self.get_memory_info()
         print(f" -> RAM Base (Working Set / RSS): {mem['rss_mb']} MB", flush=True)
@@ -93,7 +171,7 @@ class MiniKickProfiler:
 
     def benchmark_database_performance(self):
         print("\n========================================================", flush=True)
-        print(" [2/5] AUDITORÍA DE RENDIMIENTO DE BASE DE DATOS (SQLite)", flush=True)
+        print(" [2/6] AUDITORÍA DE RENDIMIENTO DE BASE DE DATOS (SQLite)", flush=True)
         print("========================================================", flush=True)
         
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp_db:
@@ -137,13 +215,44 @@ class MiniKickProfiler:
                     cur.fetchall()
             query_time = ((time.perf_counter() - t0) * 1000) / 50
 
+            t0 = time.perf_counter()
+            for _ in range(200):
+                with db.get_connection():
+                    pass
+            connection_open_avg = ((time.perf_counter() - t0) * 1000) / 200
+
+            batch_rows = [
+                (f"batch_{i}", str(2000 + i), "caps_protection", f"SPAM MESSAGE {i}", "timeout", 5, "kick", "2026-01-01 00:00:00")
+                for i in range(100)
+            ]
+            t0 = time.perf_counter()
+            with db.get_connection() as conn:
+                conn.executemany(
+                    "INSERT INTO spam_violations (username, sender_id, filter_id, message_content, penalty_type, duration, platform, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    batch_rows,
+                )
+                conn.commit()
+            batch_avg = ((time.perf_counter() - t0) * 1000) / 100
+
+            with db.get_connection() as conn:
+                plan = conn.execute(
+                    "EXPLAIN QUERY PLAN SELECT * FROM spam_violations WHERE username = ? ORDER BY timestamp DESC LIMIT 10", ("user_50",)
+                ).fetchall()
+            query_uses_index = any("USING" in str(row[-1]) and "INDEX" in str(row[-1]) for row in plan)
+
             print(f" -> Inserción individual (100 records): {single_insert_time:.2f} ms ({single_avg:.3f} ms/op)", flush=True)
+            print(f" -> Inserción por lote (100 records):   {batch_avg * 100:.2f} ms ({batch_avg:.3f} ms/op)", flush=True)
+            print(f" -> Coste de abrir conexión (+PRAGMAs): {connection_open_avg:.3f} ms/conexión", flush=True)
             print(f" -> Consulta indexada promedio:         {query_time:.3f} ms/query", flush=True)
+            print(f" -> Plan de consulta usa índice:        {'sí' if query_uses_index else 'NO (escaneo completo)'}", flush=True)
 
             self.results["database"] = {
                 "journal_mode": journal_mode,
                 "single_insert_avg_ms": single_avg,
+                "batch_insert_avg_ms": batch_avg,
+                "connection_open_avg_ms": connection_open_avg,
                 "indexed_query_avg_ms": query_time,
+                "query_uses_index": query_uses_index,
             }
         finally:
             for ext in ("", "-wal", "-shm"):
@@ -151,33 +260,11 @@ class MiniKickProfiler:
 
     def benchmark_spam_and_command_processing(self):
         print("\n========================================================", flush=True)
-        print(" [3/5] AUDITORÍA DE THROUGHPUT EN PARSING Y SPAM", flush=True)
+        print(" [3/6] AUDITORÍA DE THROUGHPUT EN PARSING Y SPAM", flush=True)
         print("========================================================", flush=True)
         
-        mock_spam_storage = SimpleNamespace(load_all=lambda: {}, save_filter=lambda f, c: None, db_manager=None)
-        spam_service = SpamService(storage=mock_spam_storage, max_history_size=1000)
-        spam_service.filters = {
-            "caps_protection": {"is_active": 1, "max_amount": 5, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
-            "symbol_protection": {"is_active": 1, "max_amount": 10, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
-            "link_protection": {"is_active": 1, "allowlist": "kick.com, youtube.com", "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
-            "paragraph_protection": {"is_active": 1, "max_amount": 250, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
-            "repetition_protection": {"is_active": 1, "max_amount": 3, "penalty": "timeout", "duration": 5, "apply_kick": 1, "apply_twitch": 1},
-        }
-
-        mock_cmd_storage = SimpleNamespace(
-            load_all=lambda: [],
-            save_command=lambda *a, **kw: None,
-            log_command_execution=lambda *a, **kw: None,
-            delete_command=lambda t: None,
-            get_command_by_trigger=lambda t: None,
-        )
-        cmd_service = CommandService(commands_storage=mock_cmd_storage)
-        cmd_service._all_commands_cache = [
-            {"trigger": "!discord", "response": "Join https://discord.gg/test", "is_active": 1, "cooldown": 0, "aliases": "!dc,!comunidad", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
-            {"trigger": "!socials", "response": "Twitter: @test, Youtube: @test", "is_active": 1, "cooldown": 0, "aliases": "!redes", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
-            {"trigger": "!lurk", "response": "Thanks {user} for lurking!", "is_active": 1, "cooldown": 0, "aliases": "", "is_regex": 0, "permission": "everyone", "apply_kick": 1, "apply_twitch": 1},
-        ]
-        cmd_service._rebuild_dispatch_table_from_cache()
+        spam_service = build_spam_service()
+        cmd_service = build_command_service()
 
         test_messages = [
             ("UserA", "Hola a todos bienvenidos al stream! [emote:123:pepe]", []),
@@ -224,9 +311,63 @@ class MiniKickProfiler:
         self.results["spam_service"] = {"rate_msgs_sec": spam_rate, "duration_ms": spam_duration * 1000}
         self.results["command_service"] = {"rate_msgs_sec": cmd_rate, "duration_ms": cmd_duration * 1000}
 
+    def benchmark_pipeline_latency(self):
+        print("\n========================================================", flush=True)
+        print(" [4/6] AUDITORÍA DE LATENCIA DEL PIPELINE DE MENSAJES", flush=True)
+        print("========================================================", flush=True)
+
+        pipeline = build_message_pipeline()
+        total = 6000
+        for i in range(500):
+            pipeline.execute(make_dto(i))
+
+        samples_ms = []
+        for i in range(total):
+            dto = make_dto(i)
+            t0 = time.perf_counter_ns()
+            pipeline.execute(dto)
+            samples_ms.append((time.perf_counter_ns() - t0) / 1_000_000)
+        samples_ms.sort()
+
+        p50, p95, p99 = (percentile(samples_ms, f) for f in (0.50, 0.95, 0.99))
+        worst = samples_ms[-1]
+        print(f" -> Mensajes procesados (spam + comandos): {total:,}", flush=True)
+        print(f" -> Latencia p50 / p95 / p99:              {p50:.3f} / {p95:.3f} / {p99:.3f} ms", flush=True)
+        print(f" -> Peor caso:                             {worst:.3f} ms", flush=True)
+
+        self.results["pipeline"] = {"p50_ms": p50, "p95_ms": p95, "p99_ms": p99, "max_ms": worst}
+
+    def benchmark_memory_growth(self):
+        print("\n========================================================", flush=True)
+        print(" [5/6] AUDITORÍA DE CRECIMIENTO DE MEMORIA (SESIÓN LARGA)", flush=True)
+        print("========================================================", flush=True)
+
+        pipeline = build_message_pipeline()
+        rounds, per_round = 6, 5000
+        checkpoints_kb = []
+
+        gc.collect()
+        tracemalloc.start()
+        try:
+            for r in range(rounds):
+                base = r * per_round
+                for i in range(per_round):
+                    pipeline.execute(make_dto(base + i, users=5000))
+                gc.collect()
+                checkpoints_kb.append(tracemalloc.get_traced_memory()[0] / 1024)
+        finally:
+            tracemalloc.stop()
+
+        growth_kb = checkpoints_kb[-1] - checkpoints_kb[1]
+        print(f" -> Mensajes procesados:                  {rounds * per_round:,} (usuarios únicos: 5,000)", flush=True)
+        print(f" -> Memoria traza tras cada ronda (KB):   {', '.join(f'{c:,.1f}' for c in checkpoints_kb)}", flush=True)
+        print(f" -> Crecimiento tras calentamiento:       {growth_kb:,.0f} KB", flush=True)
+
+        self.results["memory_growth"] = {"checkpoints_kb": checkpoints_kb, "growth_after_warmup_kb": growth_kb}
+
     def benchmark_ui_chat_rendering(self, i18n):
         print("\n========================================================", flush=True)
-        print(" [4/5] AUDITORÍA DE RENDERIZADO DE UI (CHAT DISPLAY)", flush=True)
+        print(" [6/6] AUDITORÍA DE RENDERIZADO DE UI (CHAT DISPLAY)", flush=True)
         print("========================================================", flush=True)
         
         chat_panel = ChatDisplayPanel(i18n=i18n)
@@ -295,6 +436,8 @@ class MiniKickProfiler:
         self.benchmark_bootstrap_footprint(app)
         self.benchmark_database_performance()
         self.benchmark_spam_and_command_processing()
+        self.benchmark_pipeline_latency()
+        self.benchmark_memory_growth()
         if not quick:
             self.benchmark_ui_chat_rendering(i18n)
 
@@ -302,12 +445,20 @@ class MiniKickProfiler:
         spam_rate = self.results.get("spam_service", {}).get("rate_msgs_sec", 0)
         cmd_rate = self.results.get("command_service", {}).get("rate_msgs_sec", 0)
         db_query_time = self.results.get("database", {}).get("indexed_query_avg_ms", 999.0)
+        db_conn_time = self.results.get("database", {}).get("connection_open_avg_ms", 999.0)
+        db_uses_index = self.results.get("database", {}).get("query_uses_index", False)
+        pipeline_p99 = self.results.get("pipeline", {}).get("p99_ms", 999.0)
+        mem_growth_kb = self.results.get("memory_growth", {}).get("growth_after_warmup_kb", 999999.0)
 
         checks = {
             "ram_base_budget": boot_rss <= 180.0,
             "spam_throughput_budget": spam_rate >= 2500.0,
             "cmd_throughput_budget": cmd_rate >= 5000.0,
             "db_latency_budget": db_query_time <= 5.0,
+            "db_connection_budget": db_conn_time <= 5.0,
+            "db_index_budget": db_uses_index,
+            "pipeline_p99_budget": pipeline_p99 <= 5.0,
+            "memory_growth_budget": mem_growth_kb <= 512.0,
         }
 
         if not quick and "ui_chat" in self.results:
@@ -322,9 +473,13 @@ class MiniKickProfiler:
         print(f" 2. Rendimiento Spam Filter: {spam_rate:,.0f} msg/s -> ✅ ALTA VELOCIDAD", flush=True)
         print(f" 3. Rendimiento Comandos:    {cmd_rate:,.0f} msg/s -> ✅ O(1) LOOKUP", flush=True)
         print(f" 4. SQLite Journal Mode:     {self.results.get('database', {}).get('journal_mode', '')} -> ✅ CONFIGURACIÓN WAL", flush=True)
+        db = self.results.get("database", {})
+        print(f" 5. Pipeline de mensajes:    p99 {pipeline_p99:.3f} ms -> {'✅ SIN COLAS' if pipeline_p99 <= 5.0 else '⚠️ REVISAR'}", flush=True)
+        print(f" 6. Crecimiento de memoria:  {mem_growth_kb:,.0f} KB tras calentamiento -> {'✅ ACOTADO' if mem_growth_kb <= 512.0 else '⚠️ POSIBLE FUGA'}", flush=True)
+        print(f" 7. Escritura SQLite:        {db.get('single_insert_avg_ms', 0):.3f} ms/op individual vs {db.get('batch_insert_avg_ms', 0):.3f} ms/op por lote", flush=True)
         if not quick and "ui_chat" in self.results:
-            print(f" 5. Consumo tras Carga UI:   {self.results['ui_chat']['mem_rss_mb']} MB -> ✅ ESTABLE", flush=True)
-            print(f" 6. Latencia Render UI Chat: {self.results['ui_chat']['avg_ms_per_msg']:.3f} ms/msg -> ✅ FLUIDO (< 1 ms/msg)", flush=True)
+            print(f" 8. Consumo tras Carga UI:   {self.results['ui_chat']['mem_rss_mb']} MB -> ✅ ESTABLE", flush=True)
+            print(f" 9. Latencia Render UI Chat: {self.results['ui_chat']['avg_ms_per_msg']:.3f} ms/msg -> ✅ FLUIDO (< 1 ms/msg)", flush=True)
 
         status_label = "✅ [APROBADO] Todos los presupuestos de rendimiento superados." if all_passed else "⚠️ [ADVERTENCIA] Algunas métricas excedieron los umbrales recomendados."
         print(f"\n{status_label}")

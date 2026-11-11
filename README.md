@@ -199,3 +199,58 @@ Para generar también el instalador con Inno Setup, ejecuta `uv run python resou
 ---
 
 <sub>Diseñado y desarrollado con dedicación por</sub> [<sub>**TheAndro2K**</sub>](https://github.com/Andro2k) <sub>• Distribuido bajo la Licencia MIT</sub>
+
+---
+
+## Repository Architecture Blueprint (EGM)
+
+### Entry Point
+
+[`main.py`](./main.py) is the sole application entry point. It calls `configure_environment()`, installs `CrashHandler` as `sys.excepthook`, and delegates process exit to `Application().run()`.
+
+```python
+# main.py
+configure_environment()
+sys.excepthook = CrashHandler().handle
+sys.exit(Application().run())
+```
+
+### Top-Level Package Index
+
+| Package | Architectural Role | Contract |
+| :--- | :--- | :--- |
+| [`bootstrap/`](./bootstrap/README.md) | Startup lifecycle, environment sanitization, crash telemetry, IoC factory | Peanut |
+| [`backend/`](./backend/README.md) | Headless business logic, persistence, platform adapters, workers | Hay (Blueprint) |
+| [`frontend/`](./frontend/README.md) | PySide6 presentation: views, widgets, dialogs, navigation chrome | Hay (Blueprint) |
+| [`scripts/`](./scripts/README.md) | Installation automation (PowerShell, SHA-256 verified) | Peanut |
+| [`locales/`](./locales) | i18n JSON locale files (`es.json`, `en.json`) | — |
+| [`assets/`](./assets) | Static resources: fonts, icons, SVGs | — |
+| [`resources/`](./resources) | Test suite, build tools, quality auditors, installer assets | — |
+| [`docs/`](./docs) | Walkthroughs, design documents, crash history | — |
+
+### Cross-Package Data Flow
+
+```mermaid
+flowchart LR
+    MAIN["main.py"] --> BOOT["bootstrap/\n(Application, CrashHandler)"]
+    BOOT --> BACK["backend/core/\n(AppContainerCore)"]
+    BOOT --> FRONT["frontend/\n(MainWindowCore)"]
+    BACK --> DB["backend/database/\n(SQLite WAL)"]
+    BACK --> PROV["backend/providers/\n(Kick Pusher / Twitch EventSub)"]
+    BACK --> SVC["backend/services/\n(Alerts, Chat, Music, Overlay)"]
+    SVC --> CTRL["backend/controllers/\n(Qt Signals → frontend)"]
+    CTRL --> VIEWS["frontend/views/\n(BaseView subclasses)"]
+```
+
+### Verification
+
+```bash
+# Full test suite (318 tests)
+pytest resources/tests
+
+# Architecture boundary audit
+python resources/tools/project_architecture_boundary_auditor.py --check
+
+# Quality audit suite (11 tools)
+python resources/tools/project_quality_suite.py --all
+```
