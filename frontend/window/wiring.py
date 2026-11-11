@@ -34,6 +34,8 @@ class MainWindowWiring:
 
         w.music_controller.song_changed.connect(w.overlay_server.trigger_music_change)
         w.music_controller.song_changed.connect(w.tray_presenter.handle_song_changed)
+        w.music_controller.song_changed.connect(w.container.webhook_events.on_song_changed)
+        w.chat_controller.pipeline.register(w.container.webhook_events.on_chat_message)
 
         w.chat_controller.music_plugin_triggered.connect(w.music_controller.handle_music_plugin_command)
         w.chat_controller.widget_plugin_triggered.connect(w.widgets_controller.handle_widget_command)
@@ -69,6 +71,7 @@ class MainWindowWiring:
         kick.pinned_created.connect(w.overlay_events.on_pinned_created)
         kick.pinned_deleted.connect(w.overlay_events.on_pinned_deleted)
         kick.reward_redeemed.connect(partial(w.reward_redemption_presenter.on_redeemed, platform="kick"))
+        kick.reward_redeemed.connect(partial(w.container.webhook_events.on_reward, platform="kick"))
         kick.rewards_fetched.connect(w.rewards_controller.update_rewards_list)
         kick.rewards_error.connect(connections.handle_rewards_error)
         kick.timer_message_requested.connect(w.schedule_presenter.send_timer_message)
@@ -88,6 +91,8 @@ class MainWindowWiring:
         twitch.disconnected.connect(connections.on_twitch_disconnected)
         twitch.reward_redeemed.connect(partial(w.reward_redemption_presenter.on_redeemed, platform="twitch"))
         twitch.alert_received.connect(w.platform_connections.handle_incoming_alert)
+        twitch.alert_received.connect(w.container.webhook_events.on_alert)
+        twitch.reward_redeemed.connect(partial(w.container.webhook_events.on_reward, platform="twitch"))
         twitch.rewards_fetched.connect(w.rewards_controller.update_rewards_list)
 
     def _wire_live_chat(self, chat: LiveChatConnection) -> None:

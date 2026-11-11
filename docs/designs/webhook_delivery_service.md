@@ -105,13 +105,13 @@ To prevent tight coupling between the webhook subsystem and existing feature ser
 #### Real Codebase Normalization Locations
 Inbound events from external streaming platforms are already parsed and normalized into structured DTOs in specific locations:
 1. **Kick Pusher Events:**
-   * Normalized in [`backend/workers/kick_chat_worker.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/workers/kick_chat_worker.py) inside `_dispatch_message()` (lines 142–162) to create `ChatMessageDTO`, and `_dispatch_reward()` (line 234) for channel point redemptions. Low-level frame routing occurs in [`backend/providers/chat/kick_ws_provider.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/providers/chat/kick_ws_provider.py) via `_dispatch_table` (lines 87–100).
+   * Normalized in [`backend/workers/kick_chat_worker.py`](../../backend/workers/kick_chat_worker.py) inside `_dispatch_message()` (lines 142–162) to create `ChatMessageDTO`, and `_dispatch_reward()` (line 234) for channel point redemptions. Low-level frame routing occurs in [`backend/providers/chat/kick_ws_provider.py`](../../backend/providers/chat/kick_ws_provider.py) via `_dispatch_table` (lines 87–100).
 2. **Twitch EventSub Alerts & Rewards:**
-   * Normalized in [`backend/providers/chat/twitch_eventsub_provider.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/providers/chat/twitch_eventsub_provider.py) inside `_handle_notification()` (lines 200–304) into `AlertEvent` objects covering `subscription`, `resub`, `sub_gift`, `follow`, `raid`, and `cheer`. Forwarded via `TwitchRewardWorker.alert_received` in [`backend/workers/twitch_rewards_worker.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/workers/twitch_rewards_worker.py).
+   * Normalized in [`backend/providers/chat/twitch_eventsub_provider.py`](../../backend/providers/chat/twitch_eventsub_provider.py) inside `_handle_notification()` (lines 200–304) into `AlertEvent` objects covering `subscription`, `resub`, `sub_gift`, `follow`, `raid`, and `cheer`. Forwarded via `TwitchRewardWorker.alert_received` in [`backend/workers/twitch_rewards_worker.py`](../../backend/workers/twitch_rewards_worker.py).
 3. **Twitch IRC Chat Messages:**
-   * Normalized in [`backend/workers/twitch_chat_worker.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/workers/twitch_chat_worker.py) inside `_dispatch_message()` (lines 112–130) into `ChatMessageDTO`.
+   * Normalized in [`backend/workers/twitch_chat_worker.py`](../../backend/workers/twitch_chat_worker.py) inside `_dispatch_message()` (lines 112–130) into `ChatMessageDTO`.
 4. **Music Playback Updates:**
-   * Emitted as track change signals in [`backend/handlers/music_handler.py`](file:///C:/Users/TheAn/Desktop/python/MiniKick/backend/handlers/music_handler.py).
+   * Emitted as track change signals in [`backend/handlers/music_handler.py`](../../backend/handlers/music_handler.py).
 
 `WebhookDispatcherService` implements `IEventSink`:
 ```python
@@ -150,17 +150,17 @@ Wiring occurs in `AppContainerCore` by connecting connection signals to `IEventS
    * Permits plain `http://` for custom endpoints (e.g. local LAN servers such as `http://192.168.1.50:8123/api/webhook/...`) accompanied by a UI validation warning.
    * Never follows redirects to prevent SSRF vulnerabilities and credential leaking.
 
-5. **`backend/services/webhooks/webhook_delivery_worker.py`**:
+5. **`backend/workers/webhook_delivery_worker.py`**:
    * Dedicated pure-Python daemon thread (`threading.Thread(daemon=True)`).
-   * Holds a single bounded `queue.Queue(maxsize=1000)` for new admissions.
-   * Ingestion rules:
-     * Ephemeral events (chat, music) use `queue.put_nowait()`, dropping immediately on `queue.Full`.
-     * Critical events (subs, gifts, follows, raids, alerts) use `queue.put(timeout=0.1)`.
+   * Holds a single `queue.Queue` for new admissions; capacity is enforced on the total pending jobs (queue + retry heap, default 1000).
+   * Admission rules (never blocks the caller):
+     * Ephemeral events (chat, commands, music) are dropped once pending jobs reach 80% of capacity.
+     * Critical events (subs, gifts, follows, raids, rewards, alerts) are dropped only at 100% (logged as warning).
    * Holds an in-memory min-heap (`heapq`) of retry jobs ordered by timestamp `not_before`.
    * Maintains per-destination cooldown table (`_destination_cooldowns: dict[str, float]`) triggered on HTTP 429, timeouts, and 5xx responses.
    * Jittered backoff formula:
      $$\text{delay} = \text{random.uniform}(0, \min(30.0, 1.0 \times 2^{\text{attempt}}))$$
-   * Graceful termination: `worker.stop()` followed by `worker.join(timeout=1.5)`. Because the worker is a daemon thread, pending requests are drained if they finish within 1.5s, without hanging process exit.
+   * Graceful termination: `worker.stop(timeout=1.5)` (sets the stop flag and joins the thread). Because the worker is a daemon thread, pending requests are drained if they finish within 1.5s, without hanging process exit.
 
 6. **`backend/utils/security_utils.py`**:
    * Central `redact_secrets(text: str) -> str` utility.
@@ -168,11 +168,11 @@ Wiring occurs in `AppContainerCore` by connecting connection signals to `IEventS
      ```regex
      (?:https?://)?(?:[a-zA-Z0-9-]+\.)*(?:discord(?:app)?\.com)/(?:canary/|ptb/)?api(?:/v\d+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+
      ```
-   * Shared uniformly across `LogService` / `log_format.py` and UI presentation layers.
+   * `SecretRedactingFilter` applies it to the Qt and file log handlers in `backend/core/app_logger_core.py` (messages, arguments and tracebacks) and to fault-log records; UI presentation layers call `redact_secrets()` directly. `log_format.py` is only the log-viewer parser and is not touched.
 
-7. **`backend/config/toml_config_provider.py` & `SecretCipher`**:
-   * Webhook configurations are stored in `config.toml` under `[[webhooks.endpoints]]` managed via `IConfigProvider`.
-   * Sensitive fields (`target_url` and `hmac_secret`) are stored as ciphertext strings (`enc:...`) encrypted via `SecretCipher`.
+7. **`backend/config/webhook_endpoint_store.py` (`IConfigProvider` + `SecretCipher`)**:
+   * `IConfigProvider` only exposes flat scalar keys, so endpoints are stored as a JSON list inside the single key `webhook_endpoints` of `config.toml` (no `[[tables]]`).
+   * Sensitive fields (`target_url` and `hmac_secret`) are stored as ciphertext strings (`enc:v1:...`, same prefix as the token storage) encrypted via `SecretCipher`; endpoints that cannot be decrypted are skipped and logged by name only.
 
 8. **`backend/controllers/webhooks_controller.py` & `frontend/components/views/webhooks_view.py`**:
    * Dedicated controller and view section for Webhook management.
@@ -252,17 +252,16 @@ The implementation is broken down into sequential, testable engineering tasks.
 ### 6.1 Unified Implementation Steps
 
 1. **Configuration & Encryption Layer:**
-   * Extend `TomlConfigProvider` to load and save webhook endpoint configurations in `config.toml` under `[[webhooks.endpoints]]`.
-   * Encrypt `target_url` and `hmac_secret` via `SecretCipher` on save; decrypt on load.
+   * Implement `WebhookEndpointStore` in `backend/config/webhook_endpoint_store.py`: JSON list under the scalar key `webhook_endpoints`, with `target_url` and `hmac_secret` sealed via `SecretCipher` on save and opened on load.
 2. **Domain Contracts & Formatters:**
    * Define protocols and data classes in `backend/interfaces/i_webhooks.py` (`IEventSink`, `IPayloadFormatter`, `IWebhookTransport`, `WebhookEndpointConfig`, `DeliveryJob`).
    * Implement `GenericJsonFormatter` and `DiscordEmbedFormatter`.
 3. **Cryptographic Signer & Security Utilities:**
-   * Implement `WebhookSigner` in `backend/services/webhooks/webhook_signer.py` calculating HMAC-SHA256 with stable `event_id`.
-   * Implement `redact_secrets()` in `backend/utils/security_utils.py` and attach to `LogService` / `log_format.py`.
+   * Implement `sign_payload()` / `build_headers()` in `backend/services/webhooks/webhook_signer.py` calculating HMAC-SHA256 at send time with stable `event_id`.
+   * Implement `redact_secrets()` in `backend/utils/security_utils.py` and attach `SecretRedactingFilter` to the handlers in `backend/core/app_logger_core.py`.
 4. **HTTP Transport & Worker Queue:**
    * Implement `HttpWebhookTransport` in `backend/services/webhooks/webhook_transport.py` using `httpx.Client(follow_redirects=False, timeout=5.0)`.
-   * Implement `WebhookDeliveryWorker` in `backend/services/webhooks/webhook_delivery_worker.py` with single bounded queue, min-heap of scheduled retries (`not_before`), per-destination cooldown (429/timeout/5xx), and daemon thread join(1.5s).
+   * Implement `WebhookDeliveryWorker` in `backend/workers/webhook_delivery_worker.py` with single bounded queue, min-heap of scheduled retries (`not_before`), per-destination cooldown (429/timeout/5xx), and daemon thread join(1.5s).
 5. **Dispatcher & Ingestion Integration:**
    * Implement `WebhookDispatcherService` implementing `IEventSink`.
    * Wire connection signals from `KickConnection` and `TwitchConnection` in `AppContainerCore` to `IEventSink.post_event()`.
@@ -281,14 +280,14 @@ The implementation is broken down into sequential, testable engineering tasks.
 | `backend/services/webhooks/webhook_formatters.py` | Create | Implements `GenericJsonFormatter` (v1 JSON envelope) and `DiscordEmbedFormatter` (rich Discord embeds with event-specific colors and no avatar_url). |
 | `backend/services/webhooks/webhook_signer.py` | Create | Implements `sign_payload()` calculating HMAC-SHA256 at send time with stable `event_id` preservation across retries. |
 | `backend/services/webhooks/webhook_transport.py` | Create | Implements `HttpWebhookTransport` using `httpx.Client(follow_redirects=False, timeout=5.0)` with Discord domain allowlist and HTTPS enforcement. |
-| `backend/services/webhooks/webhook_delivery_worker.py` | Create | Implements `WebhookDeliveryWorker` running a daemon thread with single bounded queue (`put_nowait` for chat, short timeout for alerts), min-heap for retries (`not_before`), per-destination cooldown, and `join(1.5)`. |
+| `backend/workers/webhook_delivery_worker.py` | Create | Implements `WebhookDeliveryWorker` running a daemon thread with single bounded queue (`put_nowait` for chat, short timeout for alerts), min-heap for retries (`not_before`), per-destination cooldown, and `join(1.5)`. |
 | `backend/services/webhooks/webhook_dispatcher_service.py` | Create | Implements `IEventSink`, evaluates endpoint event/platform filters, formats payloads, and enqueues jobs to worker. |
 | `backend/services/webhooks/__init__.py` | Create | Exposes public classes and protocols for the webhooks package. |
 | `backend/utils/security_utils.py` | Create | Implements central `redact_secrets()` with expanded regex covering all Discord webhook variants (`discord.com`, `discordapp.com`, `canary`, `ptb`, `/api/webhooks/`, `/api/v\d+/webhooks/`). |
-| `backend/config/toml_config_provider.py` | Modify | Adds schema mapping and encryption handling for `[[webhooks.endpoints]]` in `config.toml` leveraging `SecretCipher`. |
-| `backend/core/log_format.py` | Modify | Uses `redact_secrets()` to sanitize logs across all handlers and exception traces. |
-| `backend/core/app_container_core.py` | Modify | Registers `WebhookDeliveryWorker` and `WebhookDispatcherService` (`IEventSink`), wiring connection signals into `IEventSink.post_event()`. |
-| `backend/connections/worker_shutdown.py` | Modify | Registers the webhook worker's `join(1.5)` in the application shutdown sequence. |
+| `backend/config/webhook_endpoint_store.py` | Create | `WebhookEndpointStore`: endpoints as a JSON list in the scalar key `webhook_endpoints` via `IConfigProvider`, URL/secret sealed with `SecretCipher`. |
+| `backend/services/webhooks/webhook_sender.py` | Create | `WebhookSender`: formats, signs (at send time) and posts one `DeliveryJob`; keeps scheduling concerns out of the worker. |
+| `backend/core/app_logger_core.py` | Modify | Attaches `SecretRedactingFilter` to the Qt and file handlers and redacts fault-log records. |
+| `backend/core/app_container_core.py` | Modify | Registers the store, transport, sender, `WebhookDeliveryWorker` and `WebhookDispatcherService` (`IEventSink`), wires connection signals into `IEventSink.post_event()` and adds the worker's `stop` and the transport's `close` to `shutdown()`. `worker_shutdown.py` is a QThread coordinator and is not used. |
 | `backend/controllers/webhooks_controller.py` | Create | Dedicated controller handling endpoint CRUD, test pings, and UI event dispatching. |
 | `frontend/components/views/webhooks_view.py` | Create | Dedicated view component for Webhook management with preset selection, HTTP warning, and test ping feedback. |
 | `locales/es.json` | Modify | Adds Spanish localization keys for webhook UI labels, tooltips, presets, event names, and test ping status messages. |
@@ -296,4 +295,7 @@ The implementation is broken down into sequential, testable engineering tasks.
 | `resources/tests/test_webhook_formatters.py` | Create | Unit tests validating payload serialization and color mappings for `GenericJsonFormatter` and `DiscordEmbedFormatter`. |
 | `resources/tests/test_webhook_worker.py` | Create | Unit tests validating single queue admission policies, min-heap retries with `not_before`, per-destination cooldown on 429/timeout/5xx, and clean daemon shutdown. |
 | `resources/tests/test_webhook_dispatcher.py` | Create | Unit tests validating event subscription filtering, HMAC-SHA256 signature calculations with stable `event_id`, and `IEventSink` integration. |
+| `resources/tests/test_webhook_sender.py` | Create | Unit tests for HMAC signing, per-attempt timestamps with stable `event_id`, and unknown-formatter handling. |
+| `resources/tests/test_webhook_transport.py` | Create | Unit tests for status classification, `Retry-After`, no-redirect policy, URL validation and token-safe errors. |
+| `resources/tests/test_webhook_endpoint_store.py` | Create | Unit tests for encrypted TOML round-trip, undecryptable endpoints and encryption failures. |
 | `resources/tests/test_log_scrubber.py` | Create | Unit tests validating `redact_secrets()` across diverse Discord and custom webhook URL patterns in logs and text. |

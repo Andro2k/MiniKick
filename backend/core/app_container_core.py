@@ -2,6 +2,7 @@
 import logging
 import os
 
+from backend.config.webhook_endpoint_store import WebhookEndpointStore
 from backend.config import (
     API_KEYS_MISSING,
     KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
@@ -11,7 +12,12 @@ from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteToken
 from backend.interfaces import IConfigProvider
 from backend.services.system import create_secret_cipher, DatabaseMaintenance
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
+from backend.services.webhooks import (
+    DiscordEmbedFormatter, GenericJsonFormatter, HttpWebhookTransport,
+    WebhookDispatcherService, WebhookEventAdapter, WebhookSender,
+)
 from backend.utils import resource_path
+from backend.workers import WebhookDeliveryWorker
 
 logger = logging.getLogger("minikick.core.app_container")
 
@@ -32,6 +38,7 @@ class AppContainerCore:
         self._init_services()
         self._init_auth()
         self._init_overlay_and_alerts()
+        self._init_webhooks()
         logger.info("[AppContainer] Core dependency container initialized successfully.")
 
     @property
@@ -56,6 +63,8 @@ class AppContainerCore:
             (self._music_provider, "shutdown"),
             (self.tts_manager, "shutdown"),
             (self.overlay_server, "stop"),
+            (self.webhook_worker, "stop"),
+            (self.webhook_transport, "close"),
         )
         for component, method_name in components:
             if component is None:
@@ -147,3 +156,16 @@ class AppContainerCore:
             tts_service=self.tts_manager,
         )
         self.overlay_server.on_alert_finished = self.alert_service.ack_alert
+
+    def _init_webhooks(self):
+        logger.debug("[AppContainer] Initializing outbound webhook delivery...")
+        self.webhook_endpoint_store = WebhookEndpointStore(self.config_provider, self.secret_cipher)
+        self.webhook_transport = HttpWebhookTransport()
+        sender = WebhookSender(
+            {"generic": GenericJsonFormatter(), "discord": DiscordEmbedFormatter()},
+            self.webhook_transport,
+        )
+        self.webhook_worker = WebhookDeliveryWorker(sender.send)
+        self.webhook_worker.start()
+        dispatcher = WebhookDispatcherService(self.webhook_endpoint_store.active, self.webhook_worker.submit)
+        self.webhook_events = WebhookEventAdapter(dispatcher)
