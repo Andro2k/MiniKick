@@ -44,6 +44,7 @@ class MainWindowCore(QMainWindow):
         ("Widgets", "widget-add-filled.svg", "top"),
         ("Triggers", "treasure-chest-filled.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
+        ("Webhooks", "link-filled.svg", "top"),
 
         ("Settings", "gear-filled.svg", "bottom"),
         ("Developer", "file-text-filled.svg", "bottom"),
@@ -204,6 +205,7 @@ class MainWindowCore(QMainWindow):
         self.view_settings = None
         self.view_logs = None
         self.view_alerts = None
+        self.view_webhooks = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
         self._view_factory = MainWindowViewFactory(self)

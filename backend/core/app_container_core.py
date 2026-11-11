@@ -14,7 +14,7 @@ from backend.services.system import create_secret_cipher, DatabaseMaintenance
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.services.webhooks import (
     DiscordEmbedFormatter, GenericJsonFormatter, HttpWebhookTransport,
-    WebhookDispatcherService, WebhookEventAdapter, WebhookSender,
+    WebhookDispatcherService, WebhookEventAdapter, WebhookManagementService, WebhookSender,
 )
 from backend.utils import resource_path
 from backend.workers import WebhookDeliveryWorker
@@ -169,3 +169,4 @@ class AppContainerCore:
         self.webhook_worker.start()
         dispatcher = WebhookDispatcherService(self.webhook_endpoint_store.active, self.webhook_worker.submit)
         self.webhook_events = WebhookEventAdapter(dispatcher)
+        self.webhook_service = WebhookManagementService(self.webhook_endpoint_store, sender)

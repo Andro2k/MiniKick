@@ -16,6 +16,7 @@ from backend.controllers import (
     SettingsController,
     SpamController,
     TimersController,
+    WebhooksController,
     WidgetsController,
 )
 from backend.services import (
@@ -156,6 +157,11 @@ class MainWindowComposition:
             toast_manager=w.toast,
             schedule_service=w.schedule_service,
             connected_platforms_provider=w.platform_connections.get_connected_platforms,
+        )
+        w.webhooks_controller = WebhooksController(
+            None,
+            w.container.webhook_service,
+            toast_manager=w.toast,
         )
         w.settings_controller = SettingsController(
             view=None,
