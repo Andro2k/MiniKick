@@ -22,23 +22,15 @@ class WebhookEndpointStore:
         self._active: tuple[WebhookEndpointConfig, ...] | None = None
 
     def load_all(self) -> list[WebhookEndpointConfig]:
-        raw = self._config.load_string(CONFIG_KEY, "") or ""
-        if not raw.strip():
-            return []
-        try:
-            records = fast_loads(raw)
-        except ValueError as err:
-            logger.error("[WebhookStore] Stored endpoints are not valid JSON; ignoring them: %s", err)
-            return []
-        endpoints = []
-        for record in records if isinstance(records, list) else []:
-            endpoint = self._from_record(record)
-            if endpoint is not None:
-                endpoints.append(endpoint)
-        return endpoints
+        return [endpoint for _, endpoint in self._decode_records() if endpoint is not None]
 
     def save_all(self, endpoints: Sequence[WebhookEndpointConfig]) -> None:
+        new_ids = {endpoint.endpoint_id for endpoint in endpoints}
         records = [self._to_record(endpoint) for endpoint in endpoints]
+        records.extend(
+            record for record, endpoint in self._decode_records()
+            if endpoint is None and isinstance(record, dict) and record.get("endpoint_id") not in (None, *new_ids)
+        )
         self._config.save_string(CONFIG_KEY, fast_dumps(records))
         with self._lock:
             self._active = None
@@ -48,6 +40,17 @@ class WebhookEndpointStore:
             if self._active is None:
                 self._active = tuple(ep for ep in self.load_all() if ep.enabled)
             return self._active
+
+    def _decode_records(self) -> list[tuple[object, WebhookEndpointConfig | None]]:
+        raw = self._config.load_string(CONFIG_KEY, "") or ""
+        if not raw.strip():
+            return []
+        try:
+            records = fast_loads(raw)
+        except ValueError as err:
+            logger.error("[WebhookStore] Stored endpoints are not valid JSON; ignoring them: %s", err)
+            return []
+        return [(record, self._from_record(record)) for record in records] if isinstance(records, list) else []
 
     def _to_record(self, endpoint: WebhookEndpointConfig) -> dict:
         return {

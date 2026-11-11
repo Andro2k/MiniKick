@@ -14,7 +14,7 @@ from resources.tests.test_webhook_management_service import FakeSender, URL
 
 def _service(tmp_path):
     store = WebhookEndpointStore(TomlConfigProvider(tmp_path / "config.toml"), ReversibleCipher())
-    return WebhookManagementService(store, FakeSender(DeliveryResponse(status_code=204)))
+    return WebhookManagementService(store, FakeSender(DeliveryResponse(status_code=204)).send)
 
 
 def _dialog(qtbot=None, existing=None, validator=WebhookManagementService.validate_url):
@@ -80,6 +80,28 @@ def test_controller_save_failure_keeps_data_and_notifies(qapp, tmp_path):
         def show_toast(self, **kwargs):
             toasts.append(kwargs["state"])
 
-    controller = WebhooksController(WebhooksView(TranslationService()), service, toast_manager=Toast())
+    controller = WebhooksController(WebhooksView(TranslationService()), service, toast_manager=Toast(), i18n=TranslationService())
     controller._save({"name": "", "target_url": ""}, "webhooks.status.created", "webhooks.status.created_msg")
     assert toasts == ["danger"] and service.list_endpoints() == []
+
+
+def test_search_filter_survives_a_reload_after_toggling(qapp, tmp_path):
+    service = _service(tmp_path)
+    keep = service.save_endpoint({"name": "Alerts", "formatter": "discord", "target_url": URL, "events": ["follow"], "platforms": ["kick"]})
+    service.save_endpoint({"name": "Home", "formatter": "generic", "target_url": "http://192.168.1.50/h", "events": ["raid"], "platforms": ["kick"]})
+    view = WebhooksView(TranslationService())
+    controller = WebhooksController(view, service, i18n=TranslationService())
+    controller.load_initial_data()
+    view.search_text_changed.emit("alert")
+    assert view.table.rowCount() == 1
+    view.status_toggled.emit(keep.endpoint_id, False)
+    assert view.table.rowCount() == 1 and view.table.item(0, 0).text() == "Alerts"
+
+
+def test_view_never_receives_urls_or_secrets(qapp, tmp_path):
+    service = _service(tmp_path)
+    service.save_endpoint({"name": "Alerts", "formatter": "generic", "target_url": URL, "hmac_secret": "topsecret", "events": ["follow"], "platforms": ["kick"]})
+    view = WebhooksView(TranslationService())
+    controller = WebhooksController(view, service, i18n=TranslationService())
+    controller.load_initial_data()
+    assert all(not hasattr(vars_, "target_url") and not hasattr(vars_, "hmac_secret") for vars_ in service.list_summaries())

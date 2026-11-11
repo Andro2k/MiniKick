@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any, Mapping, Protocol
 
+EVENT_TYPES = ("subscription", "resub", "sub_gift", "cheer", "follow", "raid", "reward", "command", "music", "chat")
 CRITICAL_EVENT_TYPES = frozenset({"subscription", "resub", "sub_gift", "follow", "raid", "cheer", "reward"})
 PLATFORM_APP = "app"
 DEFAULT_PLATFORMS = frozenset({"kick", "twitch", PLATFORM_APP})

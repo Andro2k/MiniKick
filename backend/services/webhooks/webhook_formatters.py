@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from backend.interfaces.i_webhooks import WebhookEvent
+from backend.interfaces.i_webhooks import IPayloadFormatter, WebhookEvent
 from backend.utils import fast_dumps
 
 SCHEMA_VERSION = 1
@@ -23,6 +23,7 @@ _EMBED_STYLES: dict[str, tuple[str, int]] = {
     "raid": ("Incoming raid", _GOLD),
     "command": ("Command executed", _BLUE),
     "music": ("Now playing", _PURPLE),
+    "test": ("Test ping", _BLUE),
     "chat": ("Chat message", _GRAY),
 }
 _DEFAULT_STYLE = ("MiniKick event", _GRAY)
@@ -76,3 +77,9 @@ class DiscordEmbedFormatter:
             if value not in (None, ""):
                 fields.append({"name": label, "value": str(value), "inline": True})
         return fields
+
+
+FORMATTER_REGISTRY: dict[str, IPayloadFormatter] = {
+    "generic": GenericJsonFormatter(),
+    "discord": DiscordEmbedFormatter(),
+}

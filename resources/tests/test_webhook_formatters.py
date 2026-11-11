@@ -49,3 +49,10 @@ def test_discord_embed_fields_and_optional_description():
     assert "description" not in embed
     assert {f["name"]: f["value"] for f in embed["fields"]} == {"Platform": "Twitch", "Amount": "5", "Tier": "1"}
     assert embed["timestamp"].startswith("2024-11-")
+
+
+def test_every_event_type_and_the_test_ping_have_an_embed_style():
+    from backend.interfaces.i_webhooks import EVENT_TYPES
+    from backend.services.webhooks.webhook_formatters import _DEFAULT_STYLE, _EMBED_STYLES
+    assert all(event_type in _EMBED_STYLES for event_type in (*EVENT_TYPES, "test"))
+    assert _EMBED_STYLES["test"] != _DEFAULT_STYLE

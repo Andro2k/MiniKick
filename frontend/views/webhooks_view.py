@@ -18,7 +18,6 @@ class WebhooksView(BaseView):
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="webhooks.header.title", subtitle_key="webhooks.header.subtitle", parent=parent)
-        self._raw_endpoints: list = []
         self._active_dialog = None
         self._setup_ui()
 
@@ -52,7 +51,7 @@ class WebhooksView(BaseView):
 
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
@@ -61,10 +60,9 @@ class WebhooksView(BaseView):
         self.main_layout.addWidget(self.table_card, stretch=1)
 
     def populate_table(self, endpoints: list):
-        self._raw_endpoints = endpoints or []
         self.table.setUpdatesEnabled(False)
-        self.table.setRowCount(len(self._raw_endpoints))
-        for row, endpoint in enumerate(self._raw_endpoints):
+        self.table.setRowCount(len(endpoints))
+        for row, endpoint in enumerate(endpoints):
             self.table.setItem(row, 0, self._create_item(endpoint.name))
             self.table.setCellWidget(row, 1, create_badge(
                 self.i18n.get(f"webhooks.presets.{endpoint.formatter}"),
@@ -74,8 +72,8 @@ class WebhooksView(BaseView):
             self.table.setItem(row, 3, self._create_platforms_item(endpoint))
             self.table.setCellWidget(row, 4, self._create_actions_cell(endpoint))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(self._raw_endpoints) == 0)
-        self.table_card.set_title_count(self.i18n.get("webhooks.header.title"), len(self._raw_endpoints))
+        self.table_card.set_empty(len(endpoints) == 0)
+        self.table_card.set_title_count(self.i18n.get("webhooks.header.title"), len(endpoints))
 
     def _create_item(self, text: str, align=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter) -> QTableWidgetItem:
         item = QTableWidgetItem(text)
