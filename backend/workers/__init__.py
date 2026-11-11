@@ -26,6 +26,7 @@ _EXPORTS = {
     "VoiceFetcherWorker": ".voice_worker",
     "ScheduleWorker": ".schedule_worker",
     "GlobalMediaWorker": ".global_media_worker",
+    "WebhookDeliveryWorker": ".webhook_delivery_worker",
 }
 
 __all__ = list(_EXPORTS.keys())
@@ -56,4 +57,5 @@ if TYPE_CHECKING:
     from .voice_worker import VoiceFetcherWorker
     from .schedule_worker import ScheduleWorker
     from .global_media_worker import GlobalMediaWorker
+    from .webhook_delivery_worker import WebhookDeliveryWorker
 

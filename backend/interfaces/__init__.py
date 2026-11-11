@@ -8,6 +8,18 @@ from .i_updater import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .i_music_provider import IMusicProvider
 from .i_music_chat_context import IMusicChatContext
 from .i_alerts import AlertStorageProtocol
+from .i_webhooks import (
+    CRITICAL_EVENT_TYPES,
+    DEFAULT_PLATFORMS,
+    PLATFORM_APP,
+    DeliveryJob,
+    DeliveryResponse,
+    IEventSink,
+    IPayloadFormatter,
+    IWebhookTransport,
+    WebhookEndpointConfig,
+    WebhookEvent,
+)
 
 __all__ = [
     "TokenStorage",
@@ -24,4 +36,14 @@ __all__ = [
     "IMusicChatContext",
     "AlertStorageProtocol",
     "TokenEncryptionError",
+    "CRITICAL_EVENT_TYPES",
+    "DEFAULT_PLATFORMS",
+    "PLATFORM_APP",
+    "DeliveryJob",
+    "DeliveryResponse",
+    "IEventSink",
+    "IPayloadFormatter",
+    "IWebhookTransport",
+    "WebhookEndpointConfig",
+    "WebhookEvent",
 ]

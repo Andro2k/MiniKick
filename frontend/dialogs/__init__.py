@@ -16,6 +16,7 @@ _EXPORTS = {
     "VisualPositionerDialog": ".positioner_dialog",
     "RewardsConfigWizard": ".rewards_dialog",
     "TimerConfigWizard": ".timers_dialog",
+    "WebhookEndpointDialog": ".webhook_dialog",
     "MessageEditorDialog": ".message_dialog",
     "CommandConfigWizard": ".commands_dialog",
     "PiperVoicesDialog": ".piper_dialog",
@@ -61,5 +62,6 @@ if TYPE_CHECKING:
     from .timers_dialog import TimerConfigWizard
     from .update_flow import present_update_dialog
     from .updater_dialog import UpdateDialog
+    from .webhook_dialog import WebhookEndpointDialog
     from .whats_new_dialog import WhatsNewDialog
     from .youtube_dialog import YouTubeConnectDialog

@@ -13,6 +13,7 @@ _EXPORTS = {
     "RewardsView": ".rewards_view",
     "SettingsView": ".settings_view",
     "TimersView": ".timers_view",
+    "WebhooksView": ".webhooks_view",
     "WidgetsView": ".widgets_view",
     "ScheduleView": ".schedule_view",
     "AlertsView": ".alerts_view",

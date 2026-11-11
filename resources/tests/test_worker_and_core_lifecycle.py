@@ -174,6 +174,8 @@ def test_container_shutdown_attempts_each_component_once_even_if_one_fails(caplo
     container.tts_manager = mock.Mock()
     container.tts_manager.shutdown.side_effect = RuntimeError("TTS shutdown failed")
     container.overlay_server = mock.Mock()
+    container.webhook_worker = mock.Mock()
+    container.webhook_transport = mock.Mock()
 
     with caplog.at_level(logging.ERROR, logger="minikick.core.app_container"):
         container.shutdown()
@@ -182,6 +184,8 @@ def test_container_shutdown_attempts_each_component_once_even_if_one_fails(caplo
     container._music_provider.shutdown.assert_called_once_with()
     container.tts_manager.shutdown.assert_called_once_with()
     container.overlay_server.stop.assert_called_once_with()
+    container.webhook_worker.stop.assert_called_once_with()
+    container.webhook_transport.close.assert_called_once_with()
     assert "Failed to stop component Mock" in caplog.text
 
 

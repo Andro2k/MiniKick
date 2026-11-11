@@ -832,6 +832,7 @@ DEFAULT_DICTIONARY = {
         "stream_info": "Stream Info",
         "timers": "Timers",
         "triggers": "Rewards",
+        "webhooks": "Webhooks",
         "widgets": "Widgets"
       },
       "update_card": {
@@ -1543,6 +1544,86 @@ DEFAULT_DICTIONARY = {
       "search_placeholder": "Search timer...",
       "unit_lines": "Lines",
       "unit_minutes": "Minutes"
+    }
+  },
+  "webhooks": {
+    "header": {
+      "title": "Webhooks",
+      "subtitle": "Send your stream events to Discord or any HTTP service."
+    },
+    "table": {
+      "col_name": "Name",
+      "col_preset": "Preset",
+      "col_events": "Events",
+      "col_platforms": "Platforms",
+      "col_actions": "Actions",
+      "search_placeholder": "Search webhooks...",
+      "btn_new": "New webhook"
+    },
+    "empty": {
+      "title": "No webhooks yet",
+      "desc": "Add a destination to receive your stream events.",
+      "btn": "Add webhook"
+    },
+    "presets": {
+      "discord": "Discord",
+      "generic": "Generic HTTP"
+    },
+    "events": {
+      "subscription": "Subscription",
+      "resub": "Resubscription",
+      "sub_gift": "Gifted subs",
+      "cheer": "Cheers",
+      "follow": "Follows",
+      "raid": "Raids",
+      "reward": "Rewards",
+      "command": "Commands",
+      "music": "Now playing",
+      "chat": "Chat messages"
+    },
+    "platforms": {
+      "kick": "Kick",
+      "twitch": "Twitch",
+      "app": "MiniKick"
+    },
+    "confirm_delete": {
+      "title": "Delete webhook?",
+      "desc": "This will permanently delete the webhook '{name}'."
+    },
+    "status": {
+      "created": "Webhook created",
+      "created_msg": "'{name}' was added.",
+      "updated": "Webhook updated",
+      "updated_msg": "'{name}' was updated.",
+      "deleted": "Webhook deleted",
+      "deleted_msg": "'{name}' was deleted.",
+      "error": "Webhook error",
+      "save_failed": "Could not save the webhook. Your changes were not applied."
+    },
+    "dialog": {
+      "title_new": "New webhook",
+      "title_edit": "Edit webhook",
+      "subtitle": "Choose where and which events are sent.",
+      "name_label": "Name",
+      "name_placeholder": "e.g. Discord alerts",
+      "preset_label": "Format",
+      "url_label": "Destination URL",
+      "url_placeholder": "https://...",
+      "http_warning": "This URL uses plain HTTP: data travels unencrypted. Use it only on a trusted local network.",
+      "secret_label": "Signing secret (optional)",
+      "secret_placeholder": "Shared secret for HMAC-SHA256",
+      "secret_desc": "If set, each request is signed so the receiver can verify it came from MiniKick.",
+      "show_secrets": "Show URL and secret",
+      "events_label": "Events to send",
+      "chat_warning": "Chat messages can generate a lot of traffic. Enable them only if the destination can handle it.",
+      "platforms_label": "Platforms",
+      "btn_test": "Send test ping",
+      "btn_save": "Save",
+      "ping_sending": "Sending...",
+      "ping_ok": "Delivered: HTTP {status} in {ms} ms",
+      "ping_fail": "Failed: {error}",
+      "err_invalid_url": "Enter a valid http:// or https:// URL.",
+      "err_discord_requires_https": "Discord requires an https:// URL."
     }
   },
   "whats_new": {

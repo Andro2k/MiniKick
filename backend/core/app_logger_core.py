@@ -10,6 +10,7 @@ import traceback
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
 from backend.handlers import QLogHandler, StreamToLogger, StructuredLogFormatter
+from backend.utils import SecretRedactingFilter, redact_secrets
 
 _fault_file_handle = None
 _q_log_handler_instance = None
@@ -74,7 +75,7 @@ def write_fault_log_record(
         level=level,
         pathname="",
         lineno=0,
-        msg=message,
+        msg=redact_secrets(message),
         args=(),
         exc_info=None,
     )
@@ -182,10 +183,13 @@ def setup_application_logging():
     _reset_handlers(root)
 
     _q_log_handler_instance = QLogHandler()
+    _q_log_handler_instance.addFilter(SecretRedactingFilter())
     root.addHandler(_q_log_handler_instance)
 
     log_dir = get_log_dir()
-    root.addHandler(_build_file_handler(log_dir, log_level))
+    file_handler = _build_file_handler(log_dir, log_level)
+    file_handler.addFilter(SecretRedactingFilter())
+    root.addHandler(file_handler)
     root.info("[Bootstrap] Application logging initialized at level %s", logging.getLevelName(log_level))
 
     _quiet_noisy_libraries()

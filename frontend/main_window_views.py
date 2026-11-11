@@ -20,6 +20,7 @@ _VIEW_EXPORTS = {
     "ScheduleView": ".views.schedule_view",
     "SettingsView": ".views.settings_view",
     "TimersView": ".views.timers_view",
+    "WebhooksView": ".views.webhooks_view",
     "WidgetsView": ".views.widgets_view",
 }
 
@@ -41,7 +42,7 @@ def _load_view_class(name: str):
     return view_class
 
 if TYPE_CHECKING:
-    from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, TimersView, WidgetsView
+    from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, TimersView, WebhooksView, WidgetsView
     from frontend.main_window import MainWindowCore
 
     _VIEW_CLASS_TYPES = (
@@ -54,6 +55,7 @@ if TYPE_CHECKING:
         ScheduleView,
         SettingsView,
         TimersView,
+        WebhooksView,
         WidgetsView,
     )
 
@@ -145,6 +147,14 @@ class MainWindowViewFactory:
             window.content_stack.addWidget(window.view_timers)
             window.timers_controller.attach_view(window.view_timers)
             view_widget = window.view_timers
+        elif view_name == "Webhooks":
+            window.view_webhooks = _load_view_class("WebhooksView")(
+                window.i18n,
+                parent=window.content_stack,
+            )
+            window.content_stack.addWidget(window.view_webhooks)
+            window.webhooks_controller.attach_view(window.view_webhooks)
+            view_widget = window.view_webhooks
         elif view_name == "Settings":
             window.view_settings = _load_view_class("SettingsView")(
                 window.i18n, parent=window.content_stack
