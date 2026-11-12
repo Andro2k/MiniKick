@@ -377,6 +377,9 @@ class YouTubeMusicProvider(QObject):
             return []
         return self.music_storage.load_history(self.provider_id, limit)
 
+    def find_cached_media(self, url: str) -> str | None:
+        return self.cache_storage.find_cached_file(url) if self.cache_storage else None
+
     def get_queue(self) -> list[dict]:
         return list(self.queue)
 

@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal, Qt, QTimer, QSize
 from frontend.common import get_icon, get_icon_colored, BrandColors, Size
 from frontend.widgets import ModernCard, ExpandableCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout
 from .music_mockup import MusicOverlayMockupWidget
-from .video_preview_panel import MusicVideoPreviewPanel
+from .video_preview_panel import HIDE_GRACE_MS, MusicVideoPreviewPanel
 
 _MUSIC_OVERLAY_LAYOUTS = {
     "classic": "music.overlay.layout_classic",
@@ -406,9 +406,9 @@ class MusicPlayerSettingsPanel(QWidget):
         self.card_video.add_widget(self.video_panel)
         self.panel_layout.addWidget(self.card_video, alignment=Qt.AlignmentFlag.AlignTop)
 
-    def show_video_preview(self, url: str):
+    def show_video_preview(self, url: str, local_path: str | None = None):
         self.card_video.set_expanded(True)
-        self.video_panel.load(url)
+        self.video_panel.load(url, local_path)
 
     def release_video_preview(self):
         self.card_video.set_expanded(False)
@@ -416,4 +416,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def hideEvent(self, event):
         super().hideEvent(event)
-        self.release_video_preview()
+        QTimer.singleShot(HIDE_GRACE_MS, self._release_if_hidden)
+
+    def _release_if_hidden(self):
+        if not self.isVisible():
+            self.release_video_preview()

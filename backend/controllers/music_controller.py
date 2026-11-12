@@ -110,6 +110,7 @@ class MusicController(QObject):
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
         self.view.requeue_history_item_requested.connect(self.handle_requeue_history_item)
+        self.view.preview_video_requested.connect(self.handle_preview_video)
         self.view.view_shown.connect(self.refresh_now_playing)
         self.view.view_shown.connect(self._sync_switches_from_db)
 
@@ -323,6 +324,13 @@ class MusicController(QObject):
         )
         if ok and self.toast:
             self.toast.show_toast(self.i18n.get("music.header.title"), self.i18n.get("music.toast.requeued"), "success")
+
+    @Slot(str)
+    def handle_preview_video(self, url: str):
+        if not url or self.view is None:
+            return
+        finder = getattr(self.music_provider, "find_cached_media", None)
+        self.view.show_video_preview(url, finder(url) if finder else None)
 
     @Slot(int, int)
     def handle_move_queue_item(self, from_index: int, to_index: int):

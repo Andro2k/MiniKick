@@ -23,6 +23,7 @@ class MusicView(BaseView):
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
     requeue_history_item_requested = Signal(str, str, str)
+    preview_video_requested = Signal(str)
     view_shown = Signal()
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
@@ -112,7 +113,10 @@ class MusicView(BaseView):
 
     def _on_preview_requested(self, url: str):
         self.tabs.setCurrentIndex(0)
-        self.player_panel.show_video_preview(url)
+        self.preview_video_requested.emit(url)
+
+    def show_video_preview(self, url: str, local_path: str | None):
+        self.player_panel.show_video_preview(url, local_path)
 
     def _on_service_toggled(self, checked: bool):
         self.commands_panel.set_enabled_state(checked)
