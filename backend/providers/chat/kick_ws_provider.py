@@ -91,6 +91,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
             "App\\Events\\PinnedMessageCreatedEvent": self._handle_pinned_created,
             "App\\Events\\PinnedMessageDeletedEvent": self._handle_pinned_deleted,
             "RewardRedeemedEvent": self._handle_reward_redeemed,
+            "GoalProgressUpdateEvent": self._handle_goal_progress,
             "App\\Events\\RewardRedeemedEvent": self._handle_reward_redeemed,
             "App\\Events\\ChatMessageDeletedEvent": self._handle_message_deleted,
             "App\\Events\\MessageDeletedEvent": self._handle_message_deleted,
@@ -115,6 +116,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         on_reward_redeemed: Callable[[str, str, str], None] | None = None,
         on_message_deleted: Callable[[str], None] | None = None,
         on_user_banned: Callable[[str], None] | None = None,
+        on_goal_progress: Callable[[dict], None] | None = None,
     ) -> None:
         self._room_id = room_id
         self._channel_id = channel_id
@@ -126,6 +128,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._on_reward = on_reward_redeemed
         self._on_message_deleted = on_message_deleted
         self._on_user_banned = on_user_banned
+        self._on_goal_progress = on_goal_progress
         self._running = True
         
         url = PUSHER_WS_URL_TEMPLATE.format(cluster=self.cluster, key=self.key)
@@ -360,6 +363,20 @@ class KickWebSocketManager(BaseChatSocketProvider):
         if reward_title and username and self._on_reward:
             logger.info("[KickWebSocket] Real-time reward redeemed: '%s' by %s (input: '%s')", reward_title, username, user_input)
             self._on_reward(username, reward_title, user_input)
+
+    def _handle_goal_progress(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
+        goal_type = inner.get("type")
+        current = inner.get("current_value")
+        if not goal_type or not isinstance(current, int) or not self._on_goal_progress:
+            return
+        target = inner.get("target_value")
+        self._on_goal_progress({
+            "goal_id": str(inner.get("id", "")),
+            "goal_type": str(goal_type),
+            "current": current,
+            "target": target if isinstance(target, int) else 0,
+            "status": str(inner.get("status", "")),
+        })
 
     def _handle_message_deleted(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         msg_id = inner.get("message", {}).get("id") or inner.get("id", "")

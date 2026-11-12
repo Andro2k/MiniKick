@@ -56,3 +56,11 @@ def test_every_event_type_and_the_test_ping_have_an_embed_style():
     from backend.services.webhooks.webhook_formatters import _DEFAULT_STYLE, _EMBED_STYLES
     assert all(event_type in _EMBED_STYLES for event_type in (*EVENT_TYPES, "test"))
     assert _EMBED_STYLES["test"] != _DEFAULT_STYLE
+
+
+def test_discord_goal_embed_shows_progress_and_status():
+    event = make_event("goal", "kick", {"goal_type": "followers", "current": 237, "target": 300, "status": "active", "message": "Followers: 237 / 300"})
+    embed = fast_loads(DiscordEmbedFormatter().format(event))["embeds"][0]
+    assert embed["title"] == "Goal progress"
+    assert embed["description"] == "Followers: 237 / 300"
+    assert {"name": "Status", "value": "active", "inline": True} in embed["fields"]

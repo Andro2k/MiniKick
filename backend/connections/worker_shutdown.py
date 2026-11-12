@@ -48,6 +48,7 @@ class WorkerShutdownCoordinator(QObject):
         "poll_updated",
         "poll_deleted",
         "pinned_created",
+        "goal_progress",
         "pinned_deleted",
         "schedule_triggered",
         "post_message_requested",

@@ -42,6 +42,7 @@ class _ChatWorker(_Worker):
     pinned_created = Signal(object)
     pinned_deleted = Signal()
     reward_redeemed = Signal(str, str, str)
+    goal_progress = Signal(object)
     instances = []
 
 
@@ -253,6 +254,7 @@ def test_chat_worker_signals_are_forwarded(qapp):
         "pinned": _spy(connection.pinned_created),
         "pinned_deleted": _spy(connection.pinned_deleted),
         "reward": _spy(connection.reward_redeemed),
+        "goal": _spy(connection.goal_progress),
         "error": _spy(connection.error_reported),
     }
 
@@ -264,6 +266,7 @@ def test_chat_worker_signals_are_forwarded(qapp):
     chat.pinned_created.emit({"m": 1})
     chat.pinned_deleted.emit()
     chat.reward_redeemed.emit("viewer", "Hydrate", "hi")
+    chat.goal_progress.emit({"goal_type": "followers"})
     chat.error_occurred.emit("socket error")
 
     assert forwarded["message"] == [("dto",)]
@@ -272,6 +275,7 @@ def test_chat_worker_signals_are_forwarded(qapp):
     assert forwarded["pinned"] == [({"m": 1},)]
     assert forwarded["pinned_deleted"] == [()]
     assert forwarded["reward"] == [("viewer", "Hydrate", "hi")]
+    assert forwarded["goal"] == [({"goal_type": "followers"},)]
     assert forwarded["error"] == [("socket error",)]
 
 

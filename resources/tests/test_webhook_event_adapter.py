@@ -46,3 +46,15 @@ def test_song_changes_are_deduplicated_and_empty_songs_ignored():
     adapter.on_song_changed({"title": "Other", "artist": "Band"})
     assert [data["title"] for _, _, data in sink.events] == ["Song", "Other"]
     assert all(platform == "app" for _, platform, _ in sink.events)
+
+
+def test_goal_progress_is_posted_once_per_state_change():
+    adapter, sink = _adapter()
+    goal = {"goal_id": "g1", "goal_type": "followers", "current": 236, "target": 300, "status": "active"}
+    adapter.on_goal_progress(goal)
+    adapter.on_goal_progress(dict(goal))
+    adapter.on_goal_progress({**goal, "current": 237})
+    assert [e[2]["current"] for e in sink.events] == [236, 237]
+    assert sink.events[0] == ("goal", "kick", {
+        "goal_type": "followers", "current": 236, "target": 300, "status": "active", "message": "Followers: 236 / 300",
+    })

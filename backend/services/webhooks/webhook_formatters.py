@@ -23,11 +23,12 @@ _EMBED_STYLES: dict[str, tuple[str, int]] = {
     "raid": ("Incoming raid", _GOLD),
     "command": ("Command executed", _BLUE),
     "music": ("Now playing", _PURPLE),
+    "goal": ("Goal progress", _GOLD),
     "test": ("Test ping", _BLUE),
     "chat": ("Chat message", _GRAY),
 }
 _DEFAULT_STYLE = ("MiniKick event", _GRAY)
-_EXTRA_FIELDS = (("amount", "Amount"), ("tier", "Tier"), ("artist", "Artist"))
+_EXTRA_FIELDS = (("amount", "Amount"), ("tier", "Tier"), ("artist", "Artist"), ("status", "Status"))
 _MAX_DESCRIPTION = 2000
 
 
