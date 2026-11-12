@@ -293,3 +293,24 @@ def test_idle_ping_still_arms_the_zombie_socket_timeout():
 
     assert mock_ws.send.call_count == 1
     assert mgr._pending_ping_time > 0.0
+
+
+def test_goal_progress_frame_is_normalized_and_forwarded():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._running = True
+    goals = []
+    mgr._on_goal_progress = goals.append
+    data = {"id": "chgoal_1", "type": "followers", "target_value": 300, "current_value": 236, "status": "active"}
+    mgr._on_raw_frame(MagicMock(), fast_dumps({"event": "GoalProgressUpdateEvent", "channel": "channel_1", "data": fast_dumps(data)}))
+    assert goals == [{"goal_id": "chgoal_1", "goal_type": "followers", "current": 236, "target": 300, "status": "active"}]
+
+
+def test_goal_progress_ignores_incomplete_payloads_and_missing_callback():
+    mgr = KickWebSocketManager(cluster="us2", keys=("test_key",))
+    mgr._on_goal_progress = None
+    mgr._handle_goal_progress({"type": "followers", "current_value": 1}, MagicMock())
+    goals = []
+    mgr._on_goal_progress = goals.append
+    mgr._handle_goal_progress({"type": "followers"}, MagicMock())
+    mgr._handle_goal_progress({"current_value": 3}, MagicMock())
+    assert goals == []

@@ -112,6 +112,8 @@ Inbound events from external streaming platforms are already parsed and normaliz
    * Normalized in [`backend/workers/twitch_chat_worker.py`](../../backend/workers/twitch_chat_worker.py) inside `_dispatch_message()` (lines 112–130) into `ChatMessageDTO`.
 4. **Music Playback Updates:**
    * Emitted as track change signals in [`backend/handlers/music_handler.py`](../../backend/handlers/music_handler.py).
+5. **Kick Goal Progress:**
+   * `GoalProgressUpdateEvent` frames on the Kick Pusher `channel_{id}` topic, handled in `KickWebSocketManager._handle_goal_progress()` and forwarded as the `goal` event (goal type, current/target value, status). Kick does not publish follows, subs or gifts on Pusher, so a followers goal is the only live follower signal available there; it carries no username.
 
 `WebhookDispatcherService` implements `IEventSink`:
 ```python

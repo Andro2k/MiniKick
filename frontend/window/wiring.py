@@ -72,6 +72,7 @@ class MainWindowWiring:
         kick.pinned_deleted.connect(w.overlay_events.on_pinned_deleted)
         kick.reward_redeemed.connect(partial(w.reward_redemption_presenter.on_redeemed, platform="kick"))
         kick.reward_redeemed.connect(partial(w.container.webhook_events.on_reward, platform="kick"))
+        kick.goal_progress.connect(partial(w.container.webhook_events.on_goal_progress, platform="kick"))
         kick.rewards_fetched.connect(w.rewards_controller.update_rewards_list)
         kick.rewards_error.connect(connections.handle_rewards_error)
         kick.timer_message_requested.connect(w.schedule_presenter.send_timer_message)

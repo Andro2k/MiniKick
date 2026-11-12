@@ -72,6 +72,7 @@ class KickChatWorker(QThread):
     pinned_created = Signal(object)
     pinned_deleted = Signal()
     reward_redeemed = Signal(str, str, str)
+    goal_progress = Signal(object)
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, keys: tuple[str, ...], parent=None):
         super().__init__(parent)
@@ -125,6 +126,7 @@ class KickChatWorker(QThread):
                     on_pinned_created=self._dispatch_pinned_created,
                     on_pinned_deleted=self._dispatch_pinned_deleted,
                     on_reward_redeemed=self._dispatch_reward,
+                    on_goal_progress=self._dispatch_goal_progress,
                 )
                 if not self._is_stopped and not self.isInterruptionRequested():
                     if time.monotonic() - connected_at >= STABLE_CONNECTION_SECONDS:
@@ -232,6 +234,10 @@ class KickChatWorker(QThread):
     def _dispatch_reward(self, username: str, reward_title: str, user_input: str):
         if not self._is_stopped:
             self.reward_redeemed.emit(username, reward_title, user_input)
+
+    def _dispatch_goal_progress(self, goal: dict):
+        if not self._is_stopped:
+            self.goal_progress.emit(goal)
 
     def stop(self):
         logger.info("[KickChatWorker] Stopping Kick chat worker...")

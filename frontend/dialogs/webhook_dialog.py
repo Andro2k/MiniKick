@@ -33,7 +33,7 @@ class WebhookEndpointDialog(ModernModal):
         title_key = "webhooks.dialog.title_edit" if existing else "webhooks.dialog.title_new"
         super().__init__(
             title=self.i18n.get(title_key),
-            icon_path="link-filled.svg",
+            icon_path="webhooks-filled.svg",
             width=580,
             subtitle=self.i18n.get("webhooks.dialog.subtitle"),
             parent=parent,

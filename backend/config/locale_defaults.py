@@ -1577,6 +1577,7 @@ DEFAULT_DICTIONARY = {
       "follow": "Follows",
       "raid": "Raids",
       "reward": "Rewards",
+      "goal": "Goal progress",
       "command": "Commands",
       "music": "Now playing",
       "chat": "Chat messages"

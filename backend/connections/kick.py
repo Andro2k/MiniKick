@@ -27,6 +27,7 @@ class KickConnection(QObject):
     pinned_created = Signal(object)
     pinned_deleted = Signal()
     reward_redeemed = Signal(str, str, str)
+    goal_progress = Signal(object)
     rewards_fetched = Signal(object, object)
     rewards_error = Signal(str)
     timer_message_requested = Signal(str, bool, bool)
@@ -154,6 +155,7 @@ class KickConnection(QObject):
         worker.pinned_created.connect(self.pinned_created)
         worker.pinned_deleted.connect(self.pinned_deleted)
         worker.reward_redeemed.connect(self.reward_redeemed)
+        worker.goal_progress.connect(self.goal_progress)
         worker.error_occurred.connect(self.error_reported)
         return worker
 
