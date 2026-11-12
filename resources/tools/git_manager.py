@@ -56,11 +56,11 @@ class CLI:
 
     @classmethod
     def ok(cls, msg: str) -> None:
-        print(f"  {cls.GREEN}✓{cls.RESET} {msg}")
+        print(f"  {cls.GREEN}[OK]{cls.RESET} {msg}")
 
     @classmethod
     def err(cls, msg: str) -> None:
-        print(f"  {cls.RED}✗{cls.RESET} {msg}")
+        print(f"  {cls.RED}[X]{cls.RESET} {msg}")
 
     @classmethod
     def warn(cls, msg: str) -> None:
@@ -68,11 +68,11 @@ class CLI:
 
     @classmethod
     def info(cls, msg: str) -> None:
-        print(f"  {cls.BLUE}ℹ{cls.RESET} {msg}")
+        print(f"  {cls.BLUE}[i]{cls.RESET} {msg}")
 
     @classmethod
     def step(cls, msg: str) -> None:
-        print(f"  {cls.DIM}❯ {msg}{cls.RESET}")
+        print(f"  {cls.DIM} {msg}{cls.RESET}")
 
     @classmethod
     def list_item(cls, msg: str, indent: int = 1) -> None:
@@ -93,6 +93,27 @@ class CLI:
 
 class GitRunner:
     DEFAULT_TIMEOUT = 120
+    LEARN = os.environ.get("GIT_MANAGER_LEARN", "1") != "0"
+    # Solo se narran los comandos que cambian algo o hablan con GitHub; los de lectura se omiten.
+    EXPLAIN = {
+        "fetch": "Descarga novedades de GitHub sin tocar tus archivos ni tu rama.",
+        "pull": "Trae cambios de GitHub y los integra en la rama actual (fetch + merge).",
+        "merge": "Une en tu rama los commits de otra rama (aqui: lo nuevo de origin/main).",
+        "push": "Sube tus commits locales a GitHub.",
+        "checkout": "Cambia de rama o crea una nueva.",
+        "add": "Prepara archivos para el siguiente commit.",
+        "commit": "Guarda un commit con lo preparado.",
+        "branch": "Gestiona ramas locales (-D la elimina).",
+    }
+
+    @staticmethod
+    def _narrate(args: List[str]) -> None:
+        if not GitRunner.LEARN or not args or args[0] not in GitRunner.EXPLAIN:
+            return
+        if args[0] == "branch" and not {"-d", "-D"} & set(args):
+            return
+        print(f"  {CLI.DIM}$ git {' '.join(args)}{CLI.RESET}")
+        print(f"  {CLI.DIM}  -> {GitRunner.EXPLAIN[args[0]]}{CLI.RESET}")
 
     @staticmethod
     def _env() -> Dict[str, str]:
@@ -107,6 +128,7 @@ class GitRunner:
 
     @staticmethod
     def run(args: List[str], cwd: Optional[Path] = None, timeout: Optional[int] = None) -> Tuple[int, str, str]:
+        GitRunner._narrate(args)
         limit = timeout or GitRunner.DEFAULT_TIMEOUT
         target_dir = Path(cwd or PROJECT_ROOT)
         try:
@@ -354,6 +376,7 @@ class DoctorService:
         checks.extend(DoctorService._check_operation())
         checks.append(DoctorService._check_version_branch())
         checks.extend(DoctorService._check_branch_vs_main())
+        checks.extend(DoctorService._check_worktree_and_branches())
         checks.extend(DoctorService._check_repo_hygiene())
         return checks
 
@@ -435,6 +458,23 @@ class DoctorService:
         return checks
 
     @staticmethod
+    def _check_worktree_and_branches() -> List[Check]:
+        checks: List[Check] = []
+        is_clean, dirty = GitAuditService.is_working_tree_clean()
+        if is_clean:
+            checks.append(Check("Árbol de trabajo", "OK", "Sin cambios sin commitear."))
+        else:
+            sample = ", ".join(dirty[:3]) + (f" y {len(dirty) - 3} más" if len(dirty) > 3 else "")
+            checks.append(Check("Árbol de trabajo", "WARN", f"{len(dirty)} archivo(s) con cambios: {sample}.", "Haz commit o guarda con git stash"))
+        local_merged, remote_merged = GitAuditService.get_merged_release_branches()
+        total = len(local_merged) + len(remote_merged)
+        if total:
+            checks.append(Check("Ramas fusionadas", "WARN", f"{total} rama(s) ya fusionadas en main.", "Usa 'Limpiar ramas antiguas fusionadas'"))
+        else:
+            checks.append(Check("Ramas fusionadas", "OK", "Sin ramas obsoletas pendientes de limpiar."))
+        return checks
+
+    @staticmethod
     def _check_repo_hygiene() -> List[Check]:
         checks: List[Check] = []
         root_p = Path(PROJECT_ROOT)
@@ -482,6 +522,70 @@ class TestRunner:
         return subprocess.run(cmd, cwd=root_p).returncode == 0
 
 class GitReleaseWorkflow:
+    _chaining = False
+    STEP_LABELS = {
+        "update": "Traer origin/main a tu rama (update)",
+        "check": "Probar y subir tu rama (tests + push)",
+        "cleanup": "Limpiar ramas ya fusionadas",
+    }
+
+    @staticmethod
+    def next_step() -> Tuple[Optional[str], str]:
+        """Devuelve (accion, motivo). accion None = nada que ejecutar automaticamente."""
+        if op := GitAuditService.in_progress_operation():
+            return None, f"Hay un {op} sin terminar. Resuélvelo primero (git status te indica cómo)."
+        if GitAuditService.tracked_changes():
+            return None, "Tienes cambios sin commitear. Haz commit y vuelve a elegir este paso."
+        if GitAuditService.get_branch_vs_main()[1] > 0:
+            return "update", f"Tu rama va por detrás de {REMOTE_MAIN}."
+        branch = GitAuditService.get_current_branch()
+        if branch != MAIN_BRANCH:
+            upstream = GitAuditService.get_upstream()
+            if not upstream or GitAuditService.ahead_behind("HEAD", upstream)[0] > 0:
+                return "check", "Tienes commits sin subir a GitHub."
+        local_merged, remote_merged = GitAuditService.get_merged_release_branches()
+        if local_merged or remote_merged:
+            return "cleanup", "Hay ramas ya fusionadas que se pueden limpiar."
+        return None, "Todo al día. No hay nada pendiente."
+
+    @staticmethod
+    def _run_step(key: str) -> bool:
+        if key == "update":
+            return GitReleaseWorkflow.update_from_main(assume_yes=True)
+        if key == "check":
+            return GitReleaseWorkflow.finish_check(push=True)
+        if key == "cleanup":
+            GitReleaseWorkflow.cleanup_merged()
+            return True
+        return False
+
+    @staticmethod
+    def offer_next() -> None:
+        if GitReleaseWorkflow._chaining or not sys.stdin.isatty():
+            return
+        GitReleaseWorkflow._chaining = True
+        try:
+            done: Set[str] = set()
+            while True:
+                key, reason = GitReleaseWorkflow.next_step()
+                if key is None or key in done:
+                    CLI.info(reason if key is None else "Sin más pasos automáticos.")
+                    return
+                print()
+                CLI.info(f"Siguiente paso recomendado: {GitReleaseWorkflow.STEP_LABELS[key]}")
+                CLI.list_item(f"Motivo: {reason}")
+                if not CLI.confirm("¿Ejecutarlo ahora?"):
+                    return
+                done.add(key)
+                print()
+                if not GitReleaseWorkflow._run_step(key):
+                    return
+                if key == "check":
+                    CLI.info("Ahora haz 'Merge pull request' en GitHub y luego vuelve a Sincronizar.")
+                    return
+        finally:
+            GitReleaseWorkflow._chaining = False
+
     @staticmethod
     def switch_branch() -> None:
         CLI.banner("CAMBIAR DE RAMA")
@@ -494,7 +598,7 @@ class GitReleaseWorkflow:
 
         print(f"  {CLI.BOLD}Ramas disponibles:{CLI.RESET}")
         for idx, b in enumerate(branches, 1):
-            marker = f"{CLI.CYAN}★{CLI.RESET}" if b == curr_branch else " "
+            marker = f"{CLI.CYAN}*{CLI.RESET}" if b == curr_branch else " "
             print(f"    {marker} {CLI.BOLD}{idx}){CLI.RESET} {b}")
 
         try:
@@ -533,7 +637,7 @@ class GitReleaseWorkflow:
             return ok
 
         CLI.banner("DOCTOR (ENTORNO Y REPOSITORIO)")
-        status_icons = {"OK": f"{CLI.GREEN}✓{CLI.RESET}", "WARN": f"{CLI.YELLOW}!{CLI.RESET}", "FAIL": f"{CLI.RED}✗{CLI.RESET}"}
+        status_icons = {"OK": f"{CLI.GREEN}[OK]{CLI.RESET}", "WARN": f"{CLI.YELLOW}!{CLI.RESET}", "FAIL": f"{CLI.RED}[X]{CLI.RESET}"}
         
         for c in checks:
             color = {"OK": CLI.GREEN, "WARN": CLI.YELLOW, "FAIL": CLI.RED}[c.status]
@@ -544,47 +648,6 @@ class GitReleaseWorkflow:
         fails, warns = sum(c.status == "FAIL" for c in checks), sum(c.status == "WARN" for c in checks)
         print(f"\n  {CLI.DIM}Resumen: {len(checks) - fails - warns} OK · {warns} Avisos · {fails} Errores{CLI.RESET}\n")
         return ok
-
-    @staticmethod
-    def audit() -> None:
-        CLI.banner("AUDITORÍA DE GIT & REPOSITORIO")
-        curr_branch = GitAuditService.get_current_branch()
-        config_version = VersionManager.get_version()
-        expected_branch = f"release/{config_version}"
-
-        print(f"  {CLI.BOLD}Versión:{CLI.RESET} {CLI.CYAN}{config_version}{CLI.RESET} │ {CLI.BOLD}Rama (HEAD):{CLI.RESET} {CLI.CYAN}{curr_branch}{CLI.RESET}")
-
-        if curr_branch.startswith("release/") and curr_branch != expected_branch:
-            CLI.warn(f"Estás en {curr_branch}, pero la versión configurada es {config_version}.")
-        elif curr_branch == expected_branch:
-            CLI.ok("La rama activa coincide con la versión del software.")
-
-        if op := GitAuditService.in_progress_operation():
-            CLI.err(f"Operación '{op}' sin terminar. Ejecuta 'doctor'.")
-
-        is_clean, dirty_files = GitAuditService.is_working_tree_clean()
-        if is_clean:
-            CLI.ok("Árbol de trabajo limpio.")
-        else:
-            CLI.warn(f"{len(dirty_files)} archivos con cambios sin commitear.")
-            for f in dirty_files[:3]: CLI.list_item(f)
-            if len(dirty_files) > 3: CLI.list_item(f"... y {len(dirty_files) - 3} más")
-
-        GitRunner.run(["fetch", DEFAULT_REMOTE, "--prune"])
-        ahead, behind = GitAuditService.get_main_divergence()
-        if behind > 0:
-            CLI.err(f"Desactualizado ({behind} commits por detrás de origin/main). Usa 'Sync'.")
-        elif ahead > 0:
-            CLI.info(f"Tienes {ahead} commits pendientes de subir a origin/main.")
-        else:
-            CLI.ok("Al día con origin/main.")
-
-        local_merged, remote_merged = GitAuditService.get_merged_release_branches()
-        if total_stale := len(local_merged) + len(remote_merged):
-            CLI.warn(f"{total_stale} rama(s) fusionadas detectadas. Ejecuta 'Limpiar ramas'.")
-        else:
-            CLI.ok("Sin ramas obsoletas pendientes de limpiar.")
-        print()
 
     @staticmethod
     def sync() -> None:
@@ -745,15 +808,22 @@ def interactive_menu() -> None:
         return GitReleaseWorkflow.doctor()
 
     options_map = {
-        "🔍 Auditar estado del repositorio y ramas": GitReleaseWorkflow.audit,
-        "🔀 Cambiar de rama": GitReleaseWorkflow.switch_branch,
-        "🚀 Iniciar nueva versión / release": GitReleaseWorkflow.start_release,
-        "🔄 Sincronizar 'main' y GitHub": GitReleaseWorkflow.sync,
-        "⬇️  Traer origin/main aquí (update)": GitReleaseWorkflow.update_from_main,
-        "🧹 Limpiar ramas antiguas fusionadas": GitReleaseWorkflow.cleanup_merged,
-        "🧪 Verificar tests y preparar PR": GitReleaseWorkflow.finish_check,
-        "🩺 Doctor (diagnóstico de entorno)": GitReleaseWorkflow.doctor,
-        "🚪 Salir": None
+        "Siguiente paso recomendado": GitReleaseWorkflow.offer_next,
+        "Diagnóstico (entorno, repositorio y ramas)": GitReleaseWorkflow.doctor,
+        "Sincronizar 'main' y GitHub": GitReleaseWorkflow.sync,
+        "Traer origin/main aquí (update)": GitReleaseWorkflow.update_from_main,
+        "Verificar tests y preparar PR": GitReleaseWorkflow.finish_check,
+        "Cambiar de rama": GitReleaseWorkflow.switch_branch,
+        "Iniciar nueva versión / release": GitReleaseWorkflow.start_release,
+        "Limpiar ramas antiguas fusionadas": GitReleaseWorkflow.cleanup_merged,
+        "Salir": None,
+    }
+    offer_after = {
+        GitReleaseWorkflow.doctor,
+        GitReleaseWorkflow.sync,
+        GitReleaseWorkflow.update_from_main,
+        GitReleaseWorkflow.cleanup_merged,
+        GitReleaseWorkflow.switch_branch,
     }
 
     cli_style = questionary.Style([
@@ -777,12 +847,12 @@ def interactive_menu() -> None:
         choice = questionary.select(
             "Selecciona una acción (usa las flechas ↑/↓ y presiona Enter):",
             choices=list(options_map.keys()),
-            pointer="❯",
+            pointer="",
             use_indicator=True,
             style=cli_style
         ).ask()
 
-        if choice == "🚪 Salir" or choice is None:
+        if choice == "Salir" or choice is None:
             print(f"\n  {CLI.DIM}¡Hasta luego!{CLI.RESET}\n")
             break
             
@@ -790,12 +860,14 @@ def interactive_menu() -> None:
         action = options_map[choice]
         if action:
             action()
+            if action in offer_after:
+                GitReleaseWorkflow.offer_next()
             
         input(f"\n  {CLI.DIM}Presiona Enter para continuar...{CLI.RESET}")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Git Release Manager")
-    parser.add_argument("command", nargs="?", choices=["audit", "doctor", "update", "sync", "start", "cleanup", "check", "switch"])
+    parser.add_argument("command", nargs="?", choices=["doctor", "audit", "update", "sync", "start", "cleanup", "check", "switch"])
     parser.add_argument("--version", "-v", dest="target_version")
     parser.add_argument("--no-push", action="store_true")
     parser.add_argument("--yes", "-y", action="store_true")
@@ -804,8 +876,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if not args.command: interactive_menu()
-    elif args.command == "doctor": sys.exit(0 if GitReleaseWorkflow.doctor(as_json=args.json) else 1)
-    elif args.command == "audit": GitReleaseWorkflow.audit()
+    elif args.command in ("doctor", "audit"): sys.exit(0 if GitReleaseWorkflow.doctor(as_json=args.json) else 1)
     elif args.command == "switch": GitReleaseWorkflow.switch_branch()
     elif args.command == "update": sys.exit(0 if GitReleaseWorkflow.update_from_main(assume_yes=args.yes) else 1)
     elif args.command == "sync": GitReleaseWorkflow.sync()
