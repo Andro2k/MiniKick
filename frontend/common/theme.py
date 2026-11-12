@@ -166,6 +166,8 @@ class Size:
     SPACING_MD  = 8
     SPACING_LG  = 12
     SPACING_XL  = 16
+    SLIDER_GROOVE = 6
+    SLIDER_HANDLE = 14
     ICON_BASIC = 32
     ICON_SMALL = 24
     BADGE_MIN  = 18
@@ -471,9 +473,9 @@ QRadioButton::indicator:disabled {{ border-color: {Palette.NEUTRAL_750}; backgro
 QRadioButton::indicator:checked:disabled {{ border-color: {Palette.NEUTRAL_750}; background-color: {Semantic.WHITE_GLOW}; image: url("{PATH_ICON_RADIO_DOT}"); }}
 
 /* Slider */
-QSlider::groove:horizontal {{ border: none; height: 6px; background: {Palette.NEUTRAL_900}; border-radius: {Size.Radius.RAD_XSM}px; }}
-QSlider::sub-page:horizontal {{ background: {BrandColors.GREEN}; border-radius: {Size.Radius.RAD_XSM}px; }}
-QSlider::handle:horizontal {{ background: {Palette.NEUTRAL_050}; width: 16px; height: 16px; margin-top: -4px; margin-bottom: -4px; border-radius: {Size.Radius.RAD_MED}px; border: {Borders.BRD_LITE}; }}
+QSlider::groove:horizontal {{ border: none; height: {Size.SLIDER_GROOVE}px; background: {Palette.NEUTRAL_900}; border-radius: {Size.SLIDER_GROOVE // 2}px; }}
+QSlider::sub-page:horizontal {{ background: {BrandColors.GREEN}; border-radius: {Size.SLIDER_GROOVE // 2}px; }}
+QSlider::handle:horizontal {{ background: {Palette.NEUTRAL_050}; width: {Size.SLIDER_HANDLE}px; height: {Size.SLIDER_HANDLE}px; margin: -{(Size.SLIDER_HANDLE + 2 - Size.SLIDER_GROOVE) // 2}px 0; border-radius: {(Size.SLIDER_HANDLE + 2) // 2}px; border: {Borders.BRD_LITE}; }}
 QSlider::handle:horizontal:hover {{ background-color: {Palette.NEUTRAL_050}; border-color: {BrandColors.GREEN}; }}
 QSlider::handle:horizontal:pressed {{ background-color: {Palette.NEUTRAL_200}; border-color: {BrandColors.GREEN_DARK}; }}
 QSlider:disabled {{ opacity: 0.5; }}
@@ -493,6 +495,7 @@ QFrame[role="update_banner_card"] {{ background-color: {Palette.NEUTRAL_900}; bo
 QFrame[role="update_banner_card"]:hover {{ border-color: {Palette.NEUTRAL_700}; }}
 QFrame[role="update_icon_box"] {{ background-color: {Semantic.GREEN_GLOW}; border: {Borders.BRD_FOCS}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="card"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
+QFrame[role="card"][tab_flush="true"] {{ border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px; }}
 QWidget[role="expandable_card_body"] {{ background-color: {Palette.NEUTRAL_900}; border-bottom-left-radius: {Size.Radius.RAD_XLG}px; border-bottom-right-radius: {Size.Radius.RAD_XLG}px; }}
 QFrame[role="dashboard_welcome"] {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {Palette.NEUTRAL_850}, stop:1 {Palette.NEUTRAL_950}); border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
 QFrame[role="dashboard_distribution_panel"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}

@@ -12,6 +12,7 @@ logger = logging.getLogger("minikick.bootstrap.env")
 _QT_LOGGING_RULES = (
     "qt.multimedia.*=false;"
     "qt.multimedia.ffmpeg.*=false;"
+    "js.warning=false;"
     "qt.qpa.wayland.*=false"
 )
 _WINDOWS_APP_ID = "MiniKick"

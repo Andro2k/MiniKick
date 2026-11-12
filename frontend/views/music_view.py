@@ -108,6 +108,11 @@ class MusicView(BaseView):
         self.queue_panel.move_queue_item_requested.connect(self.move_queue_item_requested.emit)
         self.queue_panel.queue_updated.connect(self.stats_panel.set_stats)
         self.history_panel.requeue_requested.connect(self.requeue_history_item_requested.emit)
+        self.history_panel.preview_requested.connect(self._on_preview_requested)
+
+    def _on_preview_requested(self, url: str):
+        self.tabs.setCurrentIndex(0)
+        self.player_panel.show_video_preview(url)
 
     def _on_service_toggled(self, checked: bool):
         self.commands_panel.set_enabled_state(checked)
@@ -176,7 +181,7 @@ class MusicView(BaseView):
         self.history_panel.update_history(items)
 
     def release_video_preview(self):
-        self.history_panel.release_video()
+        self.player_panel.release_video_preview()
 
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)

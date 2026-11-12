@@ -14,7 +14,7 @@ logger = logging.getLogger("minikick.music.video_preview")
 
 _EMBED_HOST = "https://www.youtube-nocookie.com"
 _ERROR_TITLE_PREFIX = "mk-yt-error:"
-_MIN_VIDEO_HEIGHT = 240
+_MIN_VIDEO_HEIGHT = 320
 _PLAYER_HTML = Template("""<!DOCTYPE html><html><head><meta charset="utf-8"><title>-</title>
 <style>html,body,#player{margin:0;width:100%;height:100%;overflow:hidden;background:$background}</style></head>
 <body><div id="player"></div>

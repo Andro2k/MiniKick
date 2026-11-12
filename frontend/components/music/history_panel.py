@@ -3,9 +3,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt
 from frontend.common import get_icon_colored, BrandColors, Size
-from frontend.widgets import ExpandableCard, ModernTable, ModernTableCard, configure_icon_only_button
+from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_button
 from .queue_panel import requester_style
-from .video_preview_panel import MusicVideoPreviewPanel
 
 
 class MusicHistoryPanel(QWidget):
@@ -17,17 +16,11 @@ class MusicHistoryPanel(QWidget):
         self.i18n = i18n
         self._signature = None
         self._setup_ui()
-        self.preview_requested.connect(self.show_preview)
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*Size.Margin.MRG_NON)
-        layout.setSpacing(Size.SPACING_MD)
-
-        self.card_video = ExpandableCard(title=self.i18n.get("music.queue.preview_title"), switch_enabled=False, parent=self)
-        self.video_panel = MusicVideoPreviewPanel(self.i18n, parent=self.card_video.body_widget)
-        self.card_video.add_widget(self.video_panel)
-        layout.addWidget(self.card_video)
+        layout.setSpacing(Size.SPACING_NN)
 
         headers = [
             self.i18n.get("music.queue.col_title"),
@@ -43,6 +36,7 @@ class MusicHistoryPanel(QWidget):
             parent=self,
             custom_table=self.history_table,
         )
+        self.card_history.setProperty("tab_flush", "true")
 
         table = self.history_table
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -94,18 +88,6 @@ class MusicHistoryPanel(QWidget):
         configure_icon_only_button(btn, size=Size.ICON_SMALL)
         btn.clicked.connect(lambda *_: on_click())
         return btn
-
-    def show_preview(self, url: str):
-        self.card_video.set_expanded(True)
-        self.video_panel.load(url)
-
-    def release_video(self):
-        self.card_video.set_expanded(False)
-        self.video_panel.unload()
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        self.release_video()
 
     def update_history(self, items: list[dict]):
         signature = [(s.get("db_id"), s.get("url")) for s in items]

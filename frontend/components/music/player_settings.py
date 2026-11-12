@@ -6,6 +6,7 @@ from PySide6.QtCore import Signal, Qt, QTimer, QSize
 from frontend.common import get_icon, get_icon_colored, BrandColors, Size
 from frontend.widgets import ModernCard, ExpandableCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout
 from .music_mockup import MusicOverlayMockupWidget
+from .video_preview_panel import MusicVideoPreviewPanel
 
 _MUSIC_OVERLAY_LAYOUTS = {
     "classic": "music.overlay.layout_classic",
@@ -90,6 +91,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_now_playing_card()
         self._setup_volume_card()
         self._setup_overlay_url_card()
+        self._setup_video_preview_card()
 
     def _setup_now_playing_card(self):
         self.card_player = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD, orientation="vertical")
@@ -397,3 +399,21 @@ class MusicPlayerSettingsPanel(QWidget):
                 self._progress_timer.start()
         else:
             self._progress_timer.stop()
+
+    def _setup_video_preview_card(self):
+        self.card_video = ExpandableCard(title=self.i18n.get("music.queue.preview_title"), switch_enabled=False, parent=self)
+        self.video_panel = MusicVideoPreviewPanel(self.i18n, parent=self.card_video.body_widget)
+        self.card_video.add_widget(self.video_panel)
+        self.panel_layout.addWidget(self.card_video, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def show_video_preview(self, url: str):
+        self.card_video.set_expanded(True)
+        self.video_panel.load(url)
+
+    def release_video_preview(self):
+        self.card_video.set_expanded(False)
+        self.video_panel.unload()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.release_video_preview()

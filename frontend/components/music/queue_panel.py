@@ -135,6 +135,7 @@ class MusicQueuePanel(QWidget):
             parent=self,
             custom_table=self.queue_table
         )
+        self.card_queue.setProperty("tab_flush", "true")
 
         self.queue_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
