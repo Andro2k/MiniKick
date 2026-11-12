@@ -69,3 +69,24 @@ def test_corrupt_json_yields_no_endpoints(tmp_path):
     provider = TomlConfigProvider(tmp_path / "config.toml")
     provider.save_string("webhook_endpoints", "{not json")
     assert WebhookEndpointStore(provider, ReversibleCipher()).load_all() == []
+
+
+class DecryptFailsCipher(ReversibleCipher):
+    def decrypt(self, ciphertext):
+        raise OSError("different user")
+
+
+def test_unreadable_endpoints_survive_saves_made_by_another_profile(tmp_path):
+    _store(tmp_path).save_all([make_endpoint("mine", target_url=URL)])
+    other = _store(tmp_path, DecryptFailsCipher())
+    assert other.load_all() == []
+    other.save_all([make_endpoint("new", target_url="https://example.test/h")])
+    assert [ep.endpoint_id for ep in _store(tmp_path).load_all()] == ["new", "mine"]
+
+
+def test_unreadable_record_is_replaced_when_the_same_id_is_saved_again(tmp_path):
+    _store(tmp_path).save_all([make_endpoint("same", target_url=URL)])
+    other = _store(tmp_path, DecryptFailsCipher())
+    other.save_all([make_endpoint("same", target_url="https://example.test/new")])
+    loaded = _store(tmp_path).load_all()
+    assert [(ep.endpoint_id, ep.target_url) for ep in loaded] == [("same", "https://example.test/new")]

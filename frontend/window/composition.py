@@ -162,6 +162,7 @@ class MainWindowComposition:
             None,
             w.container.webhook_service,
             toast_manager=w.toast,
+            i18n=w.i18n,
         )
         w.settings_controller = SettingsController(
             view=None,

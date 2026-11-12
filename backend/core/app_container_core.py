@@ -13,7 +13,7 @@ from backend.interfaces import IConfigProvider
 from backend.services.system import create_secret_cipher, DatabaseMaintenance
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.services.webhooks import (
-    DiscordEmbedFormatter, GenericJsonFormatter, HttpWebhookTransport,
+    FORMATTER_REGISTRY, HttpWebhookTransport,
     WebhookDispatcherService, WebhookEventAdapter, WebhookManagementService, WebhookSender,
 )
 from backend.utils import resource_path
@@ -161,12 +161,9 @@ class AppContainerCore:
         logger.debug("[AppContainer] Initializing outbound webhook delivery...")
         self.webhook_endpoint_store = WebhookEndpointStore(self.config_provider, self.secret_cipher)
         self.webhook_transport = HttpWebhookTransport()
-        sender = WebhookSender(
-            {"generic": GenericJsonFormatter(), "discord": DiscordEmbedFormatter()},
-            self.webhook_transport,
-        )
+        sender = WebhookSender(FORMATTER_REGISTRY, self.webhook_transport)
         self.webhook_worker = WebhookDeliveryWorker(sender.send)
         self.webhook_worker.start()
         dispatcher = WebhookDispatcherService(self.webhook_endpoint_store.active, self.webhook_worker.submit)
         self.webhook_events = WebhookEventAdapter(dispatcher)
-        self.webhook_service = WebhookManagementService(self.webhook_endpoint_store, sender)
+        self.webhook_service = WebhookManagementService(self.webhook_endpoint_store, sender.send)

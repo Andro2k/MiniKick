@@ -9,17 +9,17 @@ from typing import Any, Callable, Mapping
 from backend.config.webhook_endpoint_store import WebhookEndpointStore
 from backend.interfaces.i_webhooks import (
     DEFAULT_PLATFORMS,
+    EVENT_TYPES,
     PLATFORM_APP,
     DeliveryJob,
+    DeliveryResponse,
     WebhookEndpointConfig,
     WebhookEvent,
 )
-from backend.services.webhooks.webhook_sender import WebhookSender
+from backend.services.webhooks.webhook_formatters import FORMATTER_REGISTRY
 from backend.services.webhooks.webhook_transport import validate_target_url
 
-EVENT_TYPES = ("subscription", "resub", "sub_gift", "cheer", "follow", "raid", "reward", "command", "music", "chat")
 PLATFORMS = ("kick", "twitch", PLATFORM_APP)
-FORMATTERS = ("discord", "generic")
 TEST_EVENT_TYPE = "test"
 
 
@@ -31,15 +31,25 @@ class PingResult:
     error: str = ""
 
 
+@dataclass(frozen=True, slots=True)
+class WebhookSummary:
+    endpoint_id: str
+    name: str
+    formatter: str
+    events: frozenset[str]
+    platforms: frozenset[str]
+    enabled: bool
+
+
 class WebhookManagementService:
     def __init__(
         self,
         store: WebhookEndpointStore,
-        sender: WebhookSender,
+        send: Callable[[DeliveryJob], DeliveryResponse],
         clock_ms: Callable[[], int] = lambda: int(time.time() * 1000),
     ) -> None:
         self._store = store
-        self._sender = sender
+        self._send = send
         self._clock_ms = clock_ms
 
     @staticmethod
@@ -57,11 +67,19 @@ class WebhookManagementService:
     def list_endpoints(self) -> list[WebhookEndpointConfig]:
         return self._store.load_all()
 
+    def list_summaries(self) -> list[WebhookSummary]:
+        return [
+            WebhookSummary(ep.endpoint_id, ep.name, ep.formatter, ep.events, ep.platforms, ep.enabled)
+            for ep in self._store.load_all()
+        ]
+
     def get_endpoint(self, endpoint_id: str) -> WebhookEndpointConfig | None:
         return next((ep for ep in self._store.load_all() if ep.endpoint_id == endpoint_id), None)
 
     def save_endpoint(self, data: Mapping[str, Any]) -> WebhookEndpointConfig:
         endpoint = self._build(data)
+        if not endpoint.events or not endpoint.platforms:
+            raise ValueError("an endpoint needs at least one event and one platform")
         endpoints = self._store.load_all()
         for index, existing in enumerate(endpoints):
             if existing.endpoint_id == endpoint.endpoint_id:
@@ -105,7 +123,7 @@ class WebhookManagementService:
         )
         started = time.perf_counter()
         try:
-            response = self._sender.send(DeliveryJob(endpoint, event))
+            response = self._send(DeliveryJob(endpoint, event))
         except Exception as err:
             return PingResult(ok=False, error=type(err).__name__)
         latency_ms = int((time.perf_counter() - started) * 1000)
@@ -117,7 +135,7 @@ class WebhookManagementService:
         name = str(data.get("name", "")).strip()
         target_url = str(data.get("target_url", "")).strip()
         formatter = str(data.get("formatter", "generic"))
-        if not name or not target_url or formatter not in FORMATTERS:
+        if not name or not target_url or formatter not in FORMATTER_REGISTRY:
             raise ValueError("incomplete endpoint data")
         if validate_target_url(target_url):
             raise ValueError("invalid target url")

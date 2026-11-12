@@ -13,16 +13,9 @@ class WebhooksController(BaseController):
 
     def __init__(self, view, service, toast_manager=None, i18n=None):
         super().__init__(view=view, service=service, toast_manager=toast_manager, i18n=i18n)
+        self._search_term = ""
         if self.view is not None:
             self._connect_signals()
-
-    def _get_i18n(self):
-        if self.i18n:
-            return self.i18n
-        if self.view and getattr(self.view, "i18n", None):
-            return self.view.i18n
-        from backend.services.system import TranslationService
-        return TranslationService()
 
     def _connect_signals(self):
         if not self._connect_crud_signals(
@@ -37,8 +30,12 @@ class WebhooksController(BaseController):
         self.ping_finished.connect(self.view.set_ping_result)
 
     def load_initial_data(self):
-        if self.view is not None:
-            self.view.populate_table(self.service.list_endpoints())
+        if self.view is None:
+            return
+        summaries = self.service.list_summaries()
+        if self._search_term:
+            summaries = [item for item in summaries if self._search_term in item.name.lower()]
+        self.view.populate_table(summaries)
 
     def _dialog_options(self) -> dict:
         return {
@@ -92,24 +89,15 @@ class WebhooksController(BaseController):
 
     @Slot(str)
     def _handle_search(self, search_term: str):
-        term = search_term.strip().lower()
-        endpoints = self.service.list_endpoints()
-        if term:
-            endpoints = [ep for ep in endpoints if term in ep.name.lower()]
-        self.view.populate_table(endpoints)
+        self._search_term = search_term.strip().lower()
+        self.load_initial_data()
 
     @Slot(object)
     def _handle_test(self, data: dict):
         logger.info("[User Action] Sent webhook test ping")
 
         def _worker():
-            try:
-                result = self.service.send_test_ping(data)
-            except Exception as err:
-                logger.error("[WebhooksController] Test ping failed unexpectedly: %s", type(err).__name__)
-                from backend.services.webhooks import PingResult
-                result = PingResult(ok=False, error=type(err).__name__)
-            self.ping_finished.emit(result)
+            self.ping_finished.emit(self.service.send_test_ping(data))
 
         threading.Thread(target=_worker, name="WebhookTestPing", daemon=True).start()
 
@@ -126,9 +114,8 @@ class WebhooksController(BaseController):
 
     def _show_toast(self, title_key: str, msg_key: str, name: str, state: str) -> None:
         if self.toast:
-            i18n = self._get_i18n()
             self.toast.show_toast(
-                title=i18n.get(title_key),
-                message=i18n.get(msg_key).replace("{name}", name),
+                title=self.i18n.get(title_key),
+                message=self.i18n.get(msg_key).replace("{name}", name),
                 state=state,
             )

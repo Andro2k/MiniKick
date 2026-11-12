@@ -11,6 +11,7 @@ from .i_alerts import AlertStorageProtocol
 from .i_webhooks import (
     CRITICAL_EVENT_TYPES,
     DEFAULT_PLATFORMS,
+    EVENT_TYPES,
     PLATFORM_APP,
     DeliveryJob,
     DeliveryResponse,
@@ -38,6 +39,7 @@ __all__ = [
     "TokenEncryptionError",
     "CRITICAL_EVENT_TYPES",
     "DEFAULT_PLATFORMS",
+    "EVENT_TYPES",
     "PLATFORM_APP",
     "DeliveryJob",
     "DeliveryResponse",

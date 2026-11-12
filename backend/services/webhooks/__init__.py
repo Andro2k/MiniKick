@@ -2,12 +2,13 @@
 
 from .webhook_dispatcher_service import WebhookDispatcherService
 from .webhook_event_adapter import WebhookEventAdapter
-from .webhook_formatters import DiscordEmbedFormatter, GenericJsonFormatter
-from .webhook_management_service import PingResult, WebhookManagementService
+from .webhook_formatters import FORMATTER_REGISTRY, DiscordEmbedFormatter, GenericJsonFormatter
+from .webhook_management_service import PingResult, WebhookManagementService, WebhookSummary
 from .webhook_sender import WebhookSender
 from .webhook_transport import HttpWebhookTransport, validate_target_url
 
 __all__ = [
+    "FORMATTER_REGISTRY",
     "DiscordEmbedFormatter",
     "GenericJsonFormatter",
     "HttpWebhookTransport",
@@ -16,5 +17,6 @@ __all__ = [
     "WebhookEventAdapter",
     "WebhookManagementService",
     "WebhookSender",
+    "WebhookSummary",
     "validate_target_url",
 ]

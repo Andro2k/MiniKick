@@ -44,7 +44,7 @@ class MainWindowCore(QMainWindow):
         ("Widgets", "widget-add-filled.svg", "top"),
         ("Triggers", "treasure-chest-filled.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
-        ("Webhooks", "link-filled.svg", "top"),
+        ("Webhooks", "webhooks-filled.svg", "top"),
 
         ("Settings", "gear-filled.svg", "bottom"),
         ("Developer", "file-text-filled.svg", "bottom"),

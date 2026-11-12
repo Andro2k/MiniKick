@@ -147,7 +147,6 @@ class WebhookEndpointDialog(ModernModal):
 
     def _on_preset_changed(self, *_):
         self.secret_box.setVisible(self._preset() == "generic")
-        self.btn_test.setEnabled(bool(self.txt_url.text().strip()))
 
     def _on_url_changed(self, text: str):
         self.lbl_url_error.hide()

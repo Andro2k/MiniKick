@@ -26,7 +26,7 @@ class FakeSender:
 
 def _service(tmp_path, sender=None):
     store = WebhookEndpointStore(TomlConfigProvider(tmp_path / "config.toml"), ReversibleCipher())
-    return WebhookManagementService(store, sender or FakeSender(), clock_ms=lambda: 1000)
+    return WebhookManagementService(store, (sender or FakeSender()).send, clock_ms=lambda: 1000)
 
 
 def _data(**overrides):
@@ -94,3 +94,19 @@ def test_test_ping_reports_failures(tmp_path):
     crashed = _service(tmp_path, FakeSender(error=RuntimeError("boom"))).send_test_ping(_data())
     assert (crashed.ok, crashed.error) == (False, "RuntimeError")
     assert _service(tmp_path).send_test_ping(_data(name="")).error == "invalid_data"
+
+
+def test_summaries_expose_no_url_or_secret(tmp_path):
+    service = _service(tmp_path)
+    service.save_endpoint(_data(formatter="generic", hmac_secret="topsecret"))
+    summary = service.list_summaries()[0]
+    assert summary.name == "Alerts" and summary.events == frozenset({"follow", "raid"})
+    assert "SECRET" not in repr(summary) and "topsecret" not in repr(summary)
+
+
+def test_save_requires_at_least_one_event_and_one_platform(tmp_path):
+    service = _service(tmp_path)
+    for overrides in ({"events": []}, {"platforms": []}):
+        with pytest.raises(ValueError):
+            service.save_endpoint(_data(**overrides))
+    assert service.list_endpoints() == []
