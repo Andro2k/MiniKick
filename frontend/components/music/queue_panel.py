@@ -6,6 +6,19 @@ from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import get_icon_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_button
 
+def requester_style(platform: str, requester: str):
+    platform = (platform or "kick").lower()
+    if platform == "twitch":
+        return QColor(BrandColors.TWITCH_LIGHT), get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
+    if platform == "youtube":
+        return QColor(BrandColors.RED), get_icon_colored("brand-youtube.svg", BrandColors.RED)
+    if platform == "tiktok":
+        return QColor(BrandColors.TIKTOK), get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
+    if requester:
+        return QColor(BrandColors.KICK), get_icon_colored("brand-kick.svg", BrandColors.KICK)
+    return None, None
+
+
 class DragDropQueueTable(ModernTable):
     row_moved = Signal(int, int)
 
@@ -252,24 +265,8 @@ class MusicQueuePanel(QWidget):
                 self.queue_table.setItem(idx, 2, self._create_table_item(artist_text))
 
                 requester = song.get("requester", "")
-                platform = (song.get("platform") or "kick").lower()
                 requester_text = f" {requester}" if requester else "-"
-
-                if platform == "twitch":
-                    req_color = QColor(BrandColors.TWITCH_LIGHT)
-                    req_icon = get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
-                elif platform == "youtube":
-                    req_color = QColor(BrandColors.RED)
-                    req_icon = get_icon_colored("brand-youtube.svg", BrandColors.RED)
-                elif platform == "tiktok":
-                    req_color = QColor(BrandColors.TIKTOK)
-                    req_icon = get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
-                elif requester:
-                    req_color = QColor(BrandColors.KICK)
-                    req_icon = get_icon_colored("brand-kick.svg", BrandColors.KICK)
-                else:
-                    req_color = None
-                    req_icon = None
+                req_color, req_icon = requester_style(song.get("platform"), requester)
 
                 item_req = self._create_table_item(requester_text, color=req_color)
                 if req_icon and requester:

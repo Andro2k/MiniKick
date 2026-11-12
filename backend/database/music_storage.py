@@ -244,6 +244,34 @@ class SQLiteMusicStorage:
         except Exception as e:
             logger.error("[SQLiteMusicStorage] Error updating song status: %s", e)
 
+    def load_history(self, provider: str, limit: int = 100) -> list[dict]:
+        if not self.db_manager:
+            return []
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, title, artist, url, requester, provider, duration, platform FROM music_queue "
+                    "WHERE provider = ? AND is_played = 2 ORDER BY id DESC LIMIT ?",
+                    (provider, int(limit))
+                )
+                return [
+                    {
+                        "db_id": r[0],
+                        "title": r[1],
+                        "artist": r[2],
+                        "url": r[3],
+                        "requester": r[4],
+                        "provider": r[5],
+                        "duration": r[6],
+                        "platform": r[7] or "kick"
+                    }
+                    for r in cursor.fetchall()
+                ]
+        except Exception as e:
+            logger.error("[SQLiteMusicStorage] Error loading history: %s", e)
+        return []
+
     def load_pending_songs(self, provider: str) -> list[dict]:
         if not self.db_manager:
             return []

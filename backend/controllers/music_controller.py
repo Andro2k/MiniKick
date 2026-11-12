@@ -109,6 +109,7 @@ class MusicController(QObject):
             self.view.media_keys_toggled.connect(self.handle_media_keys_toggle)
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
+        self.view.requeue_history_item_requested.connect(self.handle_requeue_history_item)
         self.view.view_shown.connect(self.refresh_now_playing)
         self.view.view_shown.connect(self._sync_switches_from_db)
 
@@ -279,6 +280,8 @@ class MusicController(QObject):
                 self.view.update_queue(queue_items)
             else:
                 self.view.update_queue([])
+            if hasattr(self.music_provider, "get_history"):
+                self.view.update_history(self.music_provider.get_history())
 
         self._maybe_emit_song_change(song)
 
@@ -309,6 +312,17 @@ class MusicController(QObject):
                 msg = self.i18n.get("music.toast.removed_from_queue")
                 if self.toast:
                     self.toast.show_toast(self.i18n.get("music.header.title"), msg, "success")
+
+    @Slot(str, str, str)
+    def handle_requeue_history_item(self, url: str, requester: str, platform: str):
+        if not url or not self.music_provider:
+            return
+        logger.info("[User Action] Re-queued song from history")
+        ok, _msg = self.music_provider.add_to_queue(
+            url, requester=requester or None, platform=platform or "kick", max_duration_min=0
+        )
+        if ok and self.toast:
+            self.toast.show_toast(self.i18n.get("music.header.title"), self.i18n.get("music.toast.requeued"), "success")
 
     @Slot(int, int)
     def handle_move_queue_item(self, from_index: int, to_index: int):

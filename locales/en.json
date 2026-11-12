@@ -971,10 +971,14 @@
       "empty": "Queue is empty",
       "empty_desc": "Your queue is ready. When viewers use !sr in chat, their requested songs will appear here.",
       "error": "❌ Internal music error: {error}",
+      "history_empty": "History is empty",
+      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
+      "history_title": "Playback history",
       "no_link": "❌ Could not retrieve video link.",
       "not_found": "❌ Could not find any song named '{query}'.",
       "processing_link": "🔍 Processing YouTube link...",
       "remove_tooltip": "Remove from queue",
+      "requeue_tooltip": "Add back to queue",
       "searching": "🔍 Searching '{query}' on YouTube...",
       "success": "🎵 [Queue] │ {track}",
       "title": "Playback Queue"
@@ -997,7 +1001,9 @@
     },
     "tabs": {
       "commands": "Commands",
+      "history": "History",
       "player": "Player",
+      "queue": "Queue",
       "settings": "Settings"
     },
     "toast": {
@@ -1006,7 +1012,8 @@
       "command_toggled": "Command {trigger} has been {status}.",
       "error_playing": "Could not play '{title}': {error}",
       "moved_in_queue": "Song position updated in queue",
-      "removed_from_queue": "Song removed from queue"
+      "removed_from_queue": "Song removed from queue",
+      "requeued": "Song added back to the queue"
     },
     "youtube": {
       "age_restricted": "This video requires age verification (Sign in to confirm your age)",

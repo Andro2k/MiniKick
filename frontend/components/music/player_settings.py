@@ -4,7 +4,7 @@ import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QTimer, QSize
 from frontend.common import get_icon, get_icon_colored, BrandColors, Size
-from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout, create_text_label
+from frontend.widgets import ModernCard, ExpandableCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout
 from .music_mockup import MusicOverlayMockupWidget
 
 _MUSIC_OVERLAY_LAYOUTS = {
@@ -199,16 +199,12 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
-
-        url_info = QVBoxLayout()
-        url_info.setContentsMargins(*Size.Margin.MRG_NON)
-        url_info.setSpacing(Size.SPACING_XS)
-        lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
-        lbl_title.setProperty("role", "h2")
-        lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")
-        url_info.addWidget(lbl_title)
-        url_info.addWidget(lbl_desc)
+        self.card_overlay_url = ExpandableCard(
+            title=self.i18n.get("music.overlay.url_title"),
+            desc=self.i18n.get("music.overlay.url_desc"),
+            switch_enabled=False,
+            parent=self,
+        )
 
         layout_setting_row = create_row_layout(spacing=Size.SPACING_MD)
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
@@ -247,10 +243,9 @@ class MusicPlayerSettingsPanel(QWidget):
         )
         self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
 
-        self.card_overlay_url.addLayout(url_info)
-        self.card_overlay_url.addLayout(layout_setting_row)
-        self.card_overlay_url.addLayout(preview_layout)
-        self.card_overlay_url.addWidget(self.btn_copy_music_url)
+        self.card_overlay_url.body_layout.addLayout(layout_setting_row)
+        self.card_overlay_url.body_layout.addLayout(preview_layout)
+        self.card_overlay_url.add_widget(self.btn_copy_music_url)
         self.panel_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
 
     _RECOMMENDED_DIMENSIONS = {

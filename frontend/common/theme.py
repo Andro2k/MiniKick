@@ -89,14 +89,6 @@ class BrandColors:
 
 
 class MockupPalette:
-    MUSIC_VINYL_BG_TOP    = "#3E5238"
-    MUSIC_VINYL_BG_BOTTOM = "#243129"
-    MUSIC_VINYL_ACCENT    = "#A7BD89"
-    MUSIC_CARD_LIGHT      = "#F4E9D7"
-    MUSIC_CARD_BORDER     = "#B29B8E"
-    MUSIC_CARD_ACCENT     = "#76515E"
-    MUSIC_CARD_TEXT       = "#35272B"
-    MUSIC_CARD_TEXT_SUB   = "#503D41"
     MUSIC_ART_ACCENT      = "#F43F5E"
 
     AVATAR_GRADIENTS     = (

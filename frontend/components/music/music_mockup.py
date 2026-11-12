@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
-from frontend.common import get_qcolor_with_alpha, Palette, BrandColors, MockupPalette
+from frontend.common import get_qcolor_with_alpha, Palette, BrandColors
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 class MusicOverlayMockupWidget(QWidget):
@@ -36,20 +36,20 @@ class MusicOverlayMockupWidget(QWidget):
     def _get_theme_palette(self):
         if self.layout_mode == "vinyl":
             gradient = QLinearGradient(0, 0, self.width(), self.height())
-            gradient.setColorAt(0.0, QColor(MockupPalette.MUSIC_VINYL_BG_TOP))
-            gradient.setColorAt(1.0, QColor(MockupPalette.MUSIC_VINYL_BG_BOTTOM))
+            gradient.setColorAt(0.0, QColor(Palette.NEUTRAL_750))
+            gradient.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
             return (
                 QBrush(gradient),
                 QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 70), 1.25),
-                QColor(MockupPalette.MUSIC_VINYL_ACCENT),
+                QColor(BrandColors.GREEN),
                 QColor(Palette.NEUTRAL_000),
                 get_qcolor_with_alpha(Palette.NEUTRAL_000, 170),
             )
-        bg_brush = QBrush(QColor(MockupPalette.MUSIC_CARD_LIGHT))
-        border_pen = QPen(QColor(MockupPalette.MUSIC_CARD_BORDER), 1.25)
-        accent_color = QColor(MockupPalette.MUSIC_CARD_ACCENT)
-        text_main = QColor(MockupPalette.MUSIC_CARD_TEXT)
-        text_sub = QColor(MockupPalette.MUSIC_CARD_TEXT_SUB)
+        bg_brush = QBrush(QColor(Palette.NEUTRAL_900))
+        border_pen = QPen(QColor(Palette.NEUTRAL_700), 1.25)
+        accent_color = QColor(BrandColors.GREEN)
+        text_main = QColor(Palette.NEUTRAL_050)
+        text_sub = QColor(Palette.NEUTRAL_400)
         return bg_brush, border_pen, accent_color, text_main, text_sub
 
     @staticmethod
@@ -67,14 +67,10 @@ class MusicOverlayMockupWidget(QWidget):
         p.drawRoundedRect(card_rect, corner_radius, corner_radius)
         return card_x, card_y, card_w, card_h
 
-    def _draw_album_art_placeholder(self, p: QPainter, art_x: float, art_y: float, art_size: float, corner_radius: float, with_third_stop: bool = False):
+    def _draw_album_art_placeholder(self, p: QPainter, art_x: float, art_y: float, art_size: float, corner_radius: float):
         art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
-        art_grad.setColorAt(0.0, QColor(MockupPalette.MUSIC_ART_ACCENT))
-        if with_third_stop:
-            art_grad.setColorAt(0.5, QColor(BrandColors.PURPLE))
-            art_grad.setColorAt(1.0, QColor(BrandColors.INDIGO_DARK))
-        else:
-            art_grad.setColorAt(1.0, QColor(BrandColors.PURPLE))
+        art_grad.setColorAt(0.0, QColor(BrandColors.GREEN))
+        art_grad.setColorAt(1.0, QColor(BrandColors.GREEN_800))
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 50), 1))
         p.setBrush(QBrush(art_grad))
         p.drawRoundedRect(QRectF(art_x, art_y, art_size, art_size), corner_radius, corner_radius)
@@ -129,8 +125,8 @@ class MusicOverlayMockupWidget(QWidget):
             p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r * ratio, vinyl_r * ratio)
         label_radius = vinyl_r * 0.48
         label_grad = QLinearGradient(vinyl_cx - label_radius, vinyl_cy - label_radius, vinyl_cx + label_radius, vinyl_cy + label_radius)
-        label_grad.setColorAt(0.0, QColor(MockupPalette.MUSIC_ART_ACCENT))
-        label_grad.setColorAt(1.0, QColor(BrandColors.PURPLE))
+        label_grad.setColorAt(0.0, QColor(BrandColors.GREEN))
+        label_grad.setColorAt(1.0, QColor(BrandColors.GREEN_800))
         p.setBrush(QBrush(label_grad))
         p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 60), 1))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), label_radius, label_radius)
@@ -168,7 +164,7 @@ class MusicOverlayMockupWidget(QWidget):
         art_size = min(94 * scale, card_h - 20 * scale, card_w * 0.25)
         art_x = card_x + 12 * scale
         art_y = card_y + (card_h - art_size) / 2
-        self._draw_album_art_placeholder(p, art_x, art_y, art_size, 14, with_third_stop=True)
+        self._draw_album_art_placeholder(p, art_x, art_y, art_size, 14)
 
         text_x = art_x + art_size + 16 * scale
         text_w = max(0, card_x + card_w - text_x - 16 * scale)
