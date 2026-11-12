@@ -372,6 +372,11 @@ class YouTubeMusicProvider(QObject):
         except Exception as e:
             logger.error("[YouTubeMusicProvider] Error setting audio device: %s", e)
 
+    def get_history(self, limit: int = 100) -> list[dict]:
+        if not self.music_storage:
+            return []
+        return self.music_storage.load_history(self.provider_id, limit)
+
     def get_queue(self) -> list[dict]:
         return list(self.queue)
 

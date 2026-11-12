@@ -968,6 +968,10 @@ DEFAULT_DICTIONARY = {
       "volume_title": "Player Volume"
     },
     "queue": {
+      "history_empty": "History is empty",
+      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
+      "history_title": "Playback history",
+      "requeue_tooltip": "Add back to queue",
       "col_actions": "Actions",
       "col_artist": "Artist",
       "col_duration": "Duration",
@@ -979,6 +983,10 @@ DEFAULT_DICTIONARY = {
       "error": "❌ Internal music error: {error}",
       "no_link": "❌ Could not retrieve video link.",
       "not_found": "❌ Could not find any song named '{query}'.",
+      "preview_error": "This video can't be played inside the app.",
+      "preview_open_browser": "Open in browser",
+      "preview_title": "Video preview",
+      "preview_tooltip": "Watch video",
       "processing_link": "🔍 Processing YouTube link...",
       "remove_tooltip": "Remove from queue",
       "searching": "🔍 Searching '{query}' on YouTube...",
@@ -1002,11 +1010,14 @@ DEFAULT_DICTIONARY = {
       "updated": "Music Command Updated"
     },
     "tabs": {
+      "queue": "Queue",
+      "history": "History",
       "commands": "Commands",
       "player": "Player",
       "settings": "Settings"
     },
     "toast": {
+      "requeued": "Song added back to the queue",
       "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
       "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
       "command_toggled": "Command {trigger} has been {status}.",

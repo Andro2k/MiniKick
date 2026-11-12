@@ -971,10 +971,18 @@
       "empty": "La cola está vacía",
       "empty_desc": "Tu cola está lista. Cuando tus espectadores usen !sr en el chat, sus canciones aparecerán aquí.",
       "error": "❌ Error interno de música: {error}",
+      "history_empty": "El historial está vacío",
+      "history_empty_desc": "Las canciones que se reproduzcan o se quiten de la cola aparecerán aquí.",
+      "history_title": "Historial de reproducción",
       "no_link": "❌ No se pudo obtener el enlace del video.",
       "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
+      "preview_error": "Este video no se puede reproducir dentro de la app.",
+      "preview_open_browser": "Abrir en el navegador",
+      "preview_title": "Vista previa de video",
+      "preview_tooltip": "Ver video",
       "processing_link": "🔍 Procesando enlace de YouTube...",
       "remove_tooltip": "Eliminar de la cola",
+      "requeue_tooltip": "Volver a agregar a la cola",
       "searching": "🔍 Buscando '{query}' en YouTube...",
       "success": "🎵 [Cola] │ {track}",
       "title": "Cola de Reproducción"
@@ -997,7 +1005,9 @@
     },
     "tabs": {
       "commands": "Comandos",
+      "history": "Historial",
       "player": "Reproductor",
+      "queue": "Cola",
       "settings": "Ajustes"
     },
     "toast": {
@@ -1006,7 +1016,8 @@
       "command_toggled": "El comando {trigger} ha sido {status}.",
       "error_playing": "No se pudo reproducir '{title}': {error}",
       "moved_in_queue": "Posición de canción actualizada en la cola",
-      "removed_from_queue": "Canción eliminada de la cola"
+      "removed_from_queue": "Canción eliminada de la cola",
+      "requeued": "Canción agregada de nuevo a la cola"
     },
     "youtube": {
       "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",

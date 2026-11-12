@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernScrollArea
 from frontend.common import Size
-from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicSettingsPanel
+from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicHistoryPanel, MusicSettingsPanel
 
 class MusicView(BaseView):
     command_toggled = Signal(str, bool)
@@ -22,6 +22,7 @@ class MusicView(BaseView):
     max_song_duration_changed = Signal(int)
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
+    requeue_history_item_requested = Signal(str, str, str)
     view_shown = Signal()
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
@@ -61,6 +62,7 @@ class MusicView(BaseView):
         self.commands_panel = MusicCommandsPanel(self.i18n, parent=self.tabs)
         self.settings_panel = MusicSettingsPanel(self.i18n, parent=self.tabs)
         self.queue_panel = MusicQueuePanel(self.i18n, parent=self.body_container)
+        self.history_panel = MusicHistoryPanel(self.i18n, parent=self.body_container)
 
         self.tabs.addTab(ModernScrollArea(self.player_panel, parent=self.tabs), self.i18n.get("music.tabs.player"))
         self.tabs.addTab(ModernScrollArea(self.commands_panel, parent=self.tabs), self.i18n.get("music.tabs.commands"))
@@ -72,7 +74,11 @@ class MusicView(BaseView):
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*Size.Margin.MRG_NON)
         self.col2_layout.setSpacing(Size.SPACING_NN)
-        self.col2_layout.addWidget(self.queue_panel)
+        self.queue_tabs = QTabWidget(col2)
+        self.queue_tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.queue_tabs.addTab(self.queue_panel, self.i18n.get("music.tabs.queue"))
+        self.queue_tabs.addTab(self.history_panel, self.i18n.get("music.tabs.history"))
+        self.col2_layout.addWidget(self.queue_tabs)
 
         self.columns_layout.addWidget(col1, stretch=3)
         self.columns_layout.addWidget(col2, stretch=4)
@@ -101,6 +107,12 @@ class MusicView(BaseView):
         self.queue_panel.remove_queue_item_requested.connect(self.remove_queue_item_requested.emit)
         self.queue_panel.move_queue_item_requested.connect(self.move_queue_item_requested.emit)
         self.queue_panel.queue_updated.connect(self.stats_panel.set_stats)
+        self.history_panel.requeue_requested.connect(self.requeue_history_item_requested.emit)
+        self.history_panel.preview_requested.connect(self._on_preview_requested)
+
+    def _on_preview_requested(self, url: str):
+        self.tabs.setCurrentIndex(0)
+        self.player_panel.show_video_preview(url)
 
     def _on_service_toggled(self, checked: bool):
         self.commands_panel.set_enabled_state(checked)
@@ -164,6 +176,12 @@ class MusicView(BaseView):
 
     def update_queue(self, queue_items: list[dict]):
         self.queue_panel.update_queue(queue_items)
+
+    def update_history(self, items: list[dict]):
+        self.history_panel.update_history(items)
+
+    def release_video_preview(self):
+        self.player_panel.release_video_preview()
 
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)

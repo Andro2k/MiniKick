@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QIcon, QFont, QFontDatabase
 from PySide6.QtWidgets import QApplication
 from frontend.common import get_global_qss, create_dark_palette, resource_path
@@ -20,6 +21,7 @@ def get_or_create_application() -> QApplication:
 
 
 def create_application() -> QApplication:
+    QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
     app.setPalette(create_dark_palette())
     _load_fonts()
