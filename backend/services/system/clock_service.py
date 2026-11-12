@@ -1,4 +1,4 @@
-# backend\\services\\system\\clock_service.py
+# backend\services\system\clock_service.py
 
 import re
 import time

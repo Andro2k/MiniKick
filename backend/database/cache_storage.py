@@ -3,6 +3,7 @@
 import os
 import re
 import logging
+from backend.utils.youtube_url import youtube_video_id
 from .music_storage import SQLiteMusicStorage
 
 logger = logging.getLogger("minikick.database.cache_storage")
@@ -15,6 +16,20 @@ class MusicCacheManager:
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         self.cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
         os.makedirs(self.cache_dir, exist_ok=True)
+
+    def find_cached_file(self, url: str) -> str | None:
+        video_id = youtube_video_id(url)
+        if not video_id:
+            return None
+        prefix = f"yt_{video_id}."
+        try:
+            for fname in os.listdir(self.cache_dir):
+                fpath = os.path.join(self.cache_dir, fname)
+                if fname.startswith(prefix) and not fname.endswith(".part") and os.path.isfile(fpath):
+                    return fpath
+        except OSError as e:
+            logger.debug("[MusicCacheManager] Could not look up cached file for %s: %s", video_id, e)
+        return None
 
     def get_cache_size_bytes(self) -> int:
         total_bytes = 0
