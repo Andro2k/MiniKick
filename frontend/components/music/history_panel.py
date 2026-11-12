@@ -3,23 +3,31 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt
 from frontend.common import get_icon_colored, BrandColors, Size
-from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_button
+from frontend.widgets import ExpandableCard, ModernTable, ModernTableCard, configure_icon_only_button
 from .queue_panel import requester_style
+from .video_preview_panel import MusicVideoPreviewPanel
 
 
 class MusicHistoryPanel(QWidget):
     requeue_requested = Signal(str, str, str)
+    preview_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self._signature = None
         self._setup_ui()
+        self.preview_requested.connect(self.show_preview)
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*Size.Margin.MRG_NON)
-        layout.setSpacing(Size.SPACING_NN)
+        layout.setSpacing(Size.SPACING_MD)
+
+        self.card_video = ExpandableCard(title=self.i18n.get("music.queue.preview_title"), switch_enabled=False, parent=self)
+        self.video_panel = MusicVideoPreviewPanel(self.i18n, parent=self.card_video.body_widget)
+        self.card_video.add_widget(self.video_panel)
+        layout.addWidget(self.card_video)
 
         headers = [
             self.i18n.get("music.queue.col_title"),
@@ -71,16 +79,33 @@ class MusicHistoryPanel(QWidget):
         cell_layout.setSpacing(Size.SPACING_XS)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        url = song.get("url") or ""
+        requeue_args = (url, song.get("requester") or "", song.get("platform") or "kick")
+        cell_layout.addWidget(self._action_button("play-filled.svg", "music.queue.preview_tooltip", lambda: self.preview_requested.emit(url)))
+        cell_layout.addWidget(self._action_button("plus-filled.svg", "music.queue.requeue_tooltip", lambda: self.requeue_requested.emit(*requeue_args)))
+        return cell
+
+    def _action_button(self, icon_name: str, tooltip_key: str, on_click) -> QPushButton:
         btn = QPushButton()
         btn.setProperty("role", "btn_ghost")
-        btn.setIcon(get_icon_colored("plus-filled.svg", BrandColors.GREEN))
+        btn.setIcon(get_icon_colored(icon_name, BrandColors.GREEN))
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn.setToolTip(self.i18n.get("music.queue.requeue_tooltip"))
+        btn.setToolTip(self.i18n.get(tooltip_key))
         configure_icon_only_button(btn, size=Size.ICON_SMALL)
-        args = (song.get("url") or "", song.get("requester") or "", song.get("platform") or "kick")
-        btn.clicked.connect(lambda *_, a=args: self.requeue_requested.emit(*a))
-        cell_layout.addWidget(btn)
-        return cell
+        btn.clicked.connect(lambda *_: on_click())
+        return btn
+
+    def show_preview(self, url: str):
+        self.card_video.set_expanded(True)
+        self.video_panel.load(url)
+
+    def release_video(self):
+        self.card_video.set_expanded(False)
+        self.video_panel.unload()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.release_video()
 
     def update_history(self, items: list[dict]):
         signature = [(s.get("db_id"), s.get("url")) for s in items]

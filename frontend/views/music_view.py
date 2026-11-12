@@ -175,6 +175,9 @@ class MusicView(BaseView):
     def update_history(self, items: list[dict]):
         self.history_panel.update_history(items)
 
+    def release_video_preview(self):
+        self.history_panel.release_video()
+
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)
 

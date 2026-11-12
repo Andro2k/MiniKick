@@ -32,7 +32,7 @@ def _as_url(token: str) -> str | None:
     return None
 
 
-def _youtube_video_id(url: str) -> str | None:
+def youtube_video_id(url: str) -> str | None:
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     if host not in _YT_HOSTS:
@@ -59,7 +59,7 @@ def classify_music_query(text: str) -> MusicQuery:
     if url is None:
         return MusicQuery(KIND_SEARCH, text)
 
-    video_id = _youtube_video_id(url)
+    video_id = youtube_video_id(url)
     if video_id:
         return MusicQuery(KIND_YOUTUBE_VIDEO, f"https://www.youtube.com/watch?v={video_id}")
     return MusicQuery(KIND_LINK, url)
