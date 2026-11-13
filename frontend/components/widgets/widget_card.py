@@ -13,7 +13,7 @@ class WidgetCard(ExpandableCard):
     def __init__(self, widget_id: str, title: str, desc: str, i18n, obs_overlay_url: str = "", parent=None):
         super().__init__(
             title=title, desc=desc, parent=parent, switch_enabled=True,
-            title_role="setting_title", desc_role="caption", header_margins=Size.Margin.MRG_LRG
+            title_role="text_setting_title", desc_role="text_caption", header_margins=Size.Margin.MRG_LRG
         )
         self.widget_id = widget_id
         self.i18n = i18n
@@ -52,7 +52,7 @@ class WidgetCard(ExpandableCard):
 
         if self.widget_id == "shoutout":
             lbl_tpl = QLabel(self.i18n.get("widgets.so.template_label"))
-            lbl_tpl.setProperty("role", "body")
+            lbl_tpl.setProperty("role", "text_body")
             self.txt_template = QLineEdit()
             self.txt_template.textChanged.connect(self._on_input_changed)
             self.specific_layout.addWidget(lbl_tpl)
@@ -66,7 +66,7 @@ class WidgetCard(ExpandableCard):
             g_layout.setContentsMargins(*Size.Margin.MRG_NON)
             g_layout.setSpacing(Size.SPACING_MD)
             lbl_count = QLabel(self.i18n.get("widgets.death.count_label"))
-            lbl_count.setProperty("role", "body")
+            lbl_count.setProperty("role", "text_body")
             self.spn_deaths = QSpinBox()
             self.spn_deaths.setRange(0, 99999)
             self.spn_deaths.valueChanged.connect(self._on_death_counter_changed)
@@ -90,7 +90,7 @@ class WidgetCard(ExpandableCard):
             gw_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gw_layout.setSpacing(Size.SPACING_MD)
             lbl_w = QLabel(self.i18n.get("widgets.score.wins_label"))
-            lbl_w.setProperty("role", "body")
+            lbl_w.setProperty("role", "text_body")
             self.spn_wins = QSpinBox()
             self.spn_wins.setRange(0, 9999)
             self.spn_wins.valueChanged.connect(self._on_score_counter_changed)
@@ -102,7 +102,7 @@ class WidgetCard(ExpandableCard):
             gl_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gl_layout.setSpacing(Size.SPACING_MD)
             lbl_l = QLabel(self.i18n.get("widgets.score.losses_label"))
-            lbl_l.setProperty("role", "body")
+            lbl_l.setProperty("role", "text_body")
             self.spn_losses = QSpinBox()
             self.spn_losses.setRange(0, 9999)
             self.spn_losses.valueChanged.connect(self._on_score_counter_changed)
@@ -127,7 +127,7 @@ class WidgetCard(ExpandableCard):
             gm_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gm_layout.setSpacing(Size.SPACING_MD)
             lbl_min = QLabel(self.i18n.get("widgets.explosion.min_emotes_label"))
-            lbl_min.setProperty("role", "body")
+            lbl_min.setProperty("role", "text_body")
             self.spn_min_emotes = QSpinBox()
             self.spn_min_emotes.setRange(1, 30)
             self.spn_min_emotes.valueChanged.connect(self._on_input_changed)
@@ -139,7 +139,7 @@ class WidgetCard(ExpandableCard):
             gp_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gp_layout.setSpacing(Size.SPACING_MD)
             lbl_parts = QLabel(self.i18n.get("widgets.explosion.particle_count_label"))
-            lbl_parts.setProperty("role", "body")
+            lbl_parts.setProperty("role", "text_body")
             self.spn_particle_count = QSpinBox()
             self.spn_particle_count.setRange(5, 100)
             self.spn_particle_count.valueChanged.connect(self._on_input_changed)
@@ -151,7 +151,7 @@ class WidgetCard(ExpandableCard):
             gpl_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gpl_layout.setSpacing(Size.SPACING_MD)
             lbl_platforms = QLabel(self.i18n.get("widgets.explosion.platforms_label"))
-            lbl_platforms.setProperty("role", "body")
+            lbl_platforms.setProperty("role", "text_body")
             gpl_layout.addWidget(lbl_platforms)
             self.chk_platforms = {}
             for platform, label in EXPLOSION_PLATFORMS.items():
@@ -173,7 +173,7 @@ class WidgetCard(ExpandableCard):
             gmc_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gmc_layout.setSpacing(Size.SPACING_MD)
             lbl_min_c = QLabel(self.i18n.get("widgets.combo.min_combo_label"))
-            lbl_min_c.setProperty("role", "body")
+            lbl_min_c.setProperty("role", "text_body")
             self.spn_min_combo = QSpinBox()
             self.spn_min_combo.setRange(2, 50)
             self.spn_min_combo.valueChanged.connect(self._on_input_changed)
@@ -185,7 +185,7 @@ class WidgetCard(ExpandableCard):
             gt_layout.setContentsMargins(*Size.Margin.MRG_NON)
             gt_layout.setSpacing(Size.SPACING_MD)
             lbl_tout = QLabel(self.i18n.get("widgets.combo.timeout_label"))
-            lbl_tout.setProperty("role", "body")
+            lbl_tout.setProperty("role", "text_body")
             self.spn_timeout_sec = QSpinBox()
             self.spn_timeout_sec.setRange(1, 30)
             self.spn_timeout_sec.valueChanged.connect(self._on_input_changed)
@@ -212,7 +212,7 @@ class WidgetCard(ExpandableCard):
         if self.obs_overlay_url:
             flow_obs = FlowLayout(margin=Size.Margin.MRG_NON, hspacing=Size.SPACING_LG, vspacing=Size.SPACING_MD)
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))
-            lbl_obs.setProperty("role", "body")
+            lbl_obs.setProperty("role", "text_body")
 
             btn_copy_obs = QPushButton(self.i18n.get("common.buttons.copy"))
             btn_copy_obs.setProperty("role", "action_outlined")

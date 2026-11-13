@@ -130,7 +130,7 @@ class TimersView(BaseView):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(*Size.Margin.MRG_HSM)
             lbl_none = QLabel("-")
-            lbl_none.setProperty("role", "body")
+            lbl_none.setProperty("role", "text_body")
             layout.addWidget(lbl_none)
             return container
 

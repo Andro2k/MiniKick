@@ -71,7 +71,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         col_length = create_col_layout(spacing=Size.SPACING_XS)
         lbl_length = QLabel(self.i18n.get("piper_dialog.param_length_scale"), params_container)
-        lbl_length.setProperty("role", "caption")
+        lbl_length.setProperty("role", "text_caption")
         lbl_length.setToolTip(self.i18n.get("piper_dialog.param_length_scale_desc"))
         self.spin_length = NoWheelDoubleSpinBox(params_container)
         self.spin_length.setRange(0.20, 3.00)
@@ -85,7 +85,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         col_noise = create_col_layout(spacing=Size.SPACING_XS)
         lbl_noise = QLabel(self.i18n.get("piper_dialog.param_noise_scale"), params_container)
-        lbl_noise.setProperty("role", "caption")
+        lbl_noise.setProperty("role", "text_caption")
         lbl_noise.setToolTip(self.i18n.get("piper_dialog.param_noise_scale_desc"))
         self.spin_noise = NoWheelDoubleSpinBox(params_container)
         self.spin_noise.setRange(0.00, 2.00)
@@ -99,7 +99,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         col_noise_w = create_col_layout(spacing=Size.SPACING_XS)
         lbl_noise_w = QLabel(self.i18n.get("piper_dialog.param_noise_w_scale"), params_container)
-        lbl_noise_w.setProperty("role", "caption")
+        lbl_noise_w.setProperty("role", "text_caption")
         lbl_noise_w.setToolTip(self.i18n.get("piper_dialog.param_noise_w_scale_desc"))
         self.spin_noise_w = NoWheelDoubleSpinBox(params_container)
         self.spin_noise_w.setRange(0.00, 2.00)
@@ -200,7 +200,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.scroll_layout.addWidget(self.catalog_card)
 
         self.lbl_empty_state = QLabel(self.i18n.get("piper_dialog.empty_search"), scroll_content)
-        self.lbl_empty_state.setProperty("role", "caption")
+        self.lbl_empty_state.setProperty("role", "text_caption")
         self.lbl_empty_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_empty_state.setContentsMargins(*Size.Margin.MRG_LRG)
         self.lbl_empty_state.hide()
@@ -214,7 +214,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         footer, footer_layout = build_dialog_footer(self.container)
         self.lbl_installed_count = QLabel(self)
-        self.lbl_installed_count.setProperty("role", "caption")
+        self.lbl_installed_count.setProperty("role", "text_caption")
         footer_layout.addWidget(self.lbl_installed_count, alignment=Qt.AlignmentFlag.AlignVCenter)
         footer_layout.addStretch(1)
 

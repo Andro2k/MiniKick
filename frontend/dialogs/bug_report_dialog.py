@@ -32,7 +32,7 @@ class BugReportDialog(ModernModal):
 
     def _setup_form(self):
         lbl_sev_header = QLabel(self.i18n.get("dialogs.bug_report.severity_title"))
-        lbl_sev_header.setProperty("role", "body")
+        lbl_sev_header.setProperty("role", "text_body")
         lbl_sev_header.setProperty("state", "bold")
 
         sev_layout = QHBoxLayout()
@@ -61,14 +61,14 @@ class BugReportDialog(ModernModal):
         contact_col, _ = create_labeled_field(
             self.i18n.get("dialogs.bug_report.lbl_contact"),
             self.txt_username,
-            role="body",
+            role="text_body",
             spacing=Size.SPACING_SM
         )
 
         logs_col = QVBoxLayout()
         logs_col.setSpacing(Size.SPACING_SM)
         lbl_logs = QLabel(self.i18n.get("dialogs.bug_report.lbl_diagnostics"))
-        lbl_logs.setProperty("role", "body")
+        lbl_logs.setProperty("role", "text_body")
         self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
         self.chk_logs.setChecked(True)
         self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -92,7 +92,7 @@ class BugReportDialog(ModernModal):
         desc_col, _ = create_labeled_field(
             self.i18n.get("dialogs.bug_report.lbl_description"),
             self.txt_desc,
-            role="body",
+            role="text_body",
             spacing=Size.SPACING_SM
         )
 
@@ -100,7 +100,7 @@ class BugReportDialog(ModernModal):
         image_col, _ = create_labeled_field(
             self.i18n.get("dialogs.bug_report.lbl_image"),
             self.dropzone,
-            role="body",
+            role="text_body",
             spacing=Size.SPACING_SM
         )
 

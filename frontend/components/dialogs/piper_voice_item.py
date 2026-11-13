@@ -35,13 +35,13 @@ class PiperVoiceItemWidget(QWidget):
         info_layout = create_col_layout(spacing=Size.SPACING_XS)
 
         self.lbl_name = QLabel(self.voice_meta.get("name", self.voice_id), self)
-        self.lbl_name.setProperty("role", "body")
+        self.lbl_name.setProperty("role", "text_body")
         self.lbl_name.setProperty("state", "bold")
 
         size_text = self.voice_meta.get("size_mb", "")
         quality_text = self.voice_meta.get("quality", "medium")
         self.lbl_sub = QLabel(f"{size_text} • {quality_text.capitalize()}", self)
-        self.lbl_sub.setProperty("role", "caption")
+        self.lbl_sub.setProperty("role", "text_caption")
 
         info_layout.addWidget(self.lbl_name)
         info_layout.addWidget(self.lbl_sub)

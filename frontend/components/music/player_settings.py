@@ -111,15 +111,15 @@ class MusicPlayerSettingsPanel(QWidget):
         info_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
-        self.lbl_song_title.setProperty("role", "h2")
+        self.lbl_song_title.setProperty("role", "text_h2")
         self.lbl_song_title.setWordWrap(True)
 
         self.lbl_song_artist = QLabel("-")
-        self.lbl_song_artist.setProperty("role", "body")
+        self.lbl_song_artist.setProperty("role", "text_body")
         self.lbl_song_artist.setWordWrap(True)
 
         self.lbl_song_requester = QLabel("-")
-        self.lbl_song_requester.setProperty("role", "caption")
+        self.lbl_song_requester.setProperty("role", "text_caption")
         self.lbl_song_requester.setWordWrap(True)
 
         info_layout.addWidget(self.lbl_song_title)
@@ -162,10 +162,10 @@ class MusicPlayerSettingsPanel(QWidget):
         time_layout.setContentsMargins(*Size.Margin.MRG_NON)
         time_layout.setSpacing(Size.SPACING_MD)
         self.lbl_time_elapsed = QLabel("00:00")
-        self.lbl_time_elapsed.setProperty("role", "caption")
+        self.lbl_time_elapsed.setProperty("role", "text_caption")
 
         self.lbl_time_total = QLabel("00:00")
-        self.lbl_time_total.setProperty("role", "caption")
+        self.lbl_time_total.setProperty("role", "text_caption")
 
         time_layout.addWidget(self.lbl_time_elapsed)
         time_layout.addStretch()
@@ -185,7 +185,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%")
-        self.lbl_vol_perc.setProperty("role", "body")
+        self.lbl_vol_perc.setProperty("role", "text_body")
 
         self.row_vol = SliderRow.minimal(self.i18n.get("music.player.volume_title"), self.i18n.get("music.player.volume_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_NON)
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
@@ -210,7 +210,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
         layout_setting_row = create_row_layout(spacing=Size.SPACING_MD)
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
-        lbl_layout.setProperty("role", "body")
+        lbl_layout.setProperty("role", "text_body")
         self.combo_music_layout = NoWheelComboBox(self)
         for layout_id, translation_key in _MUSIC_OVERLAY_LAYOUTS.items():
             self.combo_music_layout.addItem(self.i18n.get(translation_key), layout_id)
@@ -222,10 +222,10 @@ class MusicPlayerSettingsPanel(QWidget):
 
         preview_header = create_row_layout(spacing=Size.SPACING_MD)
         lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
-        lbl_preview.setProperty("role", "body")
+        lbl_preview.setProperty("role", "text_body")
 
         self.lbl_recommended_dim = QLabel(parent=self)
-        self.lbl_recommended_dim.setProperty("role", "caption")
+        self.lbl_recommended_dim.setProperty("role", "text_caption")
 
         preview_header.addWidget(lbl_preview)
         preview_header.addStretch()

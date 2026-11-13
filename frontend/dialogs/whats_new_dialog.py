@@ -45,7 +45,7 @@ class WhatsNewDialog(ModernModal):
 
     def _setup_content(self):
         lbl_subtitle = QLabel(self._subtitle_text, parent=self.container)
-        lbl_subtitle.setProperty("role", "body")
+        lbl_subtitle.setProperty("role", "text_body")
         lbl_subtitle.setWordWrap(True)
         lbl_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(lbl_subtitle)
@@ -101,10 +101,10 @@ class WhatsNewDialog(ModernModal):
         desc_text = item.get("desc") or (self.i18n.get(desc_key) if desc_key else "")
 
         lbl_title = QLabel(title_text, parent=card)
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "text_h2")
 
         lbl_desc = QLabel(desc_text, parent=card)
-        lbl_desc.setProperty("role", "caption")
+        lbl_desc.setProperty("role", "text_caption")
         lbl_desc.setWordWrap(True)
 
         text_col.addWidget(lbl_title)

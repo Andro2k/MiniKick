@@ -95,15 +95,15 @@ class TimerConfigWizard(ModernWizardPanel):
         name_field, _ = create_labeled_field(
             self.i18n.get("timer.dialog.name_label"),
             self.txt_name,
-            role="h2",
+            role="text_h2",
             parent=self
         )
         top_layout.addLayout(name_field)
 
-        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.platform_label"), role="h2", parent=self))
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.platform_label"), role="text_h2", parent=self))
         top_layout.addLayout(self._build_platform_switches_row())
 
-        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.intervals_label"), role="h2", parent=self))
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.intervals_label"), role="text_h2", parent=self))
 
         row_online = QHBoxLayout()
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval"))
@@ -151,15 +151,15 @@ class TimerConfigWizard(ModernWizardPanel):
         row_lines.addWidget(self.spin_lines)
         top_layout.addLayout(row_lines)
 
-        lbl_lines_desc = create_text_label(self.i18n.get("timer.dialog.chat_lines_desc"), role="caption")
+        lbl_lines_desc = create_text_label(self.i18n.get("timer.dialog.chat_lines_desc"), role="text_caption")
         top_layout.addWidget(lbl_lines_desc)
 
         basic_main_layout.addWidget(top_card)
 
         bottom_card, bottom_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
-        bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h2", parent=self))
+        bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="text_h2", parent=self))
 
-        lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="caption", parent=self)
+        lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="text_caption", parent=self)
         lbl_msgs_desc.setWordWrap(True)
         bottom_layout.addWidget(lbl_msgs_desc)
 
@@ -187,10 +187,10 @@ class TimerConfigWizard(ModernWizardPanel):
         filters_main_layout = create_col_layout(spacing=Size.SPACING_MD, margins=Size.Margin.MRG_NON, parent=self.tab_filters)
 
         help_card, help_layout = create_card_frame(role="card", margins=Size.Margin.MRG_LRG, spacing=Size.SPACING_MD)
-        lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="body", parent=self)
+        lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="text_body", parent=self)
         lbl_help_desc.setWordWrap(True)
 
-        help_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.help_title"), role="h2", parent=self))
+        help_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.help_title"), role="text_h2", parent=self))
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
@@ -201,18 +201,18 @@ class TimerConfigWizard(ModernWizardPanel):
         kw_field, _ = create_labeled_field(
             self.i18n.get("timer.dialog.keywords_label"),
             self.txt_keywords,
-            role="h2",
+            role="text_h2",
             parent=self
         )
         filt_layout.addLayout(kw_field)
 
-        lbl_keywords_desc = create_text_label(self.i18n.get("timer.dialog.keywords_desc"), role="caption", parent=self)
+        lbl_keywords_desc = create_text_label(self.i18n.get("timer.dialog.keywords_desc"), role="text_caption", parent=self)
         lbl_keywords_desc.setWordWrap(True)
         filt_layout.addWidget(lbl_keywords_desc)
 
         filt_layout.addSpacing(Size.SPACING_MD)
 
-        filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="h2", parent=self))
+        filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="text_h2", parent=self))
 
         self.search_category = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
@@ -228,7 +228,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.txt_categories.setPlaceholderText(self.i18n.get("timer.dialog.categories_placeholder"))
         filt_layout.addWidget(self.txt_categories)
 
-        lbl_cat_desc = create_text_label(self.i18n.get("timer.dialog.categories_desc"), role="caption")
+        lbl_cat_desc = create_text_label(self.i18n.get("timer.dialog.categories_desc"), role="text_caption")
         filt_layout.addWidget(lbl_cat_desc)
 
         filters_main_layout.addWidget(filt_card)

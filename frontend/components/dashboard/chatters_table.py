@@ -40,10 +40,10 @@ class DashboardChattersTable(ModernCard):
         title_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_title = QLabel(self.i18n.get("dashboard.chatters.title"), self)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "text_h2")
 
         self.lbl_subtitle = QLabel(self.i18n.get("dashboard.chatters.subtitle"), self)
-        self.lbl_subtitle.setProperty("role", "caption")
+        self.lbl_subtitle.setProperty("role", "text_caption")
 
         title_col.addWidget(self.lbl_title)
         title_col.addWidget(self.lbl_subtitle)
@@ -90,7 +90,7 @@ class DashboardChattersTable(ModernCard):
         lbl_banner_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_banner_msg = QLabel(self.i18n.get("dashboard.chatters.inactive_suggestion"), self.banner_inactive)
-        self.lbl_banner_msg.setProperty("role", "body")
+        self.lbl_banner_msg.setProperty("role", "text_body")
         self.lbl_banner_msg.setProperty("state", "warning")
         self.lbl_banner_msg.setWordWrap(True)
 
@@ -151,11 +151,11 @@ class DashboardChattersTable(ModernCard):
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_title = QLabel(self.i18n.get("dashboard.chatters.empty_title"), self.empty_widget)
-        self.lbl_empty_title.setProperty("role", "h2")
+        self.lbl_empty_title.setProperty("role", "text_h2")
         self.lbl_empty_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_desc = QLabel(self.i18n.get("dashboard.chatters.empty_desc"), self.empty_widget)
-        self.lbl_empty_desc.setProperty("role", "body")
+        self.lbl_empty_desc.setProperty("role", "text_body")
         self.lbl_empty_desc.setProperty("state", "normal")
         self.lbl_empty_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_empty_desc.setWordWrap(True)
@@ -285,7 +285,7 @@ class DashboardChattersTable(ModernCard):
             self.table.setCellWidget(row_idx, 2, lbl_plat)
 
             lbl_msgs = QLabel(f"{count:,}")
-            lbl_msgs.setProperty("role", "body")
+            lbl_msgs.setProperty("role", "text_body")
             lbl_msgs.setProperty("state", "white")
             lbl_msgs.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
             self.table.setCellWidget(row_idx, 3, lbl_msgs)
@@ -303,7 +303,7 @@ class DashboardChattersTable(ModernCard):
             pbar.setValue(min(100, int(share_pct)))
 
             lbl_pct = QLabel(f"{share_pct:.1f}%", share_widget)
-            lbl_pct.setProperty("role", "caption")
+            lbl_pct.setProperty("role", "text_caption")
             lbl_pct.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
             share_layout.addWidget(pbar, stretch=1)

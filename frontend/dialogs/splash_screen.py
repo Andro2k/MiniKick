@@ -66,7 +66,7 @@ class SplashScreen(QWidget):
         title_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_title = QLabel(self.i18n.get("splash.title"), parent=self.card)
-        self.lbl_title.setProperty("role", "h1")
+        self.lbl_title.setProperty("role", "text_h1")
         title_row.addWidget(self.lbl_title)
 
         if self.app_version:
@@ -79,7 +79,7 @@ class SplashScreen(QWidget):
         card_layout.addSpacing(6)
 
         self.lbl_subtitle = QLabel(self.i18n.get("splash.subtitle"), parent=self.card)
-        self.lbl_subtitle.setProperty("role", "caption")
+        self.lbl_subtitle.setProperty("role", "text_caption")
         self.lbl_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card_layout.addWidget(self.lbl_subtitle, 0, Qt.AlignmentFlag.AlignCenter)
 
@@ -101,7 +101,7 @@ class SplashScreen(QWidget):
         card_layout.addSpacing(12)
 
         self.lbl_status = QLabel(self.i18n.get("splash.loading"), parent=self.card)
-        self.lbl_status.setProperty("role", "caption")
+        self.lbl_status.setProperty("role", "text_caption")
         self.lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card_layout.addWidget(self.lbl_status, 0, Qt.AlignmentFlag.AlignCenter)
 

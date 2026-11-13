@@ -26,7 +26,7 @@ class DuplicateAlertModal(ModernModal):
 
     def _setup_content(self):
         lbl_desc = QLabel(self.i18n.get("alerts.dialogs.duplicate.desc"), self)
-        lbl_desc.setProperty("role", "body")
+        lbl_desc.setProperty("role", "text_body")
         lbl_desc.setWordWrap(True)
         self.content_layout.addWidget(lbl_desc)
 
@@ -36,9 +36,9 @@ class DuplicateAlertModal(ModernModal):
         src_row.setSpacing(Size.SPACING_SM)
 
         lbl_src_tag = QLabel(self.i18n.get("alerts.dialogs.duplicate.source_label"), self)
-        lbl_src_tag.setProperty("role", "caption")
+        lbl_src_tag.setProperty("role", "text_caption")
         lbl_src_val = QLabel(self.i18n.get(f"alerts.events.{self.source_event}"), self)
-        lbl_src_val.setProperty("role", "h2")
+        lbl_src_val.setProperty("role", "text_h2")
 
         src_row.addWidget(lbl_src_tag)
         src_row.addWidget(lbl_src_val)
@@ -47,7 +47,7 @@ class DuplicateAlertModal(ModernModal):
         self.content_layout.addWidget(source_card)
 
         lbl_targets = QLabel(self.i18n.get("alerts.dialogs.duplicate.target_label"), self)
-        lbl_targets.setProperty("role", "h2")
+        lbl_targets.setProperty("role", "text_h2")
         self.content_layout.addWidget(lbl_targets)
 
         self.btn_group_target = QButtonGroup(self)

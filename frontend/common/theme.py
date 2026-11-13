@@ -131,6 +131,7 @@ class Padding:
 
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
+    CHAT_FONT_FAMILY = "MesloLGM Nerd Font"
 
 
 class Size:
@@ -248,12 +249,12 @@ QDialog {{ background-color: {Palette.NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* --- 2. Typography Scale --- */
-QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
-QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
-QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
-QLabel[role="setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
+QLabel[role="text_body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
+QLabel[role="text_caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
+QLabel[role="text_setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
 QLabel[state="normal"]  {{ color: {Palette.NEUTRAL_400}; }}
 QLabel[state="white"]   {{ color: {Palette.NEUTRAL_050}; }}
 QLabel[state="error"]   {{ color: {BrandColors.RED}; }}
@@ -363,7 +364,7 @@ QLineEdit:read-only:focus, QTextEdit:read-only:focus, QPlainTextEdit:read-only:f
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border-color: {BrandColors.RED}; }}
 QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_750}; padding: {Padding.PAD_BASE}; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border-color: {BrandColors.PURPLE}; color: {BrandColors.PURPLE}; font-weight: 500; background-color: {Palette.NEUTRAL_950}; }}
-QTextEdit[role="ConsoleDisplay"] {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; font-family: 'GoogleSansCode Nerd Font';  border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
+QTextEdit[role="console_display"] {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; font-family: '{Typography.CHAT_FONT_FAMILY}'; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 
 /* ComboBox */
 QComboBox                           {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; min-width: 120px; }}

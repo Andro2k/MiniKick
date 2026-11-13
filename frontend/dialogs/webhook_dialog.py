@@ -67,7 +67,7 @@ class WebhookEndpointDialog(ModernModal):
 
         self.lbl_url_error = create_error_label(self)
         self.content_layout.addWidget(self.lbl_url_error)
-        self.lbl_http_warning = create_text_label(self.i18n.get("webhooks.dialog.http_warning"), role="caption", parent=self)
+        self.lbl_http_warning = create_text_label(self.i18n.get("webhooks.dialog.http_warning"), role="text_caption", parent=self)
         self.lbl_http_warning.setProperty("state", "warning")
         self.lbl_http_warning.hide()
         self.content_layout.addWidget(self.lbl_http_warning)
@@ -81,7 +81,7 @@ class WebhookEndpointDialog(ModernModal):
         secret_layout.setContentsMargins(*Size.Margin.MRG_NON)
         secret_layout.setSpacing(Size.SPACING_XS)
         secret_layout.addLayout(secret_field)
-        secret_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.secret_desc"), role="caption", parent=self))
+        secret_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.secret_desc"), role="text_caption", parent=self))
         self.content_layout.addWidget(self.secret_box)
 
         self.switch_reveal = ModernSwitch()
@@ -89,7 +89,7 @@ class WebhookEndpointDialog(ModernModal):
         reveal_box, _ = create_switch_field(self.switch_reveal, self.i18n.get("webhooks.dialog.show_secrets"), spacing=Size.SPACING_MD)
         self.content_layout.addLayout(reveal_box)
 
-        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.events_label"), role="h2", parent=self))
+        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.events_label"), role="text_h2", parent=self))
         events_grid = QGridLayout()
         events_grid.setSpacing(Size.SPACING_SM)
         self.event_checks: dict[str, QCheckBox] = {}
@@ -99,9 +99,9 @@ class WebhookEndpointDialog(ModernModal):
             self.event_checks[event_type] = check
             events_grid.addWidget(check, index // 2, index % 2)
         self.content_layout.addLayout(events_grid)
-        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.chat_warning"), role="caption", parent=self))
+        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.chat_warning"), role="text_caption", parent=self))
 
-        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.platforms_label"), role="h2", parent=self))
+        self.content_layout.addWidget(create_text_label(self.i18n.get("webhooks.dialog.platforms_label"), role="text_h2", parent=self))
         platforms_row = QHBoxLayout()
         platforms_row.setSpacing(Size.SPACING_LG)
         self.platform_switches: dict[str, ModernSwitch] = {}
@@ -117,7 +117,7 @@ class WebhookEndpointDialog(ModernModal):
 
         self.btn_test = ModernButton(self.i18n.get("webhooks.dialog.btn_test"), role="action_outlined")
         self.btn_test.clicked.connect(self._request_test)
-        self.lbl_ping = create_text_label("", role="caption", parent=self)
+        self.lbl_ping = create_text_label("", role="text_caption", parent=self)
         self.lbl_ping.hide()
         test_row = QHBoxLayout()
         test_row.setSpacing(Size.SPACING_MD)

@@ -81,7 +81,7 @@ class ModernTableCard(QFrame):
 
             if title_text:
                 self.lbl_title = QLabel(title_text, self.header_top_widget)
-                self.lbl_title.setProperty("role", "h2")
+                self.lbl_title.setProperty("role", "text_h2")
                 self.header_top_layout.insertWidget(0, self.lbl_title)
 
             if search_placeholder:
@@ -130,7 +130,7 @@ class ModernTableCard(QFrame):
         )
 
         self.lbl_no_results = QLabel(self.no_results_overlay)
-        self.lbl_no_results.setProperty("role", "body")
+        self.lbl_no_results.setProperty("role", "text_body")
         self.lbl_no_results.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_no_results.setWordWrap(True)
 
@@ -277,11 +277,11 @@ class ModernTableCard(QFrame):
         )
 
         lbl_title = QLabel(title)
-        lbl_title.setProperty("role", "h1")
+        lbl_title.setProperty("role", "text_h1")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_desc = QLabel(desc)
-        lbl_desc.setProperty("role", "body")
+        lbl_desc.setProperty("role", "text_body")
         lbl_desc.setWordWrap(True)
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_desc.setMaximumWidth(450)
@@ -477,7 +477,7 @@ class PlatformBadgeCell(QWidget):
 
         if not platforms:
             lbl_empty = QLabel("-", self)
-            lbl_empty.setProperty("role", "body")
+            lbl_empty.setProperty("role", "text_body")
             self.layout.addWidget(lbl_empty)
             return
 

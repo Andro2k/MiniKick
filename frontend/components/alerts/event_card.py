@@ -90,13 +90,13 @@ class AlertEventCard(QWidget):
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
 
         lbl_header_title = QLabel(f"{platform_name} • {event_name}", parent=self)
-        lbl_header_title.setProperty("role", "h2")
+        lbl_header_title.setProperty("role", "text_h2")
 
         self.badge_offline = create_badge(self.i18n.get("alerts.status.disconnected"), state="warning")
         self.badge_offline.setVisible(False)
 
         self.lbl_dirty = QLabel(self.i18n.get("alerts.status.unsaved"), parent=self)
-        self.lbl_dirty.setProperty("role", "caption")
+        self.lbl_dirty.setProperty("role", "text_caption")
         self.lbl_dirty.setProperty("state", "warning")
         self.lbl_dirty.setVisible(False)
 
@@ -311,7 +311,7 @@ class AlertEventCard(QWidget):
         self.slider_bg_opacity.valueChanged.connect(self._on_bg_opacity_changed)
 
         self.lbl_bg_opacity_val = QLabel("88%", parent=self)
-        self.lbl_bg_opacity_val.setProperty("role", "caption")
+        self.lbl_bg_opacity_val.setProperty("role", "text_caption")
         self.lbl_bg_opacity_val.setMinimumWidth(36)
 
         layout_bg_op.addWidget(self.slider_bg_opacity, 1)
@@ -583,7 +583,7 @@ class AlertEventCard(QWidget):
         self.slider_volume.valueChanged.connect(self._on_volume_changed)
 
         self.lbl_volume_val = QLabel("80%", parent=self)
-        self.lbl_volume_val.setProperty("role", "caption")
+        self.lbl_volume_val.setProperty("role", "text_caption")
         self.lbl_volume_val.setMinimumWidth(36)
 
         l_vol.addWidget(self.slider_volume, 1)
@@ -607,7 +607,7 @@ class AlertEventCard(QWidget):
         lbl_sec_prev_icon = QLabel(parent=self)
         lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg"))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
-        lbl_sec_prev_title.setProperty("role", "h2")
+        lbl_sec_prev_title.setProperty("role", "text_h2")
         sec_prev_header.addWidget(lbl_sec_prev_icon)
         sec_prev_header.addWidget(lbl_sec_prev_title)
         sec_prev_header.addStretch()

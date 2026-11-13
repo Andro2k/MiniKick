@@ -107,11 +107,11 @@ class AlertsView(BaseView):
         notice_text_col.setSpacing(Size.SPACING_XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
-        self.lbl_notice_title.setProperty("role", "h2")
+        self.lbl_notice_title.setProperty("role", "text_h2")
         self.lbl_notice_title.setProperty("state", "warning")
 
         self.lbl_notice_msg = QLabel(parent=self)
-        self.lbl_notice_msg.setProperty("role", "body")
+        self.lbl_notice_msg.setProperty("role", "text_body")
         self.lbl_notice_msg.setWordWrap(True)
 
         notice_text_col.addWidget(self.lbl_notice_title)

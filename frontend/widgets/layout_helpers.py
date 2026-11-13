@@ -46,7 +46,7 @@ def _assemble_field(
     box: QBoxLayout,
     widget: QWidget,
     label_text: str,
-    role: str = "h2",
+    role: str = "text_h2",
     label_first: bool = True,
     parent: QWidget | None = None
 ) -> tuple[QBoxLayout, QLabel]:
@@ -65,7 +65,7 @@ def _assemble_field(
 def create_labeled_field(
     label_text: str,
     widget: QWidget,
-    role: str = "h2",
+    role: str = "text_h2",
     spacing: int = Size.SPACING_XS,
     parent: QWidget | None = None
 ) -> tuple[QVBoxLayout, QLabel]:
@@ -76,7 +76,7 @@ def create_labeled_field(
 def create_switch_field(
     switch: QWidget,
     label_text: str,
-    role: str = "body",
+    role: str = "text_body",
     spacing: int = Size.SPACING_SM,
     parent: QWidget | None = None,
     label_first: bool = False
@@ -99,7 +99,7 @@ def create_box_layout(
 
 def create_text_label(
     text: str,
-    role: str = "caption",
+    role: str = "text_caption",
     word_wrap: bool = True,
     alignment: Qt.AlignmentFlag | None = None,
     parent: QWidget | None = None

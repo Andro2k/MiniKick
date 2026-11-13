@@ -59,7 +59,7 @@ class Sidebar(QFrame):
         self.logo_btn.setProperty("role", "btn_ghost")
 
         self.title_label = QLabel("MiniKick")
-        self.title_label.setProperty("role", "h2")
+        self.title_label.setProperty("role", "text_h2")
 
         plain_version = self.app_version.lstrip("vV")
         self.lbl_version = QLabel(f"v{plain_version}", self.header_container)
@@ -106,7 +106,7 @@ class Sidebar(QFrame):
 
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text.upper() if navigate_text else "")
-        self.lbl_navigate_header.setProperty("role", "caption")
+        self.lbl_navigate_header.setProperty("role", "text_caption")
         scroll_layout.addWidget(self.lbl_navigate_header)
 
         self.top_nav_layout = QVBoxLayout()
@@ -117,7 +117,7 @@ class Sidebar(QFrame):
 
         more_text = self.i18n.get("main.sidebar.section.more")
         self.lbl_more_header = QLabel(more_text.upper() if more_text else "")
-        self.lbl_more_header.setProperty("role", "caption")
+        self.lbl_more_header.setProperty("role", "text_caption")
         scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
@@ -183,12 +183,12 @@ class Sidebar(QFrame):
         card_layout.addLayout(top_row)
 
         self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
-        self.lbl_update_title.setProperty("role", "h2")
+        self.lbl_update_title.setProperty("role", "text_h2")
         self.lbl_update_title.setWordWrap(True)
         card_layout.addWidget(self.lbl_update_title)
 
         self.lbl_update_desc = QLabel(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", ""))
-        self.lbl_update_desc.setProperty("role", "caption")
+        self.lbl_update_desc.setProperty("role", "text_caption")
         self.lbl_update_desc.setWordWrap(True)
         card_layout.addWidget(self.lbl_update_desc)
 
@@ -221,10 +221,10 @@ class Sidebar(QFrame):
         self.profile_text_layout.setSpacing(Size.SPACING_XS)
 
         self.profile_name_lbl = QLabel()
-        self.profile_name_lbl.setProperty("role", "sidebar_section_header")
+        self.profile_name_lbl.setProperty("role", "text_section_header")
 
         self.profile_role_lbl = QLabel()
-        self.profile_role_lbl.setProperty("role", "caption")
+        self.profile_role_lbl.setProperty("role", "text_caption")
 
         self.profile_text_layout.addWidget(self.profile_name_lbl)
         self.profile_text_layout.addWidget(self.profile_role_lbl)
