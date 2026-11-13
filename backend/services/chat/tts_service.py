@@ -106,6 +106,7 @@ class TTSManager:
             if not clean_t:
                 logger.debug("[TTS Manager] Ignoring text that only contains emojis.")
                 return
+            self._trim_backlog()
             self.text_queue.put((clean_t, voice_id))
             logger.debug("[TTS Manager] Enqueued text (qsize=%d): '%s' (voice=%s)", self.text_queue.qsize(), clean_t[:35], voice_id or "default")
 
@@ -157,6 +158,24 @@ class TTSManager:
                     self.on_speech_finished()
                 except Exception as fin_err:
                     logger.debug("[TTS Manager] on_speech_finished on stop error: %s", fin_err)
+
+    _MAX_PENDING_SPEECH = 25
+
+    def _trim_backlog(self) -> None:
+        dropped = 0
+        while self.text_queue.qsize() + self.play_queue.qsize() >= self._MAX_PENDING_SPEECH:
+            source = self.play_queue if not self.play_queue.empty() else self.text_queue
+            try:
+                item = source.get_nowait()
+            except queue.Empty:
+                break
+            source.task_done()
+            if item is None:
+                source.put(None)
+                break
+            dropped += 1
+        if dropped:
+            logger.warning("[TTS Manager] Backlog full; skipped %d stale message(s).", dropped)
 
     def shutdown(self) -> None:
         if self._is_shutdown:

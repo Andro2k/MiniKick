@@ -76,6 +76,7 @@ class WidgetsController(QObject):
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
         self._combo_count = 0
+        self._last_explosion_at = 0.0
         self._recent_image_emotes: deque[dict] = deque(maxlen=20)
         self._timer = CountdownTimer()
         self._stopwatch = Stopwatch()
@@ -537,6 +538,8 @@ class WidgetsController(QObject):
             })
         self.command_service.send_response(msg, platform=platform)
 
+    _EXPLOSION_MIN_INTERVAL_S = 0.2
+
     @Slot(str, str, str, object)
     @Slot(str, str, str, object, str, str)
     @Slot(str, str, str, object, str, str, str)
@@ -572,16 +575,20 @@ class WidgetsController(QObject):
             logger.debug("[Widgets] explosion platform=%s emotes=%d enabled=%s", platform, len(image_emotes), platform_enabled)
 
             if platform_enabled and len(image_emotes) >= min_emotes:
-                self.overlay_server.trigger_widget_event("emote_explosion", {
-                    "emotes": image_emotes,
-                    "count": particle_count
-                })
+                now_mono = time.monotonic()
+                if now_mono - self._last_explosion_at >= self._EXPLOSION_MIN_INTERVAL_S:
+                    self._last_explosion_at = now_mono
+                    self.overlay_server.trigger_widget_event("emote_explosion", {
+                        "emotes": image_emotes,
+                        "count": particle_count
+                    })
 
         if combo_on:
             cfg_combo = w_combo.get("config", {})
             min_combo = int(cfg_combo.get("min_combo", 3))
             timeout_sec = float(cfg_combo.get("timeout_sec", 5.0))
             now = time.time()
+            combo_payload = None
 
             for emote_obj in emotes_list:
                 emote_name = emote_obj["name"]
@@ -593,13 +600,16 @@ class WidgetsController(QObject):
                 self._last_combo_time = now
 
                 if self._combo_count >= min_combo:
-                    self.overlay_server.trigger_widget_event("emote_combo", {
+                    combo_payload = {
                         "emote": emote_name,
                         "src": emote_obj.get("src", ""),
                         "type": emote_obj.get("type", "text"),
                         "count": self._combo_count,
                         "timeout_sec": timeout_sec
-                    })
+                    }
+
+            if combo_payload is not None:
+                self.overlay_server.trigger_widget_event("emote_combo", combo_payload)
 
     def _process_explosion_command(self, user: str, _args: str, platform: str = "kick"):
         if self.overlay_server:

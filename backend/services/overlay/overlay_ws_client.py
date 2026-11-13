@@ -109,6 +109,10 @@ class WebSocketClient:
             pass
         finally:
             self.lock.release()
+        try:
+            self.handler.connection.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
 
     def read_frame(self):
         try:

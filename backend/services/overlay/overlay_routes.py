@@ -15,6 +15,8 @@ from .overlay_ws_client import WebSocketClient
 
 logger = logging.getLogger("minikick.services.overlay.routes")
 
+_SSE_QUEUE_MAX = 1000
+
 def _is_within(base: str, target: str) -> bool:
     try:
         return os.path.commonpath([base, target]) == base
@@ -238,7 +240,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
         try:
             if hasattr(self, "connection") and self.connection:
-                self.connection.settimeout(30.0)
+                self.connection.settimeout(None)
         except Exception:
             pass
 
@@ -285,7 +287,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 if msg and isinstance(msg, str):
                     try:
                         data = fast_loads(msg)
-                        if data.get("type") == "alert_finished":
+                        if data.get("type") == "ping":
+                            ws_client.send_json({"type": "pong"})
+                        elif data.get("type") == "alert_finished":
                             cb = getattr(self.server.manager, "on_alert_finished", None)
                             if cb:
                                 cb(data.get("id"))
@@ -430,7 +434,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        client_queue = queue.Queue()
+        client_queue = queue.Queue(maxsize=_SSE_QUEUE_MAX)
         client_list = getattr(self.server.manager, client_attr)
         with self.server.manager.lock:
             client_list.append(client_queue)

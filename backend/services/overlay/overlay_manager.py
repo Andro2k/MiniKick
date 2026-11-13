@@ -5,6 +5,7 @@ from .overlay_ws_client import WebSocketClient
 from backend.utils import fast_dumps
 import logging
 import os
+import queue
 import secrets
 import threading
 import time
@@ -170,7 +171,10 @@ class OverlayServerManager:
         with self.lock:
             clients_copy = list(clients_list)
         for client_queue in clients_copy:
-            client_queue.put(payload)
+            try:
+                client_queue.put_nowait(payload)
+            except queue.Full:
+                logger.debug("[OverlayServer] SSE client queue full; dropping event.")
 
         with self.ws_lock:
             ws_copy = list(self.ws_clients.get(ws_topic, []))
@@ -327,6 +331,18 @@ class OverlayServerManager:
             events.append(payload)
         return events
 
+    @staticmethod
+    def _signal_stop(client_queue: queue.Queue) -> None:
+        for _ in range(2):
+            try:
+                client_queue.put_nowait(None)
+                return
+            except queue.Full:
+                try:
+                    client_queue.get_nowait()
+                except queue.Empty:
+                    pass
+
     def stop(self):
         if self.server:
             with self.ws_lock:
@@ -341,7 +357,7 @@ class OverlayServerManager:
                 widget_copy = list(self.widget_clients)
 
             for q in clients_copy + chat_copy + music_copy + widget_copy:
-                q.put(None)
+                self._signal_stop(q)
 
             self.server.shutdown()
             self.server.server_close()
