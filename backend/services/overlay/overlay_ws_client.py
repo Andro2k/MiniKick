@@ -2,11 +2,14 @@
 
 from backend.utils import fast_dumps
 import logging
+import queue
 import socket
 import struct
 import threading
 
 logger = logging.getLogger("minikick.services.overlay.websocket")
+
+_MAX_PENDING_FRAMES = 500
 
 class WebSocketClient:
     def __init__(self, handler, topic: str, token: str):
@@ -17,6 +20,9 @@ class WebSocketClient:
         self.token = token
         self.closed = False
         self.lock = threading.Lock()
+        self._out: queue.Queue = queue.Queue(maxsize=_MAX_PENDING_FRAMES)
+        self._writer: threading.Thread | None = None
+        self._writer_lock = threading.Lock()
 
     def send_json(self, data: dict):
         if self.closed:
@@ -43,12 +49,41 @@ class WebSocketClient:
             header.append(127)
             header.extend(struct.pack(">Q", payload_len))
 
-        with self.lock:
+        self._ensure_writer()
+        try:
+            self._out.put_nowait(bytes(header + payload))
+        except queue.Full:
+            logger.warning('[WebSocketClient] Client on topic "%s" is not reading; dropping it.', self.topic)
+            self._abort()
+
+    def _ensure_writer(self) -> None:
+        with self._writer_lock:
+            if self._writer is None:
+                self._writer = threading.Thread(
+                    target=self._writer_loop, name=f"OverlayWsWriter-{self.topic}", daemon=True
+                )
+                self._writer.start()
+
+    def _writer_loop(self) -> None:
+        while not self.closed:
             try:
-                self.wfile.write(header + payload)
-                self.wfile.flush()
-            except Exception:
-                self.closed = True
+                frame = self._out.get(timeout=1.0)
+            except queue.Empty:
+                continue
+            with self.lock:
+                try:
+                    self.wfile.write(frame)
+                    self.wfile.flush()
+                except Exception:
+                    self._abort()
+                    return
+
+    def _abort(self) -> None:
+        self.closed = True
+        try:
+            self.handler.connection.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            pass
 
     def send_pong(self, body: bytes = b""):
         if self.closed:
@@ -65,12 +100,15 @@ class WebSocketClient:
         if self.closed:
             return
         self.closed = True
+        if not self.lock.acquire(timeout=0.5):
+            return
         try:
-            with self.lock:
-                self.wfile.write(bytearray([0x88, 0x00]))
-                self.wfile.flush()
+            self.wfile.write(bytearray([0x88, 0x00]))
+            self.wfile.flush()
         except Exception:
             pass
+        finally:
+            self.lock.release()
 
     def read_frame(self):
         try:

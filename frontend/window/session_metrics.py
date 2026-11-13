@@ -3,7 +3,9 @@
 import logging
 from typing import Callable
 
-from PySide6.QtCore import QObject, QTimer, Signal
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
+
+from backend.utils.db_background import submit_db_write
 
 logger = logging.getLogger("minikick.core")
 
@@ -11,9 +13,11 @@ logger = logging.getLogger("minikick.core")
 class SessionMetrics(QObject):
     refresh_requested = Signal()
     analytics_loaded = Signal(dict)
+    _analytics_ready = Signal(object)
 
     PLATFORMS = ("kick", "twitch", "youtube", "tiktok")
     _REFRESH_DEBOUNCE_MS = 300
+    _ANALYTICS_RERUN_DELAY_MS = 1500
 
     def __init__(
         self,
@@ -31,6 +35,10 @@ class SessionMetrics(QObject):
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.setInterval(self._REFRESH_DEBOUNCE_MS)
         self._refresh_timer.timeout.connect(self.refresh_requested.emit)
+        self._analytics_inflight = False
+        self._analytics_pending = False
+        self._stopped = False
+        self._analytics_ready.connect(self._on_analytics_ready)
 
     @property
     def messages_processed(self) -> int:
@@ -74,7 +82,41 @@ class SessionMetrics(QObject):
         self.analytics_loaded.emit(analytics)
         return True
 
+    def request_analytics_refresh(self) -> None:
+        """Reload analytics off the UI thread; bursts are coalesced into one rerun."""
+        if self._stopped:
+            return
+        if self._analytics_inflight:
+            self._analytics_pending = True
+            return
+        self._analytics_inflight = True
+        self._analytics_pending = False
+        submit_db_write(self._load_analytics_in_background)
+
+    def _load_analytics_in_background(self) -> None:
+        try:
+            analytics = self._analytics_provider()
+        except Exception:
+            logger.exception("[Metrics] Error reading analytics.")
+            analytics = None
+        self._analytics_ready.emit(analytics)
+
+    @Slot(object)
+    def _on_analytics_ready(self, analytics) -> None:
+        self._analytics_inflight = False
+        if self._stopped:
+            return
+        if isinstance(analytics, dict):
+            self._total_usages = analytics.get("total_command_usages", 0)
+            self._active_timers = analytics.get("active_timers", 0)
+            self.analytics_loaded.emit(analytics)
+            self.refresh_requested.emit()
+        if self._analytics_pending:
+            self._analytics_pending = False
+            QTimer.singleShot(self._ANALYTICS_RERUN_DELAY_MS, self.request_analytics_refresh)
+
     def stop(self) -> None:
+        self._stopped = True
         self._refresh_timer.stop()
 
     def _schedule_refresh(self) -> None:

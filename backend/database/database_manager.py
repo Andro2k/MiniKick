@@ -1,6 +1,7 @@
 # backend\database\database_manager.py
 
 import os
+import threading
 from backend.utils import fast_loads, fast_dumps
 import time
 import sqlite3
@@ -11,6 +12,8 @@ from .migrations import MIGRATIONS
 logger = logging.getLogger("minikick.database")
 
 CURRENT_SCHEMA_VERSION = max(version for version, _ in MIGRATIONS)
+_UI_THREAD_BUSY_TIMEOUT_MS = 5000
+_WORKER_THREAD_BUSY_TIMEOUT_MS = 30000
 _CORRUPTION_KEYWORDS = ("malformed", "corrupt", "integrity", "quick check", "not a database")
 
 def _is_corruption_error(error: Exception) -> bool:
@@ -74,9 +77,11 @@ class DatabaseManager:
                 raise e
 
     def _open_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
+        on_ui_thread = threading.current_thread() is threading.main_thread()
+        busy_ms = _UI_THREAD_BUSY_TIMEOUT_MS if on_ui_thread else _WORKER_THREAD_BUSY_TIMEOUT_MS
+        conn = sqlite3.connect(self.db_name, timeout=busy_ms / 1000.0, factory=AutoCloseConnection)
         try:
-            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute(f"PRAGMA busy_timeout={busy_ms}")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")

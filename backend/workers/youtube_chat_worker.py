@@ -1,6 +1,7 @@
 # backend\workers\youtube_chat_worker.py
 
 import datetime
+import time
 import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import YouTubeChatProvider
@@ -98,7 +99,8 @@ class YouTubeChatWorker(QThread):
             sender_id=sender_id,
             timestamp=now_str,
             platform="youtube",
-            emotes_tag=emotes_tag
+            emotes_tag=emotes_tag,
+            received_at=time.monotonic(),
         )
         self.message_received.emit(dto)
 

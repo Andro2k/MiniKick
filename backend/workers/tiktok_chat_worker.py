@@ -1,6 +1,7 @@
 # backend\workers\tiktok_chat_worker.py
 
 import datetime
+import time
 import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TikTokChatProvider
@@ -104,7 +105,8 @@ class TikTokChatWorker(QThread):
             sender_id=0,
             timestamp=now_str,
             platform="tiktok",
-            emotes_tag=emotes_tag
+            emotes_tag=emotes_tag,
+            received_at=time.monotonic(),
         )
         self.message_received.emit(dto)
 

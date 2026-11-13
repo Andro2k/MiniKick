@@ -2,6 +2,7 @@
 
 import logging
 import datetime
+import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchSocketManager
 from backend.services.chat import ChatMessageDTO
@@ -123,7 +124,8 @@ class TwitchChatWorker(QThread):
             platform="twitch",
             emotes_tag=emotes_tag,
             gif_url=gif_url,
-            avatar_url=avatar_url
+            avatar_url=avatar_url,
+            received_at=time.monotonic(),
         )
         self.message_received.emit(dto)
 
