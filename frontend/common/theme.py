@@ -593,24 +593,24 @@ QHeaderView::section:pressed {{ background-color: {Palette.NEUTRAL_750}; }}
 QWidget[role="table_no_results"] {{ background-color: {Palette.NEUTRAL_950}; }}
 
 /* Scrollbars: pista visible, flechas en los extremos y handle dentro de la pista */
-QScrollBar:vertical                 {{ border: none; background-color: {Palette.NEUTRAL_900}; width: 14px; margin: 14px 0px 14px 0px; }}
+QScrollBar:vertical                 {{ border: none; background-color: {Palette.NEUTRAL_900}; border-radius: 7px; width: 14px; margin: 14px 0px 14px 0px; }}
 QScrollBar::handle:vertical         {{ background-color: {Palette.NEUTRAL_700}; border-radius: {Size.Radius.RAD_XXS}px; min-height: 28px; margin: 0px 3px 0px 3px; }}
 QScrollBar::handle:vertical:hover   {{ background-color: {Palette.NEUTRAL_600}; }}
 QScrollBar::handle:vertical:pressed {{ background-color: {Palette.NEUTRAL_500}; }}
-QScrollBar::sub-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: top; height: 14px; width: 14px; background-color: {Palette.NEUTRAL_900}; border: none; }}
-QScrollBar::add-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: bottom; height: 14px; width: 14px; background-color: {Palette.NEUTRAL_900}; border: none; }}
-QScrollBar::sub-line:vertical:hover, QScrollBar::add-line:vertical:hover {{ background-color: {Palette.NEUTRAL_750}; }}
+QScrollBar::sub-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: top; height: 14px; width: 14px; background: transparent; border: none; }}
+QScrollBar::add-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: bottom; height: 14px; width: 14px; background: transparent; border: none; }}
+QScrollBar::sub-line:vertical:hover, QScrollBar::add-line:vertical:hover {{ background-color: {Palette.NEUTRAL_750}; border-radius: 7px; }}
 QScrollBar::up-arrow:vertical       {{ image: url("{PATH_SCROLL_UP}"); width: 10px; height: 10px; }}
 QScrollBar::down-arrow:vertical     {{ image: url("{PATH_SCROLL_DW}"); width: 10px; height: 10px; }}
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
 
-QScrollBar:horizontal                   {{ border: none; background-color: {Palette.NEUTRAL_900}; height: 14px; margin: 0px 14px 0px 14px; }}
+QScrollBar:horizontal                   {{ border: none; background-color: {Palette.NEUTRAL_900}; border-radius: 7px; height: 14px; margin: 0px 14px 0px 14px; }}
 QScrollBar::handle:horizontal           {{ background-color: {Palette.NEUTRAL_700}; border-radius: {Size.Radius.RAD_XXS}px; min-width: 28px; margin: 3px 0px 3px 0px; }}
 QScrollBar::handle:horizontal:hover     {{ background-color: {Palette.NEUTRAL_600}; }}
 QScrollBar::handle:horizontal:pressed   {{ background-color: {Palette.NEUTRAL_500}; }}
-QScrollBar::sub-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: left; width: 14px; height: 14px; background-color: {Palette.NEUTRAL_900}; border: none; }}
-QScrollBar::add-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: right; width: 14px; height: 14px; background-color: {Palette.NEUTRAL_900}; border: none; }}
-QScrollBar::sub-line:horizontal:hover, QScrollBar::add-line:horizontal:hover {{ background-color: {Palette.NEUTRAL_750}; }}
+QScrollBar::sub-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: left; width: 14px; height: 14px; background: transparent; border: none; }}
+QScrollBar::add-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: right; width: 14px; height: 14px; background: transparent; border: none; }}
+QScrollBar::sub-line:horizontal:hover, QScrollBar::add-line:horizontal:hover {{ background-color: {Palette.NEUTRAL_750}; border-radius: 7px; }}
 QScrollBar::left-arrow:horizontal       {{ image: url("{PATH_SCROLL_LF}"); width: 10px; height: 10px; }}
 QScrollBar::right-arrow:horizontal      {{ image: url("{PATH_SCROLL_RT}"); width: 10px; height: 10px; }}
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}

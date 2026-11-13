@@ -44,6 +44,7 @@ class WebhooksView(BaseView):
         )
 
         self.table = self.table_card.table
+        self.table.setSelectionMode(self.table.SelectionMode.NoSelection)
         self.txt_search = self.table_card.txt_search
         self.btn_new_add = self.table_card.btn_add
         self.txt_search.textChanged.connect(self.search_text_changed.emit)

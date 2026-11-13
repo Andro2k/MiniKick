@@ -272,6 +272,22 @@ class SQLiteMusicStorage:
             logger.error("[SQLiteMusicStorage] Error loading history: %s", e)
         return []
 
+    def find_history_entry(self, provider: str, url: str) -> dict | None:
+        if not self.db_manager or not url:
+            return None
+        try:
+            with self.db_manager.get_connection() as conn:
+                row = conn.execute(
+                    "SELECT title, artist, url, duration FROM music_queue "
+                    "WHERE provider = ? AND url = ? ORDER BY id DESC LIMIT 1",
+                    (provider, url)
+                ).fetchone()
+            if row:
+                return {"title": row[0], "artist": row[1], "url": row[2], "duration": row[3] or "-"}
+        except Exception as e:
+            logger.error("[SQLiteMusicStorage] Error finding history entry: %s", e)
+        return None
+
     def load_pending_songs(self, provider: str) -> list[dict]:
         if not self.db_manager:
             return []

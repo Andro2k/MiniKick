@@ -319,10 +319,13 @@ class MusicController(QObject):
         if not url or not self.music_provider:
             return
         logger.info("[User Action] Re-queued song from history")
-        ok, _msg = self.music_provider.add_to_queue(
-            url, requester=requester or None, platform=platform or "kick", max_duration_min=0
+        ok, _msg = self.music_provider.requeue_from_history(
+            url, requester=requester or None, platform=platform or "kick"
         )
-        if ok and self.toast:
+        if not ok:
+            return
+        self.handle_preview_video(url)
+        if self.toast:
             self.toast.show_toast(self.i18n.get("music.header.title"), self.i18n.get("music.toast.requeued"), "success")
 
     @Slot(str)

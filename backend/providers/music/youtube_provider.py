@@ -192,7 +192,7 @@ class YouTubeMusicProvider(QObject):
                     except Exception:
                         pass
 
-                song_entry = {
+                self._enqueue_known_song({
                     "title": cached["title"],
                     "artist": cached["artist"],
                     "url": cached["url"],
@@ -201,28 +201,7 @@ class YouTubeMusicProvider(QObject):
                     "requester": requester,
                     "platform": platform,
                     "duration": dur_str
-                }
-                if self.music_storage:
-                    db_id = self.music_storage.add_song_to_queue(
-                        title=song_entry["title"],
-                        artist=song_entry["artist"],
-                        url=song_entry["url"],
-                        requester=requester,
-                        provider="youtube",
-                        platform=platform,
-                        duration=song_entry.get("duration", "-")
-                    )
-                    song_entry["db_id"] = db_id
-                self.queue.append(song_entry)
-                self.queue_updated.emit()
-                if not self.current_song:
-                    if self.auto_resume:
-                        QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
-                    else:
-                        QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
-                else:
-                    self._preload_next_song()
-                
+                })
                 success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
                 return True, success_msg
 
@@ -259,6 +238,38 @@ class YouTubeMusicProvider(QObject):
         worker.start()
 
         return True, immediate_msg
+
+    def _enqueue_known_song(self, song_entry: dict) -> None:
+        if self.music_storage:
+            song_entry["db_id"] = self.music_storage.add_song_to_queue(
+                title=song_entry["title"],
+                artist=song_entry["artist"],
+                url=song_entry["url"],
+                requester=song_entry.get("requester"),
+                provider="youtube",
+                platform=song_entry.get("platform", "kick"),
+                duration=song_entry.get("duration", "-")
+            )
+        self.queue.append(song_entry)
+        self.queue_updated.emit()
+        if not self.current_song:
+            QTimer.singleShot(0, lambda: self._play_next(start_playing=self.auto_resume))
+        else:
+            self._preload_next_song()
+
+    def requeue_from_history(self, url: str, requester: str = None, platform: str = "kick") -> tuple[bool, str]:
+        known = self.music_storage.find_history_entry("youtube", url) if self.music_storage else None
+        if not known:
+            return self.add_to_queue(url, requester=requester, platform=platform, max_duration_min=0)
+        local_path = self.find_cached_media(url)
+        self._enqueue_known_song({
+            **known,
+            "resolved": bool(local_path),
+            "stream_url": local_path,
+            "requester": requester,
+            "platform": platform,
+        })
+        return True, self.i18n.get("music.queue.success").replace("{track}", f"{known['title']} - {known['artist']}")
 
     @Slot(bool, str)
     def _on_search_worker_completed(self, success: bool, message: str) -> None:
