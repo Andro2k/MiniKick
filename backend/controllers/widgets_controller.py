@@ -8,6 +8,7 @@ import time
 from collections import deque
 from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
+from backend.utils.db_background import flush_db_writes
 from backend.services import WidgetService, CommandService
 from backend.services.system.clock_service import CountdownTimer, Stopwatch, parse_duration
 from backend.utils import extract_emotes
@@ -798,5 +799,6 @@ class WidgetsController(QObject):
             try:
                 self.widget_service.save_daily_chatters_batch(self._current_chatters_date, self._chatters_counts)
                 self._chatters_dirty = False
+                flush_db_writes(3.0)
             except Exception as e:
                 logger.error("[WidgetsController] Error saving chatters batch on cleanup: %s", e)

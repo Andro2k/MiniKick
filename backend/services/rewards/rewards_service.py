@@ -3,6 +3,7 @@
 import os
 import logging
 from .thumbnail_service import generate_media_thumbnail
+from backend.utils.db_background import submit_db_write
 
 logger = logging.getLogger("minikick.services.rewards")
 
@@ -64,6 +65,6 @@ class RewardsService:
     def log_redemption(self, reward_name: str, username: str, platform: str = "kick"):
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
             try:
-                self.storage.db_manager.log_reward_redemption(reward_name, username, platform=platform)
+                submit_db_write(self.storage.db_manager.log_reward_redemption, reward_name, username, platform=platform)
             except Exception as e:
                 logger.error("[RewardsService] Error logging redemption for '%s': %s", reward_name, e)

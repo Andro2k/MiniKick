@@ -7,6 +7,7 @@ from contextlib import contextmanager
 
 from PySide6.QtCore import QObject, QTimer, Signal
 from backend.utils import sanitize_command_trigger
+from backend.utils.db_background import submit_db_write
 
 logger = logging.getLogger("minikick.services.chat.commands")
 
@@ -317,7 +318,7 @@ class CommandService(QObject):
         )
 
         try:
-            self.storage.log_command_execution(trigger, user, platform=platform)
+            submit_db_write(self.storage.log_command_execution, trigger, user, platform=platform)
         except Exception as e:
             logger.error("[CommandService] Error logging command execution: %s", e)
 

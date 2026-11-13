@@ -2,6 +2,7 @@
 
 import logging
 from backend.database import SQLiteWidgetsStorage
+from backend.utils.db_background import submit_db_write
 
 logger = logging.getLogger("minikick.services.widgets")
 
@@ -214,7 +215,8 @@ class WidgetService:
         return self.storage.load_daily_chatters(date_str)
 
     def save_daily_chatters_batch(self, date_str: str, chatters_map: dict[str, dict]) -> None:
-        self.storage.save_daily_chatters_batch(date_str, chatters_map)
+        snapshot = {k: dict(v) for k, v in chatters_map.items()}
+        submit_db_write(self.storage.save_daily_chatters_batch, date_str, snapshot)
 
     def clear_daily_chatters(self, date_str: str) -> None:
         self.storage.clear_daily_chatters(date_str)

@@ -5,6 +5,7 @@ import re
 from collections import deque
 
 from backend.utils.youtube_url import is_youtube_link
+from backend.utils.db_background import submit_db_write
 
 logger = logging.getLogger("minikick.services.chat.spam")
 
@@ -172,7 +173,8 @@ class SpamService:
         )
 
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
-            self.storage.db_manager.log_spam_violation(
+            submit_db_write(
+                self.storage.db_manager.log_spam_violation,
                 username=user,
                 sender_id=sender_id,
                 filter_id=filter_id,
