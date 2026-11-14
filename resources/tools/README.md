@@ -29,7 +29,7 @@ python resources/tools/project_quality_suite.py --verbose
 | `project_duplicate_definition_auditor.py` | Backend, frontend, bootstrap, resources; selectable | Functions, methods, classes, class attributes, and dict keys defined twice in the same scope (the last one silently wins) |
 | `project_scope_coverage_auditor.py` | Whole project (tracked and new untracked `.py`) | Top-level folders no tool covers, unparsable files, tool exceptions that cite renamed/deleted files, auditors missing from the suite |
 | `project_dead_code_auditor.py` | Backend and frontend; selectable | Orphan Python files, unused symbols, and unused imports |
-| `project_file_placement_auditor.py` | Backend and frontend | Canonical folder placement and file naming rules |
+| `project_file_placement_auditor.py` | Backend and frontend | Canonical folder placement and the `<topic>_<role>.py` naming convention (`NAMING_RULES`) |
 | `project_unused_parameter_auditor.py` | Backend and frontend; selectable | Unused parameters, base-class hooks, and Qt callback parameters |
 | `project_translation_integrity_auditor.py` | Project translations and Python sources | Locale key parity, missing or unused keys, and placeholder parity |
 | `project_icon_integrity_tool.py` | Backend, frontend, and app entry point | Missing, unused, and malformed icon assets; also supports explicit cleanup |

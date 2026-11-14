@@ -54,6 +54,71 @@ REVERSE_PLACEMENT_RULES: Dict[str, str] = {
     "*_view.py": "frontend/views",
 }
 
+# Convención de nombres <tema>_<rol>.py: cada carpeta exige el sufijo de su rol.
+# "recursive" revisa también las subcarpetas; "exceptions" son nombres con rol propio.
+NAMING_RULES: Dict[str, Dict[str, object]] = {
+    "backend/interfaces": {"patterns": ["*_interface.py"]},
+    "backend/models": {"patterns": ["*_models.py"]},
+    "backend/core": {"patterns": ["*_core.py"]},
+    "backend/utils": {"patterns": ["*_utils.py"], "exceptions": ["chat_command_config.py"]},
+    "backend/handlers": {"patterns": ["*_handler.py"], "exceptions": ["command_help_formatter.py"]},
+    "backend/connections": {
+        "patterns": ["*_connection.py"],
+        "exceptions": ["connection_hub.py", "worker_slot.py", "worker_shutdown.py"],
+    },
+    "backend/providers": {"patterns": ["*_provider.py"], "recursive": True},
+    "backend/services": {
+        "patterns": ["*_service.py", "webhook_*.py"],
+        "recursive": True,
+        "exceptions": [
+            "chat_pipeline.py", "alerts_queue.py",
+            "overlay_manager.py", "overlay_routes.py", "overlay_ws_client.py",
+        ],
+    },
+    "frontend/dialogs": {"patterns": ["*_dialog.py"], "exceptions": ["splash_screen.py", "update_flow.py"]},
+    "frontend/navigation": {"patterns": ["*_component.py"]},
+    "frontend/components": {
+        "patterns": ["*_panel.py", "*_card.py", "*_widget.py", "*_mockup.py", "*_utils.py"],
+        "recursive": True,
+    },
+    "frontend/window": {
+        "patterns": [
+            "*_coordinator.py", "*_presenter.py", "*_handler.py", "*_router.py", "*_manager.py",
+            "*_tracker.py", "*_cache.py", "*_protocols.py",
+        ],
+        "exceptions": ["main_window_core.py", "view_factory.py", "view_prewarmer.py"],
+    },
+}
+
+
+def audit_naming_convention() -> List[PlacementViolation]:
+    violations: List[PlacementViolation] = []
+    for folder_rel, rule in NAMING_RULES.items():
+        folder_abs = os.path.join(PROJECT_ROOT, os.path.normpath(folder_rel))
+        if not os.path.isdir(folder_abs):
+            continue
+        allowed = list(rule["patterns"]) + list(rule.get("exceptions", []))
+        for root, dirs, files in os.walk(folder_abs):
+            dirs[:] = [d for d in dirs if d not in IGNORED_DIRECTORIES]
+            if not rule.get("recursive"):
+                dirs[:] = []
+            for file in files:
+                if not file.endswith(".py") or file == "__init__.py":
+                    continue
+                if any(fnmatch.fnmatch(file, pat) for pat in allowed):
+                    continue
+                rel_file = os.path.relpath(os.path.join(root, file), PROJECT_ROOT).replace("\\", "/")
+                violations.append(
+                    PlacementViolation(
+                        file_path=rel_file,
+                        rule_id="NAMING_CONVENTION_VIOLATION",
+                        rule_category="Naming Convention",
+                        message=f"Archivo '{file}' no sigue la convención <tema>_<rol>.py de '{folder_rel}'. Patrones admitidos: {allowed}.",
+                        expected_location=os.path.relpath(root, PROJECT_ROOT).replace("\\", "/"),
+                    )
+                )
+    return violations
+
 
 def audit_file_placements() -> List[PlacementViolation]:
     violations: List[PlacementViolation] = []
@@ -120,6 +185,7 @@ def audit_file_placements() -> List[PlacementViolation]:
                             )
                         )
 
+    violations.extend(audit_naming_convention())
     return violations
 
 
