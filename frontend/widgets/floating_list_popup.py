@@ -1,4 +1,5 @@
 # frontend\widgets\floating_list_popup.py
+"""Base de las listas desplegables flotantes."""
 
 from PySide6.QtCore import Qt, QEvent, QPoint
 from PySide6.QtWidgets import QApplication, QFrame, QListWidget, QListWidgetItem, QVBoxLayout, QWidget

@@ -1,0 +1,424 @@
+# frontend\components\music\player_settings_panel.py
+"""Panel de ajustes del reproductor, con barra de progreso."""
+
+import html
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
+from PySide6.QtCore import Signal, Qt, QTimer, QSize
+from frontend.common import get_icon, get_icon_colored, BrandColors, Size
+from frontend.widgets import ModernCard, ExpandableCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider, create_row_layout, create_col_layout
+from .music_mockup import MusicOverlayMockupWidget
+from .video_preview_panel import HIDE_GRACE_MS, MusicVideoPreviewPanel
+
+_MUSIC_OVERLAY_LAYOUTS = {
+    "classic": "music.overlay.layout_classic",
+    "vinyl": "music.overlay.layout_vinyl",
+}
+_DEFAULT_MUSIC_OVERLAY_LAYOUT = "classic"
+
+def _format_time(ms: int) -> str:
+    if ms <= 0:
+        return "00:00"
+    seconds = int(ms // 1000)
+    minutes = seconds // 60
+    sec_rem = seconds % 60
+    if minutes >= 60:
+        hours = minutes // 60
+        min_rem = minutes % 60
+        return f"{hours:02d}:{min_rem:02d}:{sec_rem:02d}"
+    return f"{minutes:02d}:{sec_rem:02d}"
+
+class MusicScrubberSlider(NoWheelSlider):
+    def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
+        super().__init__(orientation, parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.isEnabled() and self.maximum() > self.minimum():
+            ratio = max(0.0, min(1.0, event.position().x() / max(1, self.width())))
+            val = int(self.minimum() + (self.maximum() - self.minimum()) * ratio)
+            self.setValue(val)
+            self.sliderMoved.emit(val)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.isEnabled() and self.maximum() > self.minimum():
+            ratio = max(0.0, min(1.0, event.position().x() / max(1, self.width())))
+            val = int(self.minimum() + (self.maximum() - self.minimum()) * ratio)
+            self.setToolTip(_format_time(val))
+        super().mouseMoveEvent(event)
+
+
+class MusicPlayerSettingsPanel(QWidget):
+    volume_changed = Signal(int)
+    play_pause_requested = Signal()
+    skip_requested = Signal()
+    seek_requested = Signal(int)
+
+    def __init__(self, i18n, music_overlay_url: str = "", parent=None):
+        super().__init__(parent)
+        self.setProperty("role", "tab_panel")
+        self.i18n = i18n
+        self._music_overlay_url = music_overlay_url
+        self._cached_song_state = None
+        self._cached_auth_state = None
+        self._pending_volume = 100
+
+        self._current_progress_ms = 0
+        self._duration_ms = 0
+        self._is_playing = False
+        self._is_user_scrubbing = False
+        self._last_rendered_pct = -1
+        self._last_rendered_elapsed = ""
+        self._last_rendered_total = ""
+
+        self._volume_timer = QTimer(self)
+        self._volume_timer.setSingleShot(True)
+        self._volume_timer.setInterval(200)
+        self._volume_timer.timeout.connect(self._emit_volume)
+
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(1000)
+        self._progress_timer.timeout.connect(self._on_progress_tick)
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.panel_layout = QVBoxLayout(self)
+        self.panel_layout.setContentsMargins(*Size.Margin.MRG_MED)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
+        self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self._setup_now_playing_card()
+        self._setup_volume_card()
+        self._setup_overlay_url_card()
+        self._setup_video_preview_card()
+
+    def _setup_now_playing_card(self):
+        self.card_player = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD, orientation="vertical")
+        self.card_player.setVisible(True)
+
+        top_layout = QHBoxLayout()
+        top_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        top_layout.setSpacing(Size.SPACING_LG)
+
+        self.icon_music = QLabel()
+        self.icon_music.setPixmap(
+            get_icon("youtube.svg").pixmap(QSize(56, 56), self.devicePixelRatioF())
+        )
+
+        info_layout = QVBoxLayout()
+        info_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        info_layout.setSpacing(Size.SPACING_XS)
+
+        self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
+        self.lbl_song_title.setProperty("role", "text_h2")
+        self.lbl_song_title.setWordWrap(True)
+
+        self.lbl_song_artist = QLabel("-")
+        self.lbl_song_artist.setProperty("role", "text_body")
+        self.lbl_song_artist.setWordWrap(True)
+
+        self.lbl_song_requester = QLabel("-")
+        self.lbl_song_requester.setProperty("role", "text_caption")
+        self.lbl_song_requester.setWordWrap(True)
+
+        info_layout.addWidget(self.lbl_song_title)
+        info_layout.addWidget(self.lbl_song_artist)
+        info_layout.addWidget(self.lbl_song_requester)
+
+        controls_layout = QHBoxLayout()
+        controls_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        controls_layout.setSpacing(Size.SPACING_SM)
+
+        self.btn_play_pause = ModernButton("", role="action_outlined", icon_name="play-filled.svg", parent=self)
+        self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
+
+        self.btn_skip = ModernButton("", role="action_outlined", icon_name="skip-next-filled.svg", parent=self)
+        self.btn_skip.clicked.connect(self.skip_requested.emit)
+
+        controls_layout.addWidget(self.btn_play_pause)
+        controls_layout.addWidget(self.btn_skip)
+
+        controls_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        top_layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignTop)
+        top_layout.addLayout(info_layout, stretch=1)
+        top_layout.addLayout(controls_layout)
+
+        progress_layout = QVBoxLayout()
+        progress_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        progress_layout.setSpacing(Size.SPACING_XS)
+
+        self.slider_progress = MusicScrubberSlider(Qt.Orientation.Horizontal, parent=self)
+        self.slider_progress.setRange(0, 100)
+        self.slider_progress.setValue(0)
+        self.slider_progress.setEnabled(False)
+        self.progress_bar = self.slider_progress
+
+        self.slider_progress.sliderPressed.connect(self._on_scrubber_pressed)
+        self.slider_progress.sliderMoved.connect(self._on_scrubber_moved)
+        self.slider_progress.sliderReleased.connect(self._on_scrubber_released)
+
+        time_layout = QHBoxLayout()
+        time_layout.setContentsMargins(*Size.Margin.MRG_NON)
+        time_layout.setSpacing(Size.SPACING_MD)
+        self.lbl_time_elapsed = QLabel("00:00")
+        self.lbl_time_elapsed.setProperty("role", "text_caption")
+
+        self.lbl_time_total = QLabel("00:00")
+        self.lbl_time_total.setProperty("role", "text_caption")
+
+        time_layout.addWidget(self.lbl_time_elapsed)
+        time_layout.addStretch()
+        time_layout.addWidget(self.lbl_time_total)
+
+        progress_layout.addWidget(self.slider_progress)
+        progress_layout.addLayout(time_layout)
+
+        self.card_player.addLayout(top_layout)
+        self.card_player.addLayout(progress_layout)
+        self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def _setup_volume_card(self):
+        self.card_volume = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
+
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
+        self.slider_vol.setRange(0, 100)
+        self.slider_vol.setValue(100)
+        self.lbl_vol_perc = QLabel("100%")
+        self.lbl_vol_perc.setProperty("role", "text_body")
+
+        self.row_vol = SliderRow.minimal(self.i18n.get("music.player.volume_title"), self.i18n.get("music.player.volume_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.MRG_NON)
+        self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
+        self.card_volume.addWidget(self.row_vol)
+        self.panel_layout.addWidget(self.card_volume, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def _on_volume_slider_changed(self, val):
+        self.lbl_vol_perc.setText(f"{val}%")
+        self._pending_volume = val
+        self._volume_timer.start()
+
+    def _emit_volume(self):
+        self.volume_changed.emit(self._pending_volume)
+
+    def _setup_overlay_url_card(self):
+        self.card_overlay_url = ExpandableCard(
+            title=self.i18n.get("music.overlay.url_title"),
+            desc=self.i18n.get("music.overlay.url_desc"),
+            switch_enabled=False,
+            parent=self,
+        )
+
+        layout_setting_row = create_row_layout(spacing=Size.SPACING_MD)
+        lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
+        lbl_layout.setProperty("role", "text_body")
+        self.combo_music_layout = NoWheelComboBox(self)
+        for layout_id, translation_key in _MUSIC_OVERLAY_LAYOUTS.items():
+            self.combo_music_layout.addItem(self.i18n.get(translation_key), layout_id)
+
+        layout_setting_row.addWidget(lbl_layout)
+        layout_setting_row.addWidget(self.combo_music_layout)
+
+        preview_layout = create_col_layout(spacing=Size.SPACING_SM)
+
+        preview_header = create_row_layout(spacing=Size.SPACING_MD)
+        lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
+        lbl_preview.setProperty("role", "text_body")
+
+        self.lbl_recommended_dim = QLabel(parent=self)
+        self.lbl_recommended_dim.setProperty("role", "text_caption")
+
+        preview_header.addWidget(lbl_preview)
+        preview_header.addStretch()
+        preview_header.addWidget(self.lbl_recommended_dim)
+
+        self.mockup_widget = MusicOverlayMockupWidget(self.i18n, parent=self)
+        preview_layout.addLayout(preview_header)
+        preview_layout.addWidget(self.mockup_widget)
+
+        self.combo_music_layout.currentIndexChanged.connect(self._update_mockup_preview)
+        self._update_mockup_preview()
+
+        self.btn_copy_music_url = ModernButton(
+            self.i18n.get("common.buttons.copy"),
+            role="action_outlined",
+            parent=self
+        )
+        self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
+
+        self.card_overlay_url.body_layout.addLayout(layout_setting_row)
+        self.card_overlay_url.body_layout.addLayout(preview_layout)
+        self.card_overlay_url.add_widget(self.btn_copy_music_url)
+        self.panel_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
+
+    _RECOMMENDED_DIMENSIONS = {
+        "classic": "580 × 190",
+        "vinyl": "780 × 380",
+    }
+
+    def _update_mockup_preview(self):
+        layout = self._selected_music_layout()
+        self.mockup_widget.set_configuration(layout)
+        dim = self._RECOMMENDED_DIMENSIONS.get(layout, "580 × 180")
+        self.lbl_recommended_dim.setText(
+            self.i18n.get("music.overlay.recommended_dim").replace("{dim}", dim)
+        )
+
+    def _copy_music_overlay_url(self):
+        layout = self._selected_music_layout()
+        url = self._music_overlay_url
+        if url:
+            sep = "&" if "?" in url else "?"
+            url += f"{sep}layout={layout}"
+            QApplication.clipboard().setText(url)
+            original = self.btn_copy_music_url.text()
+            self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
+            self.btn_copy_music_url.setEnabled(False)
+            QTimer.singleShot(2000, lambda: self._reset_copy_btn(original))
+
+    def _selected_music_layout(self) -> str:
+        layout = self.combo_music_layout.currentData()
+        return layout if layout in _MUSIC_OVERLAY_LAYOUTS else _DEFAULT_MUSIC_OVERLAY_LAYOUT
+
+    def _reset_copy_btn(self, original_text: str):
+        self.btn_copy_music_url.setText(original_text)
+        self.btn_copy_music_url.setEnabled(True)
+
+    _format_time = staticmethod(_format_time)
+
+    def _on_scrubber_pressed(self):
+        self._is_user_scrubbing = True
+
+    def _on_scrubber_moved(self, val: int):
+        self.lbl_time_elapsed.setText(_format_time(val))
+
+    def _on_scrubber_released(self):
+        self._is_user_scrubbing = False
+        if self._duration_ms > 0:
+            target_ms = self.slider_progress.value()
+            self._current_progress_ms = target_ms
+            self.lbl_time_elapsed.setText(_format_time(target_ms))
+            self.seek_requested.emit(target_ms)
+
+    def _on_progress_tick(self):
+        if self._is_user_scrubbing:
+            return
+        if self._is_playing and self._duration_ms > 0:
+            self._current_progress_ms = min(self._current_progress_ms + 1000, self._duration_ms)
+            self._update_progress_ui()
+
+    def _update_progress_ui(self):
+        if self._is_user_scrubbing:
+            return
+        if self._duration_ms > 0:
+            self.slider_progress.setEnabled(True)
+            if self.slider_progress.maximum() != self._duration_ms:
+                self.slider_progress.blockSignals(True)
+                self.slider_progress.setRange(0, self._duration_ms)
+                self.slider_progress.blockSignals(False)
+
+            self.slider_progress.blockSignals(True)
+            self.slider_progress.setValue(min(self._duration_ms, max(0, self._current_progress_ms)))
+            self.slider_progress.blockSignals(False)
+
+            elapsed_str = _format_time(self._current_progress_ms)
+            if elapsed_str != self._last_rendered_elapsed:
+                self._last_rendered_elapsed = elapsed_str
+                self.lbl_time_elapsed.setText(elapsed_str)
+
+            total_str = _format_time(self._duration_ms)
+            if total_str != self._last_rendered_total:
+                self._last_rendered_total = total_str
+                self.lbl_time_total.setText(total_str)
+        else:
+            self.slider_progress.setEnabled(False)
+            self.slider_progress.blockSignals(True)
+            self.slider_progress.setRange(0, 100)
+            self.slider_progress.setValue(0)
+            self.slider_progress.blockSignals(False)
+
+            if self._last_rendered_elapsed != "00:00":
+                self._last_rendered_elapsed = "00:00"
+                self.lbl_time_elapsed.setText("00:00")
+            if self._last_rendered_total != "00:00":
+                self._last_rendered_total = "00:00"
+                self.lbl_time_total.setText("00:00")
+
+    def update_current_song(self, song_data: dict | None):
+        self._cached_song_state = song_data
+        if not song_data:
+            self._is_user_scrubbing = False
+            self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
+            self.lbl_song_artist.setText("-")
+            self.lbl_song_requester.setText("-")
+            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg"))
+            self._is_playing = False
+            self._duration_ms = 0
+            self._current_progress_ms = 0
+            self._progress_timer.stop()
+            self._update_progress_ui()
+            return
+
+        title = song_data.get("title", self.i18n.get("music.player.unknown_song"))
+        artist = song_data.get("artist", "-")
+        requester = song_data.get("requester", "")
+        is_playing = song_data.get("is_playing", False)
+        duration = song_data.get("duration", 0) or 0
+        progress = song_data.get("progress", 0) or 0
+
+        self.lbl_song_title.setText(title)
+        self.lbl_song_artist.setText(artist)
+
+        if requester:
+            platform = (song_data.get("platform") or "kick").lower()
+            if platform == "twitch":
+                color_hex = BrandColors.TWITCH_LIGHT
+            elif platform == "youtube":
+                color_hex = BrandColors.RED
+            elif platform == "tiktok":
+                color_hex = BrandColors.TIKTOK
+            else:
+                color_hex = BrandColors.KICK
+            safe_requester = html.escape(requester)
+            user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
+            req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
+        else:
+            req_text = self.i18n.get("music.player.requested_by_streamer")
+        self.lbl_song_requester.setText(req_text)
+
+        icon_name = "pause-filled.svg" if is_playing else "play-filled.svg"
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name))
+
+        self._duration_ms = duration
+        self._current_progress_ms = progress
+        self._is_playing = is_playing
+
+        self._update_progress_ui()
+
+        if is_playing:
+            if not self._progress_timer.isActive():
+                self._progress_timer.start()
+        else:
+            self._progress_timer.stop()
+
+    def _setup_video_preview_card(self):
+        self.card_video = ExpandableCard(title=self.i18n.get("music.queue.preview_title"), switch_enabled=False, parent=self)
+        self.video_panel = MusicVideoPreviewPanel(self.i18n, parent=self.card_video.body_widget)
+        self.card_video.add_widget(self.video_panel)
+        self.panel_layout.addWidget(self.card_video, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def show_video_preview(self, url: str, local_path: str | None = None):
+        self.card_video.set_expanded(True)
+        self.video_panel.load(url, local_path)
+
+    def release_video_preview(self):
+        self.card_video.set_expanded(False)
+        self.video_panel.unload()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        QTimer.singleShot(HIDE_GRACE_MS, self._release_if_hidden)
+
+    def _release_if_hidden(self):
+        if not self.isVisible():
+            self.release_video_preview()

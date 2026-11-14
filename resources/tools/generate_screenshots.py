@@ -14,7 +14,7 @@ from backend.config import APP_VERSION
 from backend.handlers import QLogHandler
 from bootstrap.qt_setup import get_or_create_application
 from bootstrap.services import StartupServices
-from frontend.main_window import MainWindowCore
+from frontend.window.main_window_core import MainWindowCore
 
 
 def _navigate_to_view(window: MainWindowCore, view_name: str) -> None:

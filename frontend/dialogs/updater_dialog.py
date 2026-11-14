@@ -1,4 +1,5 @@
-# frontend\dialogs\update_dialog.py
+# frontend\dialogs\updater_dialog.py
+"""Diálogo de actualización de la aplicación."""
 
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal

@@ -11,10 +11,10 @@ from unittest.mock import MagicMock
 
 from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
 
-from frontend.main_window import MainWindowCore
-from frontend.main_window_views import MainWindowViewFactory
-from frontend.recent_redemptions import RecentRedemptionCache
-from frontend.window.whats_new import WhatsNewPresenter
+from frontend.window.main_window_core import MainWindowCore
+from frontend.window.view_factory import MainWindowViewFactory
+from frontend.window.recent_redemptions_cache import RecentRedemptionCache
+from frontend.window.whats_new_presenter import WhatsNewPresenter
 from backend.connections import WorkerShutdownCoordinator, WorkerSlot
 
 
@@ -64,7 +64,7 @@ def test_window_runtime_flags_are_initialized_in_one_place():
 
 
 def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
-    import frontend.main_window_views as views_module
+    import frontend.window.view_factory as views_module
 
     view = MagicMock()
     chat_view_class = MagicMock(return_value=view)
@@ -96,7 +96,7 @@ def test_view_factory_creates_and_attaches_a_view_only_once(qapp, monkeypatch):
 
 
 def test_settings_view_routes_live_chat_buttons_to_their_connections(qapp, monkeypatch):
-    import frontend.main_window_views as views_module
+    import frontend.window.view_factory as views_module
 
     view = MagicMock()
     settings_view_class = MagicMock(return_value=view)

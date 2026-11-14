@@ -6,9 +6,9 @@ from unittest.mock import MagicMock
 from PySide6.QtCore import Qt
 
 from backend.connections import WorkerSlot
-from frontend.window.media_keys import MediaKeysHandler
-from frontend.window.shutdown import ShutdownSequence
-from frontend.window.session_metrics import SessionMetrics
+from frontend.window.media_keys_handler import MediaKeysHandler
+from frontend.window.shutdown_coordinator import ShutdownSequence
+from frontend.window.session_metrics_tracker import SessionMetrics
 
 
 def _metrics(provider=None):

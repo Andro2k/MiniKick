@@ -1,10 +1,11 @@
 # frontend\components\music\music_mockup.py
+"""Vista previa (mockup) del overlay de música."""
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
 from frontend.common import get_qcolor_with_alpha, Palette, BrandColors
-from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
+from frontend.components.mockup_utils import init_mockup_painter, draw_mockup_canvas
 
 class MusicOverlayMockupWidget(QWidget):
     def __init__(self, i18n, parent=None):

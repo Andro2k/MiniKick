@@ -1,4 +1,5 @@
 # frontend\navigation\toast_component.py
+"""Notificaciones emergentes (toasts) y su gestor."""
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent

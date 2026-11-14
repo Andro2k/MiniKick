@@ -1,4 +1,5 @@
 # frontend\components\music\music_settings_panel.py
+"""Panel de ajustes generales de música."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt, QTimer, Slot

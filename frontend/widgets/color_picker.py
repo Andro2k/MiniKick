@@ -1,4 +1,5 @@
 # frontend\widgets\color_picker.py
+"""Selector de color."""
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal

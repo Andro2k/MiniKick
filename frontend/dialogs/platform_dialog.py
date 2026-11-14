@@ -1,4 +1,5 @@
-# frontend\dialogs\platform_connect_dialog.py
+# frontend\dialogs\platform_dialog.py
+"""Diálogo para conectar una plataforma."""
 
 from PySide6.QtWidgets import QLabel
 from .base_dialog import ModernModal

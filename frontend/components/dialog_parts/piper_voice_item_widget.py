@@ -1,0 +1,128 @@
+# frontend\components\dialog_parts\piper_voice_item_widget.py
+"""Elemento de lista de una voz de Piper."""
+
+from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
+from PySide6.QtCore import Qt, Signal
+from frontend.common import get_icon_colored, Size
+from frontend.widgets import create_col_layout, create_row_layout, configure_icon_only_button
+
+class PiperVoiceItemWidget(QWidget):
+    download_requested = Signal(str)
+    delete_requested = Signal(str)
+    test_requested = Signal(str)
+
+    def __init__(self, voice_meta: dict, is_installed: bool, i18n, is_default: bool = False, parent=None):
+        super().__init__(parent)
+        self.voice_meta = voice_meta
+        self.voice_id = voice_meta["id"]
+        self.is_installed = is_installed
+        self.i18n = i18n
+        self.is_default = is_default or voice_meta.get("is_default", False)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        main_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_LRG, parent=self)
+        header_layout = create_row_layout(spacing=Size.SPACING_MD)
+
+        category = self.voice_meta.get("category", "natural")
+        lang = self.voice_meta.get("lang", "es")
+
+        badge_text = self._get_badge_text(category, lang)
+        self.badge_lbl = QLabel(badge_text, self)
+        self.badge_lbl.setProperty("role", "tag_badge" if category == "stream" else "badge")
+        self.badge_lbl.setMinimumWidth(56)
+        self.badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        info_layout = create_col_layout(spacing=Size.SPACING_XS)
+
+        self.lbl_name = QLabel(self.voice_meta.get("name", self.voice_id), self)
+        self.lbl_name.setProperty("role", "text_body")
+        self.lbl_name.setProperty("state", "bold")
+
+        size_text = self.voice_meta.get("size_mb", "")
+        quality_text = self.voice_meta.get("quality", "medium")
+        self.lbl_sub = QLabel(f"{size_text} • {quality_text.capitalize()}", self)
+        self.lbl_sub.setProperty("role", "text_caption")
+
+        info_layout.addWidget(self.lbl_name)
+        info_layout.addWidget(self.lbl_sub)
+
+        header_layout.addWidget(self.badge_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
+        header_layout.addLayout(info_layout, stretch=1)
+
+        self.btn_test = QPushButton(self)
+        self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg"))
+        configure_icon_only_button(self.btn_test)
+        self.btn_test.setProperty("role", "action_outlined")
+        self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
+        self.btn_test.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_test.clicked.connect(lambda: self.test_requested.emit(self.voice_id))
+        self.btn_test.setVisible(self.is_installed)
+        header_layout.addWidget(self.btn_test)
+
+        self.btn_delete = QPushButton(self)
+        self.btn_delete.setIcon(get_icon_colored("trash-filled.svg"))
+        configure_icon_only_button(self.btn_delete)
+        self.btn_delete.setProperty("role", "action_danger_solid")
+        self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))
+        self.btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_delete.clicked.connect(lambda: self.delete_requested.emit(self.voice_id))
+        self.btn_delete.setVisible(self.is_installed and not self.is_default)
+        header_layout.addWidget(self.btn_delete)
+
+        self.btn_download = QPushButton(self)
+        self.btn_download.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
+        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
+        self.btn_download.setProperty("role", "action_outlined")
+        self.btn_download.clicked.connect(lambda: self.download_requested.emit(self.voice_id))
+        self.btn_download.setVisible(not self.is_installed and self._can_download())
+        header_layout.addWidget(self.btn_download)
+
+        main_layout.addLayout(header_layout)
+
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setVisible(False)
+        main_layout.addWidget(self.progress_bar)
+
+    def _can_download(self) -> bool:
+        if self.voice_meta.get("is_custom", False):
+            return False
+        return bool(self.voice_meta.get("onnx_url") or self.voice_meta.get("archive_url"))
+
+    def _get_badge_text(self, category: str, lang: str) -> str:
+        if category == "stream":
+            return "STREAM"
+        if lang == "es_MX":
+            return "MX"
+        if lang == "es_ES":
+            return "ES"
+        if lang == "es_AR":
+            return "AR"
+        if quality := self.voice_meta.get("quality"):
+            if quality == "custom":
+                return self.i18n.get("piper_dialog.badge_custom")
+        return lang.upper()
+
+    def update_status(self, is_installed: bool):
+        self.is_installed = is_installed
+        self.btn_test.setVisible(is_installed)
+        self.btn_delete.setVisible(is_installed and not self.is_default)
+        self.btn_download.setVisible(not is_installed and self._can_download())
+        self.btn_download.setEnabled(True)
+        self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
+        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
+
+    def set_downloading(self, downloading: bool, percent: int = 0):
+        self.progress_bar.setVisible(downloading)
+        self.progress_bar.setValue(percent)
+        self.btn_download.setEnabled(not downloading)
+        if downloading:
+            self.btn_download.setText(f"{percent}%")
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))
+        else:
+            self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg"))

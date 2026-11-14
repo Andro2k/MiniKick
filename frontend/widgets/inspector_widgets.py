@@ -1,4 +1,5 @@
 # frontend\widgets\inspector_widgets.py
+"""Fila de propiedad para paneles de inspección."""
 
 from __future__ import annotations
 from typing import Optional

@@ -4,7 +4,7 @@ import threading
 
 from PySide6.QtCore import QCoreApplication, QThread
 
-from frontend.common.gui_bridge import run_on_gui
+from frontend.common.gui_bridge_utils import run_on_gui
 
 
 def test_run_on_gui_executes_in_main_thread():
@@ -27,7 +27,7 @@ def test_run_on_gui_executes_in_main_thread():
 
 
 def test_get_bridge_is_a_single_instance_across_threads():
-    from frontend.common import gui_bridge
+    from frontend.common import gui_bridge_utils as gui_bridge
 
     QCoreApplication.instance() or QCoreApplication([])
     gui_bridge._bridge = None

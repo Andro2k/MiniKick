@@ -1,4 +1,5 @@
 # frontend\common\icons.py
+"""Utilidades de iconos: rutas de assets, resolución y coloreado para QSS."""
 
 import logging
 import os

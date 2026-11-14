@@ -1,4 +1,5 @@
 # frontend\widgets\scalable_illustration.py
+"""Ilustración que se escala con su contenedor."""
 
 import os
 from PySide6.QtWidgets import QLabel

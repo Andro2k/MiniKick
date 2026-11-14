@@ -1,4 +1,5 @@
 # frontend\components\music\history_panel.py
+"""Panel del historial de música."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt

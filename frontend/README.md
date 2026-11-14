@@ -32,6 +32,18 @@ flowchart TD
 | [`navigation/`](./navigation) | Persistent chrome: sidebar, toast overlay, system tray | `Sidebar`, `ToastManager`, `SystemTrayManager` |
 | [`window/`](./window) | `MainWindowCore` behaviour mixins and coordinators | `MainWindowStartup`, `MainWindowShutdown`, `NavigationCoordinator`, `SessionMetrics`, `MainWindowWiring` |
 
+**Naming convention:** every file is named `<topic>_<role>.py` and the suffix matches the role of its main class.
+
+| Folder | Suffix |
+| :--- | :--- |
+| `views/` | `*_view.py` |
+| `dialogs/` | `*_dialog.py` (exceptions: `splash_screen`, `update_flow`) |
+| `navigation/` | `*_component.py` |
+| `components/` | `*_panel.py`, `*_card.py`, `*_widget.py`, `*_mockup.py`, `*_utils.py` |
+| `components/dialog_parts/` | Small pieces reused inside dialogs (`*_widget.py`, `*_card.py`) |
+| `window/` | `*_coordinator.py`, `*_presenter.py`, `*_handler.py`, `*_router.py`, `*_manager.py`, `*_tracker.py`, `*_cache.py`, `*_protocols.py` |
+| `common/`, `widgets/` | Helpers end in `*_utils.py`; widgets keep Qt-style names (`flow_layout`, `no_wheel`) or `*_widget.py` |
+
 ---
 
 ## 3. Public Interfaces & Contracts
@@ -76,7 +88,7 @@ class ToastManager(QObject):
 ```
 `state` values: `"success"`, `"error"`, `"warning"`, `"info"`.
 
-### `run_on_gui` ([`common/gui_bridge.py`](./common/gui_bridge.py))
+### `run_on_gui` ([`common/gui_bridge_utils.py`](./common/gui_bridge_utils.py))
 Thread-safe callable dispatch to the Qt main thread via `QMetaObject.invokeMethod`.
 ```python
 def run_on_gui(fn: Callable, *args, **kwargs) -> None: ...

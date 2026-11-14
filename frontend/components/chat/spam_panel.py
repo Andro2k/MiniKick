@@ -1,4 +1,5 @@
 # frontend\components\chat\spam_panel.py
+"""Panel de filtros de spam del chat."""
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel

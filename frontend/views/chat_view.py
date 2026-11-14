@@ -1,4 +1,5 @@
 # frontend\views\chat_view.py
+"""Vista de chat."""
 
 import logging
 

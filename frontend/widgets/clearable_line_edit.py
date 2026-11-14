@@ -1,4 +1,5 @@
 # frontend\widgets\clearable_line_edit.py
+"""Campo de texto con botón para limpiar."""
 
 from PySide6.QtWidgets import QPushButton
 from .action_line_edit import ActionLineEdit

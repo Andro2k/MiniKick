@@ -1,4 +1,5 @@
 # frontend\views\schedule_view.py
+"""Vista de programación."""
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal

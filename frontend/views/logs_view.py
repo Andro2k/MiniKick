@@ -1,4 +1,5 @@
-# frontend\views\log_view.py
+# frontend\views\logs_view.py
+"""Vista de logs."""
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtGui import QColor, QIcon
