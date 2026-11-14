@@ -1,4 +1,5 @@
 # backend\utils\chat_command_config.py
+"""Conjuntos de palabras clave para analizar argumentos de comandos (silenciar y bloquear, agregar y quitar)."""
 
 _MUTE_REMOVE_KEYWORDS = frozenset({"unmute", "desilenciar", "quitar", "remove", "del", "-"})
 _MUTE_REMOVE_ALIASES = frozenset({"!unmutetts", "!desilenciartts", "!ttsunmute"})

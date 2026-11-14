@@ -1,4 +1,5 @@
 # backend\core\app_container_core.py
+"""Contenedor de la aplicación que crea y conecta servicios, almacenes y proveedores."""
 import logging
 import os
 
@@ -10,7 +11,8 @@ from backend.config import (
 )
 from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.interfaces import IConfigProvider
-from backend.services.system import create_secret_cipher, DatabaseMaintenance
+from backend.services.security import create_secret_cipher
+from backend.services.app import DatabaseMaintenance
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.services.webhooks import (
     FORMATTER_REGISTRY, HttpWebhookTransport,

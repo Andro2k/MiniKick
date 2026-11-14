@@ -1,4 +1,5 @@
 # backend\database\music_storage.py
+"""Almacenamiento SQLite de música y normalización de consultas."""
 
 import logging
 from datetime import datetime

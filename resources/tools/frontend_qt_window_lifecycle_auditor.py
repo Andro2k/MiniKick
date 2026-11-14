@@ -149,7 +149,7 @@ class RuntimeWindowAuditor:
 
     def _ensure_qt(self):
         from PySide6.QtWidgets import QApplication
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
 
         self.app = QApplication.instance() or QApplication(sys.argv[:1])
         if not self.i18n:

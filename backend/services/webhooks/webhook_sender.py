@@ -1,9 +1,10 @@
 # backend\services\webhooks\webhook_sender.py
+"""Envía entregas de webhooks."""
 
 import time
 from typing import Callable, Mapping
 
-from backend.interfaces.i_webhooks import DeliveryJob, DeliveryResponse, IPayloadFormatter, IWebhookTransport
+from backend.interfaces.webhooks_interface import DeliveryJob, DeliveryResponse, IPayloadFormatter, IWebhookTransport
 from backend.services.webhooks.webhook_signer import build_headers
 
 

@@ -1,4 +1,5 @@
 # backend\workers\youtube_chat_worker.py
+"""Trabajador del chat de YouTube."""
 
 import datetime
 import time
@@ -6,7 +7,7 @@ import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import YouTubeChatProvider
 from backend.services.chat import ChatMessageDTO
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import fast_dumps, stop_provider_chat_worker
 
 logger = logging.getLogger("minikick.workers.youtube_chat")

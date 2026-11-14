@@ -1,4 +1,5 @@
 # backend\providers\__init__.py
+"""Proveedores de servicios externos y recursos locales."""
 
 from .chat import BaseChatSocketProvider, KickAPIClient, KickWebSocketManager, TwitchAPIClient, TwitchSocketManager, TwitchEventSubProvider, YouTubeChatProvider, TikTokChatProvider, ScraperFactory, KICK_CHANNEL_URL
 from .music import YouTubeMusicProvider

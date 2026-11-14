@@ -1,4 +1,5 @@
 # backend\providers\voices\online_provider.py
+"""Proveedor web (en línea) de texto a voz."""
 
 import asyncio
 import logging

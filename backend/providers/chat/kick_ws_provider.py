@@ -1,4 +1,5 @@
 # backend\providers\chat\kick_ws_provider.py
+"""Administrador de WebSocket de Kick para chat y eventos."""
 
 import logging
 import socket

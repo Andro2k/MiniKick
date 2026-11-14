@@ -1,4 +1,5 @@
 # backend\workers\webhook_delivery_worker.py
+"""Trabajador que entrega webhooks con retroceso aleatorio completo."""
 
 import heapq
 import itertools
@@ -9,7 +10,7 @@ import threading
 import time
 from typing import Callable
 
-from backend.interfaces.i_webhooks import DeliveryJob, DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryJob, DeliveryResponse
 
 logger = logging.getLogger("minikick.workers.webhook_delivery")
 

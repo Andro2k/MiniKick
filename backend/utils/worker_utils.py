@@ -1,4 +1,5 @@
 # backend\utils\worker_utils.py
+"""Utilidades para trabajadores: detener los procesos de chat, espera cooperativa y retroceso exponencial."""
 
 import logging
 import random

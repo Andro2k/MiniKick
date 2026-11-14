@@ -1,11 +1,12 @@
 # backend\services\webhooks\webhook_transport.py
+"""Transporte HTTP para webhooks, detección del host de Discord y validación de direcciones URL."""
 
 from typing import Mapping
 from urllib.parse import urlsplit
 
 import httpx
 
-from backend.interfaces.i_webhooks import DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryResponse
 from backend.utils import redact_secrets
 
 DISCORD_DOMAINS = ("discord.com", "discordapp.com")

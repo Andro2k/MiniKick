@@ -1,11 +1,12 @@
 # backend\config\webhook_endpoint_store.py
+"""Almacén de endpoints de webhook persistido mediante el proveedor de configuración (con secretos cifrados)."""
 
 import logging
 import threading
 from typing import Sequence
 
 from backend.interfaces import IConfigProvider, SecretCipher, TokenEncryptionError
-from backend.interfaces.i_webhooks import DEFAULT_PLATFORMS, WebhookEndpointConfig
+from backend.interfaces.webhooks_interface import DEFAULT_PLATFORMS, WebhookEndpointConfig
 from backend.utils import fast_dumps, fast_loads
 
 logger = logging.getLogger("minikick.config.webhook_endpoints")

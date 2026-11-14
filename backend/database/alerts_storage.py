@@ -1,4 +1,5 @@
-# backend\database\alert_storage.py
+# backend\database\alerts_storage.py
+"""Almacenamiento SQLite de alertas."""
 
 import logging
 from .database_manager import DatabaseManager

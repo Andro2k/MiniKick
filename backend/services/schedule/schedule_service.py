@@ -1,4 +1,5 @@
 # backend\services\schedule\schedule_service.py
+"""Servicio de programación."""
 
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ import threading
 from typing import TYPE_CHECKING
 from concurrent.futures import ThreadPoolExecutor
 from backend.database import SQLiteScheduleStorage
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 
 if TYPE_CHECKING:
     from backend.providers.chat import KickAPIClient, TwitchAPIClient

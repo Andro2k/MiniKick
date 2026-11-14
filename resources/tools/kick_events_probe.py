@@ -176,7 +176,7 @@ def listen(
 
 
 def resolve_ids(slug: str) -> Tuple[Optional[str], Optional[str], str]:
-    from backend.providers.chat.kick_provider import ScraperFactory
+    from backend.providers.chat.kick_api_provider import ScraperFactory
     try:
         response = ScraperFactory.create().get(KICK_CHANNEL_URL.format(slug=slug), timeout=10)
         if response.status_code != 200:

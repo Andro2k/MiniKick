@@ -1,4 +1,5 @@
 # backend\database\commands_storage.py
+"""Almacenamiento SQLite de comandos del chat."""
 
 import logging
 from datetime import datetime

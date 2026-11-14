@@ -7,7 +7,7 @@ from backend.controllers.chat_controller import ChatController, _build_command_r
 from backend.services.chat.chat_service import ChatService
 from backend.services.chat.commands_service import CommandService
 from backend.services.chat.chat_pipeline import ChatMessageDTO
-from backend.services.system.translation_service import TranslationService
+from backend.services.settings.translation_service import TranslationService
 
 
 @pytest.fixture(scope="module")

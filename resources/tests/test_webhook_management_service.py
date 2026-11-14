@@ -4,7 +4,7 @@ import pytest
 
 from backend.config.toml_config_provider import TomlConfigProvider
 from backend.config.webhook_endpoint_store import WebhookEndpointStore
-from backend.interfaces.i_webhooks import DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryResponse
 from backend.services.webhooks import WebhookManagementService
 from resources.tests.test_webhook_endpoint_store import ReversibleCipher
 

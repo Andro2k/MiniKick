@@ -1,4 +1,5 @@
-# backend\services\chat\command_service.py
+# backend\services\chat\commands_service.py
+"""Caché y búsqueda de comandos del chat."""
 
 import logging
 import re
@@ -7,7 +8,7 @@ from contextlib import contextmanager
 
 from PySide6.QtCore import QObject, QTimer, Signal
 from backend.utils import sanitize_command_trigger
-from backend.utils.db_background import submit_db_write
+from backend.utils.db_background_utils import submit_db_write
 
 logger = logging.getLogger("minikick.services.chat.commands")
 

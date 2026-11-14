@@ -1,4 +1,5 @@
 # backend\database\database_manager.py
+"""Administrador de la base de datos SQLite y conexión con cierre automático."""
 
 import os
 import threading

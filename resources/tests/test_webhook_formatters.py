@@ -52,7 +52,7 @@ def test_discord_embed_fields_and_optional_description():
 
 
 def test_every_event_type_and_the_test_ping_have_an_embed_style():
-    from backend.interfaces.i_webhooks import EVENT_TYPES
+    from backend.interfaces.webhooks_interface import EVENT_TYPES
     from backend.services.webhooks.webhook_formatters import _DEFAULT_STYLE, _EMBED_STYLES
     assert all(event_type in _EMBED_STYLES for event_type in (*EVENT_TYPES, "test"))
     assert _EMBED_STYLES["test"] != _DEFAULT_STYLE

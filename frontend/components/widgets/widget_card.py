@@ -4,7 +4,7 @@ from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QPushButton, QApplication, QCheckBox
 from frontend.common import Size
-from backend.services.system.widgets_service import EXPLOSION_PLATFORMS
+from backend.services.settings.widgets_service import EXPLOSION_PLATFORMS
 
 class WidgetCard(ExpandableCard):
     widget_changed = Signal(str, bool, str, int, str, object)

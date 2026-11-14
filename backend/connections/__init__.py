@@ -1,9 +1,10 @@
 # backend\connections\__init__.py
+"""Conexiones de plataformas y coordinación de trabajadores."""
 
-from .kick import KickConnection
-from .hub import ConnectionHub, IntegrationStatus
-from .live_chat import LiveChatConnection, TikTokConnection, YouTubeConnection
-from .twitch import TwitchConnection
+from .kick_connection import KickConnection
+from .connection_hub import ConnectionHub, IntegrationStatus
+from .live_chat_connection import LiveChatConnection, TikTokConnection, YouTubeConnection
+from .twitch_connection import TwitchConnection
 from .worker_shutdown import WorkerShutdownCoordinator, is_worker_running
 from .worker_slot import WorkerSlot
 

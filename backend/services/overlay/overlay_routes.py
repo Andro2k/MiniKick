@@ -1,4 +1,5 @@
 # backend\services\overlay\overlay_routes.py
+"""Manejador de solicitudes HTTP y utilidades de recursos del servidor de superposición."""
 
 import base64
 import hashlib

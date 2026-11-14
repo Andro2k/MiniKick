@@ -3,7 +3,7 @@
 import hashlib
 import hmac
 
-from backend.interfaces.i_webhooks import DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryResponse
 from backend.services.webhooks.webhook_formatters import GenericJsonFormatter
 from backend.services.webhooks.webhook_sender import WebhookSender
 from backend.services.webhooks.webhook_signer import (

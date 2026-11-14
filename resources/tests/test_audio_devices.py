@@ -1,6 +1,6 @@
 # resources\tests\test_audio_devices.py
 
-import backend.providers.audio.devices as devices
+import backend.providers.audio.audio_devices_provider as devices
 
 
 class _FakeId:

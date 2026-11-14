@@ -1,4 +1,5 @@
 # backend\controllers\base_controller.py
+"""Clase base compartida por los controladores."""
 
 from PySide6.QtCore import QObject
 

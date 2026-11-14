@@ -1,9 +1,10 @@
 # backend\workers\twitch_rewards_worker.py
+"""Trabajador de recompensas de Twitch."""
 
 import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchEventSubProvider
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.twitch_rewards")

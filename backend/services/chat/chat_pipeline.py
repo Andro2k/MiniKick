@@ -1,4 +1,5 @@
-# backend\services\chat\pipeline.py
+# backend\services\chat\chat_pipeline.py
+"""DTO de mensajes del chat y canalización que ejecuta los pasos registrados."""
 
 import logging
 from dataclasses import dataclass

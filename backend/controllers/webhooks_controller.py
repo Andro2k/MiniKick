@@ -1,4 +1,5 @@
 # backend\controllers\webhooks_controller.py
+"""Controlador de webhooks."""
 
 import threading
 import logging

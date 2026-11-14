@@ -1,4 +1,5 @@
 # backend\controllers\chat_controller.py
+"""Controlador del chat."""
 
 from collections import deque
 import datetime

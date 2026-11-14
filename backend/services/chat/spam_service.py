@@ -1,12 +1,13 @@
 # backend\services\chat\spam_service.py
+"""Filtros de spam: carga, almacenamiento y detección."""
 
 import logging
 import re
 from collections import deque
 
-from backend.utils.io_background import submit_network_io
-from backend.utils.youtube_url import is_youtube_link
-from backend.utils.db_background import submit_db_write
+from backend.utils.io_background_utils import submit_network_io
+from backend.utils.youtube_url_utils import is_youtube_link
+from backend.utils.db_background_utils import submit_db_write
 
 logger = logging.getLogger("minikick.services.chat.spam")
 

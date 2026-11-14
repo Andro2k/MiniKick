@@ -1,0 +1,82 @@
+# backend\services\settings\settings_service.py
+"""Lee y guarda la configuración general de la aplicación."""
+
+import logging
+
+logger = logging.getLogger("minikick.services.settings")
+
+class SettingsService:
+    def __init__(self, settings_storage, backup_service):
+        self.storage = settings_storage
+        self.backup = backup_service
+        self.SETTING_MINIMIZE_TRAY = "minimize_to_tray"
+        self.SETTING_LANGUAGE = "app_language"
+        self.SETTING_FONT_SIZE = "app_font_size"
+        self.SETTING_BROWSER_PATH = "app_browser_path"
+        self.SETTING_AUTO_UPDATE_DOWNLOAD = "auto_download_updates"
+
+    def is_minimize_tray_enabled(self) -> bool:
+        return self.storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
+
+    def set_minimize_tray_enabled(self, enabled: bool):
+        self.storage.save_bool(self.SETTING_MINIMIZE_TRAY, enabled)
+        logger.debug("[SettingsService] Minimize to tray set to: %s", enabled)
+
+    def is_auto_update_download_enabled(self) -> bool:
+        return self.storage.load_bool(self.SETTING_AUTO_UPDATE_DOWNLOAD, False)
+
+    def set_auto_update_download_enabled(self, enabled: bool) -> None:
+        self.storage.save_bool(self.SETTING_AUTO_UPDATE_DOWNLOAD, enabled)
+        logger.info("[SettingsService] Automatic update download set to: %s", enabled)
+
+    def export_settings(self, filepath: str) -> bool:
+        logger.info("[SettingsService] Exporting settings backup to: %s", filepath)
+        return self.backup.export_to_json(filepath)
+
+    def inspect_backup(self, filepath: str) -> dict | None:
+        return self.backup.inspect_backup(filepath)
+
+    def import_settings(self, filepath: str, sections: set[str] | list[str] | None = None) -> bool:
+        logger.info("[SettingsService] Importing settings backup from: %s (sections=%s)", filepath, sections)
+        return self.backup.import_from_json(filepath, sections=sections)
+    
+    def get_language(self) -> str:
+        return self.storage.load_string(self.SETTING_LANGUAGE, "es")
+
+    def set_language(self, lang_code: str):
+        self.storage.save_string(self.SETTING_LANGUAGE, lang_code)
+        logger.info("[SettingsService] Language changed to: %s", lang_code)
+
+    def get_font_size(self) -> int:
+        val = self.storage.load_string(self.SETTING_FONT_SIZE, "13")
+        try:
+            size = int(val)
+            return size if size >= 8 else 13
+        except ValueError:
+            return 13
+
+    def set_font_size(self, size: int):
+        self.storage.save_string(self.SETTING_FONT_SIZE, str(size))
+        logger.debug("[SettingsService] Font size updated to: %d", size)
+
+    def get_music_audio_device(self) -> str:
+        return self.storage.load_string("youtube_audio_device", "default")
+
+    def set_music_audio_device(self, device_id: str):
+        self.storage.save_string("youtube_audio_device", device_id)
+        logger.debug("[SettingsService] Music audio output device set to: %s", device_id)
+
+    def get_tts_audio_device(self) -> str:
+        return self.storage.load_string("tts_audio_device", "default")
+
+    def set_tts_audio_device(self, device_id: str):
+        self.storage.save_string("tts_audio_device", device_id)
+        logger.debug("[SettingsService] TTS audio output device set to: %s", device_id)
+
+    def get_browser_path(self) -> str:
+        return self.storage.load_string(self.SETTING_BROWSER_PATH, "default")
+
+    def set_browser_path(self, path: str):
+        clean = (path or "default").strip()
+        self.storage.save_string(self.SETTING_BROWSER_PATH, clean)
+        logger.info("[SettingsService] Browser path set to: %s", clean)

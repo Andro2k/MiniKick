@@ -1,4 +1,5 @@
-# backend\services\alerts\alert_service.py
+# backend\services\alerts\alerts_service.py
+"""Servicio que administra la configuración y los eventos de alertas."""
 
 import logging
 import uuid

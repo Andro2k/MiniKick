@@ -1,4 +1,5 @@
 # backend\controllers\spam_controller.py
+"""Controlador de filtros de spam."""
 
 import logging
 from PySide6.QtCore import Slot
@@ -32,7 +33,7 @@ class SpamController(BaseController):
             return self.i18n
         if self.view and hasattr(self.view, "i18n") and self.view.i18n:
             return self.view.i18n
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         return TranslationService()
 
     def load_initial_data(self):

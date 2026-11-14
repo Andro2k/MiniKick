@@ -1,10 +1,11 @@
 # backend\services\webhooks\webhook_dispatcher_service.py
+"""Distribuye eventos a los endpoints de webhook."""
 
 import time
 import uuid
 from typing import Any, Callable, Iterable, Mapping
 
-from backend.interfaces.i_webhooks import (
+from backend.interfaces.webhooks_interface import (
     CRITICAL_EVENT_TYPES,
     DeliveryJob,
     IEventSink,

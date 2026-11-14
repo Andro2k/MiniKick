@@ -1,4 +1,5 @@
 # backend\handlers\logs_handler.py
+"""Formateador de registros estructurados, emisor Qt y manejador de registros."""
 
 import logging
 import sys

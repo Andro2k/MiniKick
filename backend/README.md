@@ -74,13 +74,15 @@ MiniKick follows a layered architectural model governed by automated AST boundar
 | :--- | :--- | :--- | :--- |
 | [`config/`](./config) | Application versioning, TOML provider, credentials & endpoint constants | `*config*.py` | `APP_VERSION`, `TomlConfigProvider`, `KICK_PUSHER` |
 | [`core/`](./core) | Dependency injection container & hardened logging engine | `*core*.py` | `AppContainerCore`, `setup_application_logging` |
+| [`connections/`](./connections) | Integration connections (Kick, Twitch, YouTube, TikTok) and worker lifecycle | `*_connection.py` | `KickConnection`, `TwitchConnection`, `ConnectionHub` |
 | [`controllers/`](./controllers) | Presentation orchestration and Qt signal bridging | `*_controller.py` | `BaseController`, `ChatController`, `WidgetsController` |
 | [`database/`](./database) | SQLite WAL persistence, encryption, migrations & cache | `*_storage.py` | `DatabaseManager`, `EncryptedTokenStorage`, `SQLite*Storage` |
 | [`handlers/`](./handlers) | Stream interceptors, command dispatch & structured log emission | `*_handler.py` | `ChatFilterHandler`, `TTSVoiceHandler`, `LogEmitter` |
-| [`interfaces/`](./interfaces) | Abstract contracts, protocols, and interface definitions | `i_*.py` | `IConfigProvider`, `ITTSProvider`, `IMusicProvider`, `TokenStorage` |
-| [`providers/`](./providers) | External platform adapters (Kick, Twitch, YouTube, TikTok, Piper) | Multi-provider | `KickWebSocketManager`, `TwitchSocketManager`, `YouTubeMusicProvider` |
-| [`services/`](./services) | Pure domain logic (Alerts, Auth, Chat, Overlay, Schedule, System) | Multi-domain | `AlertService`, `ChatService`, `OverlayServerManager`, `ScheduleService` |
-| [`utils/`](./utils) | High-performance utilities, parsing, latency & execution helpers | Modular | `fast_loads`, `fast_dumps`, `LatencyMonitor`, `cooperative_sleep` |
+| [`interfaces/`](./interfaces) | Abstract contracts, protocols, and interface definitions | `*_interface.py` | `IConfigProvider`, `ITTSProvider`, `IMusicProvider`, `TokenStorage` |
+| [`models/`](./models) | Data models shared across layers | `*_models.py` | `AlertType`, `AlertEvent`, `AlertConfig` |
+| [`providers/`](./providers) | External platform adapters (Kick, Twitch, YouTube, TikTok, Piper) | `*_provider.py` | `KickWebSocketManager`, `TwitchSocketManager`, `YouTubeMusicProvider` |
+| [`services/`](./services) | Pure domain logic (Alerts, App, Auth, Chat, Logs, Media, Overlay, Rewards, Schedule, Security, Settings, Updates, Voice, Webhooks) | `*_service.py` per domain | `AlertService`, `ChatService`, `OverlayServerManager`, `ScheduleService` |
+| [`utils/`](./utils) | High-performance utilities, parsing, latency & execution helpers | `*_utils.py` | `fast_loads`, `fast_dumps`, `LatencyMonitor`, `cooperative_sleep` |
 | [`workers/`](./workers) | Multithreaded background tasks running in isolated `QThread` | `*_worker.py` | `KickChatWorker`, `TwitchChatWorker`, `MusicWorker`, `ScheduleWorker` |
 
 ---

@@ -1,4 +1,5 @@
 # backend\workers\twitch_chat_worker.py
+"""Trabajador del chat de Twitch."""
 
 import logging
 import datetime
@@ -6,7 +7,7 @@ import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchSocketManager
 from backend.services.chat import ChatMessageDTO
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import ExponentialBackoff, cooperative_sleep
 
 logger = logging.getLogger("minikick.workers.twitch_chat")

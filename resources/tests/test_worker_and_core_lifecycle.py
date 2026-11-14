@@ -66,7 +66,7 @@ def test_search_worker_stops_after_an_in_flight_request_is_cancelled(qapp, monke
 
 
 def test_music_provider_cancels_and_retains_active_search_until_thread_finishes(qapp, monkeypatch):
-    import backend.providers.music.youtube_provider as music_module
+    import backend.providers.music.youtube_music_provider as music_module
 
     started = threading.Event()
 
@@ -116,7 +116,7 @@ def test_music_provider_cancels_and_retains_active_search_until_thread_finishes(
 
 
 def test_music_search_result_is_processed_in_provider_thread(qapp, monkeypatch):
-    import backend.providers.music.youtube_provider as music_module
+    import backend.providers.music.youtube_music_provider as music_module
 
     song_entry = {
         "title": "test song",
@@ -190,7 +190,7 @@ def test_container_shutdown_attempts_each_component_once_even_if_one_fails(caplo
 
 
 def test_tts_shutdown_is_idempotent_and_stops_queue_threads():
-    from backend.services.chat.tts_service import TTSManager
+    from backend.services.voice.tts_service import TTSManager
 
     manager = TTSManager()
     manager.shutdown()

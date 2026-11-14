@@ -1,4 +1,5 @@
 # backend\controllers\__init__.py
+"""Controladores de las distintas áreas de la aplicación."""
 
 from .base_controller import BaseController
 from .alerts_controller import AlertsController
