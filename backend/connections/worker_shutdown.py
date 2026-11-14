@@ -1,4 +1,5 @@
 # backend\connections\worker_shutdown.py
+"""Coordina el cierre ordenado de los trabajadores en segundo plano."""
 
 from __future__ import annotations
 import time

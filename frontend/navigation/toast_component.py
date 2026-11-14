@@ -35,11 +35,11 @@ class ModernToast(QFrame):
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.lbl_title = QLabel(title, self)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "text_h2")
         text_layout.addWidget(self.lbl_title)
 
         self.lbl_msg = QLabel(message or "", self)
-        self.lbl_msg.setProperty("role", "body")
+        self.lbl_msg.setProperty("role", "text_body")
         self.lbl_msg.setWordWrap(True)
         self.lbl_msg.setVisible(bool(message))
         text_layout.addWidget(self.lbl_msg)

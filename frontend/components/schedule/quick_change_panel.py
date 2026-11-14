@@ -36,7 +36,7 @@ class ScheduleQuickChangePanel(QWidget):
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
-        lbl_status_title.setProperty("role", "h2")
+        lbl_status_title.setProperty("role", "text_h2")
         status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
@@ -64,7 +64,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_kick_badge = QLabel("KICK")
         lbl_kick_badge.setProperty("role", "badge_kick")
         self.lbl_kick_status = QLabel(self.i18n.get("stream_info.status.loading"))
-        self.lbl_kick_status.setProperty("role", "caption")
+        self.lbl_kick_status.setProperty("role", "text_caption")
 
         kick_header.addWidget(icon_kick)
         kick_header.addWidget(lbl_kick_badge)
@@ -78,9 +78,9 @@ class ScheduleQuickChangePanel(QWidget):
         kick_title_layout.setContentsMargins(*Size.Margin.MRG_MED)
         kick_title_layout.setSpacing(Size.SPACING_XS)
         lbl_kick_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
-        lbl_kick_t_header.setProperty("role", "caption")
+        lbl_kick_t_header.setProperty("role", "text_caption")
         self.lbl_kick_title = QLabel("-")
-        self.lbl_kick_title.setProperty("role", "setting_title")
+        self.lbl_kick_title.setProperty("role", "text_setting_title")
         self.lbl_kick_title.setWordWrap(True)
         kick_title_layout.addWidget(lbl_kick_t_header)
         kick_title_layout.addWidget(self.lbl_kick_title)
@@ -92,9 +92,9 @@ class ScheduleQuickChangePanel(QWidget):
         kick_cat_layout.setContentsMargins(*Size.Margin.MRG_MED)
         kick_cat_layout.setSpacing(Size.SPACING_XS)
         lbl_kick_c_header = QLabel(self.i18n.get("stream_info.quick_change.category"))
-        lbl_kick_c_header.setProperty("role", "caption")
+        lbl_kick_c_header.setProperty("role", "text_caption")
         self.lbl_kick_cat = QLabel(self.i18n.get("stream_info.status.no_category"))
-        self.lbl_kick_cat.setProperty("role", "body")
+        self.lbl_kick_cat.setProperty("role", "text_body")
         self.lbl_kick_cat.setWordWrap(True)
         kick_cat_layout.addWidget(lbl_kick_c_header)
         kick_cat_layout.addWidget(self.lbl_kick_cat)
@@ -109,7 +109,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_twitch_badge = QLabel("TWITCH")
         lbl_twitch_badge.setProperty("role", "badge_twitch")
         self.lbl_twitch_status = QLabel(self.i18n.get("stream_info.status.loading"))
-        self.lbl_twitch_status.setProperty("role", "caption")
+        self.lbl_twitch_status.setProperty("role", "text_caption")
 
         twitch_header.addWidget(icon_twitch)
         twitch_header.addWidget(lbl_twitch_badge)
@@ -123,9 +123,9 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_title_layout.setContentsMargins(*Size.Margin.MRG_MED)
         twitch_title_layout.setSpacing(Size.SPACING_XS)
         lbl_twitch_t_header = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
-        lbl_twitch_t_header.setProperty("role", "caption")
+        lbl_twitch_t_header.setProperty("role", "text_caption")
         self.lbl_twitch_title = QLabel("-")
-        self.lbl_twitch_title.setProperty("role", "h2")
+        self.lbl_twitch_title.setProperty("role", "text_h2")
         self.lbl_twitch_title.setWordWrap(True)
         twitch_title_layout.addWidget(lbl_twitch_t_header)
         twitch_title_layout.addWidget(self.lbl_twitch_title)
@@ -137,9 +137,9 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_cat_layout.setContentsMargins(*Size.Margin.MRG_MED)
         twitch_cat_layout.setSpacing(Size.SPACING_XS)
         lbl_twitch_c_header = QLabel(self.i18n.get("stream_info.quick_change.category"))
-        lbl_twitch_c_header.setProperty("role", "caption")
+        lbl_twitch_c_header.setProperty("role", "text_caption")
         self.lbl_twitch_cat = QLabel(self.i18n.get("stream_info.status.no_category"))
-        self.lbl_twitch_cat.setProperty("role", "body")
+        self.lbl_twitch_cat.setProperty("role", "text_body")
         self.lbl_twitch_cat.setWordWrap(True)
         twitch_cat_layout.addWidget(lbl_twitch_c_header)
         twitch_cat_layout.addWidget(self.lbl_twitch_cat)
@@ -178,13 +178,13 @@ class ScheduleQuickChangePanel(QWidget):
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
         change_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_MD)
         header_layout = create_row_layout(spacing=Size.SPACING_MD)
-        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h2", word_wrap=False)
+        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="text_h2", word_wrap=False)
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)
 
         form_layout = create_col_layout(spacing=Size.SPACING_MD)
-        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="setting_title", word_wrap=False)
+        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="text_setting_title", word_wrap=False)
         form_layout.addWidget(lbl_target)
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
@@ -194,7 +194,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addLayout(switches_row)
 
         lbl_title_field = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
-        lbl_title_field.setProperty("role", "setting_title")
+        lbl_title_field.setProperty("role", "text_setting_title")
         form_layout.addWidget(lbl_title_field)
 
         self.txt_title = QLineEdit(parent=self)
@@ -202,7 +202,7 @@ class ScheduleQuickChangePanel(QWidget):
         form_layout.addWidget(self.txt_title)
 
         lbl_category = QLabel(self.i18n.get("stream_info.quick_change.category"))
-        lbl_category.setProperty("role", "setting_title")
+        lbl_category.setProperty("role", "text_setting_title")
         form_layout.addWidget(lbl_category)
 
         self.search_category = CategorySearchComboBox(

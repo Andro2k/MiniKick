@@ -44,7 +44,7 @@ class MainWindowWiring:
         w.session_metrics.refresh_requested.connect(w._refresh_dashboard_view)
         w.session_metrics.analytics_loaded.connect(w.dashboard_controller.update_analytics_summary)
 
-        w.chat_controller.command_executed.connect(lambda *args: w._update_dashboard_metrics(force_db_query=True))
+        w.chat_controller.command_executed.connect(lambda *args: w.session_metrics.request_analytics_refresh())
 
         w.settings_controller.unlink_account_requested.connect(connections.handle_unlink_account)
         w.settings_controller.check_update_requested.connect(w.handle_update_check)

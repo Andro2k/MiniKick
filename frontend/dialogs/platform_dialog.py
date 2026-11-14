@@ -32,7 +32,7 @@ class PlatformConnectDialog(ModernModal):
 
     def _setup_ui(self, desc_key: str, placeholder_key: str, btn_connect_key: str, btn_role: str, initial_target: str):
         lbl_desc = QLabel(self.i18n.get(desc_key))
-        lbl_desc.setProperty("role", "body")
+        lbl_desc.setProperty("role", "text_body")
         lbl_desc.setWordWrap(True)
         self.content_layout.addWidget(lbl_desc)
 

@@ -1,6 +1,6 @@
 # resources\tests\_webhook_helpers.py
 
-from backend.interfaces.i_webhooks import DeliveryJob, WebhookEndpointConfig, WebhookEvent
+from backend.interfaces.webhooks_interface import DeliveryJob, WebhookEndpointConfig, WebhookEvent
 
 
 def make_endpoint(endpoint_id="ep1", **overrides) -> WebhookEndpointConfig:

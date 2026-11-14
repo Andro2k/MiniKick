@@ -47,7 +47,7 @@ class AlertVariantTabPill(ClickableFrame):
 
         title_text = self.i18n.get(f"alerts.events.{self.alert_type}")
         self.lbl_title = QLabel(title_text, parent=self)
-        self.lbl_title.setProperty("role", "caption")
+        self.lbl_title.setProperty("role", "text_caption")
         self.lbl_title.setProperty("state", "bold")
 
         self.sw_enabled = ModernSwitch(parent=self)

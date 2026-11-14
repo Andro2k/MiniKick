@@ -1,4 +1,5 @@
 # backend\providers\chat\twitch_ws_provider.py
+"""Administrador de WebSocket del chat de Twitch."""
 
 import inspect
 import logging
@@ -8,7 +9,7 @@ from collections import deque
 from typing import Callable
 import websocket
 
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from .base_chat_provider import BaseChatSocketProvider
 
 logger = logging.getLogger("minikick.providers.twitch_ws_provider")

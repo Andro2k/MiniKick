@@ -1,4 +1,5 @@
 # backend\workers\bug_report_worker.py
+"""Trabajador que envía informes de errores."""
 
 import logging
 import os
@@ -7,7 +8,7 @@ import sys
 import requests
 from PySide6.QtCore import QThread, Signal
 from backend.config import DISCORD_WEBHOOK_URL, APP_VERSION
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 
 logger = logging.getLogger("minikick.workers.bug_report")
 

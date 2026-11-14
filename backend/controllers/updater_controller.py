@@ -1,4 +1,5 @@
 # backend\controllers\updater_controller.py
+"""Controlador de actualizaciones de la aplicación."""
 
 import logging
 from PySide6.QtCore import QObject, Slot, Signal

@@ -1,4 +1,5 @@
 # backend\controllers\widgets_controller.py
+"""Controlador de widgets."""
 
 import datetime
 import heapq
@@ -8,8 +9,9 @@ import time
 from collections import deque
 from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
+from backend.utils.db_background_utils import flush_db_writes
 from backend.services import WidgetService, CommandService
-from backend.services.system.clock_service import CountdownTimer, Stopwatch, parse_duration
+from backend.services.app.clock_service import CountdownTimer, Stopwatch, parse_duration
 from backend.utils import extract_emotes
 
 logger = logging.getLogger("minikick.controllers.widgets")
@@ -67,7 +69,7 @@ class WidgetsController(QObject):
         self.widget_service = widget_service
         self.command_service = command_service
         self.overlay_server = overlay_server
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         self.i18n = i18n or TranslationService()
         self.toast = toast_manager
         self._ignored_users_provider = ignored_users_provider
@@ -75,6 +77,7 @@ class WidgetsController(QObject):
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
         self._combo_count = 0
+        self._last_explosion_at = 0.0
         self._recent_image_emotes: deque[dict] = deque(maxlen=20)
         self._timer = CountdownTimer()
         self._stopwatch = Stopwatch()
@@ -536,6 +539,8 @@ class WidgetsController(QObject):
             })
         self.command_service.send_response(msg, platform=platform)
 
+    _EXPLOSION_MIN_INTERVAL_S = 0.2
+
     @Slot(str, str, str, object)
     @Slot(str, str, str, object, str, str)
     @Slot(str, str, str, object, str, str, str)
@@ -571,16 +576,20 @@ class WidgetsController(QObject):
             logger.debug("[Widgets] explosion platform=%s emotes=%d enabled=%s", platform, len(image_emotes), platform_enabled)
 
             if platform_enabled and len(image_emotes) >= min_emotes:
-                self.overlay_server.trigger_widget_event("emote_explosion", {
-                    "emotes": image_emotes,
-                    "count": particle_count
-                })
+                now_mono = time.monotonic()
+                if now_mono - self._last_explosion_at >= self._EXPLOSION_MIN_INTERVAL_S:
+                    self._last_explosion_at = now_mono
+                    self.overlay_server.trigger_widget_event("emote_explosion", {
+                        "emotes": image_emotes,
+                        "count": particle_count
+                    })
 
         if combo_on:
             cfg_combo = w_combo.get("config", {})
             min_combo = int(cfg_combo.get("min_combo", 3))
             timeout_sec = float(cfg_combo.get("timeout_sec", 5.0))
             now = time.time()
+            combo_payload = None
 
             for emote_obj in emotes_list:
                 emote_name = emote_obj["name"]
@@ -592,13 +601,16 @@ class WidgetsController(QObject):
                 self._last_combo_time = now
 
                 if self._combo_count >= min_combo:
-                    self.overlay_server.trigger_widget_event("emote_combo", {
+                    combo_payload = {
                         "emote": emote_name,
                         "src": emote_obj.get("src", ""),
                         "type": emote_obj.get("type", "text"),
                         "count": self._combo_count,
                         "timeout_sec": timeout_sec
-                    })
+                    }
+
+            if combo_payload is not None:
+                self.overlay_server.trigger_widget_event("emote_combo", combo_payload)
 
     def _process_explosion_command(self, user: str, _args: str, platform: str = "kick"):
         if self.overlay_server:
@@ -798,5 +810,6 @@ class WidgetsController(QObject):
             try:
                 self.widget_service.save_daily_chatters_batch(self._current_chatters_date, self._chatters_counts)
                 self._chatters_dirty = False
+                flush_db_writes(3.0)
             except Exception as e:
                 logger.error("[WidgetsController] Error saving chatters batch on cleanup: %s", e)

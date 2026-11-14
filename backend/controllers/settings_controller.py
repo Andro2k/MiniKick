@@ -1,4 +1,5 @@
 # backend\controllers\settings_controller.py
+"""Controlador de configuración."""
 
 import logging
 from PySide6.QtCore import QObject, Signal, Slot
@@ -37,7 +38,7 @@ class SettingsController(QObject):
             return self.i18n
         if self.view and hasattr(self.view, "i18n") and self.view.i18n:
             return self.view.i18n
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         return TranslationService()
 
     def _connect_signals(self):
@@ -233,7 +234,7 @@ class SettingsController(QObject):
         logger.info("[User Action] Opened Bug Report modal")
         initial_contact = ""
         try:
-            from backend.services.system.identity import resolve_primary_identity
+            from backend.services.app.identity_service import resolve_primary_identity
             initial_contact = resolve_primary_identity()
         except Exception:
             pass

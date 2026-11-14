@@ -26,7 +26,7 @@ def _setup_icon_text_row(
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_lbl)
     lbl = QLabel(text, target_widget)
-    lbl.setProperty("role", "caption")
+    lbl.setProperty("role", "text_caption")
     lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     layout.addWidget(lbl, stretch=1)
     if tooltip:
@@ -81,7 +81,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _create_section_header(self, text: str) -> QLabel:
         lbl = QLabel(text, self)
-        lbl.setProperty("role", "caption")
+        lbl.setProperty("role", "text_caption")
         lbl.setProperty("state", "bold")
         return lbl
 
@@ -233,7 +233,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
         card_preview = ModernCard(self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="vertical")
         lbl_preview = QLabel(self.i18n.get("chat.overlay.preview_title"))
-        lbl_preview.setProperty("role", "body")
+        lbl_preview.setProperty("role", "text_body")
         card_preview.addWidget(lbl_preview)
 
         self.mockup_widget = ChatOverlayMockupWidget(self.i18n, parent=self)

@@ -1,4 +1,5 @@
 # backend\utils\command_utils.py
+"""Validación y limpieza de activadores de comandos."""
 
 import re
 

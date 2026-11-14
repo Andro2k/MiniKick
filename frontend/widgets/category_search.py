@@ -26,7 +26,7 @@ class CategoryItemWidget(QWidget):
         layout.addWidget(self.icon_label)
 
         self.lbl_name = QLabel(name)
-        self.lbl_name.setProperty("role", "body")
+        self.lbl_name.setProperty("role", "text_body")
         self.lbl_name.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout.addWidget(self.lbl_name)
 

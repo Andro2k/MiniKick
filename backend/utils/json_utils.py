@@ -1,4 +1,5 @@
 # backend\utils\json_utils.py
+"""Utilidades rápidas para cargar y serializar JSON, y analizar cargas de Kick."""
 
 import logging
 from typing import Any

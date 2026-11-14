@@ -19,11 +19,11 @@ class SeverityCard(ClickableFrame):
         text_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.MRG_NON)
 
         self.lbl_title = QLabel(title)
-        self.lbl_title.setProperty("role", "body")
+        self.lbl_title.setProperty("role", "text_body")
         self.lbl_title.setProperty("state", "bold")
 
         self.lbl_sub = QLabel(subtitle)
-        self.lbl_sub.setProperty("role", "caption")
+        self.lbl_sub.setProperty("role", "text_caption")
         self.lbl_sub.setWordWrap(True)
 
         text_layout.addWidget(self.lbl_title)

@@ -98,11 +98,11 @@ class DashboardView(BaseView):
         welcome_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_welcome_title = QLabel(self.i18n.get("dashboard.welcome.title"), self.welcome_card)
-        self.lbl_welcome_title.setProperty("role", "h1")
+        self.lbl_welcome_title.setProperty("role", "text_h1")
         welcome_layout.addWidget(self.lbl_welcome_title)
 
         self.lbl_welcome_subtitle = QLabel(self.i18n.get("dashboard.welcome.subtitle"), self.welcome_card)
-        self.lbl_welcome_subtitle.setProperty("role", "body")
+        self.lbl_welcome_subtitle.setProperty("role", "text_body")
         self.lbl_welcome_subtitle.setWordWrap(True)
         welcome_layout.addWidget(self.lbl_welcome_subtitle)
 
@@ -286,13 +286,13 @@ class DashboardView(BaseView):
         self.top_commands_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
-        lbl_top_cmds.setProperty("role", "h2")
+        lbl_top_cmds.setProperty("role", "text_h2")
         self.top_commands_card.addWidget(lbl_top_cmds)
 
         self.top_commands_container = QVBoxLayout()
         self.top_commands_container.setSpacing(Size.SPACING_SM)
         self.lbl_no_commands = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-        self.lbl_no_commands.setProperty("role", "body")
+        self.lbl_no_commands.setProperty("role", "text_body")
         self.top_commands_container.addWidget(self.lbl_no_commands)
         self.top_commands_card.addLayout(self.top_commands_container)
         right_col_layout.addWidget(self.top_commands_card)
@@ -300,26 +300,26 @@ class DashboardView(BaseView):
         self.modules_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
         self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_modules_title = QLabel(self.i18n.get("dashboard.analytics.modules_summary_title"))
-        lbl_modules_title.setProperty("role", "h2")
+        lbl_modules_title.setProperty("role", "text_h2")
         self.modules_card.addWidget(lbl_modules_title)
 
         self.modules_grid = QGridLayout()
         self.modules_grid.setSpacing(Size.SPACING_SM)
 
         self.lbl_active_cmds_val = QLabel("0")
-        self.lbl_active_cmds_val.setProperty("role", "h1")
+        self.lbl_active_cmds_val.setProperty("role", "text_h1")
         lbl_active_cmds_text = QLabel(self.i18n.get("dashboard.analytics.active_commands"))
-        lbl_active_cmds_text.setProperty("role", "caption")
+        lbl_active_cmds_text.setProperty("role", "text_caption")
 
         self.lbl_active_timers_val = QLabel("0")
-        self.lbl_active_timers_val.setProperty("role", "h1")
+        self.lbl_active_timers_val.setProperty("role", "text_h1")
         lbl_active_timers_text = QLabel(self.i18n.get("dashboard.analytics.active_timers"))
-        lbl_active_timers_text.setProperty("role", "caption")
+        lbl_active_timers_text.setProperty("role", "text_caption")
 
         self.lbl_active_rewards_val = QLabel("0")
-        self.lbl_active_rewards_val.setProperty("role", "h1")
+        self.lbl_active_rewards_val.setProperty("role", "text_h1")
         lbl_active_rewards_text = QLabel(self.i18n.get("dashboard.analytics.active_rewards"))
-        lbl_active_rewards_text.setProperty("role", "caption")
+        lbl_active_rewards_text.setProperty("role", "text_caption")
 
         self.modules_grid.addWidget(self.lbl_active_cmds_val, 0, 0)
         self.modules_grid.addWidget(lbl_active_cmds_text, 1, 0)
@@ -465,7 +465,7 @@ class DashboardView(BaseView):
 
             if not top_commands:
                 lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-                lbl_none.setProperty("role", "body")
+                lbl_none.setProperty("role", "text_body")
                 self.top_commands_container.addWidget(lbl_none)
             else:
                 max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
@@ -478,7 +478,7 @@ class DashboardView(BaseView):
                     lbl_rank.setProperty("role", "rank_number")
 
                     lbl_trigger = QLabel(cmd.get("trigger", ""))
-                    lbl_trigger.setProperty("role", "body")
+                    lbl_trigger.setProperty("role", "text_body")
 
                     pbar = QProgressBar()
                     pbar.setProperty("role", "top_command_progress")
@@ -487,7 +487,7 @@ class DashboardView(BaseView):
                     pbar.setValue(cmd.get("count", 0))
 
                     lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
-                    lbl_cnt.setProperty("role", "caption")
+                    lbl_cnt.setProperty("role", "text_caption")
 
                     row.addWidget(lbl_rank)
                     row.addWidget(lbl_trigger)

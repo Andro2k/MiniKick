@@ -24,7 +24,7 @@ class UpdateDialog(ModernModal):
 
         self.lbl_subtitle = create_text_label(
             self.i18n.get("dialogs.update.subtitle_connecting"),
-            role="body",
+            role="text_body",
             alignment=Qt.AlignmentFlag.AlignCenter
         )
         self.content_layout.addWidget(self.lbl_subtitle)
@@ -45,9 +45,9 @@ class UpdateDialog(ModernModal):
 
         labels_layout = QHBoxLayout()
         self.lbl_prog_text = QLabel(self.i18n.get("dialogs.update.lbl_progress"))
-        self.lbl_prog_text.setProperty("role", "body")
+        self.lbl_prog_text.setProperty("role", "text_body")
         self.lbl_prog_val = QLabel("0%")
-        self.lbl_prog_val.setProperty("role", "body")
+        self.lbl_prog_val.setProperty("role", "text_body")
 
         labels_layout.addWidget(self.lbl_prog_text)
         labels_layout.addStretch()

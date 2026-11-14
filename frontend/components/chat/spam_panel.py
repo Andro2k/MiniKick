@@ -35,7 +35,7 @@ class ChatSpamPanel(QWidget):
         panel.addWidget(header_widget)
 
         subtitle_lbl = QLabel(self.i18n.get("spam.header.subtitle"), parent=self)
-        subtitle_lbl.setProperty("role", "caption")
+        subtitle_lbl.setProperty("role", "text_caption")
         subtitle_lbl.setWordWrap(True)
         panel.addWidget(subtitle_lbl)
 

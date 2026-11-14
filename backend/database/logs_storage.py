@@ -1,4 +1,5 @@
-# backend\database\system_log_storage.py
+# backend\database\logs_storage.py
+"""Almacenamiento SQLite de los registros del sistema."""
 
 import logging
 import sys

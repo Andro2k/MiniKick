@@ -59,7 +59,7 @@ class ImportBackupModal(ModernModal):
 
     def _setup_content(self):
         lbl_desc = QLabel(self.i18n.get("settings.dialogs.import_modal.desc"), self)
-        lbl_desc.setProperty("role", "body")
+        lbl_desc.setProperty("role", "text_body")
         lbl_desc.setWordWrap(True)
         self.content_layout.addWidget(lbl_desc)
 
@@ -72,9 +72,9 @@ class ImportBackupModal(ModernModal):
                 row_v.setContentsMargins(*Size.Margin.MRG_XSM)
                 row_v.setSpacing(Size.SPACING_SM)
                 lbl_v_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_version"), self)
-                lbl_v_tag.setProperty("role", "caption")
+                lbl_v_tag.setProperty("role", "text_caption")
                 lbl_v_val = QLabel(str(version), self)
-                lbl_v_val.setProperty("role", "body")
+                lbl_v_val.setProperty("role", "text_body")
                 lbl_v_val.setProperty("state", "white")
                 row_v.addWidget(lbl_v_tag)
                 row_v.addWidget(lbl_v_val)
@@ -86,9 +86,9 @@ class ImportBackupModal(ModernModal):
                 row_d.setContentsMargins(*Size.Margin.MRG_XSM)
                 row_d.setSpacing(Size.SPACING_SM)
                 lbl_d_tag = QLabel(self.i18n.get("settings.dialogs.import_modal.metadata_date"), self)
-                lbl_d_tag.setProperty("role", "caption")
+                lbl_d_tag.setProperty("role", "text_caption")
                 lbl_d_val = QLabel(str(export_date), self)
-                lbl_d_val.setProperty("role", "body")
+                lbl_d_val.setProperty("role", "text_body")
                 row_d.addWidget(lbl_d_tag)
                 row_d.addWidget(lbl_d_val)
                 row_d.addStretch()
@@ -158,10 +158,10 @@ class ImportBackupModal(ModernModal):
             desc_text = "" if raw_desc == desc_key else raw_desc
 
             lbl_title = QLabel(title_text, card_sections)
-            lbl_title.setProperty("role", "h2")
+            lbl_title.setProperty("role", "text_h2")
 
             lbl_sub = QLabel(desc_text, card_sections)
-            lbl_sub.setProperty("role", "caption")
+            lbl_sub.setProperty("role", "text_caption")
             lbl_sub.setWordWrap(True)
 
             info_col.addWidget(lbl_title)

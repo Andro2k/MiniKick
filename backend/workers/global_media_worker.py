@@ -1,4 +1,5 @@
 # backend\workers\global_media_worker.py
+"""Trabajador que ejecuta un enlace de bajo nivel para eventos multimedia globales."""
 
 import sys
 import ctypes

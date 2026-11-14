@@ -1,8 +1,9 @@
 # backend\handlers\spam_handler.py
+"""Manejador que aplica filtros de spam al chat."""
 
 import re
 import logging
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import apply_pronunciations, normalize_symbols_for_speech, speakable_username, strip_emojis
 
 logger = logging.getLogger("minikick.handlers.chat_filter")

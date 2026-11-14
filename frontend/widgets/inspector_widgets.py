@@ -33,7 +33,7 @@ class InspectorPropertyRow(QWidget):
             layout.addWidget(self.lbl_icon)
 
         self.lbl_title = QLabel(label, self)
-        self.lbl_title.setProperty("role", "caption")
+        self.lbl_title.setProperty("role", "text_caption")
         self.lbl_title.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.lbl_title)
 

@@ -1,11 +1,13 @@
 # backend\workers\tiktok_chat_worker.py
+"""Trabajador del chat de TikTok."""
 
 import datetime
+import time
 import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TikTokChatProvider
 from backend.services.chat import ChatMessageDTO
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import fast_dumps, stop_provider_chat_worker, ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
@@ -104,7 +106,8 @@ class TikTokChatWorker(QThread):
             sender_id=0,
             timestamp=now_str,
             platform="tiktok",
-            emotes_tag=emotes_tag
+            emotes_tag=emotes_tag,
+            received_at=time.monotonic(),
         )
         self.message_received.emit(dto)
 

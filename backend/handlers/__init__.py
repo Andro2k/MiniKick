@@ -1,4 +1,5 @@
 # backend\handlers\__init__.py
+"""Manejadores de eventos y comandos de la aplicación."""
 
 from .spam_handler import ChatFilterHandler
 from .tts_handler import TTSVoiceHandler

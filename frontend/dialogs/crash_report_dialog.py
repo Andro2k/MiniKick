@@ -52,7 +52,7 @@ class CrashReportDialog(ModernModal):
         card_layout.setContentsMargins(*Size.Margin.MRG_LRG)
 
         lbl_subtitle = QLabel(self.subtitle_text)
-        lbl_subtitle.setProperty("role", "body")
+        lbl_subtitle.setProperty("role", "text_body")
         lbl_subtitle.setWordWrap(True)
         card_layout.addWidget(lbl_subtitle)
 
@@ -60,14 +60,14 @@ class CrashReportDialog(ModernModal):
         form_layout.setSpacing(Size.SPACING_MD)
 
         lbl_contact = QLabel(self.lbl_contact_text)
-        lbl_contact.setProperty("role", "body")
+        lbl_contact.setProperty("role", "text_body")
         self.txt_contact = QLineEdit()
         self.txt_contact.setPlaceholderText(self.placeholder_contact_text)
         if self.initial_contact:
             self.txt_contact.setText(self.initial_contact)
 
         lbl_desc = QLabel(self.lbl_desc_text)
-        lbl_desc.setProperty("role", "body")
+        lbl_desc.setProperty("role", "text_body")
         self.txt_desc = QTextEdit()
         self.txt_desc.setPlaceholderText(self.placeholder_desc_text)
 
@@ -78,7 +78,7 @@ class CrashReportDialog(ModernModal):
 
         tb_header_layout = QHBoxLayout()
         lbl_traceback = QLabel(self.lbl_traceback_text)
-        lbl_traceback.setProperty("role", "body")
+        lbl_traceback.setProperty("role", "text_body")
 
         self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg")
         self.btn_copy_tb.clicked.connect(self._copy_traceback)

@@ -1,4 +1,5 @@
 # backend\handlers\command_help_formatter.py
+"""Da formato a la ayuda de comandos y la divide en fragmentos para el chat."""
 
 _CATEGORIES = ("chat", "music", "widgets", "moderation")
 _MODERATION_TAGS = frozenset({"[PLUGIN_CHAT_TTS_MUTE]", "[PLUGIN_CHAT_TTS_BLOCK]", "[PLUGIN_CHAT_TTS_SKIP]"})

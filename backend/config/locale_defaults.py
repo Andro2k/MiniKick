@@ -1,4 +1,5 @@
-# backend\config\default_en_locale.py
+# backend\config\locale_defaults.py
+"""Diccionario de idioma predeterminado (DEFAULT_DICTIONARY)."""
 
 DEFAULT_DICTIONARY = {
   "alerts": {

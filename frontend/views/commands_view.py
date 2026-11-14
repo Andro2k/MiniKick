@@ -213,7 +213,7 @@ class CommandView(BaseView):
         container, layout = self._create_cell_container(Size.SPACING_SM)
         trigger_val = cmd_data.get("trigger", "")
         lbl_trigger = QLabel(trigger_val)
-        lbl_trigger.setProperty("role", "body")
+        lbl_trigger.setProperty("role", "text_body")
         layout.addWidget(lbl_trigger)
 
         if not is_complete_valid_trigger(trigger_val):
@@ -267,7 +267,7 @@ class CommandView(BaseView):
 
         if not raw_aliases:
             lbl_empty = QLabel("-")
-            lbl_empty.setProperty("role", "body")
+            lbl_empty.setProperty("role", "text_body")
             layout.addWidget(lbl_empty)
             return container
 
@@ -276,10 +276,10 @@ class CommandView(BaseView):
             badge = create_badge(badge_text, state="warning")
             layout.addWidget(badge)
             lbl_text = QLabel(raw_aliases)
-            lbl_text.setProperty("role", "caption")
+            lbl_text.setProperty("role", "text_caption")
         else:
             lbl_text = QLabel(raw_aliases)
-            lbl_text.setProperty("role", "body")
+            lbl_text.setProperty("role", "text_body")
 
         layout.addWidget(lbl_text)
         layout.addStretch()

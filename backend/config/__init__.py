@@ -1,4 +1,5 @@
 # backend\config\__init__.py
+"""Configuración y valores predeterminados de la aplicación."""
 
 import logging
 from dataclasses import dataclass

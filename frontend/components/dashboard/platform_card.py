@@ -41,7 +41,7 @@ class PlatformStatusCard(QFrame):
         top_row = create_row_layout(spacing=Size.SPACING_NN)
 
         self.lbl_brand = QLabel(brand_name, self)
-        self.lbl_brand.setProperty("role", "h2")
+        self.lbl_brand.setProperty("role", "text_h2")
 
         self.lbl_status_pill = QLabel(self.i18n.get("dashboard.platforms.status_offline"), self)
         self.lbl_status_pill.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -55,7 +55,7 @@ class PlatformStatusCard(QFrame):
         mid_row = create_row_layout(spacing=Size.SPACING_XS)
 
         self.lbl_channel = QLabel(self.i18n.get("dashboard.platforms.disconnected"), self)
-        self.lbl_channel.setProperty("role", "body")
+        self.lbl_channel.setProperty("role", "text_body")
         self.lbl_channel.setProperty("state", "normal")
         self.lbl_channel.setWordWrap(False)
 
@@ -64,7 +64,7 @@ class PlatformStatusCard(QFrame):
         initial_msg_text = self.i18n.get("dashboard.platforms.messages_share")
         initial_msg_text = initial_msg_text.replace("{count}", "0").replace("{percentage}", "0")
         self.lbl_msgs = QLabel(initial_msg_text, self)
-        self.lbl_msgs.setProperty("role", "caption")
+        self.lbl_msgs.setProperty("role", "text_caption")
         self.lbl_msgs.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         mid_row.addWidget(self.lbl_channel, 1)

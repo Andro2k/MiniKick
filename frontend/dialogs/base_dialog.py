@@ -374,10 +374,10 @@ class DialogHeader(QFrame):
         texts = QVBoxLayout()
         texts.setSpacing(Size.SPACING_XS)
         self.lbl_title = QLabel(title, self)
-        self.lbl_title.setProperty("role", "h1")
+        self.lbl_title.setProperty("role", "text_h1")
         self.lbl_title.setWordWrap(True)
         self.lbl_subtitle = QLabel(subtitle, self)
-        self.lbl_subtitle.setProperty("role", "caption")
+        self.lbl_subtitle.setProperty("role", "text_caption")
         self.lbl_subtitle.setWordWrap(True)
         self.lbl_subtitle.setVisible(bool(subtitle))
         texts.addWidget(self.lbl_title)
@@ -631,7 +631,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
         self.footer, self.btn_layout = build_dialog_footer(self.container)
         self.lbl_step_num = QLabel()
-        self.lbl_step_num.setProperty("role", "caption")
+        self.lbl_step_num.setProperty("role", "text_caption")
         self.btn_layout.addWidget(self.lbl_step_num)
         self.btn_layout.addStretch()
 
@@ -722,7 +722,7 @@ class ModernConfirmDialog(ModernModal):
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 60))
 
         body_label = QLabel(body_text)
-        body_label.setProperty("role", "body")
+        body_label.setProperty("role", "text_body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
 

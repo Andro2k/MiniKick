@@ -1,4 +1,5 @@
 # backend\providers\voices\local_provider.py
+"""Proveedor local de texto a voz."""
 
 import logging
 import sys

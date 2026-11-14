@@ -1,10 +1,13 @@
 # backend\services\chat\spam_service.py
+"""Filtros de spam: carga, almacenamiento y detección."""
 
 import logging
 import re
 from collections import deque
 
-from backend.utils.youtube_url import is_youtube_link
+from backend.utils.io_background_utils import submit_network_io
+from backend.utils.youtube_url_utils import is_youtube_link
+from backend.utils.db_background_utils import submit_db_write
 
 logger = logging.getLogger("minikick.services.chat.spam")
 
@@ -140,8 +143,9 @@ class SpamService:
                     if any(count > max_amount for count in word_counts.values()):
                         is_violation = True
                     else:
-                        self._track_user_message(user, clean_msg.lower())
-                        if self.user_history[user]["count"] > max_amount:
+                        history_key = f"{platform}:{user}"
+                        self._track_user_message(history_key, clean_msg.lower())
+                        if self.user_history[history_key]["count"] > max_amount:
                             is_violation = True
             if is_violation:
                 self._apply_penalty(user, sender_id, msg_id, config, f_id, message, platform=platform)
@@ -172,7 +176,8 @@ class SpamService:
         )
 
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
-            self.storage.db_manager.log_spam_violation(
+            submit_db_write(
+                self.storage.db_manager.log_spam_violation,
                 username=user,
                 sender_id=sender_id,
                 filter_id=filter_id,
@@ -182,6 +187,11 @@ class SpamService:
                 platform=platform
             )
 
+        submit_network_io(
+            self._execute_penalty, user, sender_id, msg_id, penalty_type, duration_mins, platform
+        )
+
+    def _execute_penalty(self, user: str, sender_id: int, msg_id: str, penalty_type: str, duration_mins: int, platform: str) -> None:
         if platform == "kick":
             if not self.api_client:
                 return

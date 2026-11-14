@@ -32,7 +32,7 @@ class ScheduleFormPanel(QWidget):
         header_layout = QHBoxLayout()
         header_layout.setSpacing(Size.SPACING_MD)
         self.lbl_title = QLabel(self.i18n.get("stream_info.schedule_dialog.title_new"))
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "text_h2")
         header_layout.addWidget(self.lbl_title)
         header_layout.addStretch()
         card.addLayout(header_layout)
@@ -45,11 +45,11 @@ class ScheduleFormPanel(QWidget):
         name_field, _ = create_labeled_field(
             self.i18n.get("stream_info.schedule_dialog.name_label"),
             self.txt_name,
-            role="setting_title",
+            role="text_setting_title",
             parent=self
         )
         form_layout.addLayout(name_field)
-        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h2", parent=self))
+        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="text_h2", parent=self))
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
             spacing=Size.SPACING_LG,
@@ -66,7 +66,7 @@ class ScheduleFormPanel(QWidget):
         date_box, _ = create_labeled_field(
             self.i18n.get("stream_info.schedule_dialog.date_label"),
             self.date_edit,
-            role="setting_title",
+            role="text_setting_title",
             spacing=Size.SPACING_SM
         )
         datetime_row.addLayout(date_box)
@@ -77,7 +77,7 @@ class ScheduleFormPanel(QWidget):
         time_box, _ = create_labeled_field(
             self.i18n.get("stream_info.schedule_dialog.time_label"),
             self.time_edit,
-            role="setting_title",
+            role="text_setting_title",
             spacing=Size.SPACING_SM
         )
         datetime_row.addLayout(time_box)
@@ -101,14 +101,14 @@ class ScheduleFormPanel(QWidget):
         form_layout.addLayout(datetime_row)
 
         lbl_stream_title = QLabel(self.i18n.get("stream_info.schedule_dialog.stream_title_label"))
-        lbl_stream_title.setProperty("role", "setting_title")
+        lbl_stream_title.setProperty("role", "text_setting_title")
         self.txt_title = QLineEdit(parent=self)
         self.txt_title.setPlaceholderText(self.i18n.get("stream_info.schedule_dialog.stream_title_placeholder"))
         form_layout.addWidget(lbl_stream_title)
         form_layout.addWidget(self.txt_title)
 
         lbl_cat_kick = QLabel(self.i18n.get("stream_info.schedule_dialog.kick_category_label"))
-        lbl_cat_kick.setProperty("role", "setting_title")
+        lbl_cat_kick.setProperty("role", "text_setting_title")
         self.search_kick_cat = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.schedule_dialog.category_placeholder"),
             default_platform="kick",
@@ -120,7 +120,7 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(self.search_kick_cat)
 
         lbl_cat_twitch = QLabel(self.i18n.get("stream_info.schedule_dialog.twitch_category_label"))
-        lbl_cat_twitch.setProperty("role", "setting_title")
+        lbl_cat_twitch.setProperty("role", "text_setting_title")
         self.search_twitch_cat = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.schedule_dialog.category_placeholder"),
             default_platform="twitch",

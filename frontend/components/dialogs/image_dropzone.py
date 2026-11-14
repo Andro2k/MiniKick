@@ -37,12 +37,12 @@ class ImageDropzone(QFrame):
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))
-        self.title_lbl.setProperty("role", "body")
+        self.title_lbl.setProperty("role", "text_body")
         self.title_lbl.setProperty("state", "bold")
         self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.sub_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_desc"))
-        self.sub_lbl.setProperty("role", "caption")
+        self.sub_lbl.setProperty("role", "text_caption")
         self.sub_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sub_lbl.setWordWrap(True)
 

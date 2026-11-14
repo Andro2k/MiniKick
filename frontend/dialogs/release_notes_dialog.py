@@ -29,7 +29,7 @@ class ReleaseNotesDialog(ModernModal):
     def _setup_ui(self):
         self.lbl_subtitle = create_text_label(
             self.i18n.get("dialogs.release_notes.subtitle"),
-            role="body",
+            role="text_body",
             alignment=Qt.AlignmentFlag.AlignCenter
         )
         self.content_layout.addWidget(self.lbl_subtitle)
@@ -41,10 +41,10 @@ class ReleaseNotesDialog(ModernModal):
         meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_published = QLabel("", parent=self.meta_container)
-        self.lbl_published.setProperty("role", "caption")
+        self.lbl_published.setProperty("role", "text_caption")
 
         self.lbl_author = QLabel("", parent=self.meta_container)
-        self.lbl_author.setProperty("role", "caption")
+        self.lbl_author.setProperty("role", "text_caption")
 
         meta_layout.addWidget(self.lbl_published)
         meta_layout.addWidget(self.lbl_author)

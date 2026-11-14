@@ -1,4 +1,5 @@
 # backend\config\toml_config_provider.py
+"""Proveedor de configuración basado en TOML."""
 
 import contextlib
 import logging
@@ -15,7 +16,7 @@ except ModuleNotFoundError:
     import tomli as tomllib
 import tomli_w
 
-from backend.interfaces.i_config_provider import ConfigValue, IConfigProvider
+from backend.interfaces.config_provider_interface import ConfigValue, IConfigProvider
 
 logger = logging.getLogger("minikick.config.toml")
 

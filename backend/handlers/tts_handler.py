@@ -1,4 +1,5 @@
 # backend\handlers\tts_handler.py
+"""Manejador Qt de voces de texto a voz."""
 
 import logging
 from PySide6.QtCore import QObject, Slot
@@ -212,7 +213,7 @@ class TTSVoiceHandler(QObject):
             )
 
     def open_piper_voices_dialog(self) -> None:
-        from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
+        from backend.services.voice import PiperVoiceManager, PiperVoiceDownloadWorker
         if self.view is None:
             return
         self.view.show_piper_voices_dialog(

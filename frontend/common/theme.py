@@ -131,6 +131,7 @@ class Padding:
 
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
+    CHAT_FONT_FAMILY = "MesloLGM Nerd Font"
 
 
 class Size:
@@ -229,6 +230,10 @@ PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg")
 PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg")
 PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg")
 PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg")
+PATH_SCROLL_UP          = get_qss_colored_icon("icons/chevron-up-filled.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_DW          = get_qss_colored_icon("icons/chevron-down-filled.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_LF          = get_qss_colored_icon("icons/chevron-left-filled.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_RT          = get_qss_colored_icon("icons/chevron-right-filled.svg", Palette.NEUTRAL_400)
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
 PATH_ICON_CHECK         = get_assets_path("icons/check-filled.svg")
 PATH_ICON_MINUS         = get_assets_path("icons/minus-filled.svg")
@@ -244,12 +249,12 @@ QDialog {{ background-color: {Palette.NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* --- 2. Typography Scale --- */
-QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
-QLabel[role="sidebar_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
-QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
-QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
-QLabel[role="setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_h1"] {{ font-size: {h1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_h2"] {{ font-size: {h2}px; font-weight: 600; color: {Palette.NEUTRAL_050}; }}
+QLabel[role="text_section_header"] {{ font-size: {text1}px; font-weight: 600; color: {Palette.NEUTRAL_050}; letter-spacing: 0.5px; }}
+QLabel[role="text_body"]     {{ font-size: {text1}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
+QLabel[role="text_caption"]  {{ font-size: {text2}px; font-weight: 400; color: {Palette.NEUTRAL_400}; }}
+QLabel[role="text_setting_title"] {{ font-size: {text1}px; font-weight: 500; color: {Palette.NEUTRAL_050}; }}
 QLabel[state="normal"]  {{ color: {Palette.NEUTRAL_400}; }}
 QLabel[state="white"]   {{ color: {Palette.NEUTRAL_050}; }}
 QLabel[state="error"]   {{ color: {BrandColors.RED}; }}
@@ -359,7 +364,7 @@ QLineEdit:read-only:focus, QTextEdit:read-only:focus, QPlainTextEdit:read-only:f
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border-color: {BrandColors.RED}; }}
 QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_750}; padding: {Padding.PAD_BASE}; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border-color: {BrandColors.PURPLE}; color: {BrandColors.PURPLE}; font-weight: 500; background-color: {Palette.NEUTRAL_950}; }}
-QTextEdit[role="ConsoleDisplay"] {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; font-family: 'GoogleSansCode Nerd Font';  border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
+QTextEdit[role="console_display"] {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; font-family: '{Typography.CHAT_FONT_FAMILY}'; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; }}
 
 /* ComboBox */
 QComboBox                           {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.PAD_BASE}; min-width: 120px; }}
@@ -384,9 +389,6 @@ QLineEdit[role="searchable_combo_input"]:focus {{ background-color: transparent;
 QListWidget[role="searchable_combo_list"] {{ background-color: {Palette.NEUTRAL_900}; border: none; icon-size: 64px 24px; }}
 QListWidget[role="searchable_combo_list"]::item {{ color: {Palette.NEUTRAL_200}; font-size: {text1}px; font-weight: 500; padding: {Padding.PAD_COMP}; border-radius: {Size.Radius.RAD_XSM}px; border: none; }}
 QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {Palette.NEUTRAL_750}; color: {Palette.NEUTRAL_050}; }}
-QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {Palette.NEUTRAL_900}; width: 10px; border-radius: {Size.Radius.RAD_XXS}px; }}
-QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {Palette.NEUTRAL_700}; min-height: 20px; border-radius: {Size.Radius.RAD_XXS}px; }}
-QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}
 QLabel[role="searchable_combo_empty"] {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_500}; font-size: {text2}px; padding: {Size.SPACING_XL}px {Size.SPACING_MD}px; border-bottom-left-radius: {Size.Radius.RAD_MED}px; border-bottom-right-radius: {Size.Radius.RAD_MED}px; }}
 
 /* Context Menus */
@@ -591,18 +593,28 @@ QHeaderView::section:hover {{ background-color: {Palette.NEUTRAL_900}; color: {P
 QHeaderView::section:pressed {{ background-color: {Palette.NEUTRAL_750}; }}
 QWidget[role="table_no_results"] {{ background-color: {Palette.NEUTRAL_950}; }}
 
-/* Scrollbars */
-QScrollBar:vertical                 {{ border: none; background: transparent; width: 9px; margin: 4px 1px 4px 1px; }}
-QScrollBar::handle:vertical         {{ background-color: {rgba(Palette.NEUTRAL_000, 0.16)}; border-radius: {Size.Radius.RAD_XXS}px; min-height: 24px; }}
-QScrollBar::handle:vertical:hover   {{ background-color: {rgba(Palette.NEUTRAL_000, 0.32)}; }}
-QScrollBar::handle:vertical:pressed {{ background-color: {rgba(Palette.NEUTRAL_000, 0.48)}; }}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 0px; background: none; }}
+/* Scrollbars: pista visible, flechas en los extremos y handle dentro de la pista */
+QScrollBar:vertical                 {{ border: none; background-color: {Palette.NEUTRAL_900}; border-radius: 7px; width: 14px; margin: 14px 0px 14px 0px; }}
+QScrollBar::handle:vertical         {{ background-color: {Palette.NEUTRAL_700}; border-radius: {Size.Radius.RAD_XXS}px; min-height: 28px; margin: 0px 3px 0px 3px; }}
+QScrollBar::handle:vertical:hover   {{ background-color: {Palette.NEUTRAL_600}; }}
+QScrollBar::handle:vertical:pressed {{ background-color: {Palette.NEUTRAL_500}; }}
+QScrollBar::sub-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: top; height: 14px; width: 14px; background: transparent; border: none; }}
+QScrollBar::add-line:vertical       {{ subcontrol-origin: margin; subcontrol-position: bottom; height: 14px; width: 14px; background: transparent; border: none; }}
+QScrollBar::sub-line:vertical:hover, QScrollBar::add-line:vertical:hover {{ background-color: {Palette.NEUTRAL_750}; border-radius: 7px; }}
+QScrollBar::up-arrow:vertical       {{ image: url("{PATH_SCROLL_UP}"); width: 10px; height: 10px; }}
+QScrollBar::down-arrow:vertical     {{ image: url("{PATH_SCROLL_DW}"); width: 10px; height: 10px; }}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
 
-QScrollBar:horizontal                   {{ border: none; background: transparent; height: 9px; margin: 1px 4px 1px 4px; }}
-QScrollBar::handle:horizontal           {{ background-color: {rgba(Palette.NEUTRAL_000, 0.16)}; border-radius: {Size.Radius.RAD_XXS}px; min-width: 24px; }}
-QScrollBar::handle:horizontal:hover     {{ background-color: {rgba(Palette.NEUTRAL_000, 0.32)}; }}
-QScrollBar::handle:horizontal:pressed   {{ background-color: {rgba(Palette.NEUTRAL_000, 0.48)}; }}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 0px; background: none; }}
+QScrollBar:horizontal                   {{ border: none; background-color: {Palette.NEUTRAL_900}; border-radius: 7px; height: 14px; margin: 0px 14px 0px 14px; }}
+QScrollBar::handle:horizontal           {{ background-color: {Palette.NEUTRAL_700}; border-radius: {Size.Radius.RAD_XXS}px; min-width: 28px; margin: 3px 0px 3px 0px; }}
+QScrollBar::handle:horizontal:hover     {{ background-color: {Palette.NEUTRAL_600}; }}
+QScrollBar::handle:horizontal:pressed   {{ background-color: {Palette.NEUTRAL_500}; }}
+QScrollBar::sub-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: left; width: 14px; height: 14px; background: transparent; border: none; }}
+QScrollBar::add-line:horizontal         {{ subcontrol-origin: margin; subcontrol-position: right; width: 14px; height: 14px; background: transparent; border: none; }}
+QScrollBar::sub-line:horizontal:hover, QScrollBar::add-line:horizontal:hover {{ background-color: {Palette.NEUTRAL_750}; border-radius: 7px; }}
+QScrollBar::left-arrow:horizontal       {{ image: url("{PATH_SCROLL_LF}"); width: 10px; height: 10px; }}
+QScrollBar::right-arrow:horizontal      {{ image: url("{PATH_SCROLL_RT}"); width: 10px; height: 10px; }}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
 /* Progress Bars */

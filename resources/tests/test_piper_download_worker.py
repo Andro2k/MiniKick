@@ -2,7 +2,7 @@
 
 import threading
 
-from backend.services.chat.piper_manager import PiperVoiceDownloadWorker
+from backend.services.voice.piper_manager_service import PiperVoiceDownloadWorker
 
 
 class _FakeManager:

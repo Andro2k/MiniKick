@@ -1,4 +1,5 @@
 # backend\database\__init__.py
+"""Persistencia y administración de la base de datos."""
 
 from .database_manager import DatabaseManager
 from .cache_storage import MusicCacheManager

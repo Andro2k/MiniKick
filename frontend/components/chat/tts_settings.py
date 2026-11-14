@@ -20,7 +20,7 @@ class PlatformToggleItem(QWidget):
         layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         lbl = QLabel(brand_name, parent=self)
-        lbl.setProperty("role", "body")
+        lbl.setProperty("role", "text_body")
         layout.addWidget(lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         layout.addStretch()
@@ -45,7 +45,7 @@ class VoiceSettingRow(QWidget):
         main_layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MRG_LRG, parent=self)
 
         lbl_title = QLabel(title_text, parent=self)
-        lbl_title.setProperty("role", "setting_title")
+        lbl_title.setProperty("role", "text_setting_title")
         main_layout.addWidget(lbl_title)
 
         controls_layout = create_row_layout(spacing=Size.SPACING_SM)
@@ -181,13 +181,13 @@ class ChatTtsSettingsPanel(QWidget):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%", parent=self)
-        self.lbl_vol_perc.setProperty("role", "caption")
+        self.lbl_vol_perc.setProperty("role", "text_caption")
 
         self.slider_speed = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_speed.setRange(90, 130)
         self.slider_speed.setValue(100)
         self.lbl_speed_perc = QLabel("100%", parent=self)
-        self.lbl_speed_perc.setProperty("role", "caption")
+        self.lbl_speed_perc.setProperty("role", "text_caption")
 
         card_general = ModernCard(parent=self, margin=Size.Margin.MRG_NON, spacing=Size.SPACING_NN, orientation="vertical")
         row_tts = SettingRow.minimal(self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)

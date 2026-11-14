@@ -10,7 +10,7 @@ from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
-from backend.utils.youtube_url import youtube_video_id
+from backend.utils.youtube_url_utils import youtube_video_id
 from frontend.common import Palette, Size
 
 logger = logging.getLogger("minikick.music.video_preview")
@@ -81,7 +81,7 @@ class MusicVideoPreviewPanel(QWidget):
         error_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_error = QLabel(self.i18n.get("music.queue.preview_error"), self._error_box)
-        self.lbl_error.setProperty("role", "body")
+        self.lbl_error.setProperty("role", "text_body")
         self.lbl_error.setWordWrap(True)
         self.lbl_error.setAlignment(Qt.AlignmentFlag.AlignCenter)
         error_layout.addWidget(self.lbl_error)

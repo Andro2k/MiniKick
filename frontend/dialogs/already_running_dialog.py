@@ -23,7 +23,7 @@ class AlreadyRunningDialog(ModernModal):
 
         desc_str = self.i18n.get("dialogs.already_running.desc")
         self.lbl_desc = QLabel(desc_str)
-        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setProperty("role", "text_body")
         self.lbl_desc.setWordWrap(True)
         self.lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(self.lbl_desc)

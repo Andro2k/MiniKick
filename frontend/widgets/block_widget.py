@@ -18,13 +18,13 @@ class ViewHeader(QFrame):
         layout.setSpacing(Size.SPACING_XS)
 
         title = QLabel(title_text, parent=self)
-        title.setProperty("role", "h1")
+        title.setProperty("role", "text_h1")
         if title_color:
             color_state = "danger" if title_color in (BrandColors.RED, BrandColors.RED, "red") else ("success" if title_color in (BrandColors.GREEN, BrandColors.GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)
 
         subtitle = QLabel(subtitle_text, parent=self)
-        subtitle.setProperty("role", "body")
+        subtitle.setProperty("role", "text_body")
         subtitle.setWordWrap(True)
         subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
@@ -40,7 +40,7 @@ class SectionHeader(QWidget):
         layout.setContentsMargins(*margins)
         layout.setSpacing(Size.SPACING_NN)
         self.lbl = QLabel(text, parent=self)
-        self.lbl.setProperty("role", "h2")
+        self.lbl.setProperty("role", "text_h2")
         layout.addWidget(self.lbl)
 
     def setText(self, text: str):
@@ -57,8 +57,8 @@ class SettingRow(QWidget):
         icon_color: str = Palette.NEUTRAL_400,
         title_color: str = None,
         contents_margins: tuple = Size.Margin.MRG_LRG,
-        title_role: str = "h2",
-        desc_role: str = "body",
+        title_role: str = "text_h2",
+        desc_role: str = "text_body",
         parent=None
     ):
         super().__init__(parent)
@@ -95,7 +95,7 @@ class SettingRow(QWidget):
 
     @classmethod
     def minimal(cls, title_text: str, desc_text: str, right_widget: QWidget = None, **kwargs) -> "SettingRow":
-        return cls(title_text=title_text, desc_text=desc_text, right_widget=right_widget, title_role="setting_title", desc_role="caption", **kwargs)
+        return cls(title_text=title_text, desc_text=desc_text, right_widget=right_widget, title_role="text_setting_title", desc_role="text_caption", **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
@@ -119,8 +119,8 @@ class SliderRow(QWidget):
         icon_color: str = Palette.NEUTRAL_400,
         parent=None,
         contents_margins: tuple = Size.Margin.MRG_LRG,
-        title_role: str = "h2",
-        desc_role: str = "body"
+        title_role: str = "text_h2",
+        desc_role: str = "text_body"
     ):
         super().__init__(parent)
         main_layout = QHBoxLayout(self)
@@ -163,7 +163,7 @@ class SliderRow(QWidget):
 
     @classmethod
     def minimal(cls, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, **kwargs) -> "SliderRow":
-        return cls("", title_text, desc_text, slider_widget, value_label, title_role="setting_title", desc_role="caption", **kwargs)
+        return cls("", title_text, desc_text, slider_widget, value_label, title_role="text_setting_title", desc_role="text_caption", **kwargs)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
@@ -188,14 +188,14 @@ class StatCard(QFrame):
         icon_lbl.setPixmap(get_pixmap_colored(icon_name))
 
         self.lbl_title = QLabel(title_text, parent=self)
-        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setProperty("role", "text_h2")
 
         header_layout.addWidget(icon_lbl)
         header_layout.addWidget(self.lbl_title)
         header_layout.addStretch()
 
         self.lbl_value = QLabel(initial_value, parent=self)
-        self.lbl_value.setProperty("role", "body")
+        self.lbl_value.setProperty("role", "text_body")
         self.lbl_value.setWordWrap(True)
 
         layout.addLayout(header_layout)
@@ -297,7 +297,7 @@ class ModernScrollArea(FadingScrollArea):
 
 class ExpandableCard(QFrame):
     def __init__(self, title: str, desc: str = "", icon_name: str = "", parent=None, switch_enabled: bool = True, description: str = "",
-                 title_role: str = "setting_title", desc_role: str = "body", header_margins: tuple = Size.Margin.MRG_MED):
+                 title_role: str = "text_setting_title", desc_role: str = "text_body", header_margins: tuple = Size.Margin.MRG_MED):
         super().__init__(parent)
         final_desc = description if description else desc
         self.setProperty("role", "card")
@@ -414,13 +414,13 @@ class ExpandableSettingCard(ExpandableCard):
         b_layout = self.body_layout
 
         lbl_gen = QLabel(self.i18n.get("spam.card.config_title"))
-        lbl_gen.setProperty("role", "setting_title")
+        lbl_gen.setProperty("role", "text_setting_title")
         b_layout.addWidget(lbl_gen)
 
         platforms_layout = QHBoxLayout()
         platforms_layout.setSpacing(Size.SPACING_XL)
         lbl_platforms = QLabel(self.i18n.get("spam.card.platforms"))
-        lbl_platforms.setProperty("role", "body")
+        lbl_platforms.setProperty("role", "text_body")
         platforms_layout.addWidget(lbl_platforms)
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
@@ -442,7 +442,7 @@ class ExpandableSettingCard(ExpandableCard):
         options_layout.setVerticalSpacing(Size.SPACING_XS)
 
         lbl_pen = QLabel(self.i18n.get("spam.card.action"), parent=self)
-        lbl_pen.setProperty("role", "body")
+        lbl_pen.setProperty("role", "text_body")
         self.combo_penalty = NoWheelComboBox(self)
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
@@ -451,7 +451,7 @@ class ExpandableSettingCard(ExpandableCard):
         self.combo_penalty.currentIndexChanged.connect(self._on_penalty_changed)
 
         self.lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
-        self.lbl_dur.setProperty("role", "body")
+        self.lbl_dur.setProperty("role", "text_body")
         self.spin_dur = NoWheelSpinBox(self)
         self.spin_dur.setRange(1, 10080)
         self.spin_dur.setValue(5)
@@ -463,7 +463,7 @@ class ExpandableSettingCard(ExpandableCard):
         options_layout.addWidget(self.spin_dur, 1, 1)
 
         lbl_exc = QLabel(self.i18n.get("spam.card.exclude"), parent=self)
-        lbl_exc.setProperty("role", "body")
+        lbl_exc.setProperty("role", "text_body")
         self.combo_exclude = NoWheelComboBox(self)
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
@@ -475,7 +475,7 @@ class ExpandableSettingCard(ExpandableCard):
 
         if self.card_id == "link_protection":
             lbl_allow = QLabel(self.i18n.get("spam.card.allowlist"))
-            lbl_allow.setProperty("role", "body")
+            lbl_allow.setProperty("role", "text_body")
             self.txt_allowlist = QLineEdit()
             self.txt_allowlist.setPlaceholderText(self.i18n.get("spam.card.allowlist_placeholder"))
             self.txt_allowlist.textChanged.connect(self._emit_update)
@@ -492,7 +492,7 @@ class ExpandableSettingCard(ExpandableCard):
                 min_val, max_val, default_val = 3, 100, 15
 
             lbl_amt = QLabel(self.i18n.get(amt_label_key))
-            lbl_amt.setProperty("role", "body")
+            lbl_amt.setProperty("role", "text_body")
             self.spin_amt = NoWheelSpinBox(self)
             self.spin_amt.setRange(min_val, max_val)
             self.spin_amt.setValue(default_val)

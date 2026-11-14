@@ -17,7 +17,7 @@ class VisualPositionerDialog(ModernModal):
         self.set_dialog_state("accent")
 
         desc_lbl = QLabel(self.i18n.get("rewards.dialogs.visual.desc"))
-        desc_lbl.setProperty("role", "body")
+        desc_lbl.setProperty("role", "text_body")
         desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(desc_lbl)
         self.content_layout.addSpacing(Size.SPACING_SM)

@@ -213,7 +213,7 @@ class LogView(BaseView):
         self.pagination_layout.addStretch(1)
 
         self.lbl_page_info = QLabel()
-        self.lbl_page_info.setProperty("role", "body")
+        self.lbl_page_info.setProperty("role", "text_body")
         self.pagination_layout.addWidget(self.lbl_page_info)
 
         self.table_card.set_footer_widget(self.pagination_bar)

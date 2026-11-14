@@ -28,7 +28,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
-from backend.services.system.translation_service import TranslationService
+from backend.services.settings.translation_service import TranslationService
 from frontend.common import get_global_qss
 
 DEFAULT_WIDTHS = [1400, 1200, 1000, 850, 750, 700, 680, 600, 550]

@@ -1,13 +1,28 @@
 # frontend\components\chat\chat_display.py
 
 import html
-from PySide6.QtGui import QFont
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy, QPushButton, QHBoxLayout
+from PySide6.QtGui import QDesktopServices, QFont
+from PySide6.QtCore import QUrl, Signal
+from PySide6.QtWidgets import QLabel, QTextBrowser, QSizePolicy, QPushButton, QHBoxLayout
 from frontend.widgets import ModernCard
-from frontend.common import Palette, BrandColors, BadgeTheme, Size
+from frontend.common import Palette, BrandColors, BadgeTheme, Size, Typography, linkify_html
 
-class ChatConsoleEdit(QTextEdit):
+_ALLOWED_LINK_SCHEMES = ("http", "https")
+
+
+class ChatConsoleEdit(QTextBrowser):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setOpenLinks(False)
+        self.setOpenExternalLinks(False)
+        self.document().setDefaultStyleSheet(f"a {{ color: {BrandColors.BLUE}; text-decoration: underline; }}")
+        self.anchorClicked.connect(self._open_link)
+
+    @staticmethod
+    def _open_link(url: QUrl) -> None:
+        if url.scheme().lower() in _ALLOWED_LINK_SCHEMES:
+            QDesktopServices.openUrl(url)
+
     def createMimeDataFromSelection(self):
         mime = super().createMimeDataFromSelection()
         if mime and mime.hasText():
@@ -23,7 +38,7 @@ class ChatDisplayPanel(ModernCard):
     _PILL_BG = Palette.NEUTRAL_750
     _CAP_LEFT = "\ue0b6"
     _CAP_RIGHT = "\ue0b4"
-    _FONT_FMT = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
+    _FONT_FMT = f"font-family: '{Typography.CHAT_FONT_FAMILY}', 'MesloLGM NF', monospace;"
 
     _ROLE_SYMBOLS = {
         "Streamer": ("\uf130", BadgeTheme.BADGE_STR),
@@ -62,7 +77,7 @@ class ChatDisplayPanel(ModernCard):
 
         header_layout = QHBoxLayout()
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
-        lbl_chat_title.setProperty("role", "h2")
+        lbl_chat_title.setProperty("role", "text_h2")
 
         self.btn_detach = QPushButton(self.i18n.get("chat.display.detach"))
         self.btn_detach.setProperty("role", "action_outlined")
@@ -80,8 +95,8 @@ class ChatDisplayPanel(ModernCard):
 
         self.chat_display = ChatConsoleEdit()
         self.chat_display.setReadOnly(True)
-        self.chat_display.setProperty("role", "ConsoleDisplay")
-        chat_font = QFont("GoogleSansCode Nerd Font", 10)
+        self.chat_display.setProperty("role", "console_display")
+        chat_font = QFont(Typography.CHAT_FONT_FAMILY, 10)
         chat_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
         self.chat_display.setFont(chat_font)
         self.chat_display.document().setDocumentMargin(2)
@@ -105,7 +120,7 @@ class ChatDisplayPanel(ModernCard):
 
     def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
         safe_user = html.escape(user)
-        safe_message = message if is_html else html.escape(message)
+        safe_message = linkify_html(message if is_html else html.escape(message))
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else Palette.NEUTRAL_200
 
         pills = []

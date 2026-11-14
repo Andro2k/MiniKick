@@ -1,4 +1,5 @@
 # backend\utils\text_utils.py
+"""Utilidades de texto: eliminación de emojis y comprobación de pronunciabilidad."""
 
 import re
 

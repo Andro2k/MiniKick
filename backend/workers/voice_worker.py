@@ -1,4 +1,5 @@
 # backend\workers\voice_worker.py
+"""Trabajador que obtiene las voces disponibles de texto a voz."""
 
 import sys
 import logging

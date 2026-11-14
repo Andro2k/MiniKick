@@ -1,8 +1,9 @@
 # backend\workers\updater_worker.py
+"""Trabajadores que buscan y descargan actualizaciones y obtienen notas de versión."""
 
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.services.system import UpdateManager
+from backend.services.updates import UpdateManager
 
 logger = logging.getLogger("minikick.workers.updater")
 
@@ -76,7 +77,8 @@ class ReleaseNotesWorker(QThread):
     def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", i18n=None, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Release_Notes")
-        from backend.services.system import TranslationService, GithubUpdateProvider
+        from backend.services.settings import TranslationService
+        from backend.services.updates import GithubUpdateProvider
         self.i18n = i18n or TranslationService()
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
 
@@ -116,8 +118,8 @@ class WhatsNewWorker(QThread):
         super().__init__(parent)
         self.setObjectName("Worker_Whats_New")
         self.app_version = app_version
-        from backend.services.system import GithubUpdateProvider
-        from backend.services.system.whats_new_service import parse_release_notes_content
+        from backend.services.updates import GithubUpdateProvider
+        from backend.services.updates.whats_new_service import parse_release_notes_content
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
         self.parse_content = parse_release_notes_content
 

@@ -1,4 +1,5 @@
 # backend\services\webhooks\webhook_signer.py
+"""Firma cargas de webhook y construye encabezados de solicitud."""
 
 import hashlib
 import hmac

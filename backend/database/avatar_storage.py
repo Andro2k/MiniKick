@@ -1,4 +1,5 @@
 # backend\database\avatar_storage.py
+"""Almacenamiento SQLite de avatares."""
 
 import logging
 from .database_manager import DatabaseManager
