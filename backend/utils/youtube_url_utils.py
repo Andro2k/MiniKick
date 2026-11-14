@@ -1,4 +1,5 @@
-# backend\utils\youtube_url.py
+# backend\utils\youtube_url_utils.py
+"""Parses YouTube URLs and classifies music queries (link vs search)."""
 
 import re
 from typing import NamedTuple

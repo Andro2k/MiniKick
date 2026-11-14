@@ -1,14 +1,14 @@
 # backend\interfaces\__init__.py
 
-from .i_auth import TokenStorage, TokenProvider, TransientAuthError
-from .i_secrets import SecretCipher, TokenEncryptionError
-from .i_config_provider import ConfigValue, IConfigProvider
-from .i_tts import ITTSProvider
-from .i_updater import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
-from .i_music_provider import IMusicProvider
-from .i_music_chat_context import IMusicChatContext
-from .i_alerts import AlertStorageProtocol
-from .i_webhooks import (
+from .auth_interface import TokenStorage, TokenProvider, TransientAuthError
+from .secrets_interface import SecretCipher, TokenEncryptionError
+from .config_provider_interface import ConfigValue, IConfigProvider
+from .tts_interface import ITTSProvider
+from .updater_interface import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
+from .music_provider_interface import IMusicProvider
+from .music_chat_context_interface import IMusicChatContext
+from .alerts_interface import AlertStorageProtocol
+from .webhooks_interface import (
     CRITICAL_EVENT_TYPES,
     DEFAULT_PLATFORMS,
     EVENT_TYPES,

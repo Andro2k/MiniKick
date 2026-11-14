@@ -1,4 +1,4 @@
-# backend\services\chat\piper_voice_manager.py
+# backend\services\chat\piper_manager.py
 
 import os
 import logging

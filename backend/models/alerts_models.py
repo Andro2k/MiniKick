@@ -1,4 +1,4 @@
-# backend\models\alert_models.py
+# backend\models\alerts_models.py
 
 from dataclasses import dataclass, field, asdict
 from enum import Enum

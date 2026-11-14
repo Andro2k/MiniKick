@@ -1,4 +1,5 @@
 # backend\workers\kick_auth_worker.py
+"""QThread worker that runs the Kick authentication flow."""
 
 import logging
 from PySide6.QtCore import QThread, Signal

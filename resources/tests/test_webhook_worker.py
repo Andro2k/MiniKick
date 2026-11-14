@@ -3,7 +3,7 @@
 import threading
 import time
 
-from backend.interfaces.i_webhooks import DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryResponse
 from backend.workers.webhook_delivery_worker import WebhookDeliveryWorker
 from resources.tests._webhook_helpers import make_job
 

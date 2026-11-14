@@ -1,4 +1,5 @@
-# backend\interfaces\i_music_provider.py
+# backend\interfaces\music_provider_interface.py
+"""Contract for music providers (queue, current song, playback control)."""
 
 from typing import Any, Callable, Protocol, runtime_checkable
 

@@ -1,4 +1,5 @@
-# backend\providers\chat\kick_provider.py
+# backend\providers\chat\kick_api_provider.py
+"""REST client and scraper factory for the Kick API."""
 
 import logging
 import time

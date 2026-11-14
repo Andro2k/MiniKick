@@ -1,4 +1,4 @@
-# backend\services\system\log_service.py
+# backend\services\system\logs_service.py
 
 import os
 import logging

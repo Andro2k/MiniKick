@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-from backend.interfaces.i_webhooks import PLATFORM_APP, IEventSink
+from backend.interfaces.webhooks_interface import PLATFORM_APP, IEventSink
 from backend.models import AlertEvent, AlertType
 from backend.services.chat import ChatMessageDTO
 

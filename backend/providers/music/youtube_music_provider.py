@@ -1,4 +1,5 @@
-# backend\providers\music\youtube_provider.py
+# backend\providers\music\youtube_music_provider.py
+"""YouTube music provider: search, queue and playback through Qt multimedia."""
 
 import logging
 import os
@@ -25,7 +26,7 @@ _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database import SQLiteMusicStorage
 from backend.interfaces import IConfigProvider
-from backend.utils.youtube_url import KIND_SEARCH, KIND_YOUTUBE_VIDEO, classify_music_query
+from backend.utils.youtube_url_utils import KIND_SEARCH, KIND_YOUTUBE_VIDEO, classify_music_query
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)

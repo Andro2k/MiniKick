@@ -1,4 +1,4 @@
-# backend\services\chat\command_service.py
+# backend\services\chat\commands_service.py
 
 import logging
 import re

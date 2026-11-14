@@ -10,7 +10,7 @@ from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
-from backend.utils.youtube_url import youtube_video_id
+from backend.utils.youtube_url_utils import youtube_video_id
 from frontend.common import Palette, Size
 
 logger = logging.getLogger("minikick.music.video_preview")

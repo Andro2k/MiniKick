@@ -1,4 +1,4 @@
-# backend\services\alerts\alert_queue.py
+# backend\services\alerts\alerts_queue.py
 
 import collections
 import logging

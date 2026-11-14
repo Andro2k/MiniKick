@@ -2,7 +2,7 @@
 
 import asyncio
 from unittest.mock import MagicMock
-from backend.providers.chat.tiktok_provider import TikTokChatProvider
+from backend.providers.chat.tiktok_chat_provider import TikTokChatProvider
 
 
 def test_drain_client_loop_none_or_empty():

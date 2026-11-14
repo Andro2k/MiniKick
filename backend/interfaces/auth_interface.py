@@ -1,4 +1,5 @@
-# backend\interfaces\i_auth.py
+# backend\interfaces\auth_interface.py
+"""Contracts for token storage and providers, plus the transient auth error."""
 
 from typing import Protocol
 

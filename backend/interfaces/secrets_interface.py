@@ -1,4 +1,5 @@
-# backend\interfaces\i_secrets.py
+# backend\interfaces\secrets_interface.py
+"""Secret cipher contract (encrypt/decrypt) and its encryption error."""
 
 from typing import Protocol
 

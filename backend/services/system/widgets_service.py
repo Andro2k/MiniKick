@@ -1,4 +1,4 @@
-# backend\services\system\widget_service.py
+# backend\services\system\widgets_service.py
 
 import logging
 from backend.database import SQLiteWidgetsStorage

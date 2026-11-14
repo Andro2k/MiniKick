@@ -1,4 +1,5 @@
-# backend\utils\latency_monitor.py
+# backend\utils\latency_utils.py
+"""Latency monitor that tracks samples and reports the 95th percentile."""
 
 import logging
 import time

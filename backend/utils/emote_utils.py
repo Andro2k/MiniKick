@@ -1,4 +1,5 @@
-# backend\utils\emote_parser.py
+# backend\utils\emote_utils.py
+"""Extracts emotes from JSON and Twitch-format chat payloads."""
 
 import re
 

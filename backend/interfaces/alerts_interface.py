@@ -1,4 +1,5 @@
-# backend\interfaces\i_alerts.py
+# backend\interfaces\alerts_interface.py
+"""Protocol for alert configuration storage (load, get, save)."""
 
 from typing import Protocol
 from backend.models import AlertConfig

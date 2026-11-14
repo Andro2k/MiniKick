@@ -1,4 +1,5 @@
-# backend\connections\live_chat.py
+# backend\connections\live_chat_connection.py
+"""Base live-chat connection plus the YouTube and TikTok connections."""
 
 import logging
 from typing import Callable

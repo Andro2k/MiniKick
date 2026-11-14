@@ -1,4 +1,5 @@
-# backend\interfaces\i_webhooks.py
+# backend\interfaces\webhooks_interface.py
+"""Webhook contracts: endpoint config, events, delivery jobs, sinks and formatters."""
 
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
-# backend\interfaces\i_updater.py
+# backend\interfaces\updater_interface.py
+"""Contracts for update checking, downloading and installing."""
 
 from typing import Protocol, Optional, Dict, Callable
 

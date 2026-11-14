@@ -1,4 +1,4 @@
-# backend\services\overlay\websocket_client.py
+# backend\services\overlay\overlay_ws_client.py
 
 from backend.utils import fast_dumps
 import logging

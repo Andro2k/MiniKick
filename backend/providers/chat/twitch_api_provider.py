@@ -1,4 +1,5 @@
-# backend\providers\chat\twitch_provider.py
+# backend\providers\chat\twitch_api_provider.py
+"""REST client for the Twitch API."""
 
 import logging
 import requests

@@ -15,7 +15,7 @@ except ModuleNotFoundError:
     import tomli as tomllib
 import tomli_w
 
-from backend.interfaces.i_config_provider import ConfigValue, IConfigProvider
+from backend.interfaces.config_provider_interface import ConfigValue, IConfigProvider
 
 logger = logging.getLogger("minikick.config.toml")
 

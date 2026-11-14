@@ -1,4 +1,5 @@
 # backend\providers\chat\tiktok_chat_provider.py
+"""TikTok live chat provider."""
 
 import os
 import asyncio

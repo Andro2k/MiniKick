@@ -1,4 +1,5 @@
-# backend\connections\twitch.py
+# backend\connections\twitch_connection.py
+"""Qt connection object for the Twitch integration."""
 
 import logging
 from typing import Callable

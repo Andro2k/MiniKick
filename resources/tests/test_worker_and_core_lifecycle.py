@@ -66,7 +66,7 @@ def test_search_worker_stops_after_an_in_flight_request_is_cancelled(qapp, monke
 
 
 def test_music_provider_cancels_and_retains_active_search_until_thread_finishes(qapp, monkeypatch):
-    import backend.providers.music.youtube_provider as music_module
+    import backend.providers.music.youtube_music_provider as music_module
 
     started = threading.Event()
 
@@ -116,7 +116,7 @@ def test_music_provider_cancels_and_retains_active_search_until_thread_finishes(
 
 
 def test_music_search_result_is_processed_in_provider_thread(qapp, monkeypatch):
-    import backend.providers.music.youtube_provider as music_module
+    import backend.providers.music.youtube_music_provider as music_module
 
     song_entry = {
         "title": "test song",

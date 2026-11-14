@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Callable
 
-from backend.interfaces.i_webhooks import DeliveryJob, DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryJob, DeliveryResponse
 
 logger = logging.getLogger("minikick.workers.webhook_delivery")
 

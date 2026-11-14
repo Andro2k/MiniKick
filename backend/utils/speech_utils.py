@@ -1,4 +1,5 @@
-# backend\utils\speech_text.py
+# backend\utils\speech_utils.py
+"""Text normalization for TTS: pronunciations, symbols and usernames."""
 
 import re
 

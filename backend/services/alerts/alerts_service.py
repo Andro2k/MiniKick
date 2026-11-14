@@ -1,4 +1,4 @@
-# backend\services\alerts\alert_service.py
+# backend\services\alerts\alerts_service.py
 
 import logging
 import uuid

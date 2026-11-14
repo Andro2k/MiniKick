@@ -1,4 +1,5 @@
 # backend\providers\chat\youtube_chat_provider.py
+"""YouTube live chat provider."""
 
 import logging
 import re

@@ -1,8 +1,9 @@
-# backend\interfaces\i_music_chat_context.py
+# backend\interfaces\music_chat_context_interface.py
+"""Contract the music commands use to message chat, refresh now-playing and set volume."""
 
 from typing import Any, Protocol
 
-from backend.interfaces.i_music_provider import IMusicProvider
+from backend.interfaces.music_provider_interface import IMusicProvider
 
 
 class IMusicChatContext(Protocol):

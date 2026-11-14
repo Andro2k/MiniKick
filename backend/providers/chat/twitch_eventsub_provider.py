@@ -1,4 +1,5 @@
 # backend\providers\chat\twitch_eventsub_provider.py
+"""Twitch EventSub provider for stream events."""
 
 import logging
 import threading

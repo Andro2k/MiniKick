@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from backend.interfaces.i_webhooks import IPayloadFormatter, WebhookEvent
+from backend.interfaces.webhooks_interface import IPayloadFormatter, WebhookEvent
 from backend.utils import fast_dumps
 
 SCHEMA_VERSION = 1

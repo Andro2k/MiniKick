@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 from backend.config.webhook_endpoint_store import WebhookEndpointStore
-from backend.interfaces.i_webhooks import (
+from backend.interfaces.webhooks_interface import (
     DEFAULT_PLATFORMS,
     EVENT_TYPES,
     PLATFORM_APP,

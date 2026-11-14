@@ -1,4 +1,4 @@
-# backend\services\chat\pipeline.py
+# backend\services\chat\chat_pipeline.py
 
 import logging
 from dataclasses import dataclass

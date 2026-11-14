@@ -3,7 +3,7 @@
 from backend.config.toml_config_provider import TomlConfigProvider
 from backend.config.webhook_endpoint_store import WebhookEndpointStore
 from backend.controllers import WebhooksController
-from backend.interfaces.i_webhooks import DeliveryResponse
+from backend.interfaces.webhooks_interface import DeliveryResponse
 from backend.services.system import TranslationService
 from backend.services.webhooks import PingResult, WebhookManagementService
 from frontend.dialogs import WebhookEndpointDialog

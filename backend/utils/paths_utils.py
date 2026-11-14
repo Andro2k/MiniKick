@@ -1,4 +1,5 @@
-# backend\utils\paths.py
+# backend\utils\paths_utils.py
+"""Resource path resolution helper."""
 
 import os
 import sys

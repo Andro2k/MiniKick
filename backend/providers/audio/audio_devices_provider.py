@@ -1,4 +1,5 @@
-# backend\providers\audio\devices.py
+# backend\providers\audio\audio_devices_provider.py
+"""Helpers to find and resolve Qt audio output devices."""
 
 from PySide6.QtMultimedia import QAudioDevice, QMediaDevices
 
