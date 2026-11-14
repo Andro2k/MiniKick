@@ -1,4 +1,5 @@
 # frontend\components\music\music_mockup.py
+"""Vista previa (mockup) del overlay de música."""
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF

@@ -1,4 +1,5 @@
 # frontend\window\updates_coordinator.py
+"""Coordina las actualizaciones automáticas."""
 
 import logging
 from typing import Callable

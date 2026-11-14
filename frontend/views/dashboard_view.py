@@ -1,4 +1,5 @@
 # frontend\views\dashboard_view.py
+"""Vista del dashboard."""
 
 import logging
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy, QProgressBar

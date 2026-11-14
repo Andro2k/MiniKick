@@ -1,4 +1,5 @@
 # frontend\common\markdown_utils.py
+"""Convierte Markdown a HTML estilo GitHub."""
 
 from functools import lru_cache
 from PySide6.QtGui import QTextDocument

@@ -1,4 +1,5 @@
 # frontend\components\schedule\schedule_form_panel.py
+"""Formulario de la programación."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from PySide6.QtCore import Qt, Signal, QDate, QTime

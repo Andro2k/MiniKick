@@ -1,4 +1,5 @@
 # frontend\widgets\controls_widget.py
+"""Controles básicos: botón, interruptor y spinbox compacto."""
 
 import re
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QTextEdit, QListWidget, QSpinBox, QVBoxLayout, QWidget

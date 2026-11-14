@@ -1,4 +1,5 @@
 # frontend\components\schedule\quick_change_panel.py
+"""Panel de cambios rápidos de la programación."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal

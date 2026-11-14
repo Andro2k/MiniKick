@@ -1,4 +1,5 @@
 # frontend\common\qt_debounce_utils.py
+"""Utilidad de debounce para llamadas de Qt."""
 
 from typing import Callable
 from PySide6.QtCore import QTimer

@@ -1,4 +1,5 @@
 # frontend\views\settings_view.py
+"""Vista de ajustes."""
 
 import os
 from datetime import datetime

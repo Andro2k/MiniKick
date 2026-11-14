@@ -1,4 +1,5 @@
 # frontend\window\messages_router.py
+"""Enruta los mensajes del chat."""
 
 from __future__ import annotations
 

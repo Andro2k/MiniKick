@@ -1,4 +1,5 @@
 # frontend\widgets\stream_platform_widgets.py
+"""Utilidades por plataforma: marca y sincronía de interruptores."""
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget

@@ -1,4 +1,5 @@
 # frontend\window\tray_presenter.py
+"""Presenta el estado de la bandeja del sistema."""
 
 from __future__ import annotations
 

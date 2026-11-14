@@ -1,4 +1,5 @@
 # frontend\widgets\layout_utils.py
+"""Funciones para crear marcos, filas y columnas de layout."""
 
 from __future__ import annotations
 from PySide6.QtCore import Qt

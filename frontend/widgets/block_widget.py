@@ -1,4 +1,5 @@
 # frontend\widgets\block_widget.py
+"""Bloques de interfaz reutilizables: cabeceras, filas de ajustes e insignias."""
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal, QEvent

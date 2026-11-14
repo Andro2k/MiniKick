@@ -1,4 +1,5 @@
 # frontend\dialogs\crash_report_dialog.py
+"""Diálogo de reporte de cierre inesperado."""
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QApplication, QHBoxLayout, QVBoxLayout, QFrame

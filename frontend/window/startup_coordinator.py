@@ -1,4 +1,5 @@
 # frontend\window\startup_coordinator.py
+"""Secuencia de arranque de la ventana principal."""
 
 from __future__ import annotations
 

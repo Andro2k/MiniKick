@@ -1,4 +1,5 @@
 # frontend\window\whats_new_presenter.py
+"""Presenta el modal de novedades."""
 
 import logging
 from typing import Callable

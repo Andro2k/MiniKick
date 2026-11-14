@@ -1,4 +1,5 @@
 # frontend\window\view_factory.py
+"""Fábrica de las vistas de la ventana principal."""
 
 from __future__ import annotations
 import importlib

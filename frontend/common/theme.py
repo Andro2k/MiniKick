@@ -1,4 +1,5 @@
 # frontend\common\theme.py
+"""Tokens de diseño (Palette, Semantic, BrandColors) y estilos globales de la aplicación."""
 
 from functools import lru_cache
 from PySide6.QtGui import QPalette, QColor

@@ -1,4 +1,5 @@
 # frontend\components\widgets\widget_card.py
+"""Tarjeta de configuración de un widget del overlay."""
 
 from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer

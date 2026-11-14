@@ -1,4 +1,5 @@
 # frontend\components\schedule\schedule_table_panel.py
+"""Tabla de la programación."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderView
 from PySide6.QtCore import Qt, Signal

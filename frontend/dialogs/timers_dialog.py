@@ -1,4 +1,5 @@
 # frontend\dialogs\timers_dialog.py
+"""Asistente de configuración de temporizadores."""
 
 import logging
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy

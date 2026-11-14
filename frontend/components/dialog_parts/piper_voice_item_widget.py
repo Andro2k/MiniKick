@@ -1,4 +1,5 @@
 # frontend\components\dialog_parts\piper_voice_item_widget.py
+"""Elemento de lista de una voz de Piper."""
 
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QProgressBar
 from PySide6.QtCore import Qt, Signal

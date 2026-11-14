@@ -1,4 +1,5 @@
 # frontend\window\overlay_events_presenter.py
+"""Presenta los eventos del overlay."""
 
 from __future__ import annotations
 

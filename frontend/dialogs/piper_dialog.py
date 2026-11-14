@@ -1,4 +1,5 @@
 # frontend\dialogs\piper_dialog.py
+"""Diálogo de voces de Piper."""
 
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup

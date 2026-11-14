@@ -1,4 +1,5 @@
 # frontend\dialogs\splash_screen.py
+"""Pantalla de inicio (splash) de la aplicación."""
 
 import os
 import logging

@@ -1,4 +1,5 @@
 # frontend\dialogs\tiktok_dialog.py
+"""Diálogo para conectar TikTok."""
 
 from .platform_dialog import PlatformConnectDialog
 from frontend.common import get_assets_path, BrandColors

@@ -1,4 +1,5 @@
 # frontend\components\chat\tts_settings_panel.py
+"""Panel de ajustes de TTS del chat: plataformas y voces."""
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout, QComboBox

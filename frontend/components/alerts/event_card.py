@@ -1,4 +1,5 @@
 # frontend\components\alerts\event_card.py
+"""Tarjeta de configuración de un evento de alerta y sus datos."""
 
 from __future__ import annotations
 from dataclasses import dataclass

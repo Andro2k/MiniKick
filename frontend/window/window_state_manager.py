@@ -1,4 +1,5 @@
 # frontend\window\window_state_manager.py
+"""Guarda y restaura el estado de la ventana."""
 
 import logging
 

@@ -1,4 +1,5 @@
 # frontend\components\alerts\alert_mockup.py
+"""Vista previa (mockup) del overlay de alertas."""
 
 import os
 from PySide6.QtWidgets import QWidget, QSizePolicy

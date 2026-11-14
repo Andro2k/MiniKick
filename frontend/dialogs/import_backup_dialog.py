@@ -1,4 +1,5 @@
 # frontend\dialogs\import_backup_dialog.py
+"""Modal para importar una copia de seguridad."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
 from PySide6.QtCore import Qt

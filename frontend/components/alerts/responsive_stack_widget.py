@@ -1,4 +1,5 @@
 # frontend\components\alerts\responsive_stack_widget.py
+"""Pila de widgets responsiva (QStackedWidget)."""
 
 from PySide6.QtWidgets import QStackedWidget, QSizePolicy
 

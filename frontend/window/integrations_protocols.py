@@ -1,4 +1,5 @@
 # frontend\window\integrations_protocols.py
+"""Protocolos de los controladores y vistas del estado de integraciones."""
 
 import logging
 import time

@@ -1,4 +1,5 @@
 # frontend\dialogs\webhook_dialog.py
+"""Diálogo para configurar un endpoint de webhook."""
 
 from typing import Callable
 from PySide6.QtCore import Signal

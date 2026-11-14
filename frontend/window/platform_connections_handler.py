@@ -1,4 +1,5 @@
 # frontend\window\platform_connections_handler.py
+"""Maneja las conexiones de las plataformas."""
 
 from __future__ import annotations
 

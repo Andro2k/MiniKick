@@ -1,4 +1,5 @@
 # frontend\components\music\player_settings_panel.py
+"""Panel de ajustes del reproductor, con barra de progreso."""
 
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication

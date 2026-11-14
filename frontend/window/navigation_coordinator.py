@@ -1,4 +1,5 @@
 # frontend\window\navigation_coordinator.py
+"""Coordina la navegación entre vistas."""
 
 from __future__ import annotations
 import time

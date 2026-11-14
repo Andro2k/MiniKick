@@ -1,4 +1,5 @@
 # frontend\common\gui_bridge_utils.py
+"""Puente para ejecutar funciones en el hilo de la interfaz (run_on_gui)."""
 
 import functools
 import logging

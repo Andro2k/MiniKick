@@ -1,4 +1,5 @@
 # frontend\window\composition_coordinator.py
+"""Composición de la ventana principal (construcción de sus piezas)."""
 
 from __future__ import annotations
 

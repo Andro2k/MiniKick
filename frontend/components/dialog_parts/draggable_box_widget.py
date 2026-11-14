@@ -1,4 +1,5 @@
 # frontend\components\dialog_parts\draggable_box_widget.py
+"""Caja arrastrable usada dentro de diálogos."""
 
 import os
 from PySide6.QtWidgets import QLabel, QFrame, QVBoxLayout

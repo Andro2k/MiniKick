@@ -1,4 +1,5 @@
 # frontend\components\dialog_parts\severity_card.py
+"""Tarjeta seleccionable que representa una severidad."""
 
 from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt, Signal

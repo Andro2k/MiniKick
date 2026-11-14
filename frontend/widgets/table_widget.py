@@ -1,4 +1,5 @@
 # frontend\widgets\table_widget.py
+"""Tabla moderna, su tarjeta y la celda de acciones."""
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy

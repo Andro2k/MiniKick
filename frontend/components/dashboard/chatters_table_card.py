@@ -1,4 +1,5 @@
 # frontend\components\dashboard\chatters_table_card.py
+"""Tarjeta con la tabla de chatters del dashboard."""
 
 import datetime
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QTableWidget, QHeaderView, QProgressBar, QSizePolicy, QBoxLayout

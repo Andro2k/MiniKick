@@ -1,4 +1,5 @@
 # frontend\window\main_window_core.py
+"""Ventana principal de la aplicación (MainWindowCore)."""
 
 import logging
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget, QApplication

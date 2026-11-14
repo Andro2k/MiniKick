@@ -1,4 +1,5 @@
 # frontend\components\dashboard\platform_distribution_ring_widget.py
+"""Anillo con la distribución por plataforma."""
 
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPixmap

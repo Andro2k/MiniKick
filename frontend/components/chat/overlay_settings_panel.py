@@ -1,4 +1,5 @@
 # frontend\components\chat\overlay_settings_panel.py
+"""Panel de ajustes del overlay de chat."""
 
 from PySide6.QtCore import Signal, Slot, QTimer, Qt
 from PySide6.QtWidgets import QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy

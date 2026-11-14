@@ -1,4 +1,5 @@
 # frontend\components\chat\bot_mute_panel.py
+"""Panel de silenciado del bot."""
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, QFrame, QPushButton, QListWidgetItem, QVBoxLayout
 from PySide6.QtCore import Qt, Signal, QEvent, QSize

@@ -1,4 +1,5 @@
 # frontend\window\rewards_handler.py
+"""Maneja los canjes de recompensas y su resultado."""
 
 from __future__ import annotations
 

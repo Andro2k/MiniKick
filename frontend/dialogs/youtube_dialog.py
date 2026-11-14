@@ -1,4 +1,5 @@
 # frontend\dialogs\youtube_dialog.py
+"""Diálogo para conectar YouTube."""
 
 from .platform_dialog import PlatformConnectDialog
 from frontend.common import get_assets_path, BrandColors

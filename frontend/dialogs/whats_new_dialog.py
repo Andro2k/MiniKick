@@ -1,4 +1,5 @@
 # frontend\dialogs\whats_new_dialog.py
+"""Diálogo de novedades de la versión."""
 
 from typing import List, Dict
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame

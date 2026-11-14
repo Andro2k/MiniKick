@@ -1,4 +1,5 @@
 # frontend\dialogs\release_notes_dialog.py
+"""Diálogo de notas de la versión."""
 
 from PySide6.QtWidgets import QLabel, QTextBrowser, QPushButton, QHBoxLayout, QWidget, QSizePolicy, QApplication
 from PySide6.QtCore import Qt, QUrl

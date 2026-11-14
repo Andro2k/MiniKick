@@ -1,4 +1,5 @@
 # frontend\widgets\action_line_edit.py
+"""Campo de texto con acciones integradas."""
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QFrame, QLineEdit, QPushButton

@@ -1,4 +1,5 @@
 # frontend\dialogs\base_dialog.py
+"""Base de los diálogos: ventana sin marco, cabecera, pie e insignia de icono."""
 
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication

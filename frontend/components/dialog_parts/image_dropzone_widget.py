@@ -1,4 +1,5 @@
 # frontend\components\dialog_parts\image_dropzone_widget.py
+"""Zona para soltar o seleccionar una imagen."""
 
 import os
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget, QFileDialog

@@ -1,4 +1,5 @@
 # frontend\window\media_keys_handler.py
+"""Gestiona las teclas multimedia."""
 
 import logging
 import sys

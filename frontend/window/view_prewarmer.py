@@ -1,4 +1,5 @@
 # frontend\window\view_prewarmer.py
+"""Precalienta las vistas para abrirlas más rápido."""
 
 import logging
 import time

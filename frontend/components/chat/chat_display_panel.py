@@ -1,4 +1,5 @@
 # frontend\components\chat\chat_display_panel.py
+"""Panel que muestra el chat en una consola de texto."""
 
 import html
 from PySide6.QtGui import QDesktopServices, QFont

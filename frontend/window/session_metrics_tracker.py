@@ -1,4 +1,5 @@
 # frontend\window\session_metrics_tracker.py
+"""Contadores de métricas de la sesión."""
 
 import logging
 from typing import Callable

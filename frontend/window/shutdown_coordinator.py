@@ -1,4 +1,5 @@
 # frontend\window\shutdown_coordinator.py
+"""Secuencia de cierre de la ventana principal."""
 
 from typing import Callable, Sequence
 

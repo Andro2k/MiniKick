@@ -1,4 +1,5 @@
 # frontend\common\linkify_utils.py
+"""Convierte las URLs de un texto en enlaces HTML."""
 
 import re
 

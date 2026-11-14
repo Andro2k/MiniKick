@@ -1,4 +1,5 @@
 # frontend\dialogs\positioner_dialog.py
+"""Diálogo para posicionar visualmente un elemento del overlay."""
 
 from PySide6.QtGui import QRegion
 from PySide6.QtWidgets import QLabel, QFrame

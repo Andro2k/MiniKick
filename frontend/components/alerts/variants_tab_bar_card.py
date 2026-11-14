@@ -1,4 +1,5 @@
 # frontend\components\alerts\variants_tab_bar_card.py
+"""Tarjeta con barra de pestañas para las variantes de una alerta."""
 
 from __future__ import annotations
 from typing import Dict, List, Tuple, Optional

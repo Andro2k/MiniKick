@@ -1,4 +1,5 @@
 # frontend\window\recent_redemptions_cache.py
+"""Caché de canjes recientes."""
 
 from __future__ import annotations
 from collections import deque

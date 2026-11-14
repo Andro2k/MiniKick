@@ -1,4 +1,5 @@
 # frontend\widgets\no_wheel.py
+"""Spinbox y combos que ignoran la rueda del ratón."""
 
 from PySide6.QtWidgets import QComboBox, QSlider, QDateEdit, QTimeEdit, QSpinBox, QDoubleSpinBox, QCalendarWidget, QTableView
 from PySide6.QtCore import Qt

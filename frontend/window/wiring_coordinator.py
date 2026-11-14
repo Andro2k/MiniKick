@@ -1,4 +1,5 @@
 # frontend\window\wiring_coordinator.py
+"""Conecta las señales entre controladores y vistas."""
 
 from __future__ import annotations
 from functools import partial

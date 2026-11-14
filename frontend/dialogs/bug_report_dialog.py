@@ -1,4 +1,5 @@
 # frontend\dialogs\bug_report_dialog.py
+"""Diálogo para enviar un reporte de error."""
 
 from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QHBoxLayout, QVBoxLayout
 from PySide6.QtCore import Qt

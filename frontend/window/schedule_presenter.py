@@ -1,4 +1,5 @@
 # frontend\window\schedule_presenter.py
+"""Presenta la programación en la ventana principal."""
 
 from __future__ import annotations
 

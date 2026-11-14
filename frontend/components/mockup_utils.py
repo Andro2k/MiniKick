@@ -1,4 +1,5 @@
 # frontend\components\mockup_utils.py
+"""Utilidades para dibujar los mockups de los overlays."""
 
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor
