@@ -1,4 +1,5 @@
-# backend\services\system\widgets_service.py
+# backend\services\settings\widgets_service.py
+"""Widget configuration access and shoutout formatting."""
 
 import logging
 from backend.database import SQLiteWidgetsStorage

@@ -1,4 +1,5 @@
-# backend\services\system\secret_cipher.py
+# backend\services\security\secret_cipher_service.py
+"""Secret cipher implementations (Windows DPAPI and no-op fallback)."""
 
 import base64
 import ctypes

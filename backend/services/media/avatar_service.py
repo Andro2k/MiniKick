@@ -1,4 +1,5 @@
-# backend\services\system\dashboard_service.py
+# backend\services\media\avatar_service.py
+"""Fetches and caches user avatars from URLs."""
 
 import logging
 from PySide6.QtCore import QObject, Signal, QUrl

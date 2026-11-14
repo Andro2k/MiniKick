@@ -48,7 +48,7 @@ class YouTubeResolveWorker(QThread):
         self.expected_title = expected_title
         self.loudness: float | None = None
         self.music_storage = music_storage
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         self.i18n = i18n or TranslationService()
 
     def run(self):

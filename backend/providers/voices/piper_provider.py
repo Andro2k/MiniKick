@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 from PySide6.QtCore import QUrl, QEventLoop
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.providers.audio import resolve_audio_output
-from backend.services.chat import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
+from backend.services.voice import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
 from backend.utils import is_speakable_text
 
 logger = logging.getLogger("minikick.providers.piper_provider")

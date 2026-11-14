@@ -4,10 +4,10 @@ from unittest import mock
 
 
 def test_installer_path_is_passed_by_env_not_interpolated_in_command():
-    from backend.services.system.updater_service import WindowsInstaller
+    from backend.services.updates.updater_service import WindowsInstaller
 
     hostile = r"C:\Temp\evil & calc.exe\MiniKick-Setup.exe"
-    with mock.patch("backend.services.system.updater_service.subprocess.Popen") as popen:
+    with mock.patch("backend.services.updates.updater_service.subprocess.Popen") as popen:
         WindowsInstaller().install_and_restart(hostile)
 
     args, kwargs = popen.call_args

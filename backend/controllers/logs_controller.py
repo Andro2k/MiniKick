@@ -254,7 +254,7 @@ class LogsController(QObject):
         from backend.workers import BugReportWorker
         initial_contact = ""
         try:
-            from backend.services.system.identity import resolve_primary_identity
+            from backend.services.app.identity_service import resolve_primary_identity
             initial_contact = resolve_primary_identity()
         except Exception:
             pass

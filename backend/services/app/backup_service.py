@@ -1,4 +1,5 @@
-# backend\services\system\backup_service.py
+# backend\services\app\backup_service.py
+"""Exports, inspects and imports JSON backups."""
 
 import base64
 from backend.utils import fast_load, fast_dump

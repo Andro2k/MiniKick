@@ -1,4 +1,5 @@
-# backend\services\system\updater_service.py
+# backend\services\updates\updater_service.py
+"""GitHub release lookup, Windows installer and update manager."""
 
 import os
 import tempfile

@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt, Signal, Slot
 from .base_dialog import ModernFramelessShell, DialogHeader, build_dialog_footer
-from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
+from backend.services.voice import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
 from frontend.common import get_icon_colored, get_pixmap_colored, Size
 from frontend.common.gui_bridge import run_on_gui

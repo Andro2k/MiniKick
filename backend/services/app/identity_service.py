@@ -1,4 +1,5 @@
-# backend\services\system\identity.py
+# backend\services\app\identity_service.py
+"""Helpers that pick and resolve the primary streamer identity."""
 
 from pathlib import Path
 from typing import Mapping

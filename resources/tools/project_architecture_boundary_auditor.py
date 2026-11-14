@@ -41,7 +41,7 @@ EXEMPT_FILES: Dict[str, Set[str]] = {
     "service_qt_import": {
         os.path.normpath("backend/services/rewards/thumbnail_service.py"),
         os.path.normpath("backend/services/chat/commands_service.py"),
-        os.path.normpath("backend/services/system/dashboard_service.py"),
+        os.path.normpath("backend/services/media/avatar_service.py"),
     },
 }
 

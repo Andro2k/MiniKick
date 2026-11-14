@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from backend.handlers.spam_handler import ChatFilterHandler
-from backend.services.chat.tts_service import DEFAULT_MESSAGE_GAP_S, TTSManager
+from backend.services.voice.tts_service import DEFAULT_MESSAGE_GAP_S, TTSManager
 from backend.utils import apply_pronunciations, normalize_symbols_for_speech, speakable_username
 
 
@@ -86,7 +86,7 @@ def test_build_spoken_text_cleans_the_name_and_respects_read_name():
 
 
 def _manager_without_threads() -> TTSManager:
-    with patch("backend.services.chat.tts_service.threading.Thread", return_value=MagicMock()):
+    with patch("backend.services.voice.tts_service.threading.Thread", return_value=MagicMock()):
         return TTSManager()
 
 

@@ -1,4 +1,5 @@
-# backend\services\chat\piper_manager.py
+# backend\services\voice\piper_manager_service.py
+"""Piper voice manager and voice download worker."""
 
 import os
 import logging

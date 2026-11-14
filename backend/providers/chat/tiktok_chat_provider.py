@@ -8,7 +8,7 @@ import re
 import time
 from collections import deque
 from typing import Callable, Any
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.config import SIGN_API_KEY
 
 

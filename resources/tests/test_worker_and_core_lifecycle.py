@@ -190,7 +190,7 @@ def test_container_shutdown_attempts_each_component_once_even_if_one_fails(caplo
 
 
 def test_tts_shutdown_is_idempotent_and_stops_queue_threads():
-    from backend.services.chat.tts_service import TTSManager
+    from backend.services.voice.tts_service import TTSManager
 
     manager = TTSManager()
     manager.shutdown()

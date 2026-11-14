@@ -10,7 +10,7 @@ import pytest
 import websocket
 
 from backend.controllers.widgets_controller import WidgetsController
-from backend.services.chat.tts_service import TTSManager
+from backend.services.voice.tts_service import TTSManager
 from backend.services.overlay.overlay_manager import OverlayServerManager
 
 

@@ -25,7 +25,7 @@ class DashboardController(QObject):
         self.db_manager = db_manager
         self.widget_service = widget_service
         self.toast = toast_manager
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         self.i18n = i18n or TranslationService()
         self._widgets_controller = None
         self._current_chatters_date = datetime.date.today().strftime("%Y-%m-%d")

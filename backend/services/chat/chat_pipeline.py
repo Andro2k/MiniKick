@@ -1,4 +1,5 @@
 # backend\services\chat\chat_pipeline.py
+"""Chat message DTO and the processing pipeline that runs registered steps."""
 
 import logging
 from dataclasses import dataclass

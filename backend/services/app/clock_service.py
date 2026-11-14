@@ -1,4 +1,5 @@
-# backend\services\system\clock_service.py
+# backend\services\app\clock_service.py
+"""Elapsed clock, countdown timer and stopwatch."""
 
 import re
 import time

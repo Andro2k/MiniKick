@@ -117,7 +117,7 @@ class OAuthCallbackServer:
         if browser_service and hasattr(browser_service, "open_url"):
             opened = browser_service.open_url(url)
         if not opened:
-            from backend.services.system.browser_service import BrowserService
+            from backend.services.app.browser_service import BrowserService
             BrowserService._open_default(url)
         start_time = time.time()
         

@@ -1,4 +1,5 @@
-# backend\services\system\instance_service.py
+# backend\services\app\instance_service.py
+"""Single-instance guard based on a local socket."""
 
 import socket
 import logging

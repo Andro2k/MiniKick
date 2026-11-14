@@ -4,7 +4,7 @@ from backend.config.toml_config_provider import TomlConfigProvider
 from backend.config.webhook_endpoint_store import WebhookEndpointStore
 from backend.controllers import WebhooksController
 from backend.interfaces.webhooks_interface import DeliveryResponse
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.services.webhooks import PingResult, WebhookManagementService
 from frontend.dialogs import WebhookEndpointDialog
 from frontend.views import WebhooksView

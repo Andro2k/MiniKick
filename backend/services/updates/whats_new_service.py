@@ -1,4 +1,5 @@
-# backend\services\system\whats_new_service.py
+# backend\services\updates\whats_new_service.py
+"""Decides when to show the what's-new modal and provides release highlights."""
 
 import logging
 import re

@@ -1,4 +1,5 @@
-# backend\services\chat\tts_service.py
+# backend\services\voice\tts_service.py
+"""TTS manager: provider selection, audio device and speech playback."""
 
 import logging
 import queue

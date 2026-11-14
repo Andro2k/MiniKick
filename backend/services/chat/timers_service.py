@@ -1,4 +1,5 @@
 # backend\services\chat\timers_service.py
+"""Chat timers: lookup, search and active timers."""
 
 import time
 import logging

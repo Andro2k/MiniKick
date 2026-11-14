@@ -10,7 +10,7 @@ from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.utils.db_background import flush_db_writes
 from backend.services import WidgetService, CommandService
-from backend.services.system.clock_service import CountdownTimer, Stopwatch, parse_duration
+from backend.services.app.clock_service import CountdownTimer, Stopwatch, parse_duration
 from backend.utils import extract_emotes
 
 logger = logging.getLogger("minikick.controllers.widgets")
@@ -68,7 +68,7 @@ class WidgetsController(QObject):
         self.widget_service = widget_service
         self.command_service = command_service
         self.overlay_server = overlay_server
-        from backend.services.system import TranslationService
+        from backend.services.settings import TranslationService
         self.i18n = i18n or TranslationService()
         self.toast = toast_manager
         self._ignored_users_provider = ignored_users_provider

@@ -5,7 +5,7 @@ import logging
 import requests
 from backend.config import TWITCH_HELIX_BASE
 from backend.interfaces import TokenProvider
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 
 logger = logging.getLogger("minikick.providers.twitch_provider")
 

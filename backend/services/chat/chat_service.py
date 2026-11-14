@@ -1,4 +1,5 @@
 # backend\services\chat\chat_service.py
+"""Chat service: chat, ignored-users and overlay settings."""
 
 import logging
 from typing import Callable

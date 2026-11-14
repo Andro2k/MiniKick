@@ -11,7 +11,7 @@ import websocket
 
 from backend.config import TWITCH_EVENTSUB_API_URL
 from backend.models import AlertEvent, AlertType
-from backend.services.system import TranslationService
+from backend.services.settings import TranslationService
 from backend.utils import fast_loads
 from .base_chat_provider import BaseChatSocketProvider
 

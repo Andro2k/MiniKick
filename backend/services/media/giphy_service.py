@@ -1,4 +1,5 @@
-# backend\services\chat\giphy_service.py
+# backend\services\media\giphy_service.py
+"""Giphy API key handling and GIF URL extraction."""
 
 import re
 import threading

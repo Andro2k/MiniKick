@@ -1,4 +1,5 @@
-# backend\services\system\translation_service.py
+# backend\services\settings\translation_service.py
+"""Loads the UI language and resolves translation keys."""
 
 from backend.utils import fast_load, fast_dump
 import logging

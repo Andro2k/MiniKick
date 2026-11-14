@@ -1,4 +1,5 @@
-# backend\services\system\log_writer.py
+# backend\services\logs\log_writer_service.py
+"""Batched writer that persists log records off the caller thread."""
 
 import logging
 import queue
