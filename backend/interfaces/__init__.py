@@ -1,4 +1,5 @@
 # backend\interfaces\__init__.py
+"""Contratos de las interfaces del backend."""
 
 from .auth_interface import TokenStorage, TokenProvider, TransientAuthError
 from .secrets_interface import SecretCipher, TokenEncryptionError

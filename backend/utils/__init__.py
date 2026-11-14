@@ -1,4 +1,5 @@
 # backend\utils\__init__.py
+"""Utilidades compartidas del backend."""
 
 from .command_utils import sanitize_command_trigger, validate_trigger_prefix, is_complete_valid_trigger
 from .emote_utils import extract_emotes

@@ -1,5 +1,5 @@
 # backend\services\logs\__init__.py
-"""Log persistence services: batched writer and log service."""
+"""Servicios para conservar registros: escritura por lotes y gestión de registros."""
 
 from .log_writer_service import BatchedLogWriter
 from .logs_service import LogService

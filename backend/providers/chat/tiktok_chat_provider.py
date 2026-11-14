@@ -1,5 +1,5 @@
 # backend\providers\chat\tiktok_chat_provider.py
-"""TikTok live chat provider."""
+"""Proveedor del chat en directo de TikTok."""
 
 import os
 import asyncio

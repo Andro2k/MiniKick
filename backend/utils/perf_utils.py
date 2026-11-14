@@ -1,5 +1,5 @@
 # backend\utils\perf_utils.py
-"""Small timing helpers (elapsed_ms, perf_phase)."""
+"""Utilidades sencillas para medir tiempos (elapsed_ms, perf_phase)."""
 
 import logging
 import time

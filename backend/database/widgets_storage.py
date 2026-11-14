@@ -1,5 +1,5 @@
 # backend\database\widgets_storage.py
-"""SQLite storage for widgets."""
+"""Almacenamiento SQLite de widgets."""
 
 from backend.utils import fast_loads, fast_dumps
 import logging

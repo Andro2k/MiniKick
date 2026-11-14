@@ -1,5 +1,5 @@
 # backend\services\chat\chat_service.py
-"""Chat service: chat, ignored-users and overlay settings."""
+"""Servicio de chat: configuración del chat, usuarios ignorados y superposición."""
 
 import logging
 from typing import Callable

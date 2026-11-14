@@ -1,5 +1,5 @@
 # backend\services\app\db_maintenance_service.py
-"""Database statistics and maintenance (cleanup of obsolete objects)."""
+"""Estadísticas y mantenimiento de la base de datos (limpieza de objetos obsoletos)."""
 
 import logging
 import os

@@ -1,5 +1,5 @@
 # backend\workers\twitch_auth_worker.py
-"""QThread worker that runs the Twitch authentication flow."""
+"""Trabajador QThread que ejecuta el proceso de autenticación de Twitch."""
 
 import logging
 from PySide6.QtCore import QThread, Signal

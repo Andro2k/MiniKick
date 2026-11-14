@@ -1,5 +1,5 @@
 # backend\services\media\giphy_service.py
-"""Giphy API key handling and GIF URL extraction."""
+"""Gestión de la clave de la API de Giphy y extracción de direcciones URL de GIF."""
 
 import re
 import threading

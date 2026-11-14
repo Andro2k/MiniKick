@@ -1,5 +1,5 @@
 # backend\workers\youtube_chat_worker.py
-"""YouTube chat worker."""
+"""Trabajador del chat de YouTube."""
 
 import datetime
 import time

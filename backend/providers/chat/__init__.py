@@ -1,4 +1,5 @@
 # backend\providers\chat\__init__.py
+"""Proveedores de chat para distintas plataformas."""
 
 from .base_chat_provider import BaseChatSocketProvider
 from .kick_api_provider import KickAPIClient, ScraperFactory, KICK_CHANNEL_URL

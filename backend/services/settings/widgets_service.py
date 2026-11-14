@@ -1,5 +1,5 @@
 # backend\services\settings\widgets_service.py
-"""Widget configuration access and shoutout formatting."""
+"""Acceso a la configuración de widgets y formato de menciones."""
 
 import logging
 from backend.database import SQLiteWidgetsStorage

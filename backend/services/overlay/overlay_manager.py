@@ -1,5 +1,5 @@
 # backend\services\overlay\overlay_manager.py
-"""Manager of the local overlay server."""
+"""Administrador del servidor local de superposición."""
 
 from .overlay_routes import OverlayRequestHandler, canonical_media_path
 from .overlay_ws_client import WebSocketClient

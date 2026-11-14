@@ -1,5 +1,5 @@
 # backend\providers\music\youtube_music_provider.py
-"""YouTube music provider: search, queue and playback through Qt multimedia."""
+"""Proveedor de música de YouTube: búsqueda, cola y reproducción con Qt Multimedia."""
 
 import logging
 import os

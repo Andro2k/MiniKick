@@ -1,5 +1,5 @@
 # backend\providers\voices\local_provider.py
-"""Local TTS provider."""
+"""Proveedor local de texto a voz."""
 
 import logging
 import sys

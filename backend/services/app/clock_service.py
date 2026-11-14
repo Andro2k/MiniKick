@@ -1,5 +1,5 @@
 # backend\services\app\clock_service.py
-"""Elapsed clock, countdown timer and stopwatch."""
+"""Reloj de tiempo transcurrido, cuenta regresiva y cronómetro."""
 
 import re
 import time

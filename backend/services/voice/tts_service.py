@@ -1,5 +1,5 @@
 # backend\services\voice\tts_service.py
-"""TTS manager: provider selection, audio device and speech playback."""
+"""Administrador de texto a voz: selección de proveedor, dispositivo de audio y reproducción de voz."""
 
 import logging
 import queue

@@ -1,5 +1,5 @@
 # backend\services\alerts\alerts_queue.py
-"""Queue that holds pending alerts."""
+"""Cola que conserva las alertas pendientes."""
 
 import collections
 import logging

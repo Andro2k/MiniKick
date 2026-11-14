@@ -1,5 +1,5 @@
 # backend\services\schedule\schedule_service.py
-"""Service for the schedule."""
+"""Servicio de programación."""
 
 from __future__ import annotations
 

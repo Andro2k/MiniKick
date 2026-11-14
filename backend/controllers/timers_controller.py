@@ -1,5 +1,5 @@
 # backend\controllers\timers_controller.py
-"""Controller for chat timers."""
+"""Controlador de temporizadores del chat."""
 
 import threading
 import logging

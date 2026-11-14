@@ -1,5 +1,5 @@
 # backend\services\updates\whats_new_service.py
-"""Decides when to show the what's-new modal and provides release highlights."""
+"""Determina cuándo mostrar el cuadro de novedades y proporciona los aspectos destacados de la versión."""
 
 import logging
 import re

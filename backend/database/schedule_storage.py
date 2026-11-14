@@ -1,5 +1,5 @@
 # backend\database\schedule_storage.py
-"""SQLite storage for the schedule."""
+"""Almacenamiento SQLite de la programación."""
 
 import logging
 from .database_manager import DatabaseManager

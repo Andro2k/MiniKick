@@ -1,5 +1,5 @@
 # backend\interfaces\music_provider_interface.py
-"""Contract for music providers (queue, current song, playback control)."""
+"""Contrato de los proveedores de música (cola, canción actual y control de reproducción)."""
 
 from typing import Any, Callable, Protocol, runtime_checkable
 

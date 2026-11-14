@@ -1,5 +1,5 @@
 # backend\services\app\instance_service.py
-"""Single-instance guard based on a local socket."""
+"""Control de instancia única mediante un socket local."""
 
 import socket
 import logging

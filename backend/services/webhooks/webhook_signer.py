@@ -1,5 +1,5 @@
 # backend\services\webhooks\webhook_signer.py
-"""Signs webhook payloads and builds request headers."""
+"""Firma cargas de webhook y construye encabezados de solicitud."""
 
 import hashlib
 import hmac

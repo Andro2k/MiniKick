@@ -1,5 +1,5 @@
 # backend\workers\crash_report_worker.py
-"""Worker that sends crash reports."""
+"""Trabajador que envía informes de fallos."""
 
 import logging
 import os

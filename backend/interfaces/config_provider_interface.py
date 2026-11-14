@@ -1,5 +1,5 @@
 # backend\interfaces\config_provider_interface.py
-"""Configuration provider contract and value normalization helpers."""
+"""Contrato del proveedor de configuración y utilidades para normalizar valores."""
 
 import logging
 import threading

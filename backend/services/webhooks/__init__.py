@@ -1,4 +1,5 @@
 # backend\services\webhooks\__init__.py
+"""Servicios para la gestión y entrega de webhooks."""
 
 from .webhook_dispatcher_service import WebhookDispatcherService
 from .webhook_event_adapter import WebhookEventAdapter

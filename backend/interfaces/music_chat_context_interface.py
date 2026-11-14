@@ -1,5 +1,5 @@
 # backend\interfaces\music_chat_context_interface.py
-"""Contract the music commands use to message chat, refresh now-playing and set volume."""
+"""Contrato que usan los comandos de música para enviar mensajes al chat, actualizar lo que suena y ajustar el volumen."""
 
 from typing import Any, Protocol
 

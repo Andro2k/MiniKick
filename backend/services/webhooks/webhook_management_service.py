@@ -1,5 +1,5 @@
 # backend\services\webhooks\webhook_management_service.py
-"""Webhook management: summaries and endpoint ping."""
+"""Gestión de webhooks: resúmenes y comprobación de endpoints."""
 
 import dataclasses
 import time

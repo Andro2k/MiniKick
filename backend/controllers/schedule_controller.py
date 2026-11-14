@@ -1,5 +1,5 @@
 # backend\controllers\schedule_controller.py
-"""Controller for the schedule."""
+"""Controlador de la programación."""
 
 import threading
 import logging

@@ -1,5 +1,5 @@
 # backend\services\security\__init__.py
-"""Secret encryption services."""
+"""Servicios de cifrado de secretos."""
 
 from .secret_cipher_service import create_secret_cipher, DPAPISecretCipher, NoOpSecretCipher
 

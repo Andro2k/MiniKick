@@ -1,5 +1,5 @@
 # backend\workers\kick_chat_worker.py
-"""Kick chat worker and poll sync worker."""
+"""Trabajador del chat de Kick y trabajador de sincronización mediante sondeo."""
 
 import logging
 import datetime

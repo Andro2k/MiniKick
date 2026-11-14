@@ -1,5 +1,5 @@
 # backend\services\media\__init__.py
-"""Media services: avatars and Giphy."""
+"""Servicios multimedia: avatares y Giphy."""
 
 from .avatar_service import AvatarService
 from .giphy_service import GiphyService

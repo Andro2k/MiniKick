@@ -1,5 +1,5 @@
 # backend\utils\paths_utils.py
-"""Resource path resolution helper."""
+"""Utilidad para resolver rutas de recursos."""
 
 import os
 import sys

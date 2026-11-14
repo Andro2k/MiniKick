@@ -1,5 +1,5 @@
 # backend\workers\twitch_chat_worker.py
-"""Twitch chat worker."""
+"""Trabajador del chat de Twitch."""
 
 import logging
 import datetime

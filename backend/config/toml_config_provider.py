@@ -1,5 +1,5 @@
 # backend\config\toml_config_provider.py
-"""TOML-backed configuration provider."""
+"""Proveedor de configuración basado en TOML."""
 
 import contextlib
 import logging

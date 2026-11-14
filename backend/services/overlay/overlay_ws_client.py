@@ -1,5 +1,5 @@
 # backend\services\overlay\overlay_ws_client.py
-"""WebSocket client for the overlay."""
+"""Cliente WebSocket para la superposición."""
 
 from backend.utils import fast_dumps
 import logging

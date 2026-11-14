@@ -1,5 +1,5 @@
 # backend\workers\global_media_worker.py
-"""Worker running a low-level hook for global media events."""
+"""Trabajador que ejecuta un enlace de bajo nivel para eventos multimedia globales."""
 
 import sys
 import ctypes

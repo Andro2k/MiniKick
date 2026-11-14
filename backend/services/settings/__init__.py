@@ -1,5 +1,5 @@
 # backend\services\settings\__init__.py
-"""User settings, translations and widget configuration services."""
+"""Servicios de configuración de usuario, traducciones y configuración de widgets."""
 
 from .settings_service import SettingsService
 from .translation_service import TranslationService

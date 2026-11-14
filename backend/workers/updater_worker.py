@@ -1,5 +1,5 @@
 # backend\workers\updater_worker.py
-"""Workers that check for updates, download them and fetch release notes."""
+"""Trabajadores que buscan y descargan actualizaciones y obtienen notas de versión."""
 
 import logging
 from PySide6.QtCore import QThread, Signal

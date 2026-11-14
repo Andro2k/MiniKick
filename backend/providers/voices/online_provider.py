@@ -1,5 +1,5 @@
 # backend\providers\voices\online_provider.py
-"""Web (online) TTS provider."""
+"""Proveedor web (en línea) de texto a voz."""
 
 import asyncio
 import logging

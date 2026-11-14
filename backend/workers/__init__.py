@@ -1,4 +1,5 @@
 # backend\workers\__init__.py
+"""Trabajadores en segundo plano de la aplicación."""
 
 from typing import TYPE_CHECKING
 

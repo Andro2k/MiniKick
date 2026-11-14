@@ -1,4 +1,5 @@
 # backend\services\__init__.py
+"""Servicios de las distintas áreas de la aplicación."""
 
 from .alerts import AlertService, AlertQueue
 from .auth import BaseOAuthManager, KickAuthManager, TwitchAuthManager, OAuthCallbackServer

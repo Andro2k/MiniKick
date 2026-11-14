@@ -1,5 +1,5 @@
 # backend\controllers\dashboard_controller.py
-"""Controller for the dashboard."""
+"""Controlador del panel principal."""
 
 import datetime
 import logging

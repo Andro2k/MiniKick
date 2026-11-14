@@ -1,5 +1,5 @@
 # backend\core\log_format_core.py
-"""Parses log lines and matches log levels."""
+"""Analiza líneas de registro e identifica sus niveles."""
 
 import re
 from typing import NamedTuple

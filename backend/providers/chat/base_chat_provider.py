@@ -1,5 +1,5 @@
 # backend\providers\chat\base_chat_provider.py
-"""Base class for websocket chat providers."""
+"""Clase base para proveedores de chat mediante WebSocket."""
 
 from abc import ABC, abstractmethod
 from typing import Any

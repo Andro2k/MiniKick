@@ -1,5 +1,5 @@
 # backend\workers\timers_worker.py
-"""Worker that runs chat timers."""
+"""Trabajador que ejecuta los temporizadores del chat."""
 
 import logging
 import time

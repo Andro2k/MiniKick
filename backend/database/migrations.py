@@ -1,5 +1,5 @@
 # backend\database\migrations.py
-"""Ordered SQLite schema migrations."""
+"""Migraciones ordenadas del esquema SQLite."""
 
 import logging
 import sqlite3

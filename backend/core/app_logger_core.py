@@ -1,5 +1,5 @@
 # backend\core\app_logger_core.py
-"""Application logging setup: rotating file handler, fault log and log directory helpers."""
+"""Configuración del registro de la aplicación: archivos rotativos, registro de fallos y utilidades de directorio."""
 
 import faulthandler
 import logging

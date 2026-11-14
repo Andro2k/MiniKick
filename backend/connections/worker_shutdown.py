@@ -1,5 +1,5 @@
 # backend\connections\worker_shutdown.py
-"""Coordinates graceful shutdown of background workers."""
+"""Coordina el cierre ordenado de los trabajadores en segundo plano."""
 
 from __future__ import annotations
 import time

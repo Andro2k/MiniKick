@@ -1,4 +1,5 @@
 # backend\core\__init__.py
+"""Componentes centrales para iniciar y registrar la aplicación."""
 
 from typing import TYPE_CHECKING
 

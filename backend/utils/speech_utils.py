@@ -1,5 +1,5 @@
 # backend\utils\speech_utils.py
-"""Text normalization for TTS: pronunciations, symbols and usernames."""
+"""Normalización de texto para texto a voz: pronunciaciones, símbolos y nombres de usuario."""
 
 import re
 

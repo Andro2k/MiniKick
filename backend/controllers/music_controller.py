@@ -1,5 +1,5 @@
 # backend\controllers\music_controller.py
-"""Controller for music."""
+"""Controlador de música."""
 
 import logging
 from PySide6.QtCore import QObject, Slot, QTimer, Signal

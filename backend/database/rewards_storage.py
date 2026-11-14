@@ -1,5 +1,5 @@
 # backend\database\rewards_storage.py
-"""SQLite storage for rewards."""
+"""Almacenamiento SQLite de recompensas."""
 
 import logging
 from .database_manager import DatabaseManager

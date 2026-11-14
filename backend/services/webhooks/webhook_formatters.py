@@ -1,5 +1,5 @@
 # backend\services\webhooks\webhook_formatters.py
-"""Webhook payload formatters (generic JSON and Discord embed)."""
+"""Formateadores de cargas de webhook (JSON genérico e inserciones de Discord)."""
 
 from datetime import datetime, timezone
 

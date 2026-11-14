@@ -1,5 +1,5 @@
 # backend\handlers\tts_handler.py
-"""Qt handler for TTS voices."""
+"""Manejador Qt de voces de texto a voz."""
 
 import logging
 from PySide6.QtCore import QObject, Slot

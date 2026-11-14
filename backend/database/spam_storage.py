@@ -1,5 +1,5 @@
 # backend\database\spam_storage.py
-"""SQLite storage for spam filters."""
+"""Almacenamiento SQLite de filtros de spam."""
 
 import logging
 from .database_manager import DatabaseManager

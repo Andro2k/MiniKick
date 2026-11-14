@@ -1,5 +1,5 @@
 # backend\services\settings\settings_service.py
-"""Reads and writes general application settings."""
+"""Lee y guarda la configuración general de la aplicación."""
 
 import logging
 

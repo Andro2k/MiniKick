@@ -1,5 +1,5 @@
 # backend\services\webhooks\webhook_transport.py
-"""HTTP transport for webhooks plus Discord host detection and URL validation."""
+"""Transporte HTTP para webhooks, detección del host de Discord y validación de direcciones URL."""
 
 from typing import Mapping
 from urllib.parse import urlsplit

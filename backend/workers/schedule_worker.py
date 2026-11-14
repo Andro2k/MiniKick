@@ -1,5 +1,5 @@
 # backend\workers\schedule_worker.py
-"""Worker that runs scheduled tasks."""
+"""Trabajador que ejecuta tareas programadas."""
 
 import logging
 from datetime import datetime

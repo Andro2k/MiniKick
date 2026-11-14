@@ -1,5 +1,5 @@
 # backend\services\voice\piper_manager_service.py
-"""Piper voice manager and voice download worker."""
+"""Administrador de voces Piper y trabajador de descarga de voces."""
 
 import os
 import logging

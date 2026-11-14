@@ -1,5 +1,5 @@
 # backend\providers\chat\twitch_ws_provider.py
-"""Twitch chat websocket manager."""
+"""Administrador de WebSocket del chat de Twitch."""
 
 import inspect
 import logging

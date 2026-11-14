@@ -1,5 +1,5 @@
 # backend\services\chat\spam_service.py
-"""Spam filters: loading, saving and detection."""
+"""Filtros de spam: carga, almacenamiento y detección."""
 
 import logging
 import re

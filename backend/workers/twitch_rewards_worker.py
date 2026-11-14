@@ -1,5 +1,5 @@
 # backend\workers\twitch_rewards_worker.py
-"""Worker for Twitch rewards."""
+"""Trabajador de recompensas de Twitch."""
 
 import logging
 from PySide6.QtCore import QThread, Signal

@@ -1,5 +1,5 @@
 # backend\interfaces\tts_interface.py
-"""Text-to-speech provider contract (speak, voices, volume, speed)."""
+"""Contrato del proveedor de texto a voz (lectura, voces, volumen y velocidad)."""
 
 from typing import Protocol
 

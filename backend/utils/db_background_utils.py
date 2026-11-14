@@ -1,5 +1,5 @@
 # backend\utils\db_background_utils.py
-"""Background executor for database writes (submit and flush)."""
+"""Ejecutor en segundo plano para escrituras en la base de datos (envío y vaciado)."""
 
 import logging
 import threading
@@ -22,7 +22,6 @@ def _get_executor() -> ThreadPoolExecutor:
 
 
 def submit_db_write(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Future:
-    """Run a non-critical DB write off the UI thread, in order, one at a time."""
     future = _get_executor().submit(_run, fn, *args, **kwargs)
     with _lock:
         _pending.add(future)
@@ -43,7 +42,6 @@ def _discard(future: Future) -> None:
 
 
 def flush_db_writes(timeout: float = 3.0) -> bool:
-    """Wait for queued writes (used on shutdown). Returns False if the timeout expired."""
     with _lock:
         pending = list(_pending)
     for future in pending:

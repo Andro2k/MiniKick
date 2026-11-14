@@ -1,5 +1,5 @@
 # backend\interfaces\secrets_interface.py
-"""Secret cipher contract (encrypt/decrypt) and its encryption error."""
+"""Contrato para cifrar secretos (cifrar y descifrar) y error de cifrado."""
 
 from typing import Protocol
 
@@ -10,4 +10,4 @@ class SecretCipher(Protocol):
 
 
 class TokenEncryptionError(Exception):
-    """No se pudo cifrar un secreto; el valor NO debe persistirse en texto plano."""
+    pass

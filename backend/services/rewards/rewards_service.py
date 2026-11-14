@@ -1,5 +1,5 @@
 # backend\services\rewards\rewards_service.py
-"""Service for channel rewards."""
+"""Servicio de recompensas del canal."""
 
 import os
 import logging

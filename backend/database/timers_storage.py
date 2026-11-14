@@ -1,5 +1,5 @@
 # backend\database\timers_storage.py
-"""SQLite storage for chat timers."""
+"""Almacenamiento SQLite de temporizadores del chat."""
 
 from backend.utils import fast_loads, fast_dumps
 import logging

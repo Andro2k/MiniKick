@@ -1,5 +1,5 @@
 # backend\database\tokens_storage.py
-"""SQLite storage for auth tokens."""
+"""Almacenamiento SQLite de tokens de autenticación."""
 
 import logging
 from .database_manager import DatabaseManager

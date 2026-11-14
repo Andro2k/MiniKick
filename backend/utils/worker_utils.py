@@ -1,5 +1,5 @@
 # backend\utils\worker_utils.py
-"""Worker helpers: stop provider chat workers, cooperative sleep and exponential backoff."""
+"""Utilidades para trabajadores: detener los procesos de chat, espera cooperativa y retroceso exponencial."""
 
 import logging
 import random

@@ -1,5 +1,5 @@
 # backend\connections\connection_hub.py
-"""Central hub that tracks the integration status of every connection."""
+"""Centro de coordinación que supervisa el estado de cada conexión."""
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass

@@ -1,5 +1,5 @@
 # backend\services\chat\commands_service.py
-"""Chat command cache and lookup."""
+"""Caché y búsqueda de comandos del chat."""
 
 import logging
 import re

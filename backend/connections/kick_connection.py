@@ -1,5 +1,5 @@
 # backend\connections\kick_connection.py
-"""Qt connection object for the Kick integration."""
+"""Objeto de conexión Qt para la integración con Kick."""
 
 import logging
 from typing import Callable

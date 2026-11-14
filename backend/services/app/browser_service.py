@@ -1,5 +1,5 @@
 # backend\services\app\browser_service.py
-"""Detects installed browsers and opens URLs in the chosen one."""
+"""Detecta los navegadores instalados y abre direcciones URL con el navegador elegido."""
 
 import logging
 import os

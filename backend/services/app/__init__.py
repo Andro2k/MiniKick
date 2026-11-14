@@ -1,5 +1,5 @@
 # backend\services\app\__init__.py
-"""Application-level services: identity, instance lock, clock, browser, backup and DB maintenance."""
+"""Servicios de la aplicación: identidad, bloqueo de instancia, reloj, navegador, copias de seguridad y mantenimiento de la base de datos."""
 
 from .identity_service import pick_primary_identity, resolve_primary_identity
 from .instance_service import SocketInstanceProvider

@@ -1,5 +1,5 @@
 # backend\services\webhooks\webhook_sender.py
-"""Sends webhook deliveries."""
+"""Envía entregas de webhooks."""
 
 import time
 from typing import Callable, Mapping

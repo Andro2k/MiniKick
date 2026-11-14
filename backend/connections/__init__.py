@@ -1,4 +1,5 @@
 # backend\connections\__init__.py
+"""Conexiones de plataformas y coordinación de trabajadores."""
 
 from .kick_connection import KickConnection
 from .connection_hub import ConnectionHub, IntegrationStatus

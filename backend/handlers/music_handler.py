@@ -1,5 +1,5 @@
 # backend\handlers\music_handler.py
-"""Handler for music chat commands."""
+"""Manejador de comandos de música del chat."""
 
 import logging
 import time

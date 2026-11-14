@@ -1,5 +1,5 @@
 # backend\models\alerts_models.py
-"""Alert models: types, events and configuration."""
+"""Modelos de alertas: tipos, eventos y configuración."""
 
 from dataclasses import dataclass, field, asdict
 from enum import Enum

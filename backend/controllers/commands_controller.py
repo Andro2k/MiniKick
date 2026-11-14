@@ -1,5 +1,5 @@
 # backend\controllers\commands_controller.py
-"""Controller for chat commands."""
+"""Controlador de comandos del chat."""
 
 import logging
 from PySide6.QtCore import Slot

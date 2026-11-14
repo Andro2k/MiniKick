@@ -1,5 +1,5 @@
 # backend\services\logs\logs_service.py
-"""Log service: appends records, flushes pending ones and clears history."""
+"""Servicio de registros: añade entradas, guarda las pendientes y limpia el historial."""
 
 import os
 import logging

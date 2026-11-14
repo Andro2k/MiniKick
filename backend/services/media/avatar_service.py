@@ -1,5 +1,5 @@
 # backend\services\media\avatar_service.py
-"""Fetches and caches user avatars from URLs."""
+"""Obtiene y almacena en caché avatares de usuario desde direcciones URL."""
 
 import logging
 from PySide6.QtCore import QObject, Signal, QUrl

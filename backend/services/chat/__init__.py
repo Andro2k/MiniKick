@@ -1,5 +1,5 @@
 # backend\services\chat\__init__.py
-"""Chat services: chat settings, commands, pipeline, spam filters and timers."""
+"""Servicios de chat: configuración, comandos, canalización, filtros de spam y temporizadores."""
 
 from .chat_service import ChatService
 from .commands_service import CommandService

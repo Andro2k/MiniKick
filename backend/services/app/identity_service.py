@@ -1,5 +1,5 @@
 # backend\services\app\identity_service.py
-"""Helpers that pick and resolve the primary streamer identity."""
+"""Utilidades para elegir y resolver la identidad principal del streamer."""
 
 from pathlib import Path
 from typing import Mapping
