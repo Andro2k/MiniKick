@@ -35,6 +35,6 @@ Los archivos de `backend/` siguen una sola convención de nombres (`<tema>_<rol>
 - Los nombres de logger (`"minikick.services.system.backup"`, `"minikick.utils.db_background"`, etc.) no se tocaron: cambiarlos altera la salida y los filtros de logs. Varios siguen mostrando la ruta anterior.
 - `services/webhooks/*` conserva el prefijo `webhook_`: sin él quedarían nombres genéricos (`sender`, `signer`, `transport`) más difíciles de buscar.
 - `config/webhook_endpoint_store.py` sigue en `config/`: guarda en el `IConfigProvider` (clave cifrada), no en SQLite, así que `database/` no le corresponde.
-- Los docstrings están en inglés y los de controllers, storages y workers describen el módulo a partir del nombre de sus clases, sin detalle de comportamiento.
+- Los docstrings se tradujeron al español y los de controllers, storages y workers describen el módulo a partir del nombre de sus clases, sin detalle de comportamiento.
 - Los walkthroughs anteriores y `docs/historial_crashes_y_errores.md` no se reescribieron y siguen mencionando los nombres antiguos.
 - El `frontend/` no se revisó con esta convención.
