@@ -1,4 +1,5 @@
 # backend\utils\worker_utils.py
+"""Worker helpers: stop provider chat workers, cooperative sleep and exponential backoff."""
 
 import logging
 import random

@@ -1,4 +1,5 @@
-# backend\utils\io_background.py
+# backend\utils\io_background_utils.py
+"""Bounded background worker for non-blocking network I/O (submit and flush)."""
 
 import logging
 import queue

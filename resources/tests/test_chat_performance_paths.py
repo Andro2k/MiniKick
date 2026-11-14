@@ -9,7 +9,7 @@ from PySide6.QtCore import QCoreApplication
 from backend.database.database_manager import DatabaseManager
 from backend.services.chat.spam_service import SpamService
 from backend.services.overlay.overlay_ws_client import WebSocketClient
-from backend.utils.io_background import BoundedBackgroundWorker, flush_network_io
+from backend.utils.io_background_utils import BoundedBackgroundWorker, flush_network_io
 from frontend.window.session_metrics import SessionMetrics
 
 

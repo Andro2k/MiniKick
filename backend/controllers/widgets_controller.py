@@ -8,7 +8,7 @@ import time
 from collections import deque
 from typing import Callable
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
-from backend.utils.db_background import flush_db_writes
+from backend.utils.db_background_utils import flush_db_writes
 from backend.services import WidgetService, CommandService
 from backend.services.app.clock_service import CountdownTimer, Stopwatch, parse_duration
 from backend.utils import extract_emotes

@@ -1,3 +1,6 @@
+# backend\connections\connection_hub.py
+"""Central hub that tracks the integration status of every connection."""
+
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 

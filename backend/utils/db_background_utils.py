@@ -1,4 +1,5 @@
-# backend\utils\db_background.py
+# backend\utils\db_background_utils.py
+"""Background executor for database writes (submit and flush)."""
 
 import logging
 import threading

@@ -3,7 +3,7 @@
 import os
 import logging
 from .thumbnail_service import generate_media_thumbnail
-from backend.utils.db_background import submit_db_write
+from backend.utils.db_background_utils import submit_db_write
 
 logger = logging.getLogger("minikick.services.rewards")
 
