@@ -4,7 +4,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget
 from frontend.common import BrandColors, Size, get_pixmap_colored
 from .controls_widget import ModernSwitch
-from .layout_helpers import create_row_layout, create_switch_field
+from .layout_utils import create_row_layout, create_switch_field
 
 _PLATFORM_BRANDS = {
     "KICK": ("brand-kick.svg", BrandColors.GREEN),

@@ -1,4 +1,4 @@
-# frontend\dialogs\youtube_connect_dialog.py
+# frontend\dialogs\youtube_dialog.py
 
 from .platform_dialog import PlatformConnectDialog
 from frontend.common import get_assets_path, BrandColors

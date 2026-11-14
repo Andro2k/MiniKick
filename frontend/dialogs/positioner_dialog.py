@@ -1,4 +1,4 @@
-# frontend\dialogs\visual_positioner_dialog.py
+# frontend\dialogs\positioner_dialog.py
 
 from PySide6.QtGui import QRegion
 from PySide6.QtWidgets import QLabel, QFrame
@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernButton
 from frontend.common import PATH_ICON_HELP, BrandColors, Size
 from .base_dialog import ModernModal
-from frontend.components.dialogs import DraggableBox
+from frontend.components.dialog_parts import DraggableBox
 
 class VisualPositionerDialog(ModernModal):
     live_position_changed = Signal(int, int)

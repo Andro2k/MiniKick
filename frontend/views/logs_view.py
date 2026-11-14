@@ -1,4 +1,4 @@
-# frontend\views\log_view.py
+# frontend\views\logs_view.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtGui import QColor, QIcon

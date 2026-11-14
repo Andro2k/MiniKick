@@ -1,4 +1,4 @@
-# frontend\widgets\pagination.py
+# frontend\widgets\pagination_widget.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel
 from PySide6.QtCore import Qt, Signal

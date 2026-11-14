@@ -1,4 +1,4 @@
-# frontend\views\command_view.py
+# frontend\views\commands_view.py
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal

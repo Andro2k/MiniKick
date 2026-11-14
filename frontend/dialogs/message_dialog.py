@@ -1,4 +1,4 @@
-# frontend\dialogs\message_editor_dialog.py
+# frontend\dialogs\message_dialog.py
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, VariableTextEdit

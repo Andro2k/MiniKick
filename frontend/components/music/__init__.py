@@ -1,7 +1,7 @@
 # frontend\components\music\__init__.py
 
 from .stats_panel import MusicStatsPanel
-from .player_settings import MusicPlayerSettingsPanel
+from .player_settings_panel import MusicPlayerSettingsPanel
 from .music_settings_panel import MusicSettingsPanel
 from .commands_panel import MusicCommandsPanel
 from .queue_panel import MusicQueuePanel, DragDropQueueTable

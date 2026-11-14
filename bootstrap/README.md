@@ -26,7 +26,7 @@ flowchart TD
     SERV --> CFG["config.py\n(TOML / Legacy SQLite Migration)"]
     SERV --> TRANS["translator.py\n(i18n & Installer Lang Sync)"]
 
-    APP --> FRONT["frontend.main_window.MainWindowCore"]
+    APP --> FRONT["frontend.window.main_window_core.MainWindowCore"]
     SERV --> BACK["backend.core.AppContainerCore"]
 ```
 

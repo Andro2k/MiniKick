@@ -1,4 +1,4 @@
-# frontend\dialogs\timer_dialog.py
+# frontend\dialogs\timers_dialog.py
 
 import logging
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy

@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QFrame, QLineEdit, QPushButton
 from frontend.common import get_icon_colored, Size
 from .controls_widget import configure_icon_only_button
-from .layout_helpers import create_row_layout
+from .layout_utils import create_row_layout
 from .style_utils import sync_focus_state
 
 class ActionLineEdit(QFrame):

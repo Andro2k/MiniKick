@@ -1,4 +1,4 @@
-# frontend\dialogs\piper_voices_dialog.py
+# frontend\dialogs\piper_dialog.py
 
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QFileDialog, QMessageBox, QLineEdit, QButtonGroup
@@ -7,8 +7,8 @@ from .base_dialog import ModernFramelessShell, DialogHeader, build_dialog_footer
 from backend.services.voice import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import ModernCard, ModernDivider, ExpandableCard, NoWheelDoubleSpinBox, create_col_layout, create_row_layout, ModernScrollArea
 from frontend.common import get_icon_colored, get_pixmap_colored, Size
-from frontend.common.gui_bridge import run_on_gui
-from frontend.components.dialogs import PiperVoiceItemWidget
+from frontend.common.gui_bridge_utils import run_on_gui
+from frontend.components.dialog_parts import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
     voices_updated = Signal()

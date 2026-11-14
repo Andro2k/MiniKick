@@ -3,8 +3,8 @@
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtTest import QTest
 
-from frontend.components.alerts.variants_tab_bar import AlertVariantTabPill
-from frontend.components.dialogs.severity_card import SeverityCard
+from frontend.components.alerts.variants_tab_bar_card import AlertVariantTabPill
+from frontend.components.dialog_parts.severity_card import SeverityCard
 from frontend.widgets import ClickableFrame
 
 

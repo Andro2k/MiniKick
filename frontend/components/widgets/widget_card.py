@@ -1,4 +1,4 @@
-# frontend\components\widgets\widget_card_component.py
+# frontend\components\widgets\widget_card.py
 
 from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer

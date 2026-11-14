@@ -76,7 +76,7 @@ class ToastManager(QObject):
 ```
 `state` values: `"success"`, `"error"`, `"warning"`, `"info"`.
 
-### `run_on_gui` ([`common/gui_bridge.py`](./common/gui_bridge.py))
+### `run_on_gui` ([`common/gui_bridge_utils.py`](./common/gui_bridge_utils.py))
 Thread-safe callable dispatch to the Qt main thread via `QMetaObject.invokeMethod`.
 ```python
 def run_on_gui(fn: Callable, *args, **kwargs) -> None: ...
