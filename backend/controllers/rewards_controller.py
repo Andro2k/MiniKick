@@ -1,4 +1,5 @@
 # backend\controllers\rewards_controller.py
+"""Controller for rewards."""
 
 import logging
 from PySide6.QtCore import QObject, Slot

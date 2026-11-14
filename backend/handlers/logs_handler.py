@@ -1,4 +1,5 @@
 # backend\handlers\logs_handler.py
+"""Structured log formatter, Qt log emitter and logging handler."""
 
 import logging
 import sys

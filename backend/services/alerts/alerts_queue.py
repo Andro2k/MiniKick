@@ -1,4 +1,5 @@
 # backend\services\alerts\alerts_queue.py
+"""Queue that holds pending alerts."""
 
 import collections
 import logging

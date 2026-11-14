@@ -1,4 +1,5 @@
 # backend\config\webhook_endpoint_store.py
+"""Webhook endpoint store persisted through the config provider (secrets encrypted)."""
 
 import logging
 import threading

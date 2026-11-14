@@ -1,4 +1,5 @@
 # backend\utils\security_utils.py
+"""Secret redaction helpers and logging filter."""
 
 import logging
 import re

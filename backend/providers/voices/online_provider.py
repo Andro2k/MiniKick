@@ -1,4 +1,5 @@
 # backend\providers\voices\online_provider.py
+"""Web (online) TTS provider."""
 
 import asyncio
 import logging

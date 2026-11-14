@@ -1,4 +1,5 @@
 # backend\workers\timers_worker.py
+"""Worker that runs chat timers."""
 
 import logging
 import time

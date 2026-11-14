@@ -1,4 +1,5 @@
 # backend\controllers\spam_controller.py
+"""Controller for spam filters."""
 
 import logging
 from PySide6.QtCore import Slot

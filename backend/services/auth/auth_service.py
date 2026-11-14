@@ -1,4 +1,5 @@
 # backend\services\auth\auth_service.py
+"""OAuth base manager and local callback server for authentication."""
 
 import base64
 import hashlib

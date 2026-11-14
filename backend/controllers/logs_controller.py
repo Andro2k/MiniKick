@@ -1,4 +1,5 @@
 # backend\controllers\logs_controller.py
+"""Controller for the logs view."""
 
 import os
 import logging

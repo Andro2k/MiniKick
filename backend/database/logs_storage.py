@@ -1,4 +1,5 @@
 # backend\database\logs_storage.py
+"""SQLite storage for system logs."""
 
 import logging
 import sys

@@ -1,4 +1,5 @@
 # backend\config\locale_defaults.py
+"""Default locale dictionary (DEFAULT_DICTIONARY)."""
 
 DEFAULT_DICTIONARY = {
   "alerts": {

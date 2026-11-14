@@ -1,4 +1,5 @@
 # backend\database\tokens_storage.py
+"""SQLite storage for auth tokens."""
 
 import logging
 from .database_manager import DatabaseManager

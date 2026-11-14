@@ -1,4 +1,5 @@
 # backend\handlers\spam_handler.py
+"""Handler that applies chat spam filters."""
 
 import re
 import logging

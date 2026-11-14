@@ -1,4 +1,5 @@
 # backend\services\overlay\overlay_ws_client.py
+"""WebSocket client for the overlay."""
 
 from backend.utils import fast_dumps
 import logging

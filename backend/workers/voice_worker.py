@@ -1,4 +1,5 @@
 # backend\workers\voice_worker.py
+"""Worker that fetches available TTS voices."""
 
 import sys
 import logging

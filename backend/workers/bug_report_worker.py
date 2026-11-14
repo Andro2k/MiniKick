@@ -1,4 +1,5 @@
 # backend\workers\bug_report_worker.py
+"""Worker that sends bug reports."""
 
 import logging
 import os

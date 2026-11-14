@@ -1,4 +1,5 @@
 # backend\workers\webhook_delivery_worker.py
+"""Worker that delivers webhooks, with full-jitter backoff."""
 
 import heapq
 import itertools

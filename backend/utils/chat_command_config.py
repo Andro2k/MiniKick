@@ -1,4 +1,5 @@
 # backend\utils\chat_command_config.py
+"""Keyword sets used to parse chat command arguments (mute and block, add and remove)."""
 
 _MUTE_REMOVE_KEYWORDS = frozenset({"unmute", "desilenciar", "quitar", "remove", "del", "-"})
 _MUTE_REMOVE_ALIASES = frozenset({"!unmutetts", "!desilenciartts", "!ttsunmute"})

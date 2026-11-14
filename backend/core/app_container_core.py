@@ -1,4 +1,5 @@
 # backend\core\app_container_core.py
+"""Application container that builds and wires services, storages and providers."""
 import logging
 import os
 

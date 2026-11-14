@@ -1,4 +1,5 @@
 # backend\workers\tiktok_chat_worker.py
+"""TikTok chat worker."""
 
 import datetime
 import time

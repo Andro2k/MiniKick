@@ -1,4 +1,5 @@
 # backend\controllers\alerts_controller.py
+"""Controller for alerts."""
 
 import logging
 from PySide6.QtCore import Slot, QUrl

@@ -1,4 +1,5 @@
 # backend\database\cache_storage.py
+"""Music cache manager: finds cached files and reports cache size."""
 
 import os
 import re

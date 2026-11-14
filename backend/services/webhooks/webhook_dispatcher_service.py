@@ -1,4 +1,5 @@
 # backend\services\webhooks\webhook_dispatcher_service.py
+"""Dispatches events to webhook endpoints."""
 
 import time
 import uuid

@@ -1,4 +1,5 @@
 # backend\connections\worker_slot.py
+"""Slot that holds and manages a single worker."""
 
 from typing import Callable
 

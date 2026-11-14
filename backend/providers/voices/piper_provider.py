@@ -1,4 +1,5 @@
 # backend\providers\voices\piper_provider.py
+"""Piper TTS provider."""
 
 import os
 import wave

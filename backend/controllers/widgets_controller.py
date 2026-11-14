@@ -1,4 +1,5 @@
 # backend\controllers\widgets_controller.py
+"""Controller for widgets."""
 
 import datetime
 import heapq

@@ -1,4 +1,5 @@
 # backend\utils\command_utils.py
+"""Validation and sanitizing of command triggers."""
 
 import re
 

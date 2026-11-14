@@ -1,4 +1,5 @@
 # backend\workers\music_worker.py
+"""YouTube resolve and search workers for music."""
 
 import os
 import re

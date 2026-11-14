@@ -1,4 +1,5 @@
 # backend\services\rewards\rewards_service.py
+"""Service for channel rewards."""
 
 import os
 import logging

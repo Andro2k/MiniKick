@@ -1,4 +1,5 @@
 # backend\utils\json_utils.py
+"""Fast JSON load/dump helpers and Kick payload parsing."""
 
 import logging
 from typing import Any

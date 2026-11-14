@@ -1,4 +1,5 @@
 # backend\services\webhooks\webhook_event_adapter.py
+"""Adapts application events into webhook events."""
 
 from typing import Mapping
 

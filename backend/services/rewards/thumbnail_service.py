@@ -1,4 +1,5 @@
 # backend\services\rewards\thumbnail_service.py
+"""Generates thumbnails for media files."""
 
 import os
 import logging

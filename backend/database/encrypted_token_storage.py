@@ -1,4 +1,5 @@
 # backend\database\encrypted_token_storage.py
+"""Encrypted token storage."""
 
 import logging
 

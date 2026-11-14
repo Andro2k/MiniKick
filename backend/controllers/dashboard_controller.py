@@ -1,4 +1,5 @@
 # backend\controllers\dashboard_controller.py
+"""Controller for the dashboard."""
 
 import datetime
 import logging

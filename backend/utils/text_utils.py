@@ -1,4 +1,5 @@
 # backend\utils\text_utils.py
+"""Text helpers: emoji stripping and speakability check."""
 
 import re
 

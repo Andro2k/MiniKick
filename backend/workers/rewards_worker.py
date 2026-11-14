@@ -1,4 +1,5 @@
 # backend\workers\rewards_worker.py
+"""Workers that fetch, create and update rewards."""
 
 import logging
 from PySide6.QtCore import QThread, Signal

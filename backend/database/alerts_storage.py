@@ -1,4 +1,5 @@
 # backend\database\alerts_storage.py
+"""SQLite storage for alerts."""
 
 import logging
 from .database_manager import DatabaseManager

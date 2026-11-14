@@ -1,4 +1,5 @@
 # backend\services\overlay\overlay_routes.py
+"""HTTP request handler and asset helpers for the overlay server."""
 
 import base64
 import hashlib

@@ -1,4 +1,5 @@
 # backend\workers\kick_chat_worker.py
+"""Kick chat worker and poll sync worker."""
 
 import logging
 import datetime

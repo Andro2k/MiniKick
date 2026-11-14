@@ -1,4 +1,5 @@
 # backend\controllers\settings_controller.py
+"""Controller for settings."""
 
 import logging
 from PySide6.QtCore import QObject, Signal, Slot

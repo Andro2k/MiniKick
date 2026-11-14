@@ -1,4 +1,5 @@
 # backend\database\commands_storage.py
+"""SQLite storage for chat commands."""
 
 import logging
 from datetime import datetime
