@@ -352,6 +352,25 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS music_playlists (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS music_playlist_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    playlist_id INTEGER NOT NULL REFERENCES music_playlists(id) ON DELETE CASCADE,
+                    title TEXT NOT NULL,
+                    artist TEXT NOT NULL DEFAULT '',
+                    url TEXT NOT NULL,
+                    duration TEXT DEFAULT '-',
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(playlist_id, url)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reward_redemptions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reward_name TEXT NOT NULL,

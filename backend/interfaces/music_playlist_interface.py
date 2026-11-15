@@ -1,0 +1,19 @@
+# backend\interfaces\music_playlist_interface.py
+"""Contrato del almacenamiento de playlists de música (playlists y sus canciones)."""
+
+from typing import Protocol, runtime_checkable
+
+
+@runtime_checkable
+class IMusicPlaylistStorage(Protocol):
+    def list_playlists(self) -> list[dict]: ...
+
+    def create_playlist(self, name: str) -> int: ...
+
+    def delete_playlist(self, playlist_id: int) -> bool: ...
+
+    def add_song(self, playlist_id: int, title: str, artist: str, url: str, duration: str = "-") -> bool: ...
+
+    def remove_song(self, item_id: int) -> bool: ...
+
+    def get_songs(self, playlist_id: int) -> list[dict]: ...

@@ -9,7 +9,7 @@ from backend.config import (
     KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
     TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI,
 )
-from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteStatsStorage, SQLiteAlertStorage, EncryptedTokenStorage
+from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteMusicPlaylistStorage, SQLiteScheduleStorage, SQLiteStatsStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.interfaces import IConfigProvider
 from backend.services.security import create_secret_cipher
 from backend.services.app import DatabaseMaintenance
@@ -107,6 +107,7 @@ class AppContainerCore:
         self.avatar_storage = SQLiteAvatarStorage(db)
         self.system_log_storage = SQLiteSystemLogStorage(db)
         self.music_storage = SQLiteMusicStorage(db)
+        self.music_playlist_storage = SQLiteMusicPlaylistStorage(db)
         self.schedule_storage = SQLiteScheduleStorage(db)
         self.alert_storage = SQLiteAlertStorage(db)
         self.stats_storage = SQLiteStatsStorage(db)
