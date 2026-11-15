@@ -2,6 +2,8 @@
 """Contadores de métricas de la sesión."""
 
 import logging
+import threading
+from datetime import datetime
 from typing import Callable
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
@@ -19,14 +21,26 @@ class SessionMetrics(QObject):
     PLATFORMS = ("kick", "twitch", "youtube", "tiktok")
     _REFRESH_DEBOUNCE_MS = 300
     _ANALYTICS_RERUN_DELAY_MS = 1500
+    _HOURLY_FLUSH_INTERVAL_MS = 30_000
 
     def __init__(
         self,
         analytics_provider: Callable[[], dict],
         parent: QObject | None = None,
+        hourly_sink: Callable[[dict], None] | None = None,
+        clock: Callable[[], datetime] = datetime.now,
     ) -> None:
         super().__init__(parent)
         self._analytics_provider = analytics_provider
+        self._hourly_sink = hourly_sink
+        self._clock = clock
+        self._hourly_buffer: dict[tuple[str, int, str], int] = {}
+        self._hourly_lock = threading.Lock()
+        self._hourly_timer = QTimer(self)
+        self._hourly_timer.setInterval(self._HOURLY_FLUSH_INTERVAL_MS)
+        self._hourly_timer.timeout.connect(self.flush_hourly_counts)
+        if hourly_sink is not None:
+            self._hourly_timer.start()
         self._messages_processed = 0
         self._spam_blocked = 0
         self._platform_messages = dict.fromkeys(self.PLATFORMS, 0)
@@ -64,7 +78,33 @@ class SessionMetrics(QObject):
         self._messages_processed += 1
         if platform in self._platform_messages:
             self._platform_messages[platform] += 1
+        if self._hourly_sink is not None:
+            now = self._clock()
+            key = (now.strftime("%Y-%m-%d"), now.hour, platform)
+            with self._hourly_lock:
+                self._hourly_buffer[key] = self._hourly_buffer.get(key, 0) + 1
         self._schedule_refresh()
+
+    def flush_hourly_counts(self, *, sync: bool = False) -> None:
+        """Envía a la base de datos los mensajes por hora acumulados; si falla, los conserva."""
+        if self._hourly_sink is None:
+            return
+        with self._hourly_lock:
+            if not self._hourly_buffer:
+                return
+            batch, self._hourly_buffer = self._hourly_buffer, {}
+        if sync:
+            self._write_hourly_batch(batch)
+        else:
+            submit_db_write(self._write_hourly_batch, batch)
+
+    def _write_hourly_batch(self, batch: dict) -> None:
+        try:
+            self._hourly_sink(batch)
+        except Exception:
+            with self._hourly_lock:
+                for key, count in batch.items():
+                    self._hourly_buffer[key] = self._hourly_buffer.get(key, 0) + count
 
     def record_spam_blocked(self) -> None:
         self._spam_blocked += 1
@@ -119,6 +159,8 @@ class SessionMetrics(QObject):
     def stop(self) -> None:
         self._stopped = True
         self._refresh_timer.stop()
+        self._hourly_timer.stop()
+        self.flush_hourly_counts(sync=True)
 
     def _schedule_refresh(self) -> None:
         if not self._refresh_timer.isActive():

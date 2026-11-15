@@ -43,7 +43,7 @@ class MainWindowWiring:
         w.chat_controller.spam_blocked.connect(w.session_metrics.record_spam_blocked)
 
         w.session_metrics.refresh_requested.connect(w._refresh_dashboard_view)
-        w.session_metrics.analytics_loaded.connect(w.dashboard_controller.update_analytics_summary)
+        w.session_metrics.refresh_requested.connect(w.stats_controller.request_live_refresh)
 
         w.chat_controller.command_executed.connect(lambda *args: w.session_metrics.request_analytics_refresh())
 

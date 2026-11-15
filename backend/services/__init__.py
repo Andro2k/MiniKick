@@ -20,9 +20,11 @@ from .media import AvatarService
 from .app import BackupService, BrowserService, SocketInstanceProvider
 from .updates import GithubUpdateProvider, UpdateManager, WhatsNewService, WindowsInstaller
 from .logs import LogService
+from .stats import StatsService
 from .settings import SettingsService, TranslationService, WidgetService
 
 __all__ = [
+    "StatsService",
     "AlertService",
     "AlertQueue",
     "BaseOAuthManager",

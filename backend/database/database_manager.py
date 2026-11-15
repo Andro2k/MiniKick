@@ -300,6 +300,15 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS hourly_message_stats (
+                    stat_date TEXT NOT NULL,
+                    hour INTEGER NOT NULL,
+                    platform TEXT NOT NULL DEFAULT 'kick',
+                    message_count INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (stat_date, hour, platform)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
@@ -340,6 +349,25 @@ class DatabaseManager:
                     is_played INTEGER DEFAULT 0,
                     duration TEXT DEFAULT '-',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS music_playlists (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS music_playlist_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    playlist_id INTEGER NOT NULL REFERENCES music_playlists(id) ON DELETE CASCADE,
+                    title TEXT NOT NULL,
+                    artist TEXT NOT NULL DEFAULT '',
+                    url TEXT NOT NULL,
+                    duration TEXT DEFAULT '-',
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(playlist_id, url)
                 )
             """)
             cursor.execute("""

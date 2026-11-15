@@ -37,6 +37,7 @@ class MainWindowCore(QMainWindow):
 
     _NAV_CONFIG = (
         ("Dashboard", "element-filled.svg", "top"),
+        ("Stats", "chart-bar-filled.svg", "top"),
         ("Chat", "dialog-filled.svg", "top"),
         ("Stream Info", "calendar-days-filled.svg", "top"),
         ("Comandos", "chat-square-code-filled.svg", "top"),
@@ -127,6 +128,7 @@ class MainWindowCore(QMainWindow):
         self.session_metrics = SessionMetrics(
             lambda: self.container.db_manager.get_dashboard_analytics_summary(),
             parent=self,
+            hourly_sink=self.container.stats_storage.add_hourly_counts,
         )
         self._recent_reward_redemptions = RecentRedemptionCache(maxlen=100)
 
@@ -207,6 +209,7 @@ class MainWindowCore(QMainWindow):
         self.view_logs = None
         self.view_alerts = None
         self.view_webhooks = None
+        self.view_stats = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
         self._view_factory = MainWindowViewFactory(self)
@@ -309,12 +312,6 @@ class MainWindowCore(QMainWindow):
         if self._is_shutting_down:
             return
         metrics = self.session_metrics
-        self.view_dashboard.update_session_metrics(
-            msg_count=metrics.messages_processed,
-            cmd_count=metrics.total_usages,
-            timer_count=metrics.active_timers,
-            spam_count=metrics.spam_blocked,
-        )
         self.dashboard_controller.update_platform_messages(
             **{platform: metrics.platform_messages(platform) for platform in metrics.PLATFORMS}
         )
