@@ -1,17 +1,18 @@
 # frontend\navigation\sidebar_component.py
 """Barra lateral de navegación."""
 
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea
+from PySide6.QtWidgets import QBoxLayout, QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
-from frontend.widgets import ClickableFrame, configure_icon_only_button
+from frontend.widgets import configure_icon_only_button
 
 _BADGE_INSET = 2
 _BADGE_RIGHT_MARGIN = 10
 _LAYOUT_PENDING_SIZE = 10
 
 class Sidebar(QFrame):
+    _SECTIONS = ("main", "stream", "tools", "system")
     view_selected = Signal(str)
     section_viewed = Signal(str)
     update_requested = Signal()
@@ -105,26 +106,25 @@ class Sidebar(QFrame):
         scroll_layout.setContentsMargins(*Size.Margin.MRG_NON)
         scroll_layout.setSpacing(Size.SPACING_SM)
 
-        navigate_text = self.i18n.get("main.sidebar.section.navigate")
-        self.lbl_navigate_header = QLabel(navigate_text.upper() if navigate_text else "")
-        self.lbl_navigate_header.setProperty("role", "text_caption")
-        scroll_layout.addWidget(self.lbl_navigate_header)
+        self.section_headers: dict[str, QLabel] = {}
+        self.section_layouts: dict[str, QVBoxLayout] = {}
+        last_section = self._SECTIONS[-1]
+        for section in self._SECTIONS:
+            if section == last_section:
+                scroll_layout.addStretch(1)
+            title = self.i18n.get(f"main.sidebar.section.{section}")
+            header = QLabel(title.upper() if title else "")
+            header.setProperty("role", "text_caption")
+            scroll_layout.addWidget(header)
 
-        self.top_nav_layout = QVBoxLayout()
-        self.top_nav_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.top_nav_layout.setSpacing(Size.SPACING_XS)
-        scroll_layout.addLayout(self.top_nav_layout)
-        scroll_layout.addStretch(1)
-
-        more_text = self.i18n.get("main.sidebar.section.more")
-        self.lbl_more_header = QLabel(more_text.upper() if more_text else "")
-        self.lbl_more_header.setProperty("role", "text_caption")
-        scroll_layout.addWidget(self.lbl_more_header)
-
-        self.bottom_nav_layout = QVBoxLayout()
-        self.bottom_nav_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        self.bottom_nav_layout.setSpacing(Size.SPACING_XS)
-        scroll_layout.addLayout(self.bottom_nav_layout)
+            nav_layout = QVBoxLayout()
+            nav_layout.setContentsMargins(*Size.Margin.MRG_NON)
+            nav_layout.setSpacing(Size.SPACING_XS)
+            scroll_layout.addLayout(nav_layout)
+            if section != last_section:
+                scroll_layout.addSpacing(Size.SPACING_MD)
+            self.section_headers[section] = header
+            self.section_layouts[section] = nav_layout
 
         self.scroll_area.setWidget(scroll_content)
         self.main_layout.addWidget(self.scroll_area, stretch=1)
@@ -203,10 +203,10 @@ class Sidebar(QFrame):
         self.update_card.setVisible(False)
 
     def _setup_profile_card(self):
-        self.profile_card = ClickableFrame()
+        self.profile_card = QFrame()
         self.profile_card.setProperty("role", "profile_card")
 
-        self.profile_layout = QHBoxLayout(self.profile_card)
+        self.profile_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.profile_card)
         self.profile_layout.setContentsMargins(*Size.Margin.MRG_MED)
         self.profile_layout.setSpacing(Size.SPACING_SM)
         self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
@@ -233,16 +233,7 @@ class Sidebar(QFrame):
         self.profile_layout.addWidget(self.profile_avatar)
         self.profile_layout.addWidget(self.profile_text_widget, stretch=1)
 
-        self.profile_card.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.profile_card.clicked.connect(self._on_profile_card_clicked)
         self.reset_profile_info()
-
-    def _on_profile_card_clicked(self):
-        for btn in self.nav_buttons:
-            if btn.property("view_name") == "Dashboard":
-                btn.setChecked(True)
-                break
-        self.view_selected.emit("Dashboard")
 
     def update_profile_info(self, username: str, status_or_role: str):
         self.profile_name_lbl.setText(username)
@@ -331,7 +322,7 @@ class Sidebar(QFrame):
             self.update_card.setVisible(False)
             self.btn_collapsed_update.setVisible(False)
 
-    def add_tab(self, name, icon_name, is_active=False, position="top"):
+    def add_tab(self, name, icon_name, is_active=False, position="main"):
         key_name = name.lower().replace(" ", "_")
         display_name = self.i18n.get(f"main.sidebar.tabs.{key_name}")
         btn = QPushButton(display_name)
@@ -361,10 +352,15 @@ class Sidebar(QFrame):
         self.button_group.addButton(btn)
         self.nav_buttons.append(btn)
 
-        if position == "bottom":
-            self.bottom_nav_layout.addWidget(btn)
-        else:
-            self.top_nav_layout.addWidget(btn)
+        if position == "profile":
+            btn.setText("")
+            btn.setToolTip(display_name)
+            btn.setProperty("profile_action", True)
+            btn.setProperty("collapsed", True)
+            configure_icon_only_button(btn)
+            self.profile_layout.addWidget(btn)
+            return
+        self.section_layouts.get(position, self.section_layouts[self._SECTIONS[0]]).addWidget(btn)
 
     def set_tab_badge(self, tab_name: str, show: bool = True):
         for btn in self.nav_buttons:
@@ -374,6 +370,13 @@ class Sidebar(QFrame):
                     self._position_badge(btn)
                 break
         self._update_toggle_badge()
+
+    def select_tab(self, view_name: str) -> None:
+        """Navega a una vista como si se hubiera pulsado su botón."""
+        for btn in self.nav_buttons:
+            if btn.property("view_name") == view_name:
+                btn.click()
+                return
 
     def clear_tab_badge(self, tab_name: str):
         self.set_tab_badge(tab_name, False)
@@ -389,7 +392,7 @@ class Sidebar(QFrame):
     def _position_badge(self, btn):
         if not hasattr(btn, "badge_label") or not btn.badge_label.isVisible():
             return
-        if not self.is_expanded:
+        if not self.is_expanded or btn.property("profile_action"):
             self._set_badge_state(btn.badge_label, "collapsed", Size.BADGE_DOT)
             btn_w = btn.width() if btn.width() > _LAYOUT_PENDING_SIZE else self.collapsed_width
             btn.badge_label.move(btn_w - (Size.BADGE_DOT + _BADGE_INSET), _BADGE_INSET)
@@ -460,6 +463,9 @@ class Sidebar(QFrame):
 
     def _update_texts_and_styles(self, show: bool):
         for btn in self.nav_buttons:
+            if btn.property("profile_action"):
+                self._position_badge(btn)
+                continue
             btn.setText(btn.property("original_text") if show else "")
             btn.setToolTip("" if show else btn.property("original_text"))
             btn.setProperty("collapsed", not show)
@@ -474,26 +480,24 @@ class Sidebar(QFrame):
             btn.style().polish(btn)
             self._position_badge(btn)
 
-        if show:
-            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        else:
-            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-        self.lbl_navigate_header.setVisible(show)
-        self.lbl_more_header.setVisible(show)
+        alignment = Qt.AlignmentFlag.AlignTop if show else Qt.AlignmentFlag.AlignHCenter
+        for section in self._SECTIONS:
+            self.section_layouts[section].setAlignment(alignment)
+            self.section_headers[section].setVisible(show)
         self._update_notification_visibility()
         self._update_toggle_badge()
 
         self.profile_text_widget.setVisible(show)
+        self.profile_layout.setDirection(
+            QBoxLayout.Direction.LeftToRight if show else QBoxLayout.Direction.TopToBottom
+        )
         if show:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.profile_layout.setContentsMargins(*Size.Margin.MRG_XSM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            self.profile_layout.setContentsMargins(*Size.Margin.MRG_VSM)
+            self.profile_layout.setContentsMargins(*Size.Margin.MRG_XSM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def _on_animation_finished(self):

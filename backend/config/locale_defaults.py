@@ -584,7 +584,7 @@ DEFAULT_DICTIONARY = {
       "btn_connecting_youtube": "Connecting YouTube..."
     },
     "header": {
-      "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
+      "subtitle": "Monitor bot connectivity and manage your streaming session.",
       "title": "Control Panel"
     },
     "platforms": {
@@ -610,6 +610,17 @@ DEFAULT_DICTIONARY = {
       "created_at": "Creation Date",
       "followers": "Followers",
       "room_id": "ChatRoom ID"
+    },
+    "quick_access": {
+      "title": "Quick access",
+      "stats_title": "Statistics",
+      "stats_desc": "Messages, peak hours and top chatters of your channel.",
+      "alerts_title": "Alerts",
+      "alerts_desc": "Customize the alerts for your stream events.",
+      "webhooks_title": "Webhooks",
+      "webhooks_desc": "Send chat and stream events to external services.",
+      "music_title": "Music",
+      "music_desc": "Control the music overlay and review the history."
     }
   },
   "dialogs": {
@@ -808,8 +819,10 @@ DEFAULT_DICTIONARY = {
         "offline_name": "Offline"
       },
       "section": {
-        "more": "More",
-        "navigate": "Navigate"
+        "main": "Main",
+        "stream": "Stream",
+        "system": "System",
+        "tools": "Tools"
       },
       "tabs": {
         "alerts": "Alerts",

@@ -47,11 +47,12 @@ class PlatformStatusCard(QFrame):
         self.lbl_status_pill = QLabel(self.i18n.get("dashboard.platforms.status_offline"), self)
         self.lbl_status_pill.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_status_pill.setProperty("role", "status_pill")
+        self.lbl_status_pill.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self._apply_pill_style("offline")
 
         top_row.addWidget(self.lbl_brand)
         top_row.addStretch(1)
-        top_row.addWidget(self.lbl_status_pill)
+        top_row.addWidget(self.lbl_status_pill, 0, Qt.AlignmentFlag.AlignVCenter)
         layout.addLayout(top_row)
         mid_row = create_row_layout(spacing=Size.SPACING_XS)
 
@@ -71,6 +72,7 @@ class PlatformStatusCard(QFrame):
         mid_row.addWidget(self.lbl_channel, 1)
         mid_row.addWidget(self.lbl_msgs, 0)
         layout.addLayout(mid_row)
+        layout.addStretch(1)
 
         btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
         self.btn_action = ModernButton(

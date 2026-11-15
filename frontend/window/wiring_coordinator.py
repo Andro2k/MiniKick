@@ -14,6 +14,7 @@ class MainWindowWiring:
         w = self._window
         w.settings_controller.style_reload_requested.connect(w._apply_dynamic_theme)
         w.sidebar.view_selected.connect(w.navigation.handle_navigation)
+        w.view_dashboard.quick_access_requested.connect(w.sidebar.select_tab)
         w.sidebar.section_viewed.connect(w.whats_new.on_section_viewed)
         connections = w.platform_connections
         w.dashboard_controller.request_connection.connect(connections.handle_auth_process)

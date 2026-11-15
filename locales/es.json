@@ -581,7 +581,7 @@
       "btn_connecting_youtube": "Conectando YouTube..."
     },
     "header": {
-      "subtitle": "Monitorea la conexión del bot, revisa tus estadísticas en vivo y gestiona tu sesión.",
+      "subtitle": "Monitorea la conexión del bot y gestiona tu sesión de stream.",
       "title": "Panel de Control"
     },
     "platforms": {
@@ -607,6 +607,17 @@
       "created_at": "Fecha de Creación",
       "followers": "Seguidores",
       "room_id": "ID de ChatRoom"
+    },
+    "quick_access": {
+      "title": "Accesos rápidos",
+      "stats_title": "Estadísticas",
+      "stats_desc": "Mensajes, horas pico y top chatters de tu canal.",
+      "alerts_title": "Alertas",
+      "alerts_desc": "Personaliza las alertas de los eventos de tu stream.",
+      "webhooks_title": "Webhooks",
+      "webhooks_desc": "Envía eventos del chat y del stream a servicios externos.",
+      "music_title": "Música",
+      "music_desc": "Controla el overlay de música y revisa el historial."
     }
   },
   "dialogs": {
@@ -805,8 +816,10 @@
         "offline_name": "Sin Conexión"
       },
       "section": {
-        "more": "Más",
-        "navigate": "Navegar"
+        "main": "Principal",
+        "stream": "Stream",
+        "system": "Sistema",
+        "tools": "Herramientas"
       },
       "tabs": {
         "alerts": "Alertas",

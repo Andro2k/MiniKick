@@ -36,20 +36,22 @@ class MainWindowCore(QMainWindow):
     SETTING_WINDOW_GEOMETRY = WindowStateManager.SETTING_WINDOW_GEOMETRY
 
     _NAV_CONFIG = (
-        ("Dashboard", "element-filled.svg", "top"),
-        ("Stats", "chart-bar-filled.svg", "top"),
-        ("Chat", "dialog-filled.svg", "top"),
-        ("Stream Info", "calendar-days-filled.svg", "top"),
-        ("Comandos", "chat-square-code-filled.svg", "top"),
-        ("Timers", "alarm-filled.svg", "top"),
-        ("Music", "music-notes-filled.svg", "top"),
-        ("Widgets", "widget-add-filled.svg", "top"),
-        ("Triggers", "treasure-chest-filled.svg", "top"),
-        ("Alerts", "megaphone-filled.svg", "top"),
-        ("Webhooks", "webhooks-filled.svg", "top"),
+        ("Dashboard", "element-filled.svg", "main"),
+        ("Stats", "chart-bar-filled.svg", "main"),
 
-        ("Settings", "gear-filled.svg", "bottom"),
-        ("Developer", "file-text-filled.svg", "bottom"),
+        ("Chat", "dialog-filled.svg", "stream"),
+        ("Stream Info", "calendar-days-filled.svg", "stream"),
+        ("Comandos", "chat-square-code-filled.svg", "stream"),
+        ("Timers", "alarm-filled.svg", "stream"),
+
+        ("Music", "music-notes-filled.svg", "tools"),
+        ("Widgets", "widget-add-filled.svg", "tools"),
+        ("Triggers", "treasure-chest-filled.svg", "tools"),
+        ("Alerts", "megaphone-filled.svg", "tools"),
+        ("Webhooks", "webhooks-filled.svg", "tools"),
+
+        ("Developer", "file-text-filled.svg", "system"),
+        ("Settings", "gear-filled.svg", "profile"),
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
 
