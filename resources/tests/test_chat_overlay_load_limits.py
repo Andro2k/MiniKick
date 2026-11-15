@@ -1,4 +1,5 @@
 # resources\tests\test_chat_overlay_load_limits.py
+"""Pruebas de los límites de carga del overlay de chat (cola de TTS)."""
 
 import json
 import queue

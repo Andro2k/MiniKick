@@ -1,4 +1,5 @@
 # resources\tests\test_platform_endpoints_centralized.py
+"""Pruebas de que los hosts de las APIs de plataformas se definen solo en la configuración del backend."""
 
 from pathlib import Path
 

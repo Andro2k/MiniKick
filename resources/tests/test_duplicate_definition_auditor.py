@@ -1,4 +1,5 @@
 # resources\tests\test_duplicate_definition_auditor.py
+"""Pruebas del auditor de definiciones duplicadas."""
 
 import ast
 import textwrap

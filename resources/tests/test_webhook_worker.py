@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_worker.py
+"""Pruebas del worker de entrega de webhooks (reintentos)."""
 
 import threading
 import time

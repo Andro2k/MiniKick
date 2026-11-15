@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_transport.py
+"""Pruebas del transporte HTTP de webhooks."""
 
 import httpx
 

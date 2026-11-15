@@ -1,4 +1,5 @@
 # resources\tests\_webhook_helpers.py
+"""Fábricas de endpoints y eventos de webhook para las pruebas."""
 
 from backend.interfaces.webhooks_interface import DeliveryJob, WebhookEndpointConfig, WebhookEvent
 

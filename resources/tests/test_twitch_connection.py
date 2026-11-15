@@ -1,4 +1,5 @@
 # resources\tests\test_twitch_connection.py
+"""Pruebas de la conexión de Twitch."""
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock

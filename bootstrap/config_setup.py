@@ -1,4 +1,5 @@
-# bootstrap\config.py
+# bootstrap\config_setup.py
+"""Crea el proveedor de configuración TOML y migra los ajustes antiguos de SQLite."""
 
 import logging
 from pathlib import Path

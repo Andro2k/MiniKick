@@ -1,4 +1,5 @@
-# resources\tests\test_tts_speech_text.py
+# resources\tests\test_speech_utils.py
+"""Pruebas de la normalización de texto para TTS (pronunciaciones)."""
 
 import threading
 import time

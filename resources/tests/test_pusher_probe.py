@@ -1,4 +1,5 @@
 # resources\tests\test_pusher_probe.py
+"""Pruebas de la sonda de Pusher."""
 
 import json
 from unittest import mock

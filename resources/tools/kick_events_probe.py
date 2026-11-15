@@ -1,4 +1,5 @@
 # resources\tools\kick_events_probe.py
+"""Sonda de eventos de Kick: arma canales y sugiere el tipo de cada evento."""
 
 import argparse
 import json

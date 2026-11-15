@@ -1,4 +1,5 @@
-# resources\tests\test_main_window_support.py
+# resources\tests\test_main_window_core.py
+"""Pruebas de la ventana principal: canjes recientes y toast de conexión inicial."""
 
 import logging
 import subprocess

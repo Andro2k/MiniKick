@@ -1,4 +1,5 @@
 # resources\tools\project_dead_code_auditor.py
+"""Auditor de código muerto."""
 
 import argparse
 import ast

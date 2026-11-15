@@ -1,4 +1,5 @@
-# bootstrap\environment.py
+# bootstrap\environment_setup.py
+"""Preparación del entorno del proceso: variables, filtrado de rutas y App ID de Windows."""
 
 import logging
 import os

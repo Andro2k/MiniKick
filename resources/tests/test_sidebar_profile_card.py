@@ -1,4 +1,5 @@
 # resources\tests\test_sidebar_profile_card.py
+"""Pruebas de la tarjeta de perfil de la barra lateral."""
 
 from PySide6.QtCore import QEvent, QObject, QPoint, Qt
 from PySide6.QtTest import QTest

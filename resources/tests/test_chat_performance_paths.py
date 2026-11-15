@@ -1,4 +1,5 @@
 # resources\tests\test_chat_performance_paths.py
+"""Pruebas de las rutas de rendimiento del chat (worker de red en orden y con límite de cola)."""
 
 import threading
 import time

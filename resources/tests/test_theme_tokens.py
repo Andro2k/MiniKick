@@ -1,4 +1,5 @@
 # resources\tests\test_theme_tokens.py
+"""Pruebas de los tokens del tema (sin constantes duplicadas)."""
 
 from frontend.common import theme as theme_module
 

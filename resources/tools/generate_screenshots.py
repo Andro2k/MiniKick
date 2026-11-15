@@ -1,4 +1,5 @@
 # resources\tools\generate_screenshots.py
+"""Genera capturas de pantalla de las vistas de la aplicación."""
 
 import os
 import sys
@@ -6,14 +7,14 @@ import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from bootstrap.environment import configure_environment
+from bootstrap.environment_setup import configure_environment
 
 configure_environment()
 
 from backend.config import APP_VERSION
 from backend.handlers import QLogHandler
 from bootstrap.qt_setup import get_or_create_application
-from bootstrap.services import StartupServices
+from bootstrap.startup_services import StartupServices
 from frontend.window.main_window_core import MainWindowCore
 
 

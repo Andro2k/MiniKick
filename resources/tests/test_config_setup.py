@@ -1,9 +1,10 @@
-# resources\tests\test_config_bootstrap.py
+# resources\tests\test_config_setup.py
+"""Pruebas de la configuración de arranque y la importación de ajustes desde SQLite."""
 
 import pytest
 
 from backend.database.database_manager import DatabaseManager
-from bootstrap.config import CONFIG_FILE_NAME, create_config_provider
+from bootstrap.config_setup import CONFIG_FILE_NAME, create_config_provider
 
 
 @pytest.fixture

@@ -4,9 +4,9 @@ from importlib import import_module
 from typing import TYPE_CHECKING
 
 _EXPORTS = {
-    "configure_environment": ".environment",
+    "configure_environment": ".environment_setup",
     "Application": ".application",
-    "CrashHandler": ".crash",
+    "CrashHandler": ".crash_handler",
 }
 
 __all__ = list(_EXPORTS)
@@ -23,5 +23,5 @@ def __getattr__(name: str):
 
 if TYPE_CHECKING:
     from .application import Application
-    from .crash import CrashHandler
-    from .environment import configure_environment
+    from .crash_handler import CrashHandler
+    from .environment_setup import configure_environment

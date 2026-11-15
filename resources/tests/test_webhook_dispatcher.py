@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_dispatcher.py
+"""Pruebas del despachador de webhooks."""
 
 from backend.services.webhooks.webhook_dispatcher_service import WebhookDispatcherService
 from resources.tests._webhook_helpers import make_endpoint

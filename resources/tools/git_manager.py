@@ -1,4 +1,5 @@
 # resources\tools\git_manager.py
+"""Gestor de Git por línea de comandos (CLI y ejecutor de comandos Git)."""
 
 import questionary
 import argparse

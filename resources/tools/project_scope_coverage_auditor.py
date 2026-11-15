@@ -1,4 +1,5 @@
 # resources\tools\project_scope_coverage_auditor.py
+"""Auditor de cobertura de alcance: verifica que todos los .py estén cubiertos por las herramientas."""
 
 import argparse
 import ast

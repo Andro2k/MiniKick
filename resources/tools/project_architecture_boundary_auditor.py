@@ -1,4 +1,5 @@
 # resources\tools\project_architecture_boundary_auditor.py
+"""Auditor de límites de arquitectura entre capas del proyecto."""
 
 import ast
 import json

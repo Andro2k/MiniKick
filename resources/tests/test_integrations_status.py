@@ -1,4 +1,5 @@
 # resources\tests\test_integrations_status.py
+"""Pruebas del estado de integraciones (ConnectionHub y presentador)."""
 
 from unittest.mock import MagicMock
 

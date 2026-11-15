@@ -1,4 +1,5 @@
 # resources\tests\test_clickable_frame.py
+"""Pruebas del manejo de clics compartido (ClickableFrame)."""
 
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtTest import QTest

@@ -1,4 +1,5 @@
-# bootstrap\services.py
+# bootstrap\startup_services.py
+"""Fábrica de los servicios de arranque (StartupServices)."""
 
 from backend.config import APP_VERSION
 from bootstrap.translator import load_translator
@@ -18,7 +19,7 @@ class StartupServices:
 
     def create_config(self, db_manager):
         if self._config_provider is None:
-            from bootstrap.config import create_config_provider
+            from bootstrap.config_setup import create_config_provider
             self._config_provider = create_config_provider(db_manager)
         return self._config_provider
 

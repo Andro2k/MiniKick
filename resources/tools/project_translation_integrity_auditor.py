@@ -1,4 +1,5 @@
 # resources\tools\project_translation_integrity_auditor.py
+"""Auditor de integridad de las traducciones (paridad y limpieza de claves)."""
 
 import ast
 import contextlib

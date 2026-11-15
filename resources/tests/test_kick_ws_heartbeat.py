@@ -1,4 +1,5 @@
 # resources\tests\test_kick_ws_heartbeat.py
+"""Pruebas del latido y el watchdog del websocket de Kick."""
 
 import socket
 import time

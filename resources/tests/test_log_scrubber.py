@@ -1,4 +1,5 @@
 # resources\tests\test_log_scrubber.py
+"""Pruebas del enmascarado de secretos en los logs."""
 
 import io
 import logging

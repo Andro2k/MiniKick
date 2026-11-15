@@ -1,4 +1,5 @@
 # resources\tools\frontend_qss_role_state_auditor.py
+"""Auditor de roles y estados QSS del frontend."""
 
 import ast
 import difflib

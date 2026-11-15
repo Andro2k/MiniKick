@@ -1,4 +1,5 @@
-# bootstrap\crash.py
+# bootstrap\crash_handler.py
+"""Manejador de excepciones no controladas con reporte modal (CrashHandler)."""
 
 import logging
 import sys

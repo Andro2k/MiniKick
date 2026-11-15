@@ -1,4 +1,5 @@
 # resources\tools\project_unused_parameter_auditor.py
+"""Auditor de parámetros sin usar."""
 
 import argparse
 import ast

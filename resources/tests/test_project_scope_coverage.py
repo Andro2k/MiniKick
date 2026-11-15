@@ -1,4 +1,5 @@
 # resources\tests\test_project_scope_coverage.py
+"""Pruebas del auditor de cobertura de alcance."""
 
 from resources.tools import _project_sources as sources
 from resources.tools import project_scope_coverage_auditor as coverage

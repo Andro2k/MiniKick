@@ -1,4 +1,5 @@
 # resources\tools\project_performance_profiler.py
+"""Perfilador de rendimiento del proyecto."""
 
 import argparse
 import contextlib
