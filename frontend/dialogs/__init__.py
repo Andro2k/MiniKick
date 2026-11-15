@@ -9,7 +9,6 @@ _EXPORTS = {
     "ModernConfirmDialog": ".base_dialog",
     "PlatformConnectDialog": ".platform_dialog",
     "AlreadyRunningDialog": ".already_running_dialog",
-    "BugReportDialog": ".bug_report_dialog",
     "CrashReportDialog": ".crash_report_dialog",
     "UpdateDialog": ".updater_dialog",
     "ReleaseNotesDialog": ".release_notes_dialog",
@@ -47,7 +46,6 @@ def __getattr__(name: str):
 if TYPE_CHECKING:
     from .add_to_playlist_dialog import AddToPlaylistModal
     from .already_running_dialog import AlreadyRunningDialog
-    from .bug_report_dialog import BugReportDialog
     from .commands_dialog import CommandConfigWizard
     from .crash_report_dialog import CrashReportDialog
     from .duplicate_alert_dialog import DuplicateAlertModal

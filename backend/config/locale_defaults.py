@@ -456,7 +456,6 @@ DEFAULT_DICTIONARY = {
       "export": "Export",
       "import": "Import",
       "next": "Next",
-      "report_bug": "Report Bug",
       "save": "Save",
       "understood": "Understood",
       "update": "Check for updates",
@@ -633,7 +632,6 @@ DEFAULT_DICTIONARY = {
       "title": "MiniKick is Already Running"
     },
     "bug_report": {
-      "btn_send": "Send Report",
       "btn_send_low": "Report Low Priority Bug",
       "btn_send_medium": "Report Medium Priority Bug",
       "btn_send_urgent": "Report Urgent Bug",
@@ -738,7 +736,6 @@ DEFAULT_DICTIONARY = {
       "btn_hide_logs": "Hide Logs",
       "btn_live": "Live View",
       "btn_load": "Load History",
-      "btn_report": "Report Bug",
       "btn_show_logs": "View Logs",
       "date_1d": "Last 24 hours",
       "date_3d": "Last 3 days",
@@ -835,6 +832,7 @@ DEFAULT_DICTIONARY = {
         "dashboard": "Dashboard",
         "developer": "Developer",
         "music": "Music",
+        "report_bug": "Report Bug",
         "settings": "Settings",
         "spam_filters": "Anti-Spam Filters",
         "stats": "Statistics",

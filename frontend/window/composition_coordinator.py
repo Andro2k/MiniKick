@@ -7,6 +7,7 @@ from backend.connections import ConnectionHub, KickConnection, WorkerSlot
 from backend.config import KICK_PUSHER
 from backend.controllers import (
     AlertsController,
+    BugReportController,
     ChatController,
     CommandsController,
     DashboardController,
@@ -32,7 +33,7 @@ from backend.services import (
     SpamService,
     TimerService,
 )
-from backend.workers import GlobalMediaWorker
+from backend.workers import BugReportWorker, GlobalMediaWorker
 from frontend.common.qt_debounce_utils import qt_debounce
 from frontend.window.integrations_protocols import IntegrationsStatusPresenter
 from frontend.window.media_keys_handler import MediaKeysHandler
@@ -112,6 +113,12 @@ class MainWindowComposition:
             i18n=w.i18n,
             toast_manager=w.toast,
             ignored_users_provider=w.chat_service.get_ignored_users,
+        )
+        w.bug_report_controller = BugReportController(
+            None,
+            worker_class=BugReportWorker,
+            toast_manager=w.toast,
+            i18n=w.i18n,
         )
         w.stats_controller = StatsController(
             None,

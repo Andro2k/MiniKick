@@ -51,9 +51,10 @@ class MainWindowCore(QMainWindow):
         ("Webhooks", "webhooks-filled.svg", "tools"),
 
         ("Developer", "file-text-filled.svg", "system"),
+        ("Report Bug", "bug-filled.svg", "system"),
         ("Settings", "gear-filled.svg", "profile"),
     )
-    _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
+    _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer", "Report Bug")
 
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
@@ -212,6 +213,7 @@ class MainWindowCore(QMainWindow):
         self.view_alerts = None
         self.view_webhooks = None
         self.view_stats = None
+        self.view_report_bug = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
         self._view_factory = MainWindowViewFactory(self)
