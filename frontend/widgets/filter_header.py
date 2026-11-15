@@ -14,7 +14,7 @@ class FilterHeaderView(QHeaderView):
         super().__init__(orientation, parent)
         self._column_filters: dict[int, dict] = {}
         self._icon_filtered = get_icon_colored("filter-outline.svg", BrandColors.GREEN)
-        self._icon_unfiltered = get_icon_colored("filter-outline.svg", Palette.NEUTRAL_500)
+        self._icon_unfiltered = get_icon_colored("filter-outline.svg", Palette.NEUTRAL_200)
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
         self.sectionClicked.connect(self._on_section_clicked)

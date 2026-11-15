@@ -121,15 +121,15 @@ class LogView(BaseView):
 
         specs = [
             ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_outlined",
-             "folder-open-outline.svg", Palette.NEUTRAL_400, self.open_folder_requested.emit, True),
+             "folder-open-outline.svg", Palette.NEUTRAL_000, self.open_folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_outlined",
-             "file-text-outline.svg", Palette.NEUTRAL_400, self.load_requested.emit, True),
+             "file-text-outline.svg", Palette.NEUTRAL_000, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_outlined",
-             "eye-outline.svg", Palette.NEUTRAL_400, self.view_toggle_requested.emit, True),
+             "eye-outline.svg", Palette.NEUTRAL_000, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_outlined",
-             "play-outline.svg", Palette.NEUTRAL_400, self.live_requested.emit, False),
+             "play-outline.svg", Palette.NEUTRAL_000, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
-             "trash-outline.svg", Palette.NEUTRAL_400, self.clear_requested.emit, True),
+             "trash-outline.svg", Palette.NEUTRAL_000, self.clear_requested.emit, True),
         ]
 
         self._action_buttons: list[ModernButton] = []
