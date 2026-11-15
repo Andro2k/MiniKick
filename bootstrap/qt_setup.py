@@ -1,4 +1,5 @@
 # bootstrap\qt_setup.py
+"""Creación de QApplication y configuración de fuentes."""
 
 import logging
 import os

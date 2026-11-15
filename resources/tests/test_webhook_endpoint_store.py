@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_endpoint_store.py
+"""Pruebas del almacén de endpoints de webhook."""
 
 import base64
 

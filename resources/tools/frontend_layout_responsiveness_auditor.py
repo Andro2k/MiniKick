@@ -1,4 +1,5 @@
 # resources\tools\frontend_layout_responsiveness_auditor.py
+"""Auditor de responsividad de los layouts del frontend."""
 
 import argparse
 import contextlib

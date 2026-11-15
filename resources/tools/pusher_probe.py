@@ -1,4 +1,5 @@
 # resources\tools\pusher_probe.py
+"""Sonda de Pusher: prueba claves y descubre transportes."""
 
 import argparse
 import json

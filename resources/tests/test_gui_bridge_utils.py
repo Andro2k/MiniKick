@@ -1,4 +1,5 @@
 # resources\tests\test_gui_bridge_utils.py
+"""Pruebas del puente al hilo de la interfaz (run_on_gui)."""
 
 import threading
 

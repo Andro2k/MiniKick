@@ -1,4 +1,5 @@
 # resources\tests\test_window_support_modules.py
+"""Pruebas de los módulos de apoyo de la ventana (métricas de sesión, teclas multimedia)."""
 
 import sys
 from unittest.mock import MagicMock

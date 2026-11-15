@@ -1,4 +1,5 @@
 # resources\tools\generate_screenshots.py
+"""Genera capturas de pantalla de las vistas de la aplicación."""
 
 import os
 import sys

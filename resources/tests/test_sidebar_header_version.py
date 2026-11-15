@@ -1,4 +1,5 @@
 # resources\tests\test_sidebar_header_version.py
+"""Pruebas de la insignia de versión de la barra lateral."""
 
 import time
 

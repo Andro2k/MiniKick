@@ -1,4 +1,5 @@
 # bootstrap\translator.py
+"""Traductor con respaldo (FallbackTranslator) y carga del idioma."""
 
 import logging
 import os

@@ -1,4 +1,5 @@
 # resources\tests\test_audio_devices_provider.py
+"""Pruebas de la resolución de dispositivos de audio por id y descripción."""
 
 import backend.providers.audio.audio_devices_provider as devices
 

@@ -1,4 +1,5 @@
 # bootstrap\application.py
+"""Orquestación del arranque de la aplicación (clase Application)."""
 
 import logging
 import sys

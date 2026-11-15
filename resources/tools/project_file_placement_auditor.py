@@ -1,4 +1,5 @@
 # resources\tools\project_file_placement_auditor.py
+"""Auditor de ubicación de archivos y de la convención de nombres <tema>_<rol>."""
 
 import fnmatch
 import json

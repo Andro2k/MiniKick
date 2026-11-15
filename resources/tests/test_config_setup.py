@@ -1,4 +1,5 @@
 # resources\tests\test_config_setup.py
+"""Pruebas de la configuración de arranque y la importación de ajustes desde SQLite."""
 
 import pytest
 

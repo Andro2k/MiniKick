@@ -1,4 +1,5 @@
 # resources\tests\test_tiktok_chat_provider.py
+"""Pruebas del proveedor de chat de TikTok."""
 
 import asyncio
 from unittest.mock import MagicMock

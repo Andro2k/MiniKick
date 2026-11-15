@@ -1,4 +1,5 @@
 # resources\tests\test_worker_and_core_lifecycle.py
+"""Pruebas del ciclo de vida de los workers y del núcleo."""
 
 import io
 import logging

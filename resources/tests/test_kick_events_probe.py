@@ -1,4 +1,5 @@
 # resources\tests\test_kick_events_probe.py
+"""Pruebas de la sonda de eventos de Kick."""
 
 import json
 

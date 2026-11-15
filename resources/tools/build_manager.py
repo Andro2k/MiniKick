@@ -1,4 +1,5 @@
 # resources\tools\build_manager.py
+"""Gestor de compilación: versión de la app, información de versión de Windows y ejecución de comandos."""
 
 import os
 import re

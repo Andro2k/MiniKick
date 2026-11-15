@@ -1,4 +1,5 @@
 # resources\tools\_project_sources.py
+"""Utilidades compartidas para listar los archivos .py del proyecto (git o recorrido de carpetas)."""
 
 import subprocess
 from pathlib import Path

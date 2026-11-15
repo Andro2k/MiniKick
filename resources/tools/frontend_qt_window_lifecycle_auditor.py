@@ -1,4 +1,5 @@
 # resources\tools\frontend_qt_window_lifecycle_auditor.py
+"""Auditor del ciclo de vida de las ventanas de Qt en el frontend."""
 
 import argparse
 import ast
