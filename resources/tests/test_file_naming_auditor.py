@@ -24,12 +24,18 @@ def test_detecta_archivos_sin_sufijo_de_rol(tmp_path, monkeypatch):
         "backend/utils/perf.py",
         "frontend/window/startup.py",
         "frontend/components/chat/bot_mute.py",
+        "bootstrap/crash.py",
+        "resources/tools/helper.py",
+        "resources/tests/audio_check.py",
     ):
         _touch(tmp_path, rel)
 
     flagged = {Path(v.file_path).name for v in auditor.audit_naming_convention()}
 
-    assert flagged == {"i_tts.py", "clock.py", "perf.py", "startup.py", "bot_mute.py"}
+    assert flagged == {
+        "i_tts.py", "clock.py", "perf.py", "startup.py", "bot_mute.py",
+        "crash.py", "helper.py", "audio_check.py",
+    }
 
 
 def test_acepta_nombres_validos_excepciones_y_subcarpetas(tmp_path, monkeypatch):
@@ -45,6 +51,14 @@ def test_acepta_nombres_validos_excepciones_y_subcarpetas(tmp_path, monkeypatch)
         "frontend/window/view_prewarmer.py",
         "frontend/components/chat/bot_mute_panel.py",
         "frontend/dialogs/splash_screen.py",
+        "bootstrap/crash_handler.py",
+        "bootstrap/qt_setup.py",
+        "bootstrap/application.py",
+        "resources/tools/git_manager.py",
+        "resources/tools/project_dead_code_auditor.py",
+        "resources/tools/generate_screenshots.py",
+        "resources/tests/conftest.py",
+        "resources/tests/test_speech_utils.py",
     ):
         _touch(tmp_path, rel)
 

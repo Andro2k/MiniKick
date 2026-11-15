@@ -76,6 +76,20 @@ NAMING_RULES: Dict[str, Dict[str, object]] = {
             "overlay_manager.py", "overlay_routes.py", "overlay_ws_client.py",
         ],
     },
+    "bootstrap": {
+        "patterns": ["*_setup.py", "*_handler.py"],
+        "exceptions": ["application.py", "startup_services.py", "translator.py"],
+    },
+    "resources/tools": {
+        "patterns": [
+            "*_auditor.py", "*_manager.py", "*_probe.py", "*_tool.py", "*_suite.py", "*_profiler.py",
+        ],
+        "exceptions": ["_project_sources.py", "generate_screenshots.py"],
+    },
+    "resources/tests": {
+        "patterns": ["test_*.py"],
+        "exceptions": ["conftest.py", "_webhook_helpers.py"],
+    },
     "frontend/dialogs": {"patterns": ["*_dialog.py"], "exceptions": ["splash_screen.py", "update_flow.py"]},
     "frontend/navigation": {"patterns": ["*_component.py"]},
     "frontend/components": {
