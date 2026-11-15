@@ -125,7 +125,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.i18n.get("chat.overlay.size_desc")
         )
         header_fade = self._create_metric_header(
-            "stopwatch-filled.svg",
+            "clock-filled.svg",
             self.i18n.get("chat.overlay.fade_title"),
             self.i18n.get("chat.overlay.fade_desc")
         )
