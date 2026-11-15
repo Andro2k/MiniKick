@@ -1,4 +1,4 @@
-# bootstrap\environment.py
+# bootstrap\environment_setup.py
 
 import logging
 import os

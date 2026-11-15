@@ -1,4 +1,4 @@
-# resources\tests\test_tiktok_provider.py
+# resources\tests\test_tiktok_chat_provider.py
 
 import asyncio
 from unittest.mock import MagicMock

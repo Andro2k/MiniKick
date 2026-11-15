@@ -6,9 +6,9 @@ import time
 
 from backend.config import APP_VERSION
 from backend.utils import elapsed_ms, perf_phase
-from bootstrap.environment import PROCESS_STARTED, set_windows_app_id
+from bootstrap.environment_setup import PROCESS_STARTED, set_windows_app_id
 from bootstrap.qt_setup import create_application
-from bootstrap.services import StartupServices
+from bootstrap.startup_services import StartupServices
 from frontend.dialogs import SplashScreen
 
 logger = logging.getLogger("minikick.main")

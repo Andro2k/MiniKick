@@ -1,4 +1,4 @@
-# resources\tests\test_gui_bridge.py
+# resources\tests\test_gui_bridge_utils.py
 
 import threading
 

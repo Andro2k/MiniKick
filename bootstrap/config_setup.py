@@ -1,4 +1,4 @@
-# bootstrap\config.py
+# bootstrap\config_setup.py
 
 import logging
 from pathlib import Path

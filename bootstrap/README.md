@@ -17,13 +17,13 @@ Key architectural responsibilities:
 ```mermaid
 flowchart TD
     MAIN(["main.py"]) --> INIT["bootstrap/__init__.py"]
-    INIT --> ENV["environment.py\n(OS / Env Sanitization)"]
-    INIT --> CRASH["crash.py\n(CrashHandler excepthook)"]
+    INIT --> ENV["environment_setup.py\n(OS / Env Sanitization)"]
+    INIT --> CRASH["crash_handler.py\n(CrashHandler excepthook)"]
     INIT --> APP["application.py\n(Application Orchestration)"]
 
     APP --> QT["qt_setup.py\n(QApplication & Font Setup)"]
-    APP --> SERV["services.py\n(StartupServices Factory)"]
-    SERV --> CFG["config.py\n(TOML / Legacy SQLite Migration)"]
+    APP --> SERV["startup_services.py\n(StartupServices Factory)"]
+    SERV --> CFG["config_setup.py\n(TOML / Legacy SQLite Migration)"]
     SERV --> TRANS["translator.py\n(i18n & Installer Lang Sync)"]
 
     APP --> FRONT["frontend.window.main_window_core.MainWindowCore"]
@@ -33,11 +33,11 @@ flowchart TD
 | Module | Role | Primary Export(s) |
 | :--- | :--- | :--- |
 | [`__init__.py`](./__init__.py) | Dynamic facade & deferred export resolver | `Application`, `CrashHandler`, `configure_environment` |
-| [`environment.py`](./environment.py) | Process environment, path filtering & Windows App ID | `configure_environment()`, `set_windows_app_id()`, `PROCESS_STARTED` |
-| [`crash.py`](./crash.py) | Unhandled exception handler & modal reporting | `CrashHandler` |
+| [`environment_setup.py`](./environment_setup.py) | Process environment, path filtering & Windows App ID | `configure_environment()`, `set_windows_app_id()`, `PROCESS_STARTED` |
+| [`crash_handler.py`](./crash_handler.py) | Unhandled exception handler & modal reporting | `CrashHandler` |
 | [`application.py`](./application.py) | Main application lifecycle coordinator | `Application` |
-| [`services.py`](./services.py) | Inversion of Control (IoC) factory for startup services | `StartupServices` |
-| [`config.py`](./config.py) | Configuration provider resolver & SQLite->TOML migrator | `create_config_provider()` |
+| [`startup_services.py`](./startup_services.py) | Inversion of Control (IoC) factory for startup services | `StartupServices` |
+| [`config_setup.py`](./config_setup.py) | Configuration provider resolver & SQLite->TOML migrator | `create_config_provider()` |
 | [`qt_setup.py`](./qt_setup.py) | Qt application instance, fonts, palette, and styling | `create_application()`, `get_or_create_application()` |
 | [`translator.py`](./translator.py) | Translator bootstrap & installer language synchronization | `load_translator()`, `FallbackTranslator` |
 
@@ -61,7 +61,7 @@ class Application:
 - **Preconditions**: Must be invoked from the main execution thread.
 - **Postconditions**: Returns process exit code (`0` on clean exit, `1` on duplicate instance detected or fatal early abort). Releases instance socket lock upon exit.
 
-### 3.2. `CrashHandler` ([`crash.py`](./crash.py))
+### 3.2. `CrashHandler` ([`crash_handler.py`](./crash_handler.py))
 Global uncaught exception sink attached to `sys.excepthook`.
 
 ```python
@@ -76,7 +76,7 @@ class CrashHandler:
 ```
 - **Invariants**: Guarantees fault log persistence (`write_fault_log_record`) and logger buffer flushing before attempting UI dialog display. Terminate process with exit code 1.
 
-### 3.3. `configure_environment` & `set_windows_app_id` ([`environment.py`](./environment.py))
+### 3.3. `configure_environment` & `set_windows_app_id` ([`environment_setup.py`](./environment_setup.py))
 Configures the execution environment prior to loading heavy libraries.
 
 ```python
@@ -84,7 +84,7 @@ def configure_environment() -> None: ...
 def set_windows_app_id() -> None: ...
 ```
 
-### 3.4. `StartupServices` ([`services.py`](./services.py))
+### 3.4. `StartupServices` ([`startup_services.py`](./startup_services.py))
 Factory consolidating startup dependencies.
 
 ```python
@@ -103,7 +103,7 @@ class StartupServices:
 
 1. **Lazy Dynamic Exports**: `bootstrap/__init__.py` uses `__getattr__` dispatch; importing `bootstrap` does not import Qt, SQLite, or backend modules until requested.
 2. **Single Instance Mutual Exclusion**: `SocketInstanceProvider` binds to `localhost:45678`. If already held, startup aborts immediately and presents `AlreadyRunningDialog`.
-3. **Idempotent Configuration Migration**: `_import_legacy_settings` in `config.py` converts SQLite `settings` records into `minikick.toml` once. On success, writes `settings_migrated_to_toml` marker. Subsequent launches bypass SQLite reads for configuration.
+3. **Idempotent Configuration Migration**: `_import_legacy_settings` in `config_setup.py` converts SQLite `settings` records into `minikick.toml` once. On success, writes `settings_migrated_to_toml` marker. Subsequent launches bypass SQLite reads for configuration.
 4. **Installer Language Handshake**: `translator.py` checks for `.install_lang` written by Inno Setup. If present, updates `app_language` config and unlinks the marker file.
 5. **Fail-Safe Fallbacks**: If translation service initialization raises an exception, `load_translator()` falls back to `FallbackTranslator` (returning keys verbatim) rather than allowing a fatal crash.
 

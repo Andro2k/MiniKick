@@ -1,4 +1,4 @@
-# bootstrap\crash.py
+# bootstrap\crash_handler.py
 
 import logging
 import sys

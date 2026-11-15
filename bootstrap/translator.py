@@ -31,7 +31,7 @@ def load_translator(settings_storage=None):
 
 def _default_settings_storage():
     from backend.database import DatabaseManager
-    from bootstrap.config import create_config_provider
+    from bootstrap.config_setup import create_config_provider
     return create_config_provider(DatabaseManager())
 
 

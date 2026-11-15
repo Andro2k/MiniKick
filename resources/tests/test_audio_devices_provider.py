@@ -1,4 +1,4 @@
-# resources\tests\test_audio_devices.py
+# resources\tests\test_audio_devices_provider.py
 
 import backend.providers.audio.audio_devices_provider as devices
 

@@ -1,4 +1,4 @@
-# resources\tests\test_main_window_support.py
+# resources\tests\test_main_window_core.py
 
 import logging
 import subprocess
