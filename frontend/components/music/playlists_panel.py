@@ -13,6 +13,7 @@ class MusicPlaylistsPanel(QWidget):
     create_requested = Signal(str)
     delete_requested = Signal(int)
     selected = Signal(int)
+    enqueue_requested = Signal(int)
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
@@ -51,7 +52,9 @@ class MusicPlaylistsPanel(QWidget):
         self.txt_name.setPlaceholderText(self.i18n.get("music.playlists.name_placeholder"))
         self.txt_name.returnPressed.connect(self._on_create_clicked)
         self.btn_create = ModernButton(self.i18n.get("music.playlists.create_btn"), role="action_outlined", icon_name="plus-filled.svg", parent=self)
+        self.btn_create.setEnabled(False)
         self.btn_create.clicked.connect(self._on_create_clicked)
+        self.txt_name.textChanged.connect(lambda text: self.btn_create.setEnabled(bool(text.strip())))
         self.card_playlists.add_header_control(self.txt_name)
         self.card_playlists.add_action_button(self.btn_create)
 
@@ -105,9 +108,14 @@ class MusicPlaylistsPanel(QWidget):
             self.delete_requested.emit(playlist["id"])
 
     def _create_delete_cell(self, playlist: dict) -> QWidget:
-        return build_action_cell(build_icon_button(
+        btn_enqueue = build_icon_button(
+            "play-filled.svg", BrandColors.GREEN, self.i18n.get("music.playlists.enqueue_tooltip"), lambda: self.enqueue_requested.emit(playlist["id"])
+        )
+        btn_enqueue.setEnabled(playlist["song_count"] > 0)
+        btn_delete = build_icon_button(
             "trash-filled.svg", BrandColors.RED, self.i18n.get("music.playlists.delete_tooltip"), lambda: self._confirm_delete(playlist)
-        ))
+        )
+        return build_action_cell(btn_enqueue, btn_delete)
 
     def set_playlists(self, playlists: list[dict]):
         if playlists == self._playlists:

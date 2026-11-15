@@ -1,16 +1,17 @@
 # frontend\components\music\history_panel.py
 """Panel del historial de música."""
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt
-from frontend.common import get_icon_colored, BrandColors, Size
-from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_button
+from frontend.common import BrandColors, Size
+from frontend.widgets import ModernTable, ModernTableCard
 from .queue_panel import requester_style
+from .table_cell_utils import build_action_cell, build_icon_button
 
 
 class MusicHistoryPanel(QWidget):
     requeue_requested = Signal(str, str, str)
-    preview_requested = Signal(str)
+    add_to_playlist_requested = Signal(dict)
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
@@ -68,27 +69,13 @@ class MusicHistoryPanel(QWidget):
         layout.addWidget(self.card_history)
 
     def _create_action_buttons(self, song: dict) -> QWidget:
-        cell = QWidget()
-        cell_layout = QHBoxLayout(cell)
-        cell_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        cell_layout.setSpacing(Size.SPACING_XS)
-        cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         url = song.get("url") or ""
         requeue_args = (url, song.get("requester") or "", song.get("platform") or "kick")
-        cell_layout.addWidget(self._action_button("play-filled.svg", "music.queue.preview_tooltip", lambda: self.preview_requested.emit(url)))
-        cell_layout.addWidget(self._action_button("plus-filled.svg", "music.queue.requeue_tooltip", lambda: self.requeue_requested.emit(*requeue_args)))
-        return cell
-
-    def _action_button(self, icon_name: str, tooltip_key: str, on_click) -> QPushButton:
-        btn = QPushButton()
-        btn.setProperty("role", "btn_ghost")
-        btn.setIcon(get_icon_colored(icon_name, BrandColors.GREEN))
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn.setToolTip(self.i18n.get(tooltip_key))
-        configure_icon_only_button(btn, size=Size.ICON_SMALL)
-        btn.clicked.connect(lambda *_: on_click())
-        return btn
+        playlist_song = {"title": song.get("title") or "", "artist": song.get("artist") or "", "url": url, "duration": song.get("duration") or "-"}
+        return build_action_cell(
+            build_icon_button("plus-filled.svg", BrandColors.GREEN, self.i18n.get("music.queue.requeue_tooltip"), lambda: self.requeue_requested.emit(*requeue_args)),
+            build_icon_button("music-notes-filled.svg", BrandColors.GREEN, self.i18n.get("music.playlists.add_tooltip"), lambda: self.add_to_playlist_requested.emit(playlist_song)),
+        )
 
     def update_history(self, items: list[dict]):
         signature = [(s.get("db_id"), s.get("url")) for s in items]

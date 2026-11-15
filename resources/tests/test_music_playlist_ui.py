@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QPushButton
 
 from backend.controllers import MusicPlaylistController
 from backend.database import DatabaseManager, SQLiteMusicPlaylistStorage
-from frontend.components.music import MusicPlaylistsPanel, MusicPlaylistSongsPanel
+from frontend.components.music import MusicHistoryPanel, MusicPlaylistsPanel, MusicPlaylistSongsPanel
 from frontend.dialogs import AddToPlaylistModal
 from frontend.views.music_view import MusicView
 
@@ -87,7 +87,7 @@ def test_vista_y_controlador_flujo_completo(qapp, tmp_path):
     storage = SQLiteMusicPlaylistStorage(DatabaseManager(str(tmp_path / "test.db")))
     view = MusicView(_I18n())
     song = {"title": "T", "artist": "A", "url": "u1", "duration": 185000}
-    controller = MusicPlaylistController(None, storage, lambda: song, _Toast(), _I18n())
+    controller = MusicPlaylistController(None, storage, lambda: song, lambda url: True, _Toast(), _I18n())
     controller.attach_view(view)
 
     view.playlists_panel.create_requested.emit("Rock")
@@ -102,3 +102,72 @@ def test_vista_y_controlador_flujo_completo(qapp, tmp_path):
 
     view.playlist_song_remove_requested.emit(storage.get_songs(pid)[0]["item_id"])
     assert view.playlist_songs_panel.songs_table.rowCount() == 0
+
+
+def test_boton_crear_solo_se_activa_con_nombre(qapp):
+    panel = MusicPlaylistsPanel(_I18n())
+    assert not panel.btn_create.isEnabled()
+    panel.txt_name.setText("   ")
+    assert not panel.btn_create.isEnabled()
+    panel.txt_name.setText("Jazz")
+    assert panel.btn_create.isEnabled()
+    panel.btn_create.click()
+    assert not panel.btn_create.isEnabled()
+
+
+def test_boton_encolar_playlist_emite_id_y_se_desactiva_si_esta_vacia(qapp):
+    panel = MusicPlaylistsPanel(_I18n())
+    queued = []
+    panel.enqueue_requested.connect(queued.append)
+    panel.set_playlists(PLAYLISTS)
+    with_songs = panel.playlists_table.cellWidget(0, 2).findChildren(QPushButton)
+    empty = panel.playlists_table.cellWidget(1, 2).findChildren(QPushButton)
+    assert len(with_songs) == 2 and with_songs[0].isEnabled() and not empty[0].isEnabled()
+    with_songs[0].click()
+    assert queued == [1]
+
+
+def test_historial_tiene_encolar_y_agregar_a_playlist(qapp):
+    panel = MusicHistoryPanel(_I18n())
+    requeued, to_playlist = [], []
+    panel.requeue_requested.connect(lambda *args: requeued.append(args))
+    panel.add_to_playlist_requested.connect(to_playlist.append)
+    panel.update_history([{"db_id": 1, "title": "T", "artist": "A", "url": "u1", "requester": "ana", "platform": "kick", "duration": "3:05"}])
+    buttons = panel.history_table.cellWidget(0, panel.history_table.columnCount() - 1).findChildren(QPushButton)
+    assert len(buttons) == 2
+    buttons[0].click()
+    buttons[1].click()
+    assert requeued == [("u1", "ana", "kick")]
+    assert to_playlist == [{"title": "T", "artist": "A", "url": "u1", "duration": "3:05"}]
+
+
+class _FakeModal:
+    selection = (None, "")
+
+    def __init__(self, *_args, **_kwargs):
+        pass
+
+    def exec(self):
+        return True
+
+    def get_selection(self):
+        return _FakeModal.selection
+
+
+@pytest.mark.parametrize(
+    "selection, song, expected",
+    [
+        ((3, ""), None, ("playlist_add_current_requested", (3,))),
+        ((None, "Nueva"), None, ("playlist_create_and_add_current_requested", ("Nueva",))),
+        ((3, ""), {"url": "u"}, ("playlist_add_song_requested", (3, {"url": "u"}))),
+        ((None, "Nueva"), {"url": "u"}, ("playlist_create_and_add_song_requested", ("Nueva", {"url": "u"}))),
+    ],
+)
+def test_vista_emite_la_senal_correcta_segun_destino_y_cancion(qapp, monkeypatch, selection, song, expected):
+    monkeypatch.setattr("frontend.views.music_view.AddToPlaylistModal", _FakeModal)
+    _FakeModal.selection = selection
+    view = MusicView(_I18n())
+    received = []
+    getattr(view, expected[0]).connect(lambda *args: received.append(args))
+    view._prompt_playlist_target(song)
+    assert received == [expected[1]]

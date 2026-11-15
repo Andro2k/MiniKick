@@ -138,7 +138,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.btn_skip = ModernButton("", role="action_outlined", icon_name="skip-next-filled.svg", parent=self)
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
-        self.btn_add_playlist = ModernButton("", role="action_outlined", icon_name="plus-filled.svg", parent=self)
+        self.btn_add_playlist = ModernButton("", role="action_outlined", icon_name="music-notes-filled.svg", parent=self)
         self.btn_add_playlist.setToolTip(self.i18n.get("music.playlists.add_tooltip"))
         self.btn_add_playlist.setEnabled(False)
         self.btn_add_playlist.clicked.connect(self.add_to_playlist_requested.emit)

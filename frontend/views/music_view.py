@@ -25,12 +25,14 @@ class MusicView(BaseView):
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
     requeue_history_item_requested = Signal(str, str, str)
-    preview_video_requested = Signal(str)
     playlist_create_requested = Signal(str)
     playlist_delete_requested = Signal(int)
     playlist_selected = Signal(int)
     playlist_add_current_requested = Signal(int)
     playlist_create_and_add_current_requested = Signal(str)
+    playlist_add_song_requested = Signal(int, object)
+    playlist_create_and_add_song_requested = Signal(str, object)
+    playlist_enqueue_requested = Signal(int)
     playlist_song_remove_requested = Signal(int)
     view_shown = Signal()
 
@@ -121,27 +123,31 @@ class MusicView(BaseView):
         self.queue_panel.move_queue_item_requested.connect(self.move_queue_item_requested.emit)
         self.queue_panel.queue_updated.connect(self.stats_panel.set_stats)
         self.history_panel.requeue_requested.connect(self.requeue_history_item_requested.emit)
-        self.history_panel.preview_requested.connect(self._on_preview_requested)
+        self.history_panel.add_to_playlist_requested.connect(self._prompt_playlist_target)
 
-        self.player_panel.add_to_playlist_requested.connect(self._on_add_to_playlist_requested)
+        self.player_panel.add_to_playlist_requested.connect(self._prompt_playlist_target)
+        self.playlists_panel.enqueue_requested.connect(self.playlist_enqueue_requested.emit)
         self.playlists_panel.create_requested.connect(self.playlist_create_requested.emit)
         self.playlists_panel.delete_requested.connect(self.playlist_delete_requested.emit)
         self.playlists_panel.selected.connect(self._on_playlist_selected)
         self.playlist_songs_panel.song_remove_requested.connect(self.playlist_song_remove_requested.emit)
 
-    def _on_preview_requested(self, url: str):
-        self.tabs.setCurrentIndex(0)
-        self.preview_video_requested.emit(url)
-
-    def _on_add_to_playlist_requested(self):
+    def _prompt_playlist_target(self, song: dict | None = None):
+        """Pregunta a qué playlist agregar; sin canción se usa la que está sonando."""
         modal = AddToPlaylistModal(self.playlists_panel.playlists, self.i18n, parent=self)
         if not modal.exec():
             return
         playlist_id, name = modal.get_selection()
         if playlist_id is not None:
-            self.playlist_add_current_requested.emit(playlist_id)
+            if song is None:
+                self.playlist_add_current_requested.emit(playlist_id)
+            else:
+                self.playlist_add_song_requested.emit(playlist_id, song)
         elif name:
-            self.playlist_create_and_add_current_requested.emit(name)
+            if song is None:
+                self.playlist_create_and_add_current_requested.emit(name)
+            else:
+                self.playlist_create_and_add_song_requested.emit(name, song)
 
     def _on_playlist_selected(self, playlist_id: int):
         self.queue_tabs.setCurrentWidget(self.playlist_songs_panel)
