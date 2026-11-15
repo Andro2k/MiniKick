@@ -1011,6 +1011,12 @@
       "command_toggled": "Command {trigger} has been {status}.",
       "error_playing": "Could not play '{title}': {error}",
       "moved_in_queue": "Song position updated in queue",
+      "playlist_created": "Playlist created.",
+      "playlist_deleted": "Playlist deleted.",
+      "playlist_name_invalid": "The playlist name is empty or already exists.",
+      "playlist_no_song": "No song is currently playing.",
+      "playlist_song_added": "Song added to the playlist.",
+      "playlist_song_duplicate": "The song is already in the playlist.",
       "removed_from_queue": "Song removed from queue",
       "requeued": "Song added back to the queue"
     },

@@ -13,6 +13,7 @@ from backend.controllers import (
     StatsController,
     LogsController,
     MusicController,
+    MusicPlaylistController,
     RewardsController,
     ScheduleController,
     SettingsController,
@@ -129,6 +130,13 @@ class MainWindowComposition:
             settings_storage=w.container.settings_storage,
             music_storage=w.container.music_storage,
             music_provider=w.container.music_provider,
+        )
+        w.music_playlist_controller = MusicPlaylistController(
+            view=None,
+            playlist_storage=w.container.music_playlist_storage,
+            current_song_provider=lambda: w.music_controller.music_provider.get_current_song() if w.music_controller.music_provider else None,
+            toast_manager=w.toast,
+            i18n=w.i18n,
         )
         w.media_keys = MediaKeysHandler(
             w.music_controller,

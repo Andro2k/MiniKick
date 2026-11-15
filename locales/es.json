@@ -1011,6 +1011,12 @@
       "command_toggled": "El comando {trigger} ha sido {status}.",
       "error_playing": "No se pudo reproducir '{title}': {error}",
       "moved_in_queue": "Posición de canción actualizada en la cola",
+      "playlist_created": "Playlist creada.",
+      "playlist_deleted": "Playlist eliminada.",
+      "playlist_name_invalid": "El nombre de la playlist está vacío o ya existe.",
+      "playlist_no_song": "No hay ninguna canción reproduciéndose.",
+      "playlist_song_added": "Canción agregada a la playlist.",
+      "playlist_song_duplicate": "La canción ya está en la playlist.",
       "removed_from_queue": "Canción eliminada de la cola",
       "requeued": "Canción agregada de nuevo a la cola"
     },

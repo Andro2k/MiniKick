@@ -8,6 +8,7 @@ from .commands_controller import CommandsController
 from .dashboard_controller import DashboardController
 from .logs_controller import LogsController
 from .music_controller import MusicController
+from .music_playlist_controller import MusicPlaylistController
 from .rewards_controller import RewardsController
 from .schedule_controller import ScheduleController
 from .settings_controller import SettingsController
@@ -26,6 +27,7 @@ __all__ = [
     "DashboardController",
     "LogsController",
     "MusicController",
+    "MusicPlaylistController",
     "RewardsController",
     "ScheduleController",
     "SettingsController",
