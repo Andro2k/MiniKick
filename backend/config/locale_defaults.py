@@ -206,10 +206,6 @@ DEFAULT_DICTIONARY = {
       "empty_category": "No commands available in {category}.",
       "empty_general": "No commands currently configured.",
       "inactive_tag": "Inactive",
-      "sec_chat": "💬 Chat",
-      "sec_moderation": "🛡️ Moderation",
-      "sec_music": "🎵 Music",
-      "sec_widgets": "🎮 Widgets",
       "status_header": "📋 Commands status:"
     },
     "display": {
@@ -588,7 +584,7 @@ DEFAULT_DICTIONARY = {
       "btn_connecting_youtube": "Connecting YouTube..."
     },
     "header": {
-      "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
+      "subtitle": "Monitor bot connectivity and manage your streaming session.",
       "title": "Control Panel"
     },
     "platforms": {
@@ -608,18 +604,23 @@ DEFAULT_DICTIONARY = {
       "followers_count": "{count} followers",
       "open_channel": "Open Channel"
     },
-    "session": {
-      "commands": "Executed Commands",
-      "messages": "Session Messages",
-      "spam": "Filtered Spam",
-      "timers": "Active Timers"
-    },
     "stats": {
       "broadcaster_id": "Broadcaster ID",
       "category": "Last Category",
       "created_at": "Creation Date",
       "followers": "Followers",
       "room_id": "ChatRoom ID"
+    },
+    "quick_access": {
+      "title": "Quick access",
+      "stats_title": "Statistics",
+      "stats_desc": "Messages, peak hours and top chatters of your channel.",
+      "alerts_title": "Alerts",
+      "alerts_desc": "Customize the alerts for your stream events.",
+      "webhooks_title": "Webhooks",
+      "webhooks_desc": "Send chat and stream events to external services.",
+      "music_title": "Music",
+      "music_desc": "Control the music overlay and review the history."
     }
   },
   "dialogs": {
@@ -818,8 +819,10 @@ DEFAULT_DICTIONARY = {
         "offline_name": "Offline"
       },
       "section": {
-        "more": "More",
-        "navigate": "Navigate"
+        "main": "Main",
+        "stream": "Stream",
+        "system": "System",
+        "tools": "Tools"
       },
       "tabs": {
         "alerts": "Alerts",
@@ -830,6 +833,7 @@ DEFAULT_DICTIONARY = {
         "music": "Music",
         "settings": "Settings",
         "spam_filters": "Anti-Spam Filters",
+        "stats": "Statistics",
         "stream_info": "Stream Info",
         "timers": "Timers",
         "triggers": "Rewards",
@@ -969,10 +973,6 @@ DEFAULT_DICTIONARY = {
       "volume_title": "Player Volume"
     },
     "queue": {
-      "history_empty": "History is empty",
-      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
-      "history_title": "Playback history",
-      "requeue_tooltip": "Add back to queue",
       "col_actions": "Actions",
       "col_artist": "Artist",
       "col_duration": "Duration",
@@ -982,6 +982,9 @@ DEFAULT_DICTIONARY = {
       "empty": "Queue is empty",
       "empty_desc": "Your queue is ready. When viewers use !sr in chat, their requested songs will appear here.",
       "error": "❌ Internal music error: {error}",
+      "history_empty": "History is empty",
+      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
+      "history_title": "Playback history",
       "no_link": "❌ Could not retrieve video link.",
       "not_found": "❌ Could not find any song named '{query}'.",
       "preview_error": "This video can't be played inside the app.",
@@ -990,6 +993,7 @@ DEFAULT_DICTIONARY = {
       "preview_tooltip": "Watch video",
       "processing_link": "🔍 Processing YouTube link...",
       "remove_tooltip": "Remove from queue",
+      "requeue_tooltip": "Add back to queue",
       "searching": "🔍 Searching '{query}' on YouTube...",
       "success": "🎵 [Queue] │ {track}",
       "title": "Playback Queue"
@@ -1011,20 +1015,26 @@ DEFAULT_DICTIONARY = {
       "updated": "Music Command Updated"
     },
     "tabs": {
-      "queue": "Queue",
-      "history": "History",
       "commands": "Commands",
+      "history": "History",
       "player": "Player",
+      "queue": "Queue",
       "settings": "Settings"
     },
     "toast": {
-      "requeued": "Song added back to the queue",
       "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
       "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
       "command_toggled": "Command {trigger} has been {status}.",
       "error_playing": "Could not play '{title}': {error}",
       "moved_in_queue": "Song position updated in queue",
-      "removed_from_queue": "Song removed from queue"
+      "playlist_created": "Playlist created.",
+      "playlist_deleted": "Playlist deleted.",
+      "playlist_name_invalid": "The playlist name is empty or already exists.",
+      "playlist_no_song": "No song is currently playing.",
+      "playlist_song_added": "Song added to the playlist.",
+      "playlist_song_duplicate": "The song is already in the playlist.",
+      "removed_from_queue": "Song removed from queue",
+      "requeued": "Song added back to the queue"
     },
     "youtube": {
       "age_restricted": "This video requires age verification (Sign in to confirm your age)",
@@ -1400,6 +1410,43 @@ DEFAULT_DICTIONARY = {
     "ready": "Ready! Launching...",
     "subtitle": "Streamer Companion Suite",
     "title": "MiniKick"
+  },
+  "stats": {
+    "header": {
+      "title": "Statistics",
+      "subtitle": "Review how your channel performs: messages, commands, redemptions and peak hours."
+    },
+    "toolbar": {
+      "overview": "Overview"
+    },
+    "period": {
+      "today": "Today",
+      "last_7": "Last 7 days",
+      "last_30": "Last 30 days"
+    },
+    "kpi": {
+      "messages": "Messages",
+      "commands": "Commands used",
+      "redemptions": "Reward redemptions",
+      "spam": "Spam blocked",
+      "vs_previous": "vs previous period"
+    },
+    "chart": {
+      "title_hourly": "Messages per hour",
+      "title_daily": "Messages per day",
+      "current_today": "Today",
+      "previous_today": "Yesterday",
+      "current_period": "This period",
+      "previous_period": "Previous period"
+    },
+    "platforms": {
+      "title": "Messages by platform"
+    },
+    "peak": {
+      "title": "Peak hours",
+      "summary": "{hours} · ~{pct}% of messages in the busiest hour",
+      "empty": "Not enough data yet."
+    }
   },
   "stream_info": {
     "confirm_delete": {

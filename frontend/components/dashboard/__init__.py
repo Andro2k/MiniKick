@@ -2,10 +2,10 @@
 
 from .platform_distribution_ring_widget import PlatformDistributionRing
 from .platform_card import PlatformStatusCard
-from .chatters_table_card import DashboardChattersTable
+from .quick_access_card import QuickAccessCard
 
 __all__ = [
     "PlatformDistributionRing",
     "PlatformStatusCard",
-    "DashboardChattersTable",
+    "QuickAccessCard",
 ]

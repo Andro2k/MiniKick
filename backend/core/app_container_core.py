@@ -9,10 +9,11 @@ from backend.config import (
     KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
     TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI,
 )
-from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage, SQLiteAlertStorage, EncryptedTokenStorage
+from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage, SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteMusicPlaylistStorage, SQLiteScheduleStorage, SQLiteStatsStorage, SQLiteAlertStorage, EncryptedTokenStorage
 from backend.interfaces import IConfigProvider
 from backend.services.security import create_secret_cipher
 from backend.services.app import DatabaseMaintenance
+from backend.services.stats import StatsService
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.services.webhooks import (
     FORMATTER_REGISTRY, HttpWebhookTransport,
@@ -106,8 +107,10 @@ class AppContainerCore:
         self.avatar_storage = SQLiteAvatarStorage(db)
         self.system_log_storage = SQLiteSystemLogStorage(db)
         self.music_storage = SQLiteMusicStorage(db)
+        self.music_playlist_storage = SQLiteMusicPlaylistStorage(db)
         self.schedule_storage = SQLiteScheduleStorage(db)
         self.alert_storage = SQLiteAlertStorage(db)
+        self.stats_storage = SQLiteStatsStorage(db)
 
     def _init_services(self):
         logger.debug("[AppContainer] Initializing core services...")
@@ -169,3 +172,4 @@ class AppContainerCore:
         dispatcher = WebhookDispatcherService(self.webhook_endpoint_store.active, self.webhook_worker.submit)
         self.webhook_events = WebhookEventAdapter(dispatcher)
         self.webhook_service = WebhookManagementService(self.webhook_endpoint_store, sender.send)
+        self.stats_service = StatsService(self.stats_storage)

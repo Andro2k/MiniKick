@@ -581,7 +581,7 @@
       "btn_connecting_youtube": "Conectando YouTube..."
     },
     "header": {
-      "subtitle": "Monitorea la conexión del bot, revisa tus estadísticas en vivo y gestiona tu sesión.",
+      "subtitle": "Monitorea la conexión del bot y gestiona tu sesión de stream.",
       "title": "Panel de Control"
     },
     "platforms": {
@@ -601,18 +601,23 @@
       "followers_count": "{count} seguidores",
       "open_channel": "Abrir Canal"
     },
-    "session": {
-      "commands": "Ejecuciones Comandos",
-      "messages": "Mensajes Sesión",
-      "spam": "Spam Filtrado",
-      "timers": "Timers Activos"
-    },
     "stats": {
       "broadcaster_id": "ID de Emisor",
       "category": "Última Categoría",
       "created_at": "Fecha de Creación",
       "followers": "Seguidores",
       "room_id": "ID de ChatRoom"
+    },
+    "quick_access": {
+      "title": "Accesos rápidos",
+      "stats_title": "Estadísticas",
+      "stats_desc": "Mensajes, horas pico y top chatters de tu canal.",
+      "alerts_title": "Alertas",
+      "alerts_desc": "Personaliza las alertas de los eventos de tu stream.",
+      "webhooks_title": "Webhooks",
+      "webhooks_desc": "Envía eventos del chat y del stream a servicios externos.",
+      "music_title": "Música",
+      "music_desc": "Controla el overlay de música y revisa el historial."
     }
   },
   "dialogs": {
@@ -811,8 +816,10 @@
         "offline_name": "Sin Conexión"
       },
       "section": {
-        "more": "Más",
-        "navigate": "Navegar"
+        "main": "Principal",
+        "stream": "Stream",
+        "system": "Sistema",
+        "tools": "Herramientas"
       },
       "tabs": {
         "alerts": "Alertas",
@@ -823,6 +830,7 @@
         "music": "Música",
         "settings": "Ajustes",
         "spam_filters": "Filtros Anti-Spam",
+        "stats": "Estadísticas",
         "stream_info": "Información del Stream",
         "timers": "Temporizadores",
         "triggers": "Recompensas",
@@ -961,6 +969,31 @@
       "volume_desc": "Ajusta el volumen principal del reproductor de YouTube.",
       "volume_title": "Volumen del Reproductor"
     },
+    "playlists": {
+      "add_tooltip": "Agregar a una playlist",
+      "col_name": "Nombre",
+      "col_songs": "Canciones",
+      "create_btn": "Crear",
+      "delete_confirm_body": "¿Eliminar la playlist «{name}» y todas sus canciones?",
+      "delete_confirm_title": "Eliminar playlist",
+      "delete_tooltip": "Eliminar playlist",
+      "dialog": {
+        "confirm": "Agregar",
+        "existing": "Agregar a una playlist existente",
+        "name_placeholder": "Nombre de la playlist",
+        "new": "Crear una playlist nueva",
+        "title": "Agregar a playlist"
+      },
+      "empty_desc": "Escribe un nombre arriba y pulsa Crear.",
+      "empty_title": "Aún no tienes playlists",
+      "enqueue_tooltip": "Agregar la playlist a la cola",
+      "name_placeholder": "Nombre de la nueva playlist",
+      "remove_tooltip": "Quitar de la playlist",
+      "songs_empty_desc": "Selecciona una playlist a la izquierda o agrega canciones con el botón del reproductor.",
+      "songs_empty_title": "Sin canciones",
+      "songs_title": "Canciones de la playlist",
+      "title": "Playlists"
+    },
     "queue": {
       "col_actions": "Acciones",
       "col_artist": "Autor",
@@ -979,7 +1012,6 @@
       "preview_error": "Este video no se puede reproducir dentro de la app.",
       "preview_open_browser": "Abrir en el navegador",
       "preview_title": "Vista previa de video",
-      "preview_tooltip": "Ver video",
       "processing_link": "🔍 Procesando enlace de YouTube...",
       "remove_tooltip": "Eliminar de la cola",
       "requeue_tooltip": "Volver a agregar a la cola",
@@ -1007,6 +1039,8 @@
       "commands": "Comandos",
       "history": "Historial",
       "player": "Reproductor",
+      "playlist": "Playlist",
+      "playlists": "Playlists",
       "queue": "Cola",
       "settings": "Ajustes"
     },
@@ -1016,6 +1050,14 @@
       "command_toggled": "El comando {trigger} ha sido {status}.",
       "error_playing": "No se pudo reproducir '{title}': {error}",
       "moved_in_queue": "Posición de canción actualizada en la cola",
+      "playlist_created": "Playlist creada.",
+      "playlist_deleted": "Playlist eliminada.",
+      "playlist_enqueued": "{count} canciones agregadas a la cola.",
+      "playlist_name_invalid": "El nombre de la playlist está vacío o ya existe.",
+      "playlist_no_song": "No hay ninguna canción reproduciéndose.",
+      "playlist_nothing_enqueued": "No se pudo agregar ninguna canción a la cola.",
+      "playlist_song_added": "Canción agregada a la playlist.",
+      "playlist_song_duplicate": "La canción ya está en la playlist.",
       "removed_from_queue": "Canción eliminada de la cola",
       "requeued": "Canción agregada de nuevo a la cola"
     },
@@ -1393,6 +1435,43 @@
     "ready": "¡Todo listo! Iniciando...",
     "subtitle": "Suite de Herramientas para Streamers",
     "title": "MiniKick"
+  },
+  "stats": {
+    "header": {
+      "title": "Estadísticas",
+      "subtitle": "Revisa el rendimiento de tu canal: mensajes, comandos, canjes y horas pico."
+    },
+    "toolbar": {
+      "overview": "Resumen"
+    },
+    "period": {
+      "today": "Hoy",
+      "last_7": "Últimos 7 días",
+      "last_30": "Últimos 30 días"
+    },
+    "kpi": {
+      "messages": "Mensajes",
+      "commands": "Comandos usados",
+      "redemptions": "Canjes de recompensas",
+      "spam": "Spam bloqueado",
+      "vs_previous": "vs período anterior"
+    },
+    "chart": {
+      "title_hourly": "Mensajes por hora",
+      "title_daily": "Mensajes por día",
+      "current_today": "Hoy",
+      "previous_today": "Ayer",
+      "current_period": "Este período",
+      "previous_period": "Período anterior"
+    },
+    "platforms": {
+      "title": "Mensajes por plataforma"
+    },
+    "peak": {
+      "title": "Horas pico",
+      "summary": "{hours} · ~{pct}% de los mensajes en la hora más activa",
+      "empty": "Aún no hay datos suficientes."
+    }
   },
   "stream_info": {
     "confirm_delete": {

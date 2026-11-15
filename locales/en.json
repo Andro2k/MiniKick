@@ -581,7 +581,7 @@
       "btn_connecting_youtube": "Connecting YouTube..."
     },
     "header": {
-      "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
+      "subtitle": "Monitor bot connectivity and manage your streaming session.",
       "title": "Control Panel"
     },
     "platforms": {
@@ -601,18 +601,23 @@
       "followers_count": "{count} followers",
       "open_channel": "Open Channel"
     },
-    "session": {
-      "commands": "Executed Commands",
-      "messages": "Session Messages",
-      "spam": "Filtered Spam",
-      "timers": "Active Timers"
-    },
     "stats": {
       "broadcaster_id": "Broadcaster ID",
       "category": "Last Category",
       "created_at": "Creation Date",
       "followers": "Followers",
       "room_id": "ChatRoom ID"
+    },
+    "quick_access": {
+      "title": "Quick access",
+      "stats_title": "Statistics",
+      "stats_desc": "Messages, peak hours and top chatters of your channel.",
+      "alerts_title": "Alerts",
+      "alerts_desc": "Customize the alerts for your stream events.",
+      "webhooks_title": "Webhooks",
+      "webhooks_desc": "Send chat and stream events to external services.",
+      "music_title": "Music",
+      "music_desc": "Control the music overlay and review the history."
     }
   },
   "dialogs": {
@@ -811,8 +816,10 @@
         "offline_name": "Offline"
       },
       "section": {
-        "more": "More",
-        "navigate": "Navigate"
+        "main": "Main",
+        "stream": "Stream",
+        "system": "System",
+        "tools": "Tools"
       },
       "tabs": {
         "alerts": "Alerts",
@@ -823,6 +830,7 @@
         "music": "Music",
         "settings": "Settings",
         "spam_filters": "Anti-Spam Filters",
+        "stats": "Statistics",
         "stream_info": "Stream Info",
         "timers": "Timers",
         "triggers": "Rewards",
@@ -961,6 +969,31 @@
       "volume_desc": "Adjust the main YouTube player volume.",
       "volume_title": "Player Volume"
     },
+    "playlists": {
+      "add_tooltip": "Add to a playlist",
+      "col_name": "Name",
+      "col_songs": "Songs",
+      "create_btn": "Create",
+      "delete_confirm_body": "Delete the playlist “{name}” and all its songs?",
+      "delete_confirm_title": "Delete playlist",
+      "delete_tooltip": "Delete playlist",
+      "dialog": {
+        "confirm": "Add",
+        "existing": "Add to an existing playlist",
+        "name_placeholder": "Playlist name",
+        "new": "Create a new playlist",
+        "title": "Add to playlist"
+      },
+      "empty_desc": "Type a name above and press Create.",
+      "empty_title": "You have no playlists yet",
+      "enqueue_tooltip": "Add the playlist to the queue",
+      "name_placeholder": "New playlist name",
+      "remove_tooltip": "Remove from playlist",
+      "songs_empty_desc": "Select a playlist on the left or add songs with the player button.",
+      "songs_empty_title": "No songs",
+      "songs_title": "Playlist songs",
+      "title": "Playlists"
+    },
     "queue": {
       "col_actions": "Actions",
       "col_artist": "Artist",
@@ -979,7 +1012,6 @@
       "preview_error": "This video can't be played inside the app.",
       "preview_open_browser": "Open in browser",
       "preview_title": "Video preview",
-      "preview_tooltip": "Watch video",
       "processing_link": "🔍 Processing YouTube link...",
       "remove_tooltip": "Remove from queue",
       "requeue_tooltip": "Add back to queue",
@@ -1007,6 +1039,8 @@
       "commands": "Commands",
       "history": "History",
       "player": "Player",
+      "playlist": "Playlist",
+      "playlists": "Playlists",
       "queue": "Queue",
       "settings": "Settings"
     },
@@ -1016,6 +1050,14 @@
       "command_toggled": "Command {trigger} has been {status}.",
       "error_playing": "Could not play '{title}': {error}",
       "moved_in_queue": "Song position updated in queue",
+      "playlist_created": "Playlist created.",
+      "playlist_deleted": "Playlist deleted.",
+      "playlist_enqueued": "{count} songs added to the queue.",
+      "playlist_name_invalid": "The playlist name is empty or already exists.",
+      "playlist_no_song": "No song is currently playing.",
+      "playlist_nothing_enqueued": "Could not add any song to the queue.",
+      "playlist_song_added": "Song added to the playlist.",
+      "playlist_song_duplicate": "The song is already in the playlist.",
       "removed_from_queue": "Song removed from queue",
       "requeued": "Song added back to the queue"
     },
@@ -1393,6 +1435,43 @@
     "ready": "Ready! Launching...",
     "subtitle": "Streamer Companion Suite",
     "title": "MiniKick"
+  },
+  "stats": {
+    "header": {
+      "title": "Statistics",
+      "subtitle": "Review how your channel performs: messages, commands, redemptions and peak hours."
+    },
+    "toolbar": {
+      "overview": "Overview"
+    },
+    "period": {
+      "today": "Today",
+      "last_7": "Last 7 days",
+      "last_30": "Last 30 days"
+    },
+    "kpi": {
+      "messages": "Messages",
+      "commands": "Commands used",
+      "redemptions": "Reward redemptions",
+      "spam": "Spam blocked",
+      "vs_previous": "vs previous period"
+    },
+    "chart": {
+      "title_hourly": "Messages per hour",
+      "title_daily": "Messages per day",
+      "current_today": "Today",
+      "previous_today": "Yesterday",
+      "current_period": "This period",
+      "previous_period": "Previous period"
+    },
+    "platforms": {
+      "title": "Messages by platform"
+    },
+    "peak": {
+      "title": "Peak hours",
+      "summary": "{hours} · ~{pct}% of messages in the busiest hour",
+      "empty": "Not enough data yet."
+    }
   },
   "stream_info": {
     "confirm_delete": {

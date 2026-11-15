@@ -12,6 +12,7 @@ _EXPORTS = {
     "MusicView": ".music_view",
     "RewardsView": ".rewards_view",
     "SettingsView": ".settings_view",
+    "StatsView": ".stats_view",
     "TimersView": ".timers_view",
     "WebhooksView": ".webhooks_view",
     "WidgetsView": ".widgets_view",
@@ -45,5 +46,6 @@ if TYPE_CHECKING:
     from .rewards_view import RewardsView
     from .schedule_view import ScheduleView
     from .settings_view import SettingsView
+    from .stats_view import StatsView
     from .timers_view import TimersView
     from .widgets_view import WidgetsView

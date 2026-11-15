@@ -10,8 +10,10 @@ from backend.controllers import (
     ChatController,
     CommandsController,
     DashboardController,
+    StatsController,
     LogsController,
     MusicController,
+    MusicPlaylistController,
     RewardsController,
     ScheduleController,
     SettingsController,
@@ -85,7 +87,6 @@ class MainWindowComposition:
             view=w.view_dashboard,
             avatar_service=w.avatar_service,
             db_manager=w.container.db_manager,
-            widget_service=w.container.widget_service,
             toast_manager=w.toast,
             i18n=w.i18n,
         )
@@ -112,7 +113,15 @@ class MainWindowComposition:
             toast_manager=w.toast,
             ignored_users_provider=w.chat_service.get_ignored_users,
         )
-        w.dashboard_controller.widgets_controller = w.widgets_controller
+        w.stats_controller = StatsController(
+            None,
+            w.container.stats_service,
+            widget_service=w.container.widget_service,
+            widgets_controller=w.widgets_controller,
+            flush_pending=lambda: w.session_metrics.flush_hourly_counts(sync=True),
+            toast_manager=w.toast,
+            i18n=w.i18n,
+        )
         w.music_controller = MusicController(
             view=None,
             command_service=w.command_service,
@@ -121,6 +130,14 @@ class MainWindowComposition:
             settings_storage=w.container.settings_storage,
             music_storage=w.container.music_storage,
             music_provider=w.container.music_provider,
+        )
+        w.music_playlist_controller = MusicPlaylistController(
+            view=None,
+            playlist_storage=w.container.music_playlist_storage,
+            current_song_provider=lambda: w.music_controller.music_provider.get_current_song() if w.music_controller.music_provider else None,
+            enqueue_song=lambda url: w.music_controller.enqueue_song_url(url),
+            toast_manager=w.toast,
+            i18n=w.i18n,
         )
         w.media_keys = MediaKeysHandler(
             w.music_controller,

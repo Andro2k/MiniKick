@@ -20,6 +20,7 @@ _VIEW_EXPORTS = {
     "RewardsView": ".views.rewards_view",
     "ScheduleView": ".views.schedule_view",
     "SettingsView": ".views.settings_view",
+    "StatsView": ".views.stats_view",
     "TimersView": ".views.timers_view",
     "WebhooksView": ".views.webhooks_view",
     "WidgetsView": ".views.widgets_view",
@@ -43,7 +44,7 @@ def _load_view_class(name: str):
     return view_class
 
 if TYPE_CHECKING:
-    from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, TimersView, WebhooksView, WidgetsView
+    from frontend.views import AlertsView, ChatView, CommandView, LogView, MusicView, RewardsView, ScheduleView, SettingsView, StatsView, TimersView, WebhooksView, WidgetsView
     from frontend.window.main_window_core import MainWindowCore
 
     _VIEW_CLASS_TYPES = (
@@ -55,6 +56,7 @@ if TYPE_CHECKING:
         RewardsView,
         ScheduleView,
         SettingsView,
+        StatsView,
         TimersView,
         WebhooksView,
         WidgetsView,
@@ -100,6 +102,7 @@ class MainWindowViewFactory:
             )
             window.content_stack.addWidget(window.view_music)
             window.music_controller.attach_view(window.view_music)
+            window.music_playlist_controller.attach_view(window.view_music)
             view_widget = window.view_music
         elif view_name == "Triggers":
             window.view_rewards = _load_view_class("RewardsView")(
@@ -156,6 +159,14 @@ class MainWindowViewFactory:
             window.content_stack.addWidget(window.view_webhooks)
             window.webhooks_controller.attach_view(window.view_webhooks)
             view_widget = window.view_webhooks
+        elif view_name == "Stats":
+            window.view_stats = _load_view_class("StatsView")(
+                window.i18n,
+                parent=window.content_stack,
+            )
+            window.content_stack.addWidget(window.view_stats)
+            window.stats_controller.attach_view(window.view_stats)
+            view_widget = window.view_stats
         elif view_name == "Settings":
             window.view_settings = _load_view_class("SettingsView")(
                 window.i18n, parent=window.content_stack

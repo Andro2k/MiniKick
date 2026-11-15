@@ -36,19 +36,22 @@ class MainWindowCore(QMainWindow):
     SETTING_WINDOW_GEOMETRY = WindowStateManager.SETTING_WINDOW_GEOMETRY
 
     _NAV_CONFIG = (
-        ("Dashboard", "element-filled.svg", "top"),
-        ("Chat", "dialog-filled.svg", "top"),
-        ("Stream Info", "calendar-days-filled.svg", "top"),
-        ("Comandos", "chat-square-code-filled.svg", "top"),
-        ("Timers", "alarm-filled.svg", "top"),
-        ("Music", "music-notes-filled.svg", "top"),
-        ("Widgets", "widget-add-filled.svg", "top"),
-        ("Triggers", "treasure-chest-filled.svg", "top"),
-        ("Alerts", "megaphone-filled.svg", "top"),
-        ("Webhooks", "webhooks-filled.svg", "top"),
+        ("Dashboard", "element-filled.svg", "main"),
+        ("Stats", "chart-bar-filled.svg", "main"),
 
-        ("Settings", "gear-filled.svg", "bottom"),
-        ("Developer", "file-text-filled.svg", "bottom"),
+        ("Chat", "dialog-filled.svg", "stream"),
+        ("Stream Info", "calendar-days-filled.svg", "stream"),
+        ("Comandos", "chat-square-code-filled.svg", "stream"),
+        ("Timers", "alarm-filled.svg", "stream"),
+
+        ("Music", "music-notes-filled.svg", "tools"),
+        ("Widgets", "widget-add-filled.svg", "tools"),
+        ("Triggers", "treasure-chest-filled.svg", "tools"),
+        ("Alerts", "megaphone-filled.svg", "tools"),
+        ("Webhooks", "webhooks-filled.svg", "tools"),
+
+        ("Developer", "file-text-filled.svg", "system"),
+        ("Settings", "gear-filled.svg", "profile"),
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer")
 
@@ -127,6 +130,7 @@ class MainWindowCore(QMainWindow):
         self.session_metrics = SessionMetrics(
             lambda: self.container.db_manager.get_dashboard_analytics_summary(),
             parent=self,
+            hourly_sink=self.container.stats_storage.add_hourly_counts,
         )
         self._recent_reward_redemptions = RecentRedemptionCache(maxlen=100)
 
@@ -207,6 +211,7 @@ class MainWindowCore(QMainWindow):
         self.view_logs = None
         self.view_alerts = None
         self.view_webhooks = None
+        self.view_stats = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
         self._view_factory = MainWindowViewFactory(self)
@@ -309,12 +314,6 @@ class MainWindowCore(QMainWindow):
         if self._is_shutting_down:
             return
         metrics = self.session_metrics
-        self.view_dashboard.update_session_metrics(
-            msg_count=metrics.messages_processed,
-            cmd_count=metrics.total_usages,
-            timer_count=metrics.active_timers,
-            spam_count=metrics.spam_blocked,
-        )
         self.dashboard_controller.update_platform_messages(
             **{platform: metrics.platform_messages(platform) for platform in metrics.PLATFORMS}
         )

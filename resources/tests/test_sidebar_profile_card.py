@@ -26,35 +26,66 @@ def _dashboard_button(sidebar: Sidebar):
     return next(btn for btn in sidebar.nav_buttons if btn.property("view_name") == "Dashboard")
 
 
-def test_profile_card_is_a_clickable_frame_without_instance_overrides(qapp):
-    sidebar = _sidebar()
-    assert isinstance(sidebar.profile_card, ClickableFrame)
-    assert "mousePressEvent" not in vars(sidebar.profile_card)
-
-
-def test_clicking_the_profile_card_checks_dashboard_before_emitting(qapp):
-    sidebar = _sidebar()
-    sidebar.show()
-    qapp.processEvents()
-    dashboard = _dashboard_button(sidebar)
-    seen = []
-    sidebar.view_selected.connect(lambda name: seen.append((name, dashboard.isChecked())))
-
-    QTest.mouseClick(sidebar.profile_card, Qt.MouseButton.LeftButton, pos=QPoint(5, 5))
-
-    assert seen == [("Dashboard", True)]
-
-
-def test_other_mouse_buttons_do_not_open_the_dashboard(qapp):
+def test_profile_card_is_a_plain_frame_that_does_not_navigate(qapp):
     sidebar = _sidebar()
     sidebar.show()
     qapp.processEvents()
     seen = []
     sidebar.view_selected.connect(seen.append)
 
-    QTest.mouseClick(sidebar.profile_card, Qt.MouseButton.RightButton, pos=QPoint(5, 5))
+    QTest.mouseClick(sidebar.profile_card, Qt.MouseButton.LeftButton, pos=QPoint(5, 5))
 
+    assert not isinstance(sidebar.profile_card, ClickableFrame)
     assert seen == []
+    assert sidebar.button_group.checkedButton().property("view_name") == "Chat"
+
+
+def test_settings_button_lives_in_the_profile_card_and_selects_settings(qapp):
+    sidebar = _sidebar()
+    sidebar.add_tab("Settings", "gear.svg", position="profile")
+    gear = next(btn for btn in sidebar.nav_buttons if btn.property("view_name") == "Settings")
+    sidebar.show()
+    qapp.processEvents()
+    seen = []
+    sidebar.view_selected.connect(seen.append)
+
+    QTest.mouseClick(gear, Qt.MouseButton.LeftButton)
+
+    assert gear.parent() is sidebar.profile_card
+    assert gear.text() == "" and gear.toolTip() == "main.sidebar.tabs.settings"
+    assert seen == ["Settings"] and gear.isChecked()
+    assert all(sidebar.section_layouts[name].indexOf(gear) == -1 for name in sidebar.section_layouts)
+
+
+def test_tabs_are_grouped_by_section_and_headers_hide_when_collapsed(qapp):
+    sidebar = _sidebar()
+    sidebar.add_tab("Stats", "chart.svg", position="main")
+    sidebar.add_tab("Music", "music.svg", position="tools")
+    sidebar.add_tab("Developer", "file.svg", position="system")
+
+    placed = {
+        name: [layout.itemAt(i).widget().property("view_name") for i in range(layout.count())]
+        for name, layout in sidebar.section_layouts.items()
+    }
+    assert placed == {"main": ["Dashboard", "Chat", "Stats"], "stream": [], "tools": ["Music"], "system": ["Developer"]}
+
+    sidebar._update_texts_and_styles(show=False)
+    assert not any(header.isVisible() or header.isVisibleTo(sidebar) for header in sidebar.section_headers.values())
+    sidebar._update_texts_and_styles(show=True)
+    assert all(header.isVisibleTo(sidebar) for header in sidebar.section_headers.values())
+
+
+def test_settings_badge_shows_as_a_dot_on_the_profile_button(qapp):
+    sidebar = _sidebar()
+    sidebar.add_tab("Settings", "gear.svg", position="profile")
+    sidebar.show()
+    qapp.processEvents()
+
+    sidebar.set_tab_badge("Settings", True)
+    gear = next(btn for btn in sidebar.nav_buttons if btn.property("view_name") == "Settings")
+
+    assert gear.badge_label.isVisible()
+    assert gear.badge_label.property("state") == "collapsed"
 
 
 def test_sidebar_sizes_come_from_the_theme(qapp):

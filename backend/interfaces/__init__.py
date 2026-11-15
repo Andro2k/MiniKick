@@ -8,6 +8,7 @@ from .tts_interface import ITTSProvider
 from .updater_interface import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .music_provider_interface import IMusicProvider
 from .music_chat_context_interface import IMusicChatContext
+from .music_playlist_interface import IMusicPlaylistStorage
 from .alerts_interface import AlertStorageProtocol
 from .webhooks_interface import (
     CRITICAL_EVENT_TYPES,
@@ -36,6 +37,7 @@ __all__ = [
     "IUpdateInstaller",
     "IMusicProvider",
     "IMusicChatContext",
+    "IMusicPlaylistStorage",
     "AlertStorageProtocol",
     "TokenEncryptionError",
     "CRITICAL_EVENT_TYPES",

@@ -14,6 +14,7 @@ class MainWindowWiring:
         w = self._window
         w.settings_controller.style_reload_requested.connect(w._apply_dynamic_theme)
         w.sidebar.view_selected.connect(w.navigation.handle_navigation)
+        w.view_dashboard.quick_access_requested.connect(w.sidebar.select_tab)
         w.sidebar.section_viewed.connect(w.whats_new.on_section_viewed)
         connections = w.platform_connections
         w.dashboard_controller.request_connection.connect(connections.handle_auth_process)
@@ -43,7 +44,7 @@ class MainWindowWiring:
         w.chat_controller.spam_blocked.connect(w.session_metrics.record_spam_blocked)
 
         w.session_metrics.refresh_requested.connect(w._refresh_dashboard_view)
-        w.session_metrics.analytics_loaded.connect(w.dashboard_controller.update_analytics_summary)
+        w.session_metrics.refresh_requested.connect(w.stats_controller.request_live_refresh)
 
         w.chat_controller.command_executed.connect(lambda *args: w.session_metrics.request_analytics_refresh())
 

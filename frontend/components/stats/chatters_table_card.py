@@ -1,5 +1,5 @@
-# frontend\components\dashboard\chatters_table_card.py
-"""Tarjeta con la tabla de chatters del dashboard."""
+# frontend\components\stats\chatters_table_card.py
+"""Tarjeta con la tabla de top chatters del módulo de estadísticas."""
 
 import datetime
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QTableWidget, QHeaderView, QProgressBar, QSizePolicy, QBoxLayout
@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
 from frontend.widgets import ModernCard, ModernButton, NoWheelComboBox, create_col_layout
 
-class DashboardChattersTable(ModernCard):
+class StatsChattersTable(ModernCard):
     date_selected = Signal(str)
     activate_widget_requested = Signal()
 
