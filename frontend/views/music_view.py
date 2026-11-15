@@ -6,7 +6,8 @@ from PySide6.QtCore import Qt, Signal
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernScrollArea
 from frontend.common import Size
-from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicHistoryPanel, MusicSettingsPanel
+from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicHistoryPanel, MusicSettingsPanel, MusicPlaylistsPanel, MusicPlaylistSongsPanel
+from frontend.dialogs import AddToPlaylistModal
 
 class MusicView(BaseView):
     command_toggled = Signal(str, bool)
@@ -24,7 +25,15 @@ class MusicView(BaseView):
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
     requeue_history_item_requested = Signal(str, str, str)
-    preview_video_requested = Signal(str)
+    playlist_create_requested = Signal(str)
+    playlist_delete_requested = Signal(int)
+    playlist_selected = Signal(int)
+    playlist_add_current_requested = Signal(int)
+    playlist_create_and_add_current_requested = Signal(str)
+    playlist_add_song_requested = Signal(int, object)
+    playlist_create_and_add_song_requested = Signal(str, object)
+    playlist_enqueue_requested = Signal(int)
+    playlist_song_remove_requested = Signal(int)
     view_shown = Signal()
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
@@ -63,12 +72,15 @@ class MusicView(BaseView):
         self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url, parent=self.tabs)
         self.commands_panel = MusicCommandsPanel(self.i18n, parent=self.tabs)
         self.settings_panel = MusicSettingsPanel(self.i18n, parent=self.tabs)
+        self.playlists_panel = MusicPlaylistsPanel(self.i18n, parent=self.tabs)
         self.queue_panel = MusicQueuePanel(self.i18n, parent=self.body_container)
         self.history_panel = MusicHistoryPanel(self.i18n, parent=self.body_container)
+        self.playlist_songs_panel = MusicPlaylistSongsPanel(self.i18n, parent=self.body_container)
 
         self.tabs.addTab(ModernScrollArea(self.player_panel, parent=self.tabs), self.i18n.get("music.tabs.player"))
         self.tabs.addTab(ModernScrollArea(self.commands_panel, parent=self.tabs), self.i18n.get("music.tabs.commands"))
         self.tabs.addTab(ModernScrollArea(self.settings_panel, parent=self.tabs), self.i18n.get("music.tabs.settings"))
+        self.tabs.addTab(ModernScrollArea(self.playlists_panel, parent=self.tabs), self.i18n.get("music.tabs.playlists"))
 
         self.col1_layout.addWidget(self.tabs)
 
@@ -80,6 +92,7 @@ class MusicView(BaseView):
         self.queue_tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.queue_tabs.addTab(self.queue_panel, self.i18n.get("music.tabs.queue"))
         self.queue_tabs.addTab(self.history_panel, self.i18n.get("music.tabs.history"))
+        self.queue_tabs.addTab(self.playlist_songs_panel, self.i18n.get("music.tabs.playlist"))
         self.col2_layout.addWidget(self.queue_tabs)
 
         self.columns_layout.addWidget(col1, stretch=3)
@@ -110,11 +123,41 @@ class MusicView(BaseView):
         self.queue_panel.move_queue_item_requested.connect(self.move_queue_item_requested.emit)
         self.queue_panel.queue_updated.connect(self.stats_panel.set_stats)
         self.history_panel.requeue_requested.connect(self.requeue_history_item_requested.emit)
-        self.history_panel.preview_requested.connect(self._on_preview_requested)
+        self.history_panel.add_to_playlist_requested.connect(self._prompt_playlist_target)
 
-    def _on_preview_requested(self, url: str):
-        self.tabs.setCurrentIndex(0)
-        self.preview_video_requested.emit(url)
+        self.player_panel.add_to_playlist_requested.connect(self._prompt_playlist_target)
+        self.playlists_panel.enqueue_requested.connect(self.playlist_enqueue_requested.emit)
+        self.playlists_panel.create_requested.connect(self.playlist_create_requested.emit)
+        self.playlists_panel.delete_requested.connect(self.playlist_delete_requested.emit)
+        self.playlists_panel.selected.connect(self._on_playlist_selected)
+        self.playlist_songs_panel.song_remove_requested.connect(self.playlist_song_remove_requested.emit)
+
+    def _prompt_playlist_target(self, song: dict | None = None):
+        """Pregunta a qué playlist agregar; sin canción se usa la que está sonando."""
+        modal = AddToPlaylistModal(self.playlists_panel.playlists, self.i18n, parent=self)
+        if not modal.exec():
+            return
+        playlist_id, name = modal.get_selection()
+        if playlist_id is not None:
+            if song is None:
+                self.playlist_add_current_requested.emit(playlist_id)
+            else:
+                self.playlist_add_song_requested.emit(playlist_id, song)
+        elif name:
+            if song is None:
+                self.playlist_create_and_add_current_requested.emit(name)
+            else:
+                self.playlist_create_and_add_song_requested.emit(name, song)
+
+    def _on_playlist_selected(self, playlist_id: int):
+        self.queue_tabs.setCurrentWidget(self.playlist_songs_panel)
+        self.playlist_selected.emit(playlist_id)
+
+    def set_playlists(self, playlists: list[dict]):
+        self.playlists_panel.set_playlists(playlists)
+
+    def set_playlist_songs(self, playlist_id: int | None, songs: list[dict]):
+        self.playlist_songs_panel.set_songs(self.playlists_panel.name_of(playlist_id), songs)
 
     def show_video_preview(self, url: str, local_path: str | None):
         self.player_panel.show_video_preview(url, local_path)

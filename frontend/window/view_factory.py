@@ -102,6 +102,7 @@ class MainWindowViewFactory:
             )
             window.content_stack.addWidget(window.view_music)
             window.music_controller.attach_view(window.view_music)
+            window.music_playlist_controller.attach_view(window.view_music)
             view_widget = window.view_music
         elif view_name == "Triggers":
             window.view_rewards = _load_view_class("RewardsView")(

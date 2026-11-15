@@ -14,6 +14,9 @@ class FakeView(QObject):
     playlist_selected = Signal(int)
     playlist_add_current_requested = Signal(int)
     playlist_create_and_add_current_requested = Signal(str)
+    playlist_add_song_requested = Signal(int, object)
+    playlist_create_and_add_song_requested = Signal(str, object)
+    playlist_enqueue_requested = Signal(int)
     playlist_song_remove_requested = Signal(int)
     view_shown = Signal()
 
@@ -49,8 +52,13 @@ SONG = {"title": "T", "artist": "A", "url": "u1", "duration": 185000}
 def env(tmp_path):
     storage = SQLiteMusicPlaylistStorage(DatabaseManager(str(tmp_path / "test.db")))
     view, toast = FakeView(), FakeToast()
-    current = {"song": SONG}
-    controller = MusicPlaylistController(view, storage, lambda: current["song"], toast, FakeI18n())
+    current = {"song": SONG, "queued": []}
+
+    def enqueue(url):
+        current["queued"].append(url)
+        return url != "bad"
+
+    controller = MusicPlaylistController(view, storage, lambda: current["song"], enqueue, toast, FakeI18n())
     return controller, view, toast, storage, current
 
 
@@ -111,7 +119,46 @@ def test_quitar_cancion_y_borrar_playlist_limpia_seleccion(env):
 def test_attach_view_posterior_carga_las_playlists(tmp_path):
     storage = SQLiteMusicPlaylistStorage(DatabaseManager(str(tmp_path / "test.db")))
     storage.create_playlist("Rock")
-    controller = MusicPlaylistController(None, storage, lambda: None, FakeToast(), FakeI18n())
+    controller = MusicPlaylistController(None, storage, lambda: None, lambda url: True, FakeToast(), FakeI18n())
     view = FakeView()
     controller.attach_view(view)
     assert [p["name"] for p in view.playlists] == ["Rock"]
+
+
+HISTORY_SONG = {"title": "H", "artist": "A", "url": "h1", "duration": "4:10"}
+
+
+def test_agregar_cancion_explicita_del_historial(env):
+    _c, view, toast, storage, _cur = env
+    pid = storage.create_playlist("Rock")
+    view.playlist_selected.emit(pid)
+    view.playlist_add_song_requested.emit(pid, HISTORY_SONG)
+    assert toast.calls[-1] == ("music.toast.playlist_song_added", "success")
+    assert view.songs[1][0]["duration"] == "4:10" and view.songs[1][0]["url"] == "h1"
+
+
+def test_crear_y_agregar_cancion_explicita(env):
+    _c, view, _t, storage, _cur = env
+    view.playlist_create_and_add_song_requested.emit("Nueva", HISTORY_SONG)
+    assert [s["url"] for s in storage.get_songs(view.playlists[0]["id"])] == ["h1"]
+
+
+def test_encolar_playlist_envia_las_canciones_en_orden(env):
+    _c, view, toast, storage, cur = env
+    pid = storage.create_playlist("Rock")
+    for url in ("u1", "bad", "u2"):
+        storage.add_song(pid, "T", "A", url)
+    view.playlist_enqueue_requested.emit(pid)
+    assert cur["queued"] == ["u1", "bad", "u2"]
+    assert toast.calls[-1] == ("music.toast.playlist_enqueued", "success")
+
+
+def test_encolar_playlist_sin_exitos_avisa(env):
+    _c, view, toast, storage, cur = env
+    empty = storage.create_playlist("Vacia")
+    view.playlist_enqueue_requested.emit(empty)
+    assert cur["queued"] == [] and toast.calls[-1] == ("music.toast.playlist_nothing_enqueued", "warning")
+    only_bad = storage.create_playlist("Mala")
+    storage.add_song(only_bad, "T", "A", "bad")
+    view.playlist_enqueue_requested.emit(only_bad)
+    assert toast.calls[-1] == ("music.toast.playlist_nothing_enqueued", "warning")

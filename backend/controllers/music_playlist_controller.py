@@ -4,7 +4,8 @@
 Contrato de la vista (se conecta con attach_view):
   señales: playlist_create_requested(str), playlist_delete_requested(int), playlist_selected(int),
            playlist_add_current_requested(int), playlist_create_and_add_current_requested(str),
-           playlist_song_remove_requested(int), view_shown()
+           playlist_add_song_requested(int, dict), playlist_create_and_add_song_requested(str, dict),
+           playlist_enqueue_requested(int), playlist_song_remove_requested(int), view_shown()
   métodos: set_playlists(list[dict]), set_playlist_songs(int | None, list[dict])
 """
 
@@ -31,6 +32,7 @@ class MusicPlaylistController(QObject):
         view,
         playlist_storage: IMusicPlaylistStorage,
         current_song_provider: Callable[[], dict | None],
+        enqueue_song: Callable[[str], bool],
         toast_manager,
         i18n,
     ):
@@ -38,6 +40,7 @@ class MusicPlaylistController(QObject):
         self.view = view
         self.playlist_storage = playlist_storage
         self.current_song_provider = current_song_provider
+        self.enqueue_song = enqueue_song
         self.toast = toast_manager
         self.i18n = i18n
         self._selected_id: int | None = None
@@ -60,6 +63,9 @@ class MusicPlaylistController(QObject):
         self.view.playlist_selected.connect(self.select_playlist)
         self.view.playlist_add_current_requested.connect(self.add_current_song)
         self.view.playlist_create_and_add_current_requested.connect(self.create_playlist_and_add_current)
+        self.view.playlist_add_song_requested.connect(self.add_song)
+        self.view.playlist_create_and_add_song_requested.connect(self.create_playlist_and_add_song)
+        self.view.playlist_enqueue_requested.connect(self.enqueue_playlist)
         self.view.playlist_song_remove_requested.connect(self.remove_song)
         self.view.view_shown.connect(self.refresh)
 
@@ -104,23 +110,47 @@ class MusicPlaylistController(QObject):
         self._selected_id = playlist_id
         self.refresh()
 
-    @Slot(int)
-    def add_current_song(self, playlist_id: int) -> None:
-        song = self.current_song_provider()
+    def _add_song(self, playlist_id: int, song: dict | None) -> None:
         if not song or not song.get("url"):
             self._notify("music.toast.playlist_no_song", "warning")
             return
         added = self.playlist_storage.add_song(
-            playlist_id, song.get("title", ""), song.get("artist", ""), song["url"], _format_duration_ms(song.get("duration"))
+            playlist_id, song.get("title", ""), song.get("artist", ""), song["url"], song.get("duration") or "-"
         )
         self._notify("music.toast.playlist_song_added" if added else "music.toast.playlist_song_duplicate", "success" if added else "warning")
         self.refresh()
+
+    @Slot(int)
+    def add_current_song(self, playlist_id: int) -> None:
+        song = self.current_song_provider()
+        self._add_song(playlist_id, {**song, "duration": _format_duration_ms(song.get("duration"))} if song else None)
+
+    @Slot(int, object)
+    def add_song(self, playlist_id: int, song: dict) -> None:
+        self._add_song(playlist_id, song)
 
     @Slot(str)
     def create_playlist_and_add_current(self, name: str) -> None:
         playlist_id = self._create_or_warn(name)
         if playlist_id > 0:
             self.add_current_song(playlist_id)
+
+    @Slot(str, object)
+    def create_playlist_and_add_song(self, name: str, song: dict) -> None:
+        playlist_id = self._create_or_warn(name)
+        if playlist_id > 0:
+            self.add_song(playlist_id, song)
+
+    @Slot(int)
+    def enqueue_playlist(self, playlist_id: int) -> None:
+        queued = sum(1 for song in self.playlist_storage.get_songs(playlist_id) if self.enqueue_song(song["url"]))
+        if not queued:
+            self._notify("music.toast.playlist_nothing_enqueued", "warning")
+            return
+        logger.info("[User Action] Playlist added to queue")
+        if self.toast:
+            message = self.i18n.get("music.toast.playlist_enqueued").replace("{count}", str(queued))
+            self.toast.show_toast(self.i18n.get("music.header.title"), message, "success")
 
     @Slot(int)
     def remove_song(self, item_id: int) -> None:

@@ -54,6 +54,7 @@ class MusicPlayerSettingsPanel(QWidget):
     play_pause_requested = Signal()
     skip_requested = Signal()
     seek_requested = Signal(int)
+    add_to_playlist_requested = Signal()
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
         super().__init__(parent)
@@ -137,8 +138,14 @@ class MusicPlayerSettingsPanel(QWidget):
         self.btn_skip = ModernButton("", role="action_outlined", icon_name="skip-next-filled.svg", parent=self)
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
+        self.btn_add_playlist = ModernButton("", role="action_outlined", icon_name="music-notes-filled.svg", parent=self)
+        self.btn_add_playlist.setToolTip(self.i18n.get("music.playlists.add_tooltip"))
+        self.btn_add_playlist.setEnabled(False)
+        self.btn_add_playlist.clicked.connect(self.add_to_playlist_requested.emit)
+
         controls_layout.addWidget(self.btn_play_pause)
         controls_layout.addWidget(self.btn_skip)
+        controls_layout.addWidget(self.btn_add_playlist)
 
         controls_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         top_layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignTop)
@@ -346,6 +353,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def update_current_song(self, song_data: dict | None):
         self._cached_song_state = song_data
+        self.btn_add_playlist.setEnabled(bool(song_data))
         if not song_data:
             self._is_user_scrubbing = False
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
