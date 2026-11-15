@@ -956,6 +956,30 @@
       "volume_desc": "Ajusta el volumen principal del reproductor de YouTube.",
       "volume_title": "Volumen del Reproductor"
     },
+    "playlists": {
+      "add_tooltip": "Agregar a una playlist",
+      "col_name": "Nombre",
+      "col_songs": "Canciones",
+      "create_btn": "Crear",
+      "delete_confirm_body": "¿Eliminar la playlist «{name}» y todas sus canciones?",
+      "delete_confirm_title": "Eliminar playlist",
+      "delete_tooltip": "Eliminar playlist",
+      "dialog": {
+        "confirm": "Agregar",
+        "existing": "Agregar a una playlist existente",
+        "name_placeholder": "Nombre de la playlist",
+        "new": "Crear una playlist nueva",
+        "title": "Agregar a playlist"
+      },
+      "empty_desc": "Escribe un nombre arriba y pulsa Crear.",
+      "empty_title": "Aún no tienes playlists",
+      "name_placeholder": "Nombre de la nueva playlist",
+      "remove_tooltip": "Quitar de la playlist",
+      "songs_empty_desc": "Selecciona una playlist a la izquierda o agrega canciones con el botón del reproductor.",
+      "songs_empty_title": "Sin canciones",
+      "songs_title": "Canciones de la playlist",
+      "title": "Playlists"
+    },
     "queue": {
       "col_actions": "Acciones",
       "col_artist": "Autor",
@@ -1002,6 +1026,8 @@
       "commands": "Comandos",
       "history": "Historial",
       "player": "Reproductor",
+      "playlist": "Playlist",
+      "playlists": "Playlists",
       "queue": "Cola",
       "settings": "Ajustes"
     },

@@ -956,6 +956,30 @@
       "volume_desc": "Adjust the main YouTube player volume.",
       "volume_title": "Player Volume"
     },
+    "playlists": {
+      "add_tooltip": "Add to a playlist",
+      "col_name": "Name",
+      "col_songs": "Songs",
+      "create_btn": "Create",
+      "delete_confirm_body": "Delete the playlist “{name}” and all its songs?",
+      "delete_confirm_title": "Delete playlist",
+      "delete_tooltip": "Delete playlist",
+      "dialog": {
+        "confirm": "Add",
+        "existing": "Add to an existing playlist",
+        "name_placeholder": "Playlist name",
+        "new": "Create a new playlist",
+        "title": "Add to playlist"
+      },
+      "empty_desc": "Type a name above and press Create.",
+      "empty_title": "You have no playlists yet",
+      "name_placeholder": "New playlist name",
+      "remove_tooltip": "Remove from playlist",
+      "songs_empty_desc": "Select a playlist on the left or add songs with the player button.",
+      "songs_empty_title": "No songs",
+      "songs_title": "Playlist songs",
+      "title": "Playlists"
+    },
     "queue": {
       "col_actions": "Actions",
       "col_artist": "Artist",
@@ -1002,6 +1026,8 @@
       "commands": "Commands",
       "history": "History",
       "player": "Player",
+      "playlist": "Playlist",
+      "playlists": "Playlists",
       "queue": "Queue",
       "settings": "Settings"
     },
