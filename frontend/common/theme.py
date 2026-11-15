@@ -239,7 +239,7 @@ PATH_SCROLL_RT          = get_qss_colored_icon("icons/chevron-right-filled.svg",
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
 PATH_ICON_CHECK         = get_assets_path("icons/check-filled.svg")
 PATH_ICON_MINUS         = get_assets_path("icons/minus-filled.svg")
-PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot.svg")
+PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot-filled.svg")
 
 
 def _build_reset_and_typography_qss(h1: int, h2: int, text1: int, text2: int) -> str:

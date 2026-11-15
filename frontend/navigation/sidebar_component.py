@@ -34,8 +34,8 @@ class Sidebar(QFrame):
         self.collapsed_width = Size.SIDEBAR_COLLAPSED
         self.setFixedWidth(self.expanded_width)
 
-        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
-        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
+        self._icon_collapse = get_icon_colored("angles-left-filled.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
+        self._icon_expand = get_icon_colored("angles-right-filled.svg", Palette.NEUTRAL_050, Size.ICON_SMALL)
 
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
@@ -74,7 +74,7 @@ class Sidebar(QFrame):
 
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", size=Size.ICON_SMALL))
+        self.btn_toggle.setIcon(get_icon_colored("angles-left-filled.svg", size=Size.ICON_SMALL))
         configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)

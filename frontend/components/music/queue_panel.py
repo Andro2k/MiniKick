@@ -257,7 +257,7 @@ class MusicQueuePanel(QWidget):
             self.queue_table.setRowCount(len(queue_items))
             for idx, song in enumerate(queue_items):
                 item_num = self._create_table_item(f"  {idx + 1}", Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, Qt.GlobalColor.gray)
-                item_num.setIcon(get_icon_colored("grip-vertical.svg", Palette.NEUTRAL_050))
+                item_num.setIcon(get_icon_colored("grip-vertical-filled.svg", Palette.NEUTRAL_050))
                 self.queue_table.setItem(idx, 0, item_num)
 
                 title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
