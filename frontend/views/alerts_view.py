@@ -50,7 +50,7 @@ class AlertsView(BaseView):
     view_shown = Signal()
 
     _TWITCH_EVENTS = [
-        ("follow", "profile-tick-filled.svg"),
+        ("follow", "user-filled.svg"),
         ("subscription", "crown-filled.svg"),
         ("resub", "star-filled.svg"),
         ("sub_gift", "gift-filled.svg"),
@@ -184,7 +184,7 @@ class AlertsView(BaseView):
         if dict.__contains__(self.cards, key):
             return dict.__getitem__(self.cards, key)
 
-        icon_name = self._event_meta.get(platform, {}).get(alert_type, "profile-tick-filled.svg")
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-filled.svg")
         editor_stack = self.twitch_editor_stack
         sidebar_panel = self.sidebars.get(platform)
 
