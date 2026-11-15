@@ -1,4 +1,5 @@
 # frontend\navigation\tray_menu_component.py
+"""Gestor del icono y del menú de la bandeja del sistema."""
 
 import os
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu

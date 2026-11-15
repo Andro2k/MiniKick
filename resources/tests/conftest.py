@@ -1,4 +1,5 @@
 # resources\tests\conftest.py
+"""Fixtures compartidos de las pruebas (QApplication)."""
 
 import os
 import sys

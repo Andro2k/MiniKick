@@ -1,4 +1,5 @@
 # resources\tools\project_code_duplication_auditor.py
+"""Auditor de código duplicado."""
 
 import argparse
 import ast

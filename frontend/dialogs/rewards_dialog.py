@@ -1,4 +1,5 @@
 # frontend\dialogs\rewards_dialog.py
+"""Asistente de configuración de recompensas."""
 
 import os
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog, QRadioButton, QButtonGroup

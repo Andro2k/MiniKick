@@ -1,4 +1,5 @@
 # resources\tests\test_oauth_callback_state.py
+"""Pruebas del estado del callback de OAuth."""
 
 import socket
 import threading

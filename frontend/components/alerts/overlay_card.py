@@ -1,4 +1,5 @@
 # frontend\components\alerts\overlay_card.py
+"""Tarjeta de configuración del overlay de alertas."""
 
 from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Signal, QSize, QTimer

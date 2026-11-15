@@ -1,4 +1,5 @@
 # resources\tools\frontend_qt_signal_lifecycle_auditor.py
+"""Auditor del ciclo de vida de las señales de Qt en el frontend."""
 
 import ast
 import os

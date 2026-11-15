@@ -1,4 +1,5 @@
 # resources\tools\project_quality_suite.py
+"""Suite que ejecuta todas las herramientas de calidad del proyecto."""
 
 import argparse
 import contextlib

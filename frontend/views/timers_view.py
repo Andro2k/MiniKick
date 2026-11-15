@@ -1,4 +1,5 @@
 # frontend\views\timers_view.py
+"""Vista de temporizadores."""
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal

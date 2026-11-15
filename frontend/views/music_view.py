@@ -1,4 +1,5 @@
 # frontend\views\music_view.py
+"""Vista de música."""
 
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal

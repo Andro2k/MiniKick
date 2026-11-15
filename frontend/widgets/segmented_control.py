@@ -1,4 +1,5 @@
 # frontend\widgets\segmented_control.py
+"""Control segmentado."""
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize

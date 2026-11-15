@@ -1,4 +1,5 @@
 # resources\tools\project_duplicate_definition_auditor.py
+"""Auditor de definiciones duplicadas."""
 
 import argparse
 import ast

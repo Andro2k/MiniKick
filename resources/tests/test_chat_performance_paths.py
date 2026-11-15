@@ -1,4 +1,5 @@
 # resources\tests\test_chat_performance_paths.py
+"""Pruebas de las rutas de rendimiento del chat (worker de red en orden y con límite de cola)."""
 
 import threading
 import time
@@ -10,7 +11,7 @@ from backend.database.database_manager import DatabaseManager
 from backend.services.chat.spam_service import SpamService
 from backend.services.overlay.overlay_ws_client import WebSocketClient
 from backend.utils.io_background_utils import BoundedBackgroundWorker, flush_network_io
-from frontend.window.session_metrics import SessionMetrics
+from frontend.window.session_metrics_tracker import SessionMetrics
 
 
 def _pump(predicate, timeout=3.0):

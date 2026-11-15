@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_sender.py
+"""Pruebas del firmado y envío de webhooks."""
 
 import hashlib
 import hmac

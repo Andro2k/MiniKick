@@ -1,4 +1,5 @@
 # frontend\widgets\flow_layout.py
+"""Layout que reparte los elementos en flujo."""
 
 from PySide6.QtWidgets import QLayout
 from PySide6.QtCore import Qt, QSize, QRect

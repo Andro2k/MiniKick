@@ -1,4 +1,5 @@
 # frontend\widgets\searchable_combo_box.py
+"""Combo con búsqueda y popup de opciones."""
 
 import time
 from PySide6.QtCore import Qt, QSize

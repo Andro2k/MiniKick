@@ -1,4 +1,5 @@
 # frontend\components\music\stats_panel.py
+"""Panel de estadísticas de música."""
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal

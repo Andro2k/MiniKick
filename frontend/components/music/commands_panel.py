@@ -1,4 +1,5 @@
 # frontend\components\music\commands_panel.py
+"""Panel de comandos de música."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal, Qt

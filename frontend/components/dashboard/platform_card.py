@@ -1,4 +1,5 @@
 # frontend\components\dashboard\platform_card.py
+"""Tarjeta de estado de una plataforma conectada."""
 
 from PySide6.QtWidgets import QFrame, QLabel, QSizePolicy
 from PySide6.QtCore import Qt

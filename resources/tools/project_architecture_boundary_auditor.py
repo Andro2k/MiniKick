@@ -1,4 +1,5 @@
 # resources\tools\project_architecture_boundary_auditor.py
+"""Auditor de límites de arquitectura entre capas del proyecto."""
 
 import ast
 import json
@@ -97,7 +98,7 @@ class ArchitectureASTVisitor(ast.NodeVisitor):
             return
         self._add_violation(
             node, "SOR_SERVICE_QT", "Decoupled Architecture",
-            f"Importación de Qt ('{module}') en un servicio. Inyecta la dependencia desde frontend/ (ver frontend/common/qt_debounce.py)."
+            f"Importación de Qt ('{module}') en un servicio. Inyecta la dependencia desde frontend/ (ver frontend/common/qt_debounce_utils.py)."
         )
 
     def visit_Import(self, node: ast.Import):

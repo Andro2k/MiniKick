@@ -1,4 +1,5 @@
 # resources\tests\test_piper_download_worker.py
+"""Pruebas del worker de descarga de voces de Piper."""
 
 import threading
 

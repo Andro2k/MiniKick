@@ -1,4 +1,5 @@
 # frontend\views\base_view.py
+"""Clase base de las vistas."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QSizePolicy, QSpacerItem
 from PySide6.QtCore import Qt

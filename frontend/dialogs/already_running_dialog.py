@@ -1,4 +1,5 @@
 # frontend\dialogs\already_running_dialog.py
+"""Aviso de que la aplicación ya está en ejecución."""
 
 from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt

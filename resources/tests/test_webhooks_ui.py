@@ -1,4 +1,5 @@
 # resources\tests\test_webhooks_ui.py
+"""Pruebas de la interfaz de webhooks (diálogo y vista)."""
 
 from backend.config.toml_config_provider import TomlConfigProvider
 from backend.config.webhook_endpoint_store import WebhookEndpointStore

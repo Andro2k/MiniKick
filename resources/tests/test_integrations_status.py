@@ -1,11 +1,12 @@
 # resources\tests\test_integrations_status.py
+"""Pruebas del estado de integraciones (ConnectionHub y presentador)."""
 
 from unittest.mock import MagicMock
 
 from PySide6.QtCore import QObject, Signal
 
 from backend.connections import ConnectionHub
-from frontend.window.integrations_status import IntegrationsStatusPresenter
+from frontend.window.integrations_protocols import IntegrationsStatusPresenter
 
 
 class _Connection(QObject):

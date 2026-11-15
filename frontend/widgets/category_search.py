@@ -1,4 +1,5 @@
 # frontend\widgets\category_search.py
+"""Búsqueda de categorías con lista de sugerencias."""
 
 from PySide6.QtCore import Qt, Signal, QTimer, QEvent
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QListWidgetItem, QSizePolicy, QWidget

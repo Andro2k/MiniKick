@@ -1,4 +1,5 @@
 # frontend\views\rewards_view.py
+"""Vista de recompensas."""
 
 import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication

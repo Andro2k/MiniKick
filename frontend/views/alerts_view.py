@@ -1,4 +1,5 @@
 # frontend\views\alerts_view.py
+"""Vista de alertas."""
 
 from typing import Dict, Tuple
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePolicy

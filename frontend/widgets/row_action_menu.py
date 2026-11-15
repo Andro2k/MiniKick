@@ -1,4 +1,5 @@
 # frontend\widgets\row_action_menu.py
+"""Menú de acciones de una fila."""
 
 from dataclasses import dataclass
 from typing import Callable

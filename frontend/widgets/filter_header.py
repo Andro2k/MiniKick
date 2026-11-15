@@ -1,4 +1,5 @@
 # frontend\widgets\filter_header.py
+"""Cabecera de tabla con filtros."""
 
 from PySide6.QtWidgets import QHeaderView, QMenu, QStyleOptionHeader, QStyle
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize

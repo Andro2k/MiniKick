@@ -1,4 +1,5 @@
 # frontend\views\webhooks_view.py
+"""Vista de webhooks."""
 
 from PySide6.QtWidgets import QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal

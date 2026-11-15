@@ -1,4 +1,5 @@
 # resources\tests\test_windows_installer.py
+"""Pruebas del instalador de Windows (ruta del instalador por entorno)."""
 
 from unittest import mock
 

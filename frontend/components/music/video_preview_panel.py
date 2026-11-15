@@ -1,4 +1,5 @@
 # frontend\components\music\video_preview_panel.py
+"""Panel de vista previa de video de la canción."""
 
 import logging
 import time

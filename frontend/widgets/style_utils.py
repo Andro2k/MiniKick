@@ -1,4 +1,5 @@
 # frontend\widgets\style_utils.py
+"""Utilidades de estilo: repolish y estados."""
 
 from PySide6.QtCore import QEvent
 from PySide6.QtWidgets import QWidget

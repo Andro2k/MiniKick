@@ -1,4 +1,5 @@
 # resources\tools\project_performance_profiler.py
+"""Perfilador de rendimiento del proyecto."""
 
 import argparse
 import contextlib
@@ -40,7 +41,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from PySide6.QtWidgets import QApplication
 from backend.database import DatabaseManager
 from backend.services import ChatMessageDTO, CommandService, MessagePipeline, SpamService, TranslationService
-from frontend.components.chat.chat_display import ChatDisplayPanel
+from frontend.components.chat.chat_display_panel import ChatDisplayPanel
 
 
 class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):

@@ -1,4 +1,5 @@
 # frontend\dialogs\update_flow.py
+"""Flujo que presenta el diálogo de actualización."""
 
 import logging
 

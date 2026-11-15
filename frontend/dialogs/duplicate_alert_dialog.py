@@ -1,4 +1,5 @@
 # frontend\dialogs\duplicate_alert_dialog.py
+"""Modal para duplicar una alerta."""
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QCheckBox, QButtonGroup, QRadioButton
 from frontend.dialogs.base_dialog import ModernModal

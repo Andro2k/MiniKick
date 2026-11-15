@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_formatters.py
+"""Pruebas de los formateadores de webhooks."""
 
 from backend.services.webhooks.webhook_formatters import DiscordEmbedFormatter, GenericJsonFormatter
 from backend.utils import fast_loads

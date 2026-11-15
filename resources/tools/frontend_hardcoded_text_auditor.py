@@ -1,4 +1,5 @@
 # resources\tools\frontend_hardcoded_text_auditor.py
+"""Auditor de textos fijos (sin traducir) en el frontend."""
 
 import ast
 import os

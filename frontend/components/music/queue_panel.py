@@ -1,4 +1,5 @@
 # frontend\components\music\queue_panel.py
+"""Panel de la cola de música con tabla arrastrable."""
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QRectF

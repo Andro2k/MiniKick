@@ -1,4 +1,5 @@
-# frontend\widgets\blocks.py
+# frontend\widgets\block_widget.py
+"""Bloques de interfaz reutilizables: cabeceras, filas de ajustes e insignias."""
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal, QEvent
@@ -6,7 +7,7 @@ from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from frontend.common import get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch, configure_icon_only_button
-from .layout_helpers import create_row_layout
+from .layout_utils import create_row_layout
 from .stream_platform_widgets import create_platform_switches
 
 class ViewHeader(QFrame):

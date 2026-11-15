@@ -1,4 +1,5 @@
 # resources\tools\frontend_design_token_auditor.py
+"""Auditor de tokens de diseño del frontend."""
 
 import os
 import re

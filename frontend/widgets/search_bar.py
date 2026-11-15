@@ -1,4 +1,5 @@
 # frontend\widgets\search_bar.py
+"""Barra de búsqueda unificada."""
 
 from .action_line_edit import ActionLineEdit
 

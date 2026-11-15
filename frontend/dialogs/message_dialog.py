@@ -1,4 +1,5 @@
-# frontend\dialogs\message_editor_dialog.py
+# frontend\dialogs\message_dialog.py
+"""Diálogo para editar un mensaje."""
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, VariableTextEdit

@@ -1,4 +1,5 @@
 # resources\tests\test_webhook_event_adapter.py
+"""Pruebas del adaptador de eventos a webhooks."""
 
 from backend.models import AlertEvent, AlertType
 from backend.services.chat import ChatMessageDTO

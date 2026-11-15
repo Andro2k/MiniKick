@@ -1,4 +1,5 @@
 # resources\tests\test_chat_controller.py
+"""Pruebas del controlador de chat."""
 
 import pytest
 from unittest.mock import MagicMock

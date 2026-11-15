@@ -1,4 +1,5 @@
 # resources\tools\project_icon_integrity_tool.py
+"""Herramienta de integridad de los iconos del proyecto."""
 
 import argparse
 import ast
