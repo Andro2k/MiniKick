@@ -56,7 +56,6 @@ class LogsController(QObject):
         self.view.load_requested.connect(self.handle_load_requested)
         self.view.live_requested.connect(self.handle_live_requested)
         self.view.clear_requested.connect(self.handle_clear_requested)
-        self.view.report_requested.connect(self.open_github_issues)
         self.view.view_toggle_requested.connect(self.handle_view_toggle_requested)
         self.view.view_shown.connect(self.handle_view_shown)
 
@@ -250,17 +249,6 @@ class LogsController(QObject):
                 if not threshold or time_str >= threshold:
                     self.view.append_log(is_grouped, real_level, time_str, text_str)
 
-    @Slot()
-    def open_github_issues(self):
-        from backend.workers import BugReportWorker
-        initial_contact = ""
-        try:
-            from backend.services.app.identity_service import resolve_primary_identity
-            initial_contact = resolve_primary_identity()
-        except Exception:
-            pass
-        self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
-        
     @Slot()
     def open_log_folder(self):
         try:

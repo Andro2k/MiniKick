@@ -123,6 +123,7 @@ class AppContainerCore:
             schedule_storage=self.schedule_storage,
             alert_storage=self.alert_storage,
             widgets_storage=self.widgets_storage,
+            playlist_storage=self.music_playlist_storage,
         )
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.browser_service = BrowserService(self.settings_storage)

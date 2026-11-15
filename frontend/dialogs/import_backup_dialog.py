@@ -15,6 +15,7 @@ SECTION_ORDER = [
     "spam_filters",
     "timers",
     "schedules",
+    "playlists",
     "widgets",
 ]
 
@@ -26,6 +27,7 @@ SECTION_TITLES = {
     "spam_filters": "settings.dialogs.import_modal.section_spam_filters",
     "timers": "settings.dialogs.import_modal.section_timers",
     "schedules": "settings.dialogs.import_modal.section_schedules",
+    "playlists": "settings.dialogs.import_modal.section_playlists",
     "widgets": "settings.dialogs.import_modal.section_widgets",
 }
 
@@ -37,6 +39,7 @@ SECTION_DESCRIPTIONS = {
     "spam_filters": "settings.dialogs.import_modal.section_spam_filters_desc",
     "timers": "settings.dialogs.import_modal.section_timers_desc",
     "schedules": "settings.dialogs.import_modal.section_schedules_desc",
+    "playlists": "settings.dialogs.import_modal.section_playlists_desc",
     "widgets": "settings.dialogs.import_modal.section_widgets_desc",
 }
 

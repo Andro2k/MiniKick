@@ -203,6 +203,10 @@
       "empty_category": "No hay comandos disponibles en {category}.",
       "empty_general": "No hay comandos configurados actualmente.",
       "inactive_tag": "Inactivos",
+      "sec_chat": "💬 Chat",
+      "sec_moderation": "🛡️ Moderación",
+      "sec_music": "🎵 Música",
+      "sec_widgets": "🎮 Widgets",
       "status_header": "📋 Estado de comandos:"
     },
     "display": {
@@ -1262,6 +1266,8 @@
         "section_alerts_desc": "Estilos visuales, sonidos y plantillas para Kick y Twitch.",
         "section_commands": "Comandos de Chat",
         "section_commands_desc": "Respuestas automáticas, permisos, tiempos de espera y alias.",
+        "section_playlists": "Playlists de música",
+        "section_playlists_desc": "Playlists guardadas con sus canciones.",
         "section_rewards": "Recompensas de Puntos",
         "section_rewards_desc": "Mapeos locales y disparadores multimedia de recompensas.",
         "section_schedules": "Programaciones de Transmisión",

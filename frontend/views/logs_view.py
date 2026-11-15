@@ -70,7 +70,6 @@ class LogView(BaseView):
     load_requested = Signal()
     live_requested = Signal()
     clear_requested = Signal()
-    report_requested = Signal()
     view_toggle_requested = Signal()
     view_shown = Signal()
 
@@ -131,8 +130,6 @@ class LogView(BaseView):
              "play-filled.svg", Palette.NEUTRAL_400, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
              "trash-filled.svg", Palette.NEUTRAL_400, self.clear_requested.emit, True),
-            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_outlined",
-             "bug-filled.svg", Palette.NEUTRAL_400, self.report_requested.emit, True),
         ]
 
         self._action_buttons: list[ModernButton] = []
@@ -472,8 +469,3 @@ class LogView(BaseView):
         msg_box.setText(text)
         msg_box.setIcon(QMessageBox.Icon.Critical if msg_type == "error" else QMessageBox.Icon.Information)
         msg_box.exec()
-
-    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = ""):
-        from frontend.dialogs import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
-        dialog.exec()

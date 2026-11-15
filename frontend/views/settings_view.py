@@ -23,7 +23,6 @@ class SettingsView(BaseView):
     browser_changed = Signal(str)
     music_audio_device_changed = Signal(str)
     tts_audio_device_changed = Signal(str)
-    feedback_clicked = Signal()
     kick_integration_clicked = Signal()
     twitch_integration_clicked = Signal()
     youtube_integration_clicked = Signal()
@@ -212,18 +211,11 @@ class SettingsView(BaseView):
 
         row_release_notes = self._setting_row("settings.system.release_notes_title", "settings.system.release_notes_desc", self.btn_release_notes)
 
-        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_outlined", parent=self)
-        self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
-
-        row_feedback = self._setting_row("settings.feedback.title", "settings.feedback.desc", self.btn_feedback)
-
         support_card.addWidget(row_update)
         support_card.add_separator()
         support_card.addWidget(row_auto_update_download)
         support_card.add_separator()
         support_card.addWidget(row_release_notes)
-        support_card.add_separator()
-        support_card.addWidget(row_feedback)
         self.main_layout.addWidget(header_support)
         self.main_layout.addWidget(support_card)
 
@@ -275,11 +267,6 @@ class SettingsView(BaseView):
     def _on_font_changed(self, index: int):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
-
-    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = "") -> None:
-        from frontend.dialogs import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
-        dialog.exec()
 
     def show_release_notes_dialog(self, worker_class=None, browser_service=None) -> None:
         from frontend.dialogs import ReleaseNotesDialog
