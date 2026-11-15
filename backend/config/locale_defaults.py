@@ -206,10 +206,6 @@ DEFAULT_DICTIONARY = {
       "empty_category": "No commands available in {category}.",
       "empty_general": "No commands currently configured.",
       "inactive_tag": "Inactive",
-      "sec_chat": "💬 Chat",
-      "sec_moderation": "🛡️ Moderation",
-      "sec_music": "🎵 Music",
-      "sec_widgets": "🎮 Widgets",
       "status_header": "📋 Commands status:"
     },
     "display": {
@@ -964,10 +960,6 @@ DEFAULT_DICTIONARY = {
       "volume_title": "Player Volume"
     },
     "queue": {
-      "history_empty": "History is empty",
-      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
-      "history_title": "Playback history",
-      "requeue_tooltip": "Add back to queue",
       "col_actions": "Actions",
       "col_artist": "Artist",
       "col_duration": "Duration",
@@ -977,6 +969,9 @@ DEFAULT_DICTIONARY = {
       "empty": "Queue is empty",
       "empty_desc": "Your queue is ready. When viewers use !sr in chat, their requested songs will appear here.",
       "error": "❌ Internal music error: {error}",
+      "history_empty": "History is empty",
+      "history_empty_desc": "Songs that have been played or removed from the queue will appear here.",
+      "history_title": "Playback history",
       "no_link": "❌ Could not retrieve video link.",
       "not_found": "❌ Could not find any song named '{query}'.",
       "preview_error": "This video can't be played inside the app.",
@@ -985,6 +980,7 @@ DEFAULT_DICTIONARY = {
       "preview_tooltip": "Watch video",
       "processing_link": "🔍 Processing YouTube link...",
       "remove_tooltip": "Remove from queue",
+      "requeue_tooltip": "Add back to queue",
       "searching": "🔍 Searching '{query}' on YouTube...",
       "success": "🎵 [Queue] │ {track}",
       "title": "Playback Queue"
@@ -1006,20 +1002,26 @@ DEFAULT_DICTIONARY = {
       "updated": "Music Command Updated"
     },
     "tabs": {
-      "queue": "Queue",
-      "history": "History",
       "commands": "Commands",
+      "history": "History",
       "player": "Player",
+      "queue": "Queue",
       "settings": "Settings"
     },
     "toast": {
-      "requeued": "Song added back to the queue",
       "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
       "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
       "command_toggled": "Command {trigger} has been {status}.",
       "error_playing": "Could not play '{title}': {error}",
       "moved_in_queue": "Song position updated in queue",
-      "removed_from_queue": "Song removed from queue"
+      "playlist_created": "Playlist created.",
+      "playlist_deleted": "Playlist deleted.",
+      "playlist_name_invalid": "The playlist name is empty or already exists.",
+      "playlist_no_song": "No song is currently playing.",
+      "playlist_song_added": "Song added to the playlist.",
+      "playlist_song_duplicate": "The song is already in the playlist.",
+      "removed_from_queue": "Song removed from queue",
+      "requeued": "Song added back to the queue"
     },
     "youtube": {
       "age_restricted": "This video requires age verification (Sign in to confirm your age)",
