@@ -50,12 +50,12 @@ class AlertsView(BaseView):
     view_shown = Signal()
 
     _TWITCH_EVENTS = [
-        ("follow", "user-filled.svg"),
-        ("subscription", "crown-filled.svg"),
-        ("resub", "star-filled.svg"),
-        ("sub_gift", "gift-filled.svg"),
-        ("raid", "users-filled.svg"),
-        ("cheer", "prism-filled.svg"),
+        ("follow", "user-outline.svg"),
+        ("subscription", "crown-outline.svg"),
+        ("resub", "star-outline.svg"),
+        ("sub_gift", "gift-outline.svg"),
+        ("raid", "users-outline.svg"),
+        ("cheer", "prism-outline.svg"),
     ]
 
     def __init__(self, i18n, alerts_overlay_url: str = "", parent=None):
@@ -101,7 +101,7 @@ class AlertsView(BaseView):
         self.notice_layout.setSpacing(Size.SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, size=24))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-outline.svg", BrandColors.AMBER, size=24))
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*Size.Margin.MRG_NON)
@@ -184,7 +184,7 @@ class AlertsView(BaseView):
         if dict.__contains__(self.cards, key):
             return dict.__getitem__(self.cards, key)
 
-        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-filled.svg")
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-outline.svg")
         editor_stack = self.twitch_editor_stack
         sidebar_panel = self.sidebars.get(platform)
 

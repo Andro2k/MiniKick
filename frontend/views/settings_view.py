@@ -81,7 +81,7 @@ class SettingsView(BaseView):
         self.btn_browse_browser = ModernButton(
             "",
             role="action_outlined",
-            icon_name="folder-open-filled.svg",
+            icon_name="folder-open-outline.svg",
             parent=browser_container
         )
         self.btn_browse_browser.setToolTip(self.i18n.get("settings.system.browser_browse"))

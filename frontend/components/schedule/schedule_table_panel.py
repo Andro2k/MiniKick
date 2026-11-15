@@ -37,7 +37,7 @@ class ScheduleTablePanel(QWidget):
             ],
             search_placeholder=self.i18n.get("stream_info.table.search_placeholder"),
             add_button_text=self.i18n.get("stream_info.schedule_section.btn_new"),
-            add_button_icon="plus-filled.svg",
+            add_button_icon="plus-outline.svg",
             parent=self,
             i18n=self.i18n
         )
@@ -147,12 +147,12 @@ class ScheduleTablePanel(QWidget):
             [
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.edit"),
-                    icon_name="edit-filled.svg",
+                    icon_name="edit-outline.svg",
                     callback=lambda s=sched: self.edit_schedule_clicked.emit(s),
                 ),
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.delete"),
-                    icon_name="trash-filled.svg",
+                    icon_name="trash-outline.svg",
                     callback=lambda s_id=sched_id: self._confirm_delete_schedule(s_id),
                     role="row_action_danger"
                 ),

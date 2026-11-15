@@ -269,13 +269,13 @@ class TimerConfigWizard(ModernWizardPanel):
         row_layout.addWidget(txt)
 
         btn_edit = ModernButton("", role="action_accent_solid")
-        btn_edit.setIcon(get_icon_colored("edit-filled.svg"))
+        btn_edit.setIcon(get_icon_colored("edit-outline.svg"))
         btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_edit.clicked.connect(lambda: self._open_message_editor(txt))
         row_layout.addWidget(btn_edit)
 
         btn_del = ModernButton("", role="action_danger_solid")
-        btn_del.setIcon(get_icon_colored("trash-filled.svg"))
+        btn_del.setIcon(get_icon_colored("trash-outline.svg"))
         btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_del.clicked.connect(lambda: self._remove_message_field(row))
         row_layout.addWidget(btn_del)

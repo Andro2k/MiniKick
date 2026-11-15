@@ -13,8 +13,8 @@ class FilterHeaderView(QHeaderView):
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
         super().__init__(orientation, parent)
         self._column_filters: dict[int, dict] = {}
-        self._icon_filtered = get_icon_colored("filter-filled.svg", BrandColors.GREEN)
-        self._icon_unfiltered = get_icon_colored("filter-filled.svg", Palette.NEUTRAL_500)
+        self._icon_filtered = get_icon_colored("filter-outline.svg", BrandColors.GREEN)
+        self._icon_unfiltered = get_icon_colored("filter-outline.svg", Palette.NEUTRAL_200)
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
         self.sectionClicked.connect(self._on_section_clicked)
@@ -132,9 +132,9 @@ class FilterHeaderView(QHeaderView):
         has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
         if config.get("sort_asc_label"):
-            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg"), config["sort_asc_label"])
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-outline.svg"), config["sort_asc_label"])
         if config.get("sort_desc_label"):
-            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg"), config["sort_desc_label"])
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-outline.svg"), config["sort_desc_label"])
 
         action_all = None
         action_map: dict[QAction, str] = {}
