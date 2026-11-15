@@ -22,6 +22,7 @@ _EXPORTS = {
     "PiperVoicesDialog": ".piper_dialog",
     "YouTubeConnectDialog": ".youtube_dialog",
     "TikTokConnectDialog": ".tiktok_dialog",
+    "AddToPlaylistModal": ".add_to_playlist_dialog",
     "DuplicateAlertModal": ".duplicate_alert_dialog",
     "ImportBackupModal": ".import_backup_dialog",
     "WhatsNewDialog": ".whats_new_dialog",
@@ -44,6 +45,7 @@ def __getattr__(name: str):
 
 
 if TYPE_CHECKING:
+    from .add_to_playlist_dialog import AddToPlaylistModal
     from .already_running_dialog import AlreadyRunningDialog
     from .bug_report_dialog import BugReportDialog
     from .commands_dialog import CommandConfigWizard

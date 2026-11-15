@@ -135,6 +135,7 @@ class MainWindowComposition:
             view=None,
             playlist_storage=w.container.music_playlist_storage,
             current_song_provider=lambda: w.music_controller.music_provider.get_current_song() if w.music_controller.music_provider else None,
+            enqueue_song=lambda url: w.music_controller.enqueue_song_url(url),
             toast_manager=w.toast,
             i18n=w.i18n,
         )
