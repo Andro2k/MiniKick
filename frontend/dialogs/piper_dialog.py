@@ -60,7 +60,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.synthesis_card = ExpandableCard(
             title=self.i18n.get("piper_dialog.synthesis_title"),
             desc=self.i18n.get("piper_dialog.synthesis_desc"),
-            icon_name="gear-filled.svg",
+            icon_name="gear-outline.svg",
             parent=self,
             switch_enabled=False
         )
@@ -118,7 +118,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), params_container)
         self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg"))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-outline.svg"))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         actions_layout.addWidget(self.btn_import)
@@ -178,7 +178,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         search_layout.setSpacing(Size.SPACING_XS)
 
         lbl_search_icon = QLabel(search_container)
-        lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg"))
+        lbl_search_icon.setPixmap(get_pixmap_colored("search-outline.svg"))
         search_layout.addWidget(lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.search_input = QLineEdit(search_container)

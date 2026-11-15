@@ -49,7 +49,7 @@ class ModernTableCard(QFrame):
 
     def __init__(self, title_text: str = None, headers: list[str] = None,
                  search_placeholder: str = None, add_button_text: str = None,
-                 add_button_icon: str = "plus-filled.svg", parent=None, i18n=None,
+                 add_button_icon: str = "plus-outline.svg", parent=None, i18n=None,
                  custom_table: QTableWidget = None):
         super().__init__(parent)
         self.i18n = i18n
@@ -136,7 +136,7 @@ class ModernTableCard(QFrame):
         self.lbl_no_results.setWordWrap(True)
 
         self.btn_clear_filters = ModernButton("", role="action_outlined", parent=self.no_results_overlay)
-        self.btn_clear_filters.set_icon("filter-filled.svg")
+        self.btn_clear_filters.set_icon("filter-outline.svg")
         self.btn_clear_filters.clicked.connect(self.clear_filters)
 
         self.no_results_layout.addStretch(1)
@@ -260,7 +260,7 @@ class ModernTableCard(QFrame):
         self.footer_widget.setParent(self)
         self.card_layout.addWidget(self.footer_widget)
 
-    def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked, button_icon: str = "plus-filled.svg"):
+    def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked, button_icon: str = "plus-outline.svg"):
         self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
         layout.setContentsMargins(*Size.Margin.MRG_XLG)
@@ -444,7 +444,7 @@ class TableActionCell(QWidget):
         return sw
 
     def add_menu(self, actions: list[RowMenuAction], tooltip: str = "") -> ModernButton:
-        btn = ModernButton("", role="btn_ghost", icon_name="dots-horizontal-filled.svg", parent=self)
+        btn = ModernButton("", role="btn_ghost", icon_name="dots-horizontal-outline.svg", parent=self)
         configure_icon_only_button(btn, Size.ICON_SMALL)
         btn.setToolTip(tooltip)
         btn.clicked.connect(lambda checked=False: RowActionMenu.open_below(btn, actions))

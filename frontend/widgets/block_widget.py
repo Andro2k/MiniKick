@@ -349,7 +349,7 @@ class ExpandableCard(QFrame):
         h_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.btn_expand = QPushButton(self.header_widget)
-        self.btn_expand.setIcon(get_icon_colored("chevron-down-filled.svg"))
+        self.btn_expand.setIcon(get_icon_colored("chevron-down-outline.svg"))
         configure_icon_only_button(self.btn_expand)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -390,7 +390,7 @@ class ExpandableCard(QFrame):
         self._is_expanded = bool(expanded)
         self.body_widget.setVisible(self._is_expanded)
         self.divider.setVisible(self._is_expanded)
-        self.btn_expand.setIcon(get_icon_colored("chevron-up-filled.svg") if self._is_expanded else get_icon_colored("chevron-down-filled.svg"))
+        self.btn_expand.setIcon(get_icon_colored("chevron-up-outline.svg") if self._is_expanded else get_icon_colored("chevron-down-outline.svg"))
         if self._is_expanded:
             self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         else:

@@ -64,7 +64,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
 
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_bot.set_icon("plus-filled.svg")
+        self.btn_add_bot.set_icon("plus-outline.svg")
 
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -95,7 +95,7 @@ class BotMutePanel(QWidget):
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
 
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined", parent=self)
-        self.btn_add_word.set_icon("plus-filled.svg")
+        self.btn_add_word.set_icon("plus-outline.svg")
 
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
@@ -164,7 +164,7 @@ class BotMutePanel(QWidget):
             icon_size = max(16, int(font_height * 0.75))
             btn_size = Size.ICON_SMALL
 
-            btn_delete.setIcon(get_icon_colored("trash-filled.svg", BrandColors.RED, size=icon_size))
+            btn_delete.setIcon(get_icon_colored("trash-outline.svg", BrandColors.RED, size=icon_size))
             configure_icon_only_button(btn_delete, size=btn_size)
 
             text_width = fm.horizontalAdvance(lbl_name.text())

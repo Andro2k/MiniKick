@@ -40,7 +40,7 @@ class ActionLineEdit(QFrame):
 
     def _sync_action_button(self) -> None:
         shows_search = self._search_when_empty and not self._has_text()
-        self.btn_action.setIcon(get_icon_colored("search-filled.svg") if shows_search else get_icon_colored("x-filled.svg"))
+        self.btn_action.setIcon(get_icon_colored("search-outline.svg") if shows_search else get_icon_colored("x-outline.svg"))
         usable = (self._has_text() or self._search_when_empty) and not self.txt_input.isReadOnly()
         self.btn_action.setVisible(usable)
         self.btn_action.setEnabled(usable)

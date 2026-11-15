@@ -18,7 +18,7 @@ class CategoryItemWidget(QWidget):
 
         pixmap = platform_brand_pixmap(platform)
         if pixmap is None:
-            pixmap = get_pixmap_colored("gamepad-filled.svg")
+            pixmap = get_pixmap_colored("gamepad-outline.svg")
 
         self.icon_label = QLabel()
         self.icon_label.setFixedSize(16, 16)
