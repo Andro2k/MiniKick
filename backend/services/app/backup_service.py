@@ -16,7 +16,7 @@ class BackupService:
 
     def __init__(self, settings_storage: IConfigProvider, rewards_storage, commands_storage,
                  spam_storage, timers_storage=None, schedule_storage=None,
-                 alert_storage=None, widgets_storage=None):
+                 alert_storage=None, widgets_storage=None, playlist_storage=None):
         self.settings_storage = settings_storage
         self.rewards_storage = rewards_storage
         self.commands_storage = commands_storage
@@ -25,6 +25,7 @@ class BackupService:
         self.schedule_storage = schedule_storage
         self.alert_storage = alert_storage
         self.widgets_storage = widgets_storage
+        self.playlist_storage = playlist_storage
         self.logger = logger
 
     @staticmethod
@@ -66,6 +67,8 @@ class BackupService:
                 data["schedules"] = self.schedule_storage.load_all()
             if self.widgets_storage:
                 data["widgets"] = self.widgets_storage.load_all_widgets()
+            if self.playlist_storage:
+                data["playlists"] = self._export_playlists()
             if self.alert_storage:
                 raw_alerts = self.alert_storage.load_all()
                 data["alerts"] = [cfg.to_dict() for cfg in raw_alerts.values()]
@@ -79,6 +82,36 @@ class BackupService:
         except Exception as e:
             self.logger.error("Error exporting configuration: %s", e)
             return False
+
+    def _export_playlists(self) -> list[dict]:
+        playlists = []
+        for pl in self.playlist_storage.list_playlists():
+            songs = [
+                {"title": s["title"], "artist": s["artist"], "url": s["url"], "duration": s["duration"]}
+                for s in self.playlist_storage.get_songs(pl["id"])
+            ]
+            playlists.append({"name": pl["name"], "songs": songs})
+        return playlists
+
+    def _import_playlists(self, playlists: list) -> None:
+        existing = {pl["name"].strip().lower(): pl["id"] for pl in self.playlist_storage.list_playlists()}
+        for item in playlists:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name", "")).strip()
+            if not name:
+                continue
+            playlist_id = existing.get(name.lower())
+            if playlist_id is None:
+                playlist_id = self.playlist_storage.create_playlist(name)
+                if playlist_id < 0:
+                    continue
+                existing[name.lower()] = playlist_id
+            for song in item.get("songs", []):
+                if isinstance(song, dict):
+                    self.playlist_storage.add_song(
+                        playlist_id, str(song.get("title", "")), str(song.get("artist", "")),
+                        str(song.get("url", "")), str(song.get("duration", "-")))
 
     def inspect_backup(self, filepath: str) -> dict | None:
         if not os.path.exists(filepath) or not os.path.isfile(filepath):
@@ -112,6 +145,8 @@ class BackupService:
                 sections["timers"] = len(data["timers"])
             if "schedules" in data and isinstance(data["schedules"], list):
                 sections["schedules"] = len(data["schedules"])
+            if "playlists" in data and isinstance(data["playlists"], list):
+                sections["playlists"] = len(data["playlists"])
             if "widgets" in data:
                 if isinstance(data["widgets"], dict):
                     sections["widgets"] = len(data["widgets"])
@@ -238,7 +273,8 @@ class BackupService:
                             keywords=list(timer.get("keywords", [])),
                             categories=list(timer.get("categories", [])),
                             apply_kick=bool(timer.get("apply_kick", True)),
-                            apply_twitch=bool(timer.get("apply_twitch", True))
+                            apply_twitch=bool(timer.get("apply_twitch", True)),
+                            apply_youtube=bool(timer.get("apply_youtube", True))
                         )
                     except TypeError:
                         self.timers_storage.save_timer(
@@ -292,6 +328,9 @@ class BackupService:
                                 permission=str(w_data.get("permission", "everyone")),
                                 config=dict(w_data.get("config", {}))
                             )
+
+            if (target_sections is None or "playlists" in target_sections) and isinstance(data.get("playlists"), list) and self.playlist_storage:
+                self._import_playlists(data["playlists"])
 
             if (target_sections is None or "alerts" in target_sections) and "alerts" in data and self.alert_storage:
                 from backend.models import AlertConfig

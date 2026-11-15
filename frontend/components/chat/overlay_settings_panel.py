@@ -103,7 +103,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         row_theme = InspectorPropertyRow(
             self.i18n.get("chat.overlay.theme_title"),
             self.combo_overlay_theme,
-            icon_name="palette-filled.svg",
+            icon_name="palette-outline.svg",
             tooltip=self.i18n.get("chat.overlay.theme_desc"),
             parent=self
         )
@@ -120,12 +120,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         header_size = self._create_metric_header(
-            "text-filled.svg",
+            "text-outline.svg",
             self.i18n.get("chat.overlay.size_title"),
             self.i18n.get("chat.overlay.size_desc")
         )
         header_fade = self._create_metric_header(
-            "stopwatch-filled.svg",
+            "clock-outline.svg",
             self.i18n.get("chat.overlay.fade_title"),
             self.i18n.get("chat.overlay.fade_desc")
         )
@@ -146,13 +146,13 @@ class ChatOverlaySettingsPanel(ModernCard):
         card_layout.addWidget(self._create_section_header(self.i18n.get("chat.overlay.section_layout")))
 
         self.seg_overlay_orientation = ModernSegmentedControl(self)
-        self.seg_overlay_orientation.add_option("vertical", "carousel-v-filled.svg", self.i18n.get("chat.overlay.orientation_vertical"))
-        self.seg_overlay_orientation.add_option("horizontal", "carousel-h-filled.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
+        self.seg_overlay_orientation.add_option("vertical", "carousel-v-outline.svg", self.i18n.get("chat.overlay.orientation_vertical"))
+        self.seg_overlay_orientation.add_option("horizontal", "carousel-h-outline.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
 
         row_orientation = InspectorPropertyRow(
             self.i18n.get("chat.overlay.orientation_title"),
             self.seg_overlay_orientation,
-            icon_name="align-left-filled.svg",
+            icon_name="align-left-outline.svg",
             tooltip=self.i18n.get("chat.overlay.orientation_desc"),
             parent=self
         )
@@ -164,7 +164,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         row_flow = InspectorPropertyRow(
             self.i18n.get("chat.overlay.flow_title"),
             self.seg_overlay_flow,
-            icon_name="transfer-v-filled.svg",
+            icon_name="transfer-v-outline.svg",
             tooltip=self.i18n.get("chat.overlay.flow_desc"),
             parent=self
         )
@@ -178,7 +178,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         row_anim = InspectorPropertyRow(
             self.i18n.get("chat.overlay.anim_in_title"),
             self.combo_anim_in,
-            icon_name="bolt-circle-filled.svg",
+            icon_name="bolt-circle-outline.svg",
             tooltip=self.i18n.get("chat.overlay.anim_in_desc"),
             parent=self
         )
@@ -214,12 +214,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_show_platform.setChecked(True)
 
         item_plat = CompactToggleItem("brand-kick.svg", self.i18n.get("chat.overlay.show_platform_title"), self.sw_show_platform, self.i18n.get("chat.overlay.show_platform_desc"), self)
-        item_badges = CompactToggleItem("shield-user-filled.svg", self.i18n.get("chat.overlay.show_badges_title"), self.sw_show_badges, self.i18n.get("chat.overlay.show_badges_desc"), self)
-        item_time = CompactToggleItem("clock-filled.svg", self.i18n.get("chat.overlay.show_time_title"), self.sw_overlay_show_time, self.i18n.get("chat.overlay.show_time_desc"), self)
-        item_emotes = CompactToggleItem("emoji-circle-filled.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)
-        item_gifs = CompactToggleItem("gift-filled.svg", self.i18n.get("chat.overlay.show_gifs_title"), self.sw_overlay_show_gifs, self.i18n.get("chat.overlay.show_gifs_desc"), self)
-        item_cmds = CompactToggleItem("bolt-circle-filled.svg", self.i18n.get("chat.overlay.hide_commands_title"), self.sw_hide_commands, self.i18n.get("chat.overlay.hide_commands_desc"), self)
-        item_bots = CompactToggleItem("bot.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
+        item_badges = CompactToggleItem("shield-user-outline.svg", self.i18n.get("chat.overlay.show_badges_title"), self.sw_show_badges, self.i18n.get("chat.overlay.show_badges_desc"), self)
+        item_time = CompactToggleItem("clock-outline.svg", self.i18n.get("chat.overlay.show_time_title"), self.sw_overlay_show_time, self.i18n.get("chat.overlay.show_time_desc"), self)
+        item_emotes = CompactToggleItem("emoji-circle-outline.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)
+        item_gifs = CompactToggleItem("gift-outline.svg", self.i18n.get("chat.overlay.show_gifs_title"), self.sw_overlay_show_gifs, self.i18n.get("chat.overlay.show_gifs_desc"), self)
+        item_cmds = CompactToggleItem("bolt-circle-outline.svg", self.i18n.get("chat.overlay.hide_commands_title"), self.sw_hide_commands, self.i18n.get("chat.overlay.hide_commands_desc"), self)
+        item_bots = CompactToggleItem("bot-outline.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
 
         grid_toggles.addWidget(item_plat, 0, 0)
         grid_toggles.addWidget(item_badges, 0, 1)
@@ -252,13 +252,13 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_flow.blockSignals(True)
         if orientation == "horizontal":
             options = [
-                ("right-to-left", "chevron-left-filled.svg", self.i18n.get("chat.overlay.flow_r2l")),
-                ("left-to-right", "chevron-right-filled.svg", self.i18n.get("chat.overlay.flow_l2r"))
+                ("right-to-left", "chevron-left-outline.svg", self.i18n.get("chat.overlay.flow_r2l")),
+                ("left-to-right", "chevron-right-outline.svg", self.i18n.get("chat.overlay.flow_l2r"))
             ]
         else:
             options = [
-                ("bottom-to-top", "chevron-up-filled.svg", self.i18n.get("chat.overlay.flow_b2t")),
-                ("top-to-bottom", "chevron-down-filled.svg", self.i18n.get("chat.overlay.flow_t2b"))
+                ("bottom-to-top", "chevron-up-outline.svg", self.i18n.get("chat.overlay.flow_b2t")),
+                ("top-to-bottom", "chevron-down-outline.svg", self.i18n.get("chat.overlay.flow_t2b"))
             ]
         self.seg_overlay_flow.set_options(options)
         self.seg_overlay_flow.blockSignals(False)

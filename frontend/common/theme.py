@@ -123,7 +123,6 @@ class Padding:
     PAD_MINI  = "2px 2px"
     PAD_COMP  = "2px 6px"
     FLAT_MIN  = "2px 8px"
-    ASYM_ONE  = "2px 20px 2px 10px"
 
     PAD_BASE  = "4px 6px"
     PAD_CORE  = "6px 10px"
@@ -226,19 +225,19 @@ def get_qcolor_with_alpha(color_hex: str, alpha: int) -> QColor:
     color.setAlpha(alpha)
     return color
 
-PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg")
-PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg")
-PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg")
-PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg")
-PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg")
-PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg")
-PATH_SCROLL_UP          = get_qss_colored_icon("icons/chevron-up-filled.svg", Palette.NEUTRAL_400)
-PATH_SCROLL_DW          = get_qss_colored_icon("icons/chevron-down-filled.svg", Palette.NEUTRAL_400)
-PATH_SCROLL_LF          = get_qss_colored_icon("icons/chevron-left-filled.svg", Palette.NEUTRAL_400)
-PATH_SCROLL_RT          = get_qss_colored_icon("icons/chevron-right-filled.svg", Palette.NEUTRAL_400)
-PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg")
-PATH_ICON_CHECK         = get_assets_path("icons/check-filled.svg")
-PATH_ICON_MINUS         = get_assets_path("icons/minus-filled.svg")
+PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-outline.svg")
+PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-outline.svg")
+PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-outline.svg")
+PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-outline.svg")
+PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-outline.svg")
+PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-outline.svg")
+PATH_SCROLL_UP          = get_qss_colored_icon("icons/chevron-up-outline.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_DW          = get_qss_colored_icon("icons/chevron-down-outline.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_LF          = get_qss_colored_icon("icons/chevron-left-outline.svg", Palette.NEUTRAL_400)
+PATH_SCROLL_RT          = get_qss_colored_icon("icons/chevron-right-outline.svg", Palette.NEUTRAL_400)
+PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-outline.svg")
+PATH_ICON_CHECK         = get_assets_path("icons/check-outline.svg")
+PATH_ICON_MINUS         = get_assets_path("icons/minus-outline.svg")
 PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot.svg")
 
 
@@ -414,7 +413,7 @@ QMenu::indicator:unchecked {{ image: none; }}
 QMenu::separator {{ height: 1px; background-color: {Palette.NEUTRAL_900}; margin: 2px; }}
 
 /* SpinBoxes */
-QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.ASYM_ONE}; selection-background-color: transparent; selection-color: {Palette.NEUTRAL_050}; }}
+QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.FLAT_MIN}; selection-background-color: transparent; selection-color: {Palette.NEUTRAL_050}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border-color: {BrandColors.GREEN}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_050}; }}
 QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover {{ background-color: {Palette.NEUTRAL_900}; border-color: {Palette.NEUTRAL_700}; }}
 QSpinBox:read-only, QDoubleSpinBox:read-only, QTimeEdit:read-only {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border-color: {Palette.NEUTRAL_900}; }}
@@ -428,10 +427,10 @@ QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover, QTimeEdit::down-
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed, QTimeEdit::down-button:pressed {{ background-color: {Palette.NEUTRAL_700}; }}
 QSpinBox::down-button:disabled, QDoubleSpinBox::down-button:disabled, QTimeEdit::down-button:disabled {{ background-color: transparent; }}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DW}"); width: 16px; height: 16px; }}
-QSpinBox:disabled, QDoubleSpinBox:disabled, QTimeEdit:disabled, QDateEdit:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_750}; padding: {Padding.ASYM_ONE}; }}
+QSpinBox:disabled, QDoubleSpinBox:disabled, QTimeEdit:disabled, QDateEdit:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Palette.NEUTRAL_500}; border-color: {Palette.NEUTRAL_750}; padding: {Padding.FLAT_MIN}; }}
 
 /* DateEdit */
-QDateEdit {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; font-weight: 400; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.ASYM_ONE}; border: {Borders.BRD_BASE}; selection-background-color: transparent; selection-color: {Palette.NEUTRAL_050}; }}
+QDateEdit {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; font-weight: 400; border-radius: {Size.Radius.RAD_MED}px; padding: {Padding.FLAT_MIN}; border: {Borders.BRD_BASE}; selection-background-color: transparent; selection-color: {Palette.NEUTRAL_050}; }}
 QDateEdit:focus {{ border-color: {BrandColors.GREEN}; background-color: {Palette.NEUTRAL_900}; }}
 QDateEdit:hover {{ background-color: {Palette.NEUTRAL_900}; }}
 QDateEdit:read-only {{ background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_400}; border-color: {Palette.NEUTRAL_900}; }}

@@ -3,7 +3,7 @@
 
 import logging
 from PySide6.QtCore import QObject, Signal, Slot
-from backend.workers import BugReportWorker, ReleaseNotesWorker
+from backend.workers import ReleaseNotesWorker
 
 logger = logging.getLogger("minikick.controllers.settings")
 
@@ -60,7 +60,6 @@ class SettingsController(QObject):
         self.view.tts_audio_device_changed.connect(self.handle_tts_audio_device)
         if hasattr(self.view, "browser_changed"):
             self.view.browser_changed.connect(self.handle_browser_change)
-        self.view.feedback_clicked.connect(self.handle_feedback)
         self.view.release_notes_clicked.connect(self.handle_release_notes)
 
     def _load_initial_state(self):
@@ -228,17 +227,6 @@ class SettingsController(QObject):
             title = i18n.get("settings.status.font_size_changed")
             msg = i18n.get("settings.status.font_size_changed_msg").replace("{size}", str(size))
             self.toast.show_toast(title, msg, "success")
-
-    @Slot()
-    def handle_feedback(self):
-        logger.info("[User Action] Opened Bug Report modal")
-        initial_contact = ""
-        try:
-            from backend.services.app.identity_service import resolve_primary_identity
-            initial_contact = resolve_primary_identity()
-        except Exception:
-            pass
-        self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
 
     @Slot(str)
     def handle_browser_change(self, browser_path: str):

@@ -101,6 +101,12 @@ class AuditorService:
                             parts = [str(v.value) if isinstance(v, ast.Constant) else "{var}" for v in arg0.values]
                             dynamic_patterns.append(("".join(parts), rel_path, node.lineno))
 
+                if isinstance(node, ast.JoinedStr) and node.values and isinstance(node.values[0], ast.Constant):
+                    head = str(node.values[0].value)
+                    if any(head.startswith(ns + ".") for ns in root_namespaces):
+                        pattern = "".join(str(v.value) if isinstance(v, ast.Constant) else "{var}" for v in node.values)
+                        dynamic_patterns.append((pattern, rel_path, node.lineno))
+
                 if isinstance(node, ast.Constant) and isinstance(node.value, str):
                     val = node.value.strip()
                     if "." in val and any(val.startswith(ns + ".") for ns in root_namespaces):

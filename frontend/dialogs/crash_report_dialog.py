@@ -41,7 +41,7 @@ class CrashReportDialog(ModernModal):
         self.err_no_webhook_text = self.i18n.get("crash.err_no_webhook")
         self.subtitle_text = self.i18n.get("crash.subtitle")
 
-        icon_path = get_assets_path("icons/bug-filled.svg")
+        icon_path = get_assets_path("icons/bug-outline.svg")
         super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=BrandColors.RED, width=580, parent=parent)
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 80))
         self._setup_crash_form()
@@ -81,7 +81,7 @@ class CrashReportDialog(ModernModal):
         lbl_traceback = QLabel(self.lbl_traceback_text)
         lbl_traceback.setProperty("role", "text_body")
 
-        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg")
+        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="copy-outline.svg")
         self.btn_copy_tb.clicked.connect(self._copy_traceback)
 
         tb_header_layout.addWidget(lbl_traceback)

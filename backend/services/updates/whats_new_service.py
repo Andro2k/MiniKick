@@ -11,31 +11,31 @@ from backend.utils import fast_dumps, fast_loads
 logger = logging.getLogger("minikick.system.whats_new")
 
 _SECTION_DEFAULT_ICONS: Dict[str, str] = {
-    "Dashboard": "element-filled.svg",
-    "Chat": "dialog-filled.svg",
-    "Stream Info": "calendar-days-filled.svg",
-    "Comandos": "chat-square-code-filled.svg",
-    "Timers": "alarm-filled.svg",
-    "Music": "music-notes-filled.svg",
-    "Widgets": "widget-add-filled.svg",
-    "Triggers": "treasure-chest-filled.svg",
-    "Alerts": "megaphone-filled.svg",
-    "Settings": "gear-filled.svg",
-    "Developer": "file-text-filled.svg",
+    "Dashboard": "element-outline.svg",
+    "Chat": "dialog-outline.svg",
+    "Stream Info": "calendar-days-outline.svg",
+    "Comandos": "chat-square-code-outline.svg",
+    "Timers": "alarm-outline.svg",
+    "Music": "music-notes-outline.svg",
+    "Widgets": "widget-add-outline.svg",
+    "Triggers": "treasure-chest-outline.svg",
+    "Alerts": "megaphone-outline.svg",
+    "Settings": "gear-outline.svg",
+    "Developer": "file-text-outline.svg",
 }
 
 
 def _resolve_feature_icon(section: str, feature: str) -> str:
     feat_lower = feature.lower()
     if "spam" in feat_lower or "seguridad" in feat_lower:
-        return "shield-filled.svg"
+        return "shield-outline.svg"
     if "overlay" in feat_lower or "obs" in feat_lower or "red" in feat_lower:
-        return "globe-filled.svg"
+        return "globe-outline.svg"
     if "log" in feat_lower or "registro" in feat_lower or "conexión" in feat_lower:
-        return "file-text-filled.svg"
+        return "file-text-outline.svg"
     if "bienvenida" in feat_lower or "insignia" in feat_lower:
-        return "star-filled.svg"
-    return _SECTION_DEFAULT_ICONS.get(section, "star-filled.svg")
+        return "star-outline.svg"
+    return _SECTION_DEFAULT_ICONS.get(section, "star-outline.svg")
 
 
 def parse_release_notes_content(content: str) -> List[Dict[str, str]]:

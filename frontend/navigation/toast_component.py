@@ -48,7 +48,7 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg")
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-outline.svg")
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
@@ -92,10 +92,10 @@ class ModernToast(QFrame):
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:
             icon_map = {
-                "success": ("check-circle-filled.svg", BrandColors.GREEN),
-                "danger": ("alert-circle-filled.svg", BrandColors.RED),
-                "warning": ("alert-triangle-filled.svg", BrandColors.AMBER),
-                "info": ("circle-info-filled.svg", BrandColors.BLUE)
+                "success": ("check-circle-outline.svg", BrandColors.GREEN),
+                "danger": ("alert-circle-outline.svg", BrandColors.RED),
+                "warning": ("alert-triangle-outline.svg", BrandColors.AMBER),
+                "info": ("circle-info-outline.svg", BrandColors.BLUE)
             }
             icon_name, icon_color = icon_map.get(state, icon_map["info"])
             ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color)

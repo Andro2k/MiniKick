@@ -86,7 +86,7 @@ def get_icon(name: str) -> QIcon:
     full_path = resolve_icon_path(name)
     return QIcon(full_path) if full_path else QIcon()
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=128)
 def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> QIcon:
     full_path = resolve_icon_path(name)
     if not full_path:

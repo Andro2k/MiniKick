@@ -26,20 +26,20 @@ _LEVEL_COLORS = {
     "CRI": BrandColors.RED,
 }
 _LEVEL_ICON_NAMES = {
-    "DEBUG": "code-square-filled.svg",
-    "INFO": "circle-info-filled.svg",
-    "WARNING": "alert-triangle-filled.svg",
-    "ERROR": "bug-filled.svg",
-    "CRITICAL": "bolt-circle-filled.svg",
-    "CRASH": "bolt-circle-filled.svg",
-    "FATAL_CRASH": "bolt-circle-filled.svg",
-    "THREAD_CRASH": "bolt-circle-filled.svg",
-    "BOOTSTRAP": "circle-info-filled.svg",
-    "DBG": "code-square-filled.svg",
-    "INF": "circle-info-filled.svg",
-    "WRN": "alert-triangle-filled.svg",
-    "ERR": "bug-filled.svg",
-    "CRI": "bolt-circle-filled.svg",
+    "DEBUG": "code-square-outline.svg",
+    "INFO": "circle-info-outline.svg",
+    "WARNING": "alert-triangle-outline.svg",
+    "ERROR": "bug-outline.svg",
+    "CRITICAL": "bolt-circle-outline.svg",
+    "CRASH": "bolt-circle-outline.svg",
+    "FATAL_CRASH": "bolt-circle-outline.svg",
+    "THREAD_CRASH": "bolt-circle-outline.svg",
+    "BOOTSTRAP": "circle-info-outline.svg",
+    "DBG": "code-square-outline.svg",
+    "INF": "circle-info-outline.svg",
+    "WRN": "alert-triangle-outline.svg",
+    "ERR": "bug-outline.svg",
+    "CRI": "bolt-circle-outline.svg",
 }
 _CANONICAL_LEVELS = {
     "DBG": "DEBUG",
@@ -58,7 +58,7 @@ _LEVEL_ICONS: dict[str, QIcon] = {}
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
         hex_color = _LEVEL_COLORS.get(level, Palette.NEUTRAL_200)
-        icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-filled.svg")
+        icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-outline.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color)
     return _LEVEL_ICONS[level]
 
@@ -70,7 +70,6 @@ class LogView(BaseView):
     load_requested = Signal()
     live_requested = Signal()
     clear_requested = Signal()
-    report_requested = Signal()
     view_toggle_requested = Signal()
     view_shown = Signal()
 
@@ -122,17 +121,15 @@ class LogView(BaseView):
 
         specs = [
             ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_outlined",
-             "folder-open-filled.svg", Palette.NEUTRAL_400, self.open_folder_requested.emit, True),
+             "folder-open-outline.svg", Palette.NEUTRAL_000, self.open_folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_outlined",
-             "file-text-filled.svg", Palette.NEUTRAL_400, self.load_requested.emit, True),
+             "file-text-outline.svg", Palette.NEUTRAL_000, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_outlined",
-             "eye-filled.svg", Palette.NEUTRAL_400, self.view_toggle_requested.emit, True),
+             "eye-outline.svg", Palette.NEUTRAL_000, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_outlined",
-             "play-filled.svg", Palette.NEUTRAL_400, self.live_requested.emit, False),
+             "play-outline.svg", Palette.NEUTRAL_000, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
-             "trash-filled.svg", Palette.NEUTRAL_400, self.clear_requested.emit, True),
-            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_outlined",
-             "bug-filled.svg", Palette.NEUTRAL_400, self.report_requested.emit, True),
+             "trash-outline.svg", Palette.NEUTRAL_000, self.clear_requested.emit, True),
         ]
 
         self._action_buttons: list[ModernButton] = []
@@ -196,7 +193,7 @@ class LogView(BaseView):
             icon_name=LOG_ILLUSTRATION_FILE,
             button_text=self.i18n.get("log.empty.btn_show"),
             on_button_clicked=self.view_toggle_requested.emit,
-            button_icon="eye-filled.svg"
+            button_icon="eye-outline.svg"
         )
 
         self.pagination_bar = QWidget()
@@ -472,8 +469,3 @@ class LogView(BaseView):
         msg_box.setText(text)
         msg_box.setIcon(QMessageBox.Icon.Critical if msg_type == "error" else QMessageBox.Icon.Information)
         msg_box.exec()
-
-    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = ""):
-        from frontend.dialogs import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
-        dialog.exec()
