@@ -55,7 +55,7 @@ class AlertsView(BaseView):
         ("resub", "star-filled.svg"),
         ("sub_gift", "gift-filled.svg"),
         ("raid", "users-filled.svg"),
-        ("cheer", "prism.svg"),
+        ("cheer", "prism-filled.svg"),
     ]
 
     def __init__(self, i18n, alerts_overlay_url: str = "", parent=None):

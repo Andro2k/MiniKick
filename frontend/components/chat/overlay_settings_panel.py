@@ -219,7 +219,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         item_emotes = CompactToggleItem("emoji-circle-filled.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)
         item_gifs = CompactToggleItem("gift-filled.svg", self.i18n.get("chat.overlay.show_gifs_title"), self.sw_overlay_show_gifs, self.i18n.get("chat.overlay.show_gifs_desc"), self)
         item_cmds = CompactToggleItem("bolt-circle-filled.svg", self.i18n.get("chat.overlay.hide_commands_title"), self.sw_hide_commands, self.i18n.get("chat.overlay.hide_commands_desc"), self)
-        item_bots = CompactToggleItem("bot.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
+        item_bots = CompactToggleItem("bot-filled.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
 
         grid_toggles.addWidget(item_plat, 0, 0)
         grid_toggles.addWidget(item_badges, 0, 1)
