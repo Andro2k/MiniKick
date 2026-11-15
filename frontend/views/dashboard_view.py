@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal, QUrl
 from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.views.base_view import BaseView
 from frontend.widgets import StatCard, ModernButton
-from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard
+from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard, QuickAccessCard
 
 logger = logging.getLogger("minikick.views.dashboard")
 
@@ -21,13 +21,22 @@ class DashboardView(BaseView):
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
     channel_tab_changed = Signal(str)
+    quick_access_requested = Signal(str)
     _PLATFORM_CARDS_ATTR = "_platform_cols"
+    _QUICK_ACCESS_ATTR = "_quick_cols"
+    _QUICK_ACCESS_ITEMS = (
+        ("Stats", "chart-bar-filled.svg", "stats"),
+        ("Alerts", "megaphone-filled.svg", "alerts"),
+        ("Webhooks", "webhooks-filled.svg", "webhooks"),
+        ("Music", "music-notes-filled.svg", "music"),
+    )
     _CHANNEL_BADGES_ATTR = "_channel_badge_cols"
 
     def __init__(self, i18n, browser_service=None, parent=None):
-        super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
+        super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent, max_content_width=Size.CONTENT_DASHBOARD_MAX_WIDTH)
         self.browser_service = browser_service
         self._platform_cols = 4
+        self._quick_cols = -1
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
         self._current_avatar_bytes = None
@@ -83,7 +92,31 @@ class DashboardView(BaseView):
         self.btn_reauth = self.btn_reauth_kick
         self.banner_layout = self.banner_layout_kick
 
+        self._setup_quick_access()
         self.main_layout.addStretch()
+
+    def _setup_quick_access(self):
+        self.lbl_quick_access_title = QLabel(self.i18n.get("dashboard.quick_access.title"), self)
+        self.lbl_quick_access_title.setProperty("role", "text_h2")
+        self.main_layout.addWidget(self.lbl_quick_access_title)
+
+        container = QWidget(self)
+        self.quick_access_grid = QGridLayout(container)
+        self.quick_access_grid.setContentsMargins(*Size.Margin.MRG_NON)
+        self.quick_access_grid.setSpacing(Size.SPACING_MD)
+        self.quick_access_cards = []
+        for view_name, icon_name, key in self._QUICK_ACCESS_ITEMS:
+            card = QuickAccessCard(
+                view_name,
+                icon_name,
+                self.i18n.get(f"dashboard.quick_access.{key}_title"),
+                self.i18n.get(f"dashboard.quick_access.{key}_desc"),
+                parent=container,
+            )
+            card.clicked.connect(lambda name=view_name: self.quick_access_requested.emit(name))
+            self.quick_access_cards.append(card)
+        self._relayout_grid(self.quick_access_grid, self.quick_access_cards, 4, self._QUICK_ACCESS_ATTR)
+        self.main_layout.addWidget(container)
 
     def _setup_welcome_section(self):
         self.welcome_card = QFrame(self)
@@ -238,7 +271,7 @@ class DashboardView(BaseView):
         for card in self.platform_cards:
             card.update_message_share(0, 0)
 
-        self.platforms_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.platforms_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
     def set_kick_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         self.card_kick.update_state(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
@@ -343,6 +376,8 @@ class DashboardView(BaseView):
             setattr(self, attr, cols)
             for i, card in enumerate(cards):
                 grid.addWidget(card, i // cols, i % cols)
+            for column in range(max(cols, 4)):
+                grid.setColumnStretch(column, 1 if column < cols else 0)
 
     def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
         if is_connecting:
@@ -479,6 +514,10 @@ class DashboardView(BaseView):
         if hasattr(self, 'platforms_grid') and hasattr(self, 'platform_cards'):
             plat_cols = 1 if width < 620 else 2
             self._relayout_grid(self.platforms_grid, self.platform_cards, plat_cols, self._PLATFORM_CARDS_ATTR)
+
+        if hasattr(self, "quick_access_grid"):
+            quick_cols = 1 if width < 650 else (2 if width < 950 else 4)
+            self._relayout_grid(self.quick_access_grid, self.quick_access_cards, quick_cols, self._QUICK_ACCESS_ATTR)
 
         if hasattr(self, "channel_badges_grid") and hasattr(self, "channel_badge_cards"):
             badge_cols = 1 if width < 650 else (2 if width < 950 else 4)

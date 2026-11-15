@@ -183,6 +183,7 @@ class Size:
     CONTENT_MAX_WIDTH = 880
     CONTENT_MIN_WIDTH = 520
     CONTENT_WIDE_MAX_WIDTH = 1440
+    CONTENT_DASHBOARD_MAX_WIDTH = 1180
 
 
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:
@@ -493,7 +494,6 @@ def _build_surface_qss(text1: int, text2: int) -> str:
 QFrame[role="canvas_container"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_MED}px; }}
 QFrame[role="sidebar"] {{ background-color: {Palette.NEUTRAL_950}; border-right: {Borders.BRD_BASE}; }}
 QFrame[role="profile_card"] {{ background-color: transparent; border-radius: {Size.Radius.RAD_MED}px; border: {Borders.BRD_THIN}; }}
-QFrame[role="profile_card"]:hover {{ background-color: {Palette.NEUTRAL_850}; border-color: {Palette.NEUTRAL_750}; }}
 QFrame[role="update_banner_card"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
 QFrame[role="update_banner_card"]:hover {{ border-color: {Palette.NEUTRAL_700}; }}
 QFrame[role="update_icon_box"] {{ background-color: {Semantic.GREEN_GLOW}; border: {Borders.BRD_FOCS}; border-radius: {Size.Radius.RAD_MED}px; }}
@@ -501,6 +501,8 @@ QFrame[role="card"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders
 QFrame[role="card"][tab_flush="true"] {{ border-radius: {Size.Radius.RAD_LRG}px; border-top-left-radius: 0px; }}
 QWidget[role="expandable_card_body"] {{ background-color: {Palette.NEUTRAL_900}; border-bottom-left-radius: {Size.Radius.RAD_XLG}px; border-bottom-right-radius: {Size.Radius.RAD_XLG}px; }}
 QFrame[role="dashboard_welcome"] {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {Palette.NEUTRAL_850}, stop:1 {Palette.NEUTRAL_950}); border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_XLG}px; }}
+QFrame[role="quick_access_card"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
+QFrame[role="quick_access_card"]:hover {{ background-color: {Palette.NEUTRAL_850}; border-color: {Palette.NEUTRAL_750}; }}
 QFrame[role="dashboard_distribution_panel"] {{ background-color: {Palette.NEUTRAL_950}; border: {Borders.BRD_BASE}; border-radius: {Size.Radius.RAD_LRG}px; }}
 QLabel[role="dashboard_channel_name"] {{ color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: 700; }}
 QLabel[role="dashboard_channel_description"] {{ color: {Palette.NEUTRAL_400}; font-size: 12px; }}
