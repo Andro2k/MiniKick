@@ -12,6 +12,7 @@ from .rewards_controller import RewardsController
 from .schedule_controller import ScheduleController
 from .settings_controller import SettingsController
 from .spam_controller import SpamController
+from .stats_controller import StatsController
 from .timers_controller import TimersController
 from .webhooks_controller import WebhooksController
 from .updater_controller import UpdaterController
@@ -29,6 +30,7 @@ __all__ = [
     "ScheduleController",
     "SettingsController",
     "SpamController",
+    "StatsController",
     "TimersController",
     "WebhooksController",
     "UpdaterController",

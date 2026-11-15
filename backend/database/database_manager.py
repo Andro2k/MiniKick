@@ -300,6 +300,15 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS hourly_message_stats (
+                    stat_date TEXT NOT NULL,
+                    hour INTEGER NOT NULL,
+                    platform TEXT NOT NULL DEFAULT 'kick',
+                    message_count INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (stat_date, hour, platform)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,

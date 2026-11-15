@@ -10,6 +10,7 @@ from backend.controllers import (
     ChatController,
     CommandsController,
     DashboardController,
+    StatsController,
     LogsController,
     MusicController,
     RewardsController,
@@ -85,7 +86,6 @@ class MainWindowComposition:
             view=w.view_dashboard,
             avatar_service=w.avatar_service,
             db_manager=w.container.db_manager,
-            widget_service=w.container.widget_service,
             toast_manager=w.toast,
             i18n=w.i18n,
         )
@@ -112,7 +112,15 @@ class MainWindowComposition:
             toast_manager=w.toast,
             ignored_users_provider=w.chat_service.get_ignored_users,
         )
-        w.dashboard_controller.widgets_controller = w.widgets_controller
+        w.stats_controller = StatsController(
+            None,
+            w.container.stats_service,
+            widget_service=w.container.widget_service,
+            widgets_controller=w.widgets_controller,
+            flush_pending=lambda: w.session_metrics.flush_hourly_counts(sync=True),
+            toast_manager=w.toast,
+            i18n=w.i18n,
+        )
         w.music_controller = MusicController(
             view=None,
             command_service=w.command_service,

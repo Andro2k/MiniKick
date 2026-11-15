@@ -15,8 +15,10 @@ from .logs_storage import SQLiteSystemLogStorage
 from .music_storage import SQLiteMusicStorage
 from .schedule_storage import SQLiteScheduleStorage
 from .alerts_storage import SQLiteAlertStorage
+from .stats_storage import SQLiteStatsStorage
 
 __all__ = [
+    "SQLiteStatsStorage",
     "DatabaseManager",
     "MusicCacheManager",
     "SQLiteTokenStorage",

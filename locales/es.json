@@ -601,12 +601,6 @@
       "followers_count": "{count} seguidores",
       "open_channel": "Abrir Canal"
     },
-    "session": {
-      "commands": "Ejecuciones Comandos",
-      "messages": "Mensajes Sesión",
-      "spam": "Spam Filtrado",
-      "timers": "Timers Activos"
-    },
     "stats": {
       "broadcaster_id": "ID de Emisor",
       "category": "Última Categoría",
@@ -823,6 +817,7 @@
         "music": "Música",
         "settings": "Ajustes",
         "spam_filters": "Filtros Anti-Spam",
+        "stats": "Estadísticas",
         "stream_info": "Información del Stream",
         "timers": "Temporizadores",
         "triggers": "Recompensas",
@@ -1393,6 +1388,43 @@
     "ready": "¡Todo listo! Iniciando...",
     "subtitle": "Suite de Herramientas para Streamers",
     "title": "MiniKick"
+  },
+  "stats": {
+    "header": {
+      "title": "Estadísticas",
+      "subtitle": "Revisa el rendimiento de tu canal: mensajes, comandos, canjes y horas pico."
+    },
+    "toolbar": {
+      "overview": "Resumen"
+    },
+    "period": {
+      "today": "Hoy",
+      "last_7": "Últimos 7 días",
+      "last_30": "Últimos 30 días"
+    },
+    "kpi": {
+      "messages": "Mensajes",
+      "commands": "Comandos usados",
+      "redemptions": "Canjes de recompensas",
+      "spam": "Spam bloqueado",
+      "vs_previous": "vs período anterior"
+    },
+    "chart": {
+      "title_hourly": "Mensajes por hora",
+      "title_daily": "Mensajes por día",
+      "current_today": "Hoy",
+      "previous_today": "Ayer",
+      "current_period": "Este período",
+      "previous_period": "Período anterior"
+    },
+    "platforms": {
+      "title": "Mensajes por plataforma"
+    },
+    "peak": {
+      "title": "Horas pico",
+      "summary": "{hours} · ~{pct}% de los mensajes en la hora más activa",
+      "empty": "Aún no hay datos suficientes."
+    }
   },
   "stream_info": {
     "confirm_delete": {

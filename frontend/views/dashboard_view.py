@@ -2,12 +2,12 @@
 """Vista del dashboard."""
 
 import logging
-from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy, QProgressBar
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QUrl
 from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
 from frontend.views.base_view import BaseView
-from frontend.widgets import StatCard, ModernCard, ModernButton
-from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard, DashboardChattersTable
+from frontend.widgets import StatCard, ModernButton
+from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard
 
 logger = logging.getLogger("minikick.views.dashboard")
 
@@ -21,22 +21,17 @@ class DashboardView(BaseView):
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
     channel_tab_changed = Signal(str)
-    top_chatters_date_changed = Signal(str)
-    activate_chatters_requested = Signal()
-    _SESSION_CARDS_ATTR = "_session_cols"
     _PLATFORM_CARDS_ATTR = "_platform_cols"
     _CHANNEL_BADGES_ATTR = "_channel_badge_cols"
 
     def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
         self.browser_service = browser_service
-        self._session_cols = 4
         self._platform_cols = 4
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
         self._current_avatar_bytes = None
         self._channel_badge_cols = -1
-        self._rendered_top_commands = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -88,7 +83,6 @@ class DashboardView(BaseView):
         self.btn_reauth = self.btn_reauth_kick
         self.banner_layout = self.banner_layout_kick
 
-        self._setup_global_analytics_section()
         self.main_layout.addStretch()
 
     def _setup_welcome_section(self):
@@ -246,109 +240,6 @@ class DashboardView(BaseView):
 
         self.platforms_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def _setup_global_analytics_section(self):
-        analytics_container = QWidget(self)
-        analytics_layout = QVBoxLayout(analytics_container)
-        analytics_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        analytics_layout.setSpacing(Size.SPACING_MD)
-
-        session_stats_container = QWidget(self)
-        self.session_grid = QGridLayout(session_stats_container)
-        self.session_grid.setContentsMargins(*Size.Margin.MRG_NON)
-        self.session_grid.setSpacing(Size.SPACING_MD)
-
-        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-filled.svg", "0")
-        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "chat-square-code-filled.svg", "0")
-        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-filled.svg", "0")
-        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-filled.svg", "0")
-
-        self.session_cards = [
-            self.card_msg_processed, self.card_cmd_executed,
-            self.card_timers_sent, self.card_spam_blocked
-        ]
-        for i, card in enumerate(self.session_cards):
-            self.session_grid.addWidget(card, 0, i)
-
-        analytics_layout.addWidget(session_stats_container)
-
-        self.bottom_analytics_layout = QHBoxLayout()
-        self.bottom_analytics_layout.setSpacing(Size.SPACING_MD)
-
-        self.chatters_table = DashboardChattersTable(self.i18n, parent=self)
-        self.chatters_table.date_selected.connect(self.top_chatters_date_changed.emit)
-        self.chatters_table.activate_widget_requested.connect(self.activate_chatters_requested.emit)
-        self.bottom_analytics_layout.addWidget(self.chatters_table, stretch=3)
-
-        right_col_widget = QWidget(self)
-        right_col_layout = QVBoxLayout(right_col_widget)
-        right_col_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        right_col_layout.setSpacing(Size.SPACING_MD)
-
-        self.top_commands_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
-        self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
-        lbl_top_cmds.setProperty("role", "text_h2")
-        self.top_commands_card.addWidget(lbl_top_cmds)
-
-        self.top_commands_container = QVBoxLayout()
-        self.top_commands_container.setSpacing(Size.SPACING_SM)
-        self.lbl_no_commands = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-        self.lbl_no_commands.setProperty("role", "text_body")
-        self.top_commands_container.addWidget(self.lbl_no_commands)
-        self.top_commands_card.addLayout(self.top_commands_container)
-        right_col_layout.addWidget(self.top_commands_card)
-
-        self.modules_card = ModernCard(parent=self, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM)
-        self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        lbl_modules_title = QLabel(self.i18n.get("dashboard.analytics.modules_summary_title"))
-        lbl_modules_title.setProperty("role", "text_h2")
-        self.modules_card.addWidget(lbl_modules_title)
-
-        self.modules_grid = QGridLayout()
-        self.modules_grid.setSpacing(Size.SPACING_SM)
-
-        self.lbl_active_cmds_val = QLabel("0")
-        self.lbl_active_cmds_val.setProperty("role", "text_h1")
-        lbl_active_cmds_text = QLabel(self.i18n.get("dashboard.analytics.active_commands"))
-        lbl_active_cmds_text.setProperty("role", "text_caption")
-
-        self.lbl_active_timers_val = QLabel("0")
-        self.lbl_active_timers_val.setProperty("role", "text_h1")
-        lbl_active_timers_text = QLabel(self.i18n.get("dashboard.analytics.active_timers"))
-        lbl_active_timers_text.setProperty("role", "text_caption")
-
-        self.lbl_active_rewards_val = QLabel("0")
-        self.lbl_active_rewards_val.setProperty("role", "text_h1")
-        lbl_active_rewards_text = QLabel(self.i18n.get("dashboard.analytics.active_rewards"))
-        lbl_active_rewards_text.setProperty("role", "text_caption")
-
-        self.modules_grid.addWidget(self.lbl_active_cmds_val, 0, 0)
-        self.modules_grid.addWidget(lbl_active_cmds_text, 1, 0)
-        self.modules_grid.addWidget(self.lbl_active_timers_val, 0, 1)
-        self.modules_grid.addWidget(lbl_active_timers_text, 1, 1)
-        self.modules_grid.addWidget(self.lbl_active_rewards_val, 0, 2)
-        self.modules_grid.addWidget(lbl_active_rewards_text, 1, 2)
-
-        self.modules_card.addLayout(self.modules_grid)
-        right_col_layout.addWidget(self.modules_card)
-
-        self.bottom_analytics_layout.addWidget(right_col_widget, stretch=2)
-
-        analytics_layout.addLayout(self.bottom_analytics_layout)
-        self.main_layout.addWidget(analytics_container)
-
-    def render_top_chatters(self, chatters: list[dict], total_messages: int = 0):
-        if hasattr(self, "chatters_table"):
-            self.chatters_table.set_chatters(chatters, total_messages=total_messages)
-
-    def populate_chatter_dates(self, dates: list[str]):
-        if hasattr(self, "chatters_table"):
-            self.chatters_table.populate_available_dates(dates)
-
-    def set_chatters_widget_active(self, is_active: bool):
-        if hasattr(self, "chatters_table"):
-            self.chatters_table.set_widget_active(is_active)
-
     def set_kick_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         self.card_kick.update_state(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
 
@@ -447,64 +338,6 @@ class DashboardView(BaseView):
         target_platform = "twitch" if self._current_profile_platform == "kick" else "kick"
         self.channel_tab_changed.emit(target_platform)
 
-    def update_analytics_summary(self, analytics: dict):
-        if not analytics:
-            return
-
-        top_commands = analytics.get("top_commands", [])
-        if getattr(self, "_rendered_top_commands", None) != top_commands:
-            self._rendered_top_commands = list(top_commands)
-            while self.top_commands_container.count() > 0:
-                item = self.top_commands_container.takeAt(0)
-                if item.widget():
-                    item.widget().deleteLater()
-                elif item.layout():
-                    while item.layout().count() > 0:
-                        child = item.layout().takeAt(0)
-                        if child.widget():
-                            child.widget().deleteLater()
-
-            if not top_commands:
-                lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-                lbl_none.setProperty("role", "text_body")
-                self.top_commands_container.addWidget(lbl_none)
-            else:
-                max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
-                usages_str = self.i18n.get("dashboard.analytics.usages")
-                for idx, cmd in enumerate(top_commands):
-                    row = QHBoxLayout()
-                    row.setSpacing(Size.SPACING_MD)
-
-                    lbl_rank = QLabel(f"#{idx + 1}")
-                    lbl_rank.setProperty("role", "rank_number")
-
-                    lbl_trigger = QLabel(cmd.get("trigger", ""))
-                    lbl_trigger.setProperty("role", "text_body")
-
-                    pbar = QProgressBar()
-                    pbar.setProperty("role", "top_command_progress")
-                    pbar.setTextVisible(False)
-                    pbar.setRange(0, max_cnt)
-                    pbar.setValue(cmd.get("count", 0))
-
-                    lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
-                    lbl_cnt.setProperty("role", "text_caption")
-
-                    row.addWidget(lbl_rank)
-                    row.addWidget(lbl_trigger)
-                    row.addWidget(pbar, stretch=1)
-                    row.addWidget(lbl_cnt)
-                    self.top_commands_container.addLayout(row)
-
-        self.lbl_active_cmds_val.setText(str(analytics.get("active_commands", 0)))
-        self.lbl_active_timers_val.setText(str(analytics.get("active_timers", 0)))
-        self.lbl_active_rewards_val.setText(str(analytics.get("total_rewards", 0)))
-
-    @staticmethod
-    def _fmt_metric(count: int, total: int) -> str:
-        pct = (count / total * 100) if total > 0 else 0.0
-        return f"{count}   ·   {pct:.1f}%"
-
     def _relayout_grid(self, grid, cards: list, cols: int, attr: str):
         if cols != getattr(self, attr, -1):
             setattr(self, attr, cols)
@@ -528,17 +361,6 @@ class DashboardView(BaseView):
         self._set_channel_badge("identifier", room_id)
         self._set_channel_badge("category", category)
         self._set_channel_badge("created", created_at)
-
-    def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
-        total = msg_count + cmd_count + timer_count + spam_count
-        metrics = [
-            (self.card_msg_processed, msg_count, BrandColors.PURPLE),
-            (self.card_cmd_executed, cmd_count, BrandColors.BLUE),
-            (self.card_timers_sent, timer_count, BrandColors.GREEN),
-            (self.card_spam_blocked, spam_count, BrandColors.RED),
-        ]
-        for card, count, _ in metrics:
-            card.set_value(self._fmt_metric(count, total))
 
     def set_avatar_from_bytes(self, image_data: bytes):
         if getattr(self, "_current_avatar_bytes", None) == image_data:
@@ -658,10 +480,6 @@ class DashboardView(BaseView):
             plat_cols = 1 if width < 620 else 2
             self._relayout_grid(self.platforms_grid, self.platform_cards, plat_cols, self._PLATFORM_CARDS_ATTR)
 
-        if hasattr(self, 'session_grid') and hasattr(self, 'session_cards'):
-            session_cols = 1 if width < 650 else (2 if width < 950 else 4)
-            self._relayout_grid(self.session_grid, self.session_cards, session_cols, self._SESSION_CARDS_ATTR)
-
         if hasattr(self, "channel_badges_grid") and hasattr(self, "channel_badge_cards"):
             badge_cols = 1 if width < 650 else (2 if width < 950 else 4)
             self._relayout_grid(
@@ -670,8 +488,3 @@ class DashboardView(BaseView):
                 badge_cols,
                 self._CHANNEL_BADGES_ATTR,
             )
-
-        if hasattr(self, 'bottom_analytics_layout'):
-            bottom_dir = QBoxLayout.Direction.TopToBottom if width < 1000 else QBoxLayout.Direction.LeftToRight
-            if self.bottom_analytics_layout.direction() != bottom_dir:
-                self.bottom_analytics_layout.setDirection(bottom_dir)
