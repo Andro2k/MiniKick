@@ -1,29 +1,12 @@
 # resources\tests\test_commands_help_and_backup.py
 """Etiquetas i18n de !commands y round-trip de la copia de seguridad (playlists y timers)."""
 
-import json
-import os
 
 import pytest
 
 from backend.handlers.command_help_formatter import CommandHelpFormatter
 from backend.services.app.backup_service import BackupService
-
-LOCALES = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "locales")
-
-
-class _I18n:
-    def __init__(self, lang):
-        with open(os.path.join(LOCALES, f"{lang}.json"), encoding="utf-8") as f:
-            self._texts = json.load(f)
-
-    def get(self, key, **_):
-        val = self._texts
-        for part in key.split("."):
-            if not isinstance(val, dict) or part not in val:
-                return key
-            val = val[part]
-        return str(val)
+from backend.services.settings.translation_service import TranslationService
 
 
 @pytest.mark.parametrize("lang", ["es", "en"])
@@ -34,7 +17,7 @@ def test_commands_help_has_no_raw_i18n_keys(lang):
         {"trigger": "!death", "response": "[PLUGIN_WIDGET_DEATH]", "permission": "everyone"},
         {"trigger": "!ttsmute", "response": "[PLUGIN_CHAT_TTS_MUTE]", "permission": "moderator"},
     ]
-    msgs = CommandHelpFormatter(_I18n(lang)).format(cmds, "", is_mod=True)
+    msgs = CommandHelpFormatter(TranslationService(default_lang=lang)).format(cmds, "", is_mod=True)
     assert msgs and all("sec_" not in m for m in msgs)
 
 

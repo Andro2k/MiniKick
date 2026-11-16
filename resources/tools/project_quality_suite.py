@@ -68,16 +68,6 @@ class AuditConfigProvider:
                 )
             ),
             AuditSpec(
-                name="Locales FTL",
-                command_desc="Los .ftl de assets/i18n coinciden con los JSON",
-                tool_filename="project_locales_ftl_tool.py",
-                args=["--check"],
-                evaluator=lambda code, out: (
-                    code == 0 and "desactualizados: 0" in out,
-                    "FTL al día" if code == 0 else "FTL desactualizados"
-                )
-            ),
-            AuditSpec(
                 name="Project Translation Keys",
                 command_desc="Paridad y uso de traducciones EN vs ES",
                 tool_filename="project_translation_integrity_auditor.py",

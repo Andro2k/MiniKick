@@ -1,14 +1,13 @@
 # resources\tests\test_translation_service.py
 """TranslationService sobre Fluent: claves con puntos, respaldo en ingles, numeros y plurales."""
 
-import json
 import logging
-import re
+import os
 
 import pytest
+from fluent.syntax import FluentParser, ast
 
 from backend.services.settings.translation_service import TranslationService
-from resources.tools import project_locales_ftl_tool as tool
 
 LOGGER = "minikick.services.system.i18n"
 
@@ -98,24 +97,13 @@ def test_instances_share_the_parsed_bundle(tmp_path):
 @pytest.mark.parametrize("lang", ["es", "en"])
 def test_real_locales_resolve_every_key(lang):
     svc = TranslationService(default_lang=lang)
-    with open(tool.source_path(lang), encoding="utf-8") as handle:
-        keys = [key for key, _ in tool.flatten(json.load(handle))]
+    path = os.path.join(svc.locales_dir, lang, "main.ftl")
+    with open(path, encoding="utf-8") as handle:
+        resource = FluentParser().parse(handle.read())
+    keys = [e.id.name.replace("-", ".") for e in resource.body if isinstance(e, ast.Message)]
+    assert len(keys) > 1000
     unresolved = [key for key in keys if svc.get(key) == key]
     assert not unresolved, f"{lang}: {len(unresolved)} sin resolver, p. ej. {unresolved[:3]}"
-
-
-@pytest.mark.parametrize("lang", ["es", "en"])
-def test_output_matches_the_legacy_json_str_format(lang):
-    svc = TranslationService(default_lang=lang)
-    with open(tool.source_path(lang), encoding="utf-8") as handle:
-        entries = dict(tool.flatten(json.load(handle)))
-    differing = []
-    for key, value in entries.items():
-        names = sorted(set(re.findall(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", value)))
-        kwargs = {name: (1234567 if i % 2 else f"v{i}") for i, name in enumerate(names)}
-        if svc.get(key) != value or svc.get(key, **kwargs) != value.format(**kwargs):
-            differing.append(key)
-    assert not differing, f"{lang}: {len(differing)} difieren, p. ej. {differing[:3]}"
 
 
 def test_commands_help_labels_are_not_raw_keys():
