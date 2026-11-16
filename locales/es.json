@@ -629,6 +629,16 @@
       "title": "MiniKick ya se está Ejecutando"
     },
     "bug_report": {
+      "btn_reset": "Limpiar formulario",
+      "form_title": "Nuevo reporte",
+      "form_subtitle": "Cuéntanos qué pasó y adjunta lo necesario para poder reproducirlo.",
+      "log_attached_note": "Se adjuntará el log completo. Aquí se muestran las últimas {count} líneas.",
+      "log_btn_open": "Abrir carpeta",
+      "log_btn_refresh": "Actualizar",
+      "log_empty": "No se encontró el archivo minikick.log.",
+      "log_excluded_note": "El log no se adjuntará a este reporte.",
+      "log_meta": "minikick.log · {lines} líneas · {size}",
+      "log_preview_title": "Vista previa del log",
       "btn_send_low": "Enviar Reporte Leve",
       "btn_send_medium": "Enviar Reporte Medio",
       "btn_send_urgent": "Enviar Reporte Urgente",

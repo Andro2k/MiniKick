@@ -2,15 +2,16 @@
 """Controlador de la vista de reporte de errores."""
 
 import logging
-from PySide6.QtCore import Slot
+from PySide6.QtCore import QUrl, Slot
+from PySide6.QtGui import QDesktopServices
 from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.bug_report_controller")
 
 
 class BugReportController(BaseController):
-    def __init__(self, view=None, worker_class=None, toast_manager=None, i18n=None):
-        super().__init__(view=view, toast_manager=toast_manager, i18n=i18n)
+    def __init__(self, view=None, worker_class=None, log_service=None, toast_manager=None, i18n=None):
+        super().__init__(view=view, service=log_service, toast_manager=toast_manager, i18n=i18n)
         self.worker_class = worker_class
         self._worker = None
         self._active_workers = set()
@@ -21,6 +22,8 @@ class BugReportController(BaseController):
         if not self._ensure_view_connected():
             return
         self.view.submit_requested.connect(self._handle_submit)
+        self.view.log_refresh_requested.connect(self.refresh_log_preview)
+        self.view.log_folder_requested.connect(self._open_log_folder)
 
     def load_initial_data(self):
         try:
@@ -28,6 +31,17 @@ class BugReportController(BaseController):
             self.view.set_contact(resolve_primary_identity())
         except Exception:
             logger.debug("[BugReport] Could not resolve the primary identity.")
+        self.refresh_log_preview()
+
+    @Slot()
+    def refresh_log_preview(self):
+        if self.service is not None:
+            self.view.set_log_preview(self.service.read_app_log_preview())
+
+    @Slot()
+    def _open_log_folder(self):
+        if self.service is not None:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(self.service.log_dir))
 
     @Slot(str, str, bool, str, str)
     def _handle_submit(self, username, description, include_logs, image_path, severity):

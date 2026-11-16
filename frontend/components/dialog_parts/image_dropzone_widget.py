@@ -5,8 +5,8 @@ import os
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget, QFileDialog
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
-from frontend.common import get_icon_colored, BrandColors, Size
-from frontend.widgets import configure_icon_only_button
+from frontend.common import get_icon_colored, Palette, Size
+from frontend.widgets import ModernButton, configure_icon_only_button
 
 class ImageDropzone(QFrame):
     image_selected = Signal(str)
@@ -19,7 +19,7 @@ class ImageDropzone(QFrame):
         self.setProperty("role", "card")
         self.setAcceptDrops(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(160)
+        self.setMinimumHeight(200)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -34,7 +34,7 @@ class ImageDropzone(QFrame):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.icon_lbl = QLabel()
-        self.icon_lbl.setPixmap(get_icon_colored("file-text-outline.svg", BrandColors.GREEN, size=24).pixmap(QSize(24, 24)))
+        self.icon_lbl.setPixmap(get_icon_colored("cloud-download-outline.svg", Palette.NEUTRAL_400, size=32).pixmap(QSize(32, 32)))
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))
@@ -50,6 +50,11 @@ class ImageDropzone(QFrame):
         empty_layout.addWidget(self.icon_lbl)
         empty_layout.addWidget(self.title_lbl)
         empty_layout.addWidget(self.sub_lbl)
+
+        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_outlined")
+        self.btn_browse.clicked.connect(self._browse)
+        empty_layout.addSpacing(Size.SPACING_XS)
+        empty_layout.addWidget(self.btn_browse, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.preview_container = QWidget()
         preview_layout = QHBoxLayout(self.preview_container)
@@ -99,16 +104,19 @@ class ImageDropzone(QFrame):
         self._update_state()
         self.image_cleared.emit()
 
+    def _browse(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.i18n.get("common.buttons.browse"),
+            "",
+            "Image files (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
+        )
+        if file_path:
+            self.set_image(file_path)
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton and not self.image_path:
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
-                self.i18n.get("common.buttons.browse"),
-                "",
-                "Image files (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
-            )
-            if file_path:
-                self.set_image(file_path)
+            self._browse()
         super().mousePressEvent(event)
 
     def dragEnterEvent(self, event: QDragEnterEvent):

@@ -629,6 +629,16 @@
       "title": "MiniKick is Already Running"
     },
     "bug_report": {
+      "btn_reset": "Reset form",
+      "form_title": "New report",
+      "form_subtitle": "Tell us what happened and attach what we need to reproduce it.",
+      "log_attached_note": "The full log will be attached. Showing the last {count} lines here.",
+      "log_btn_open": "Open folder",
+      "log_btn_refresh": "Refresh",
+      "log_empty": "The minikick.log file was not found.",
+      "log_excluded_note": "The log will not be attached to this report.",
+      "log_meta": "minikick.log · {lines} lines · {size}",
+      "log_preview_title": "Log preview",
       "btn_send_low": "Report Low Priority Bug",
       "btn_send_medium": "Report Medium Priority Bug",
       "btn_send_urgent": "Report Urgent Bug",

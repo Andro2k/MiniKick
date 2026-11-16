@@ -117,6 +117,7 @@ class MainWindowComposition:
         w.bug_report_controller = BugReportController(
             None,
             worker_class=BugReportWorker,
+            log_service=w.log_service,
             toast_manager=w.toast,
             i18n=w.i18n,
         )
