@@ -241,6 +241,7 @@ class YouTubeMusicProvider(QObject):
         return True, immediate_msg
 
     def _enqueue_known_song(self, song_entry: dict) -> None:
+        should_start_playback = not self.current_song and not self.queue
         if self.music_storage:
             song_entry["db_id"] = self.music_storage.add_song_to_queue(
                 title=song_entry["title"],
@@ -253,9 +254,9 @@ class YouTubeMusicProvider(QObject):
             )
         self.queue.append(song_entry)
         self.queue_updated.emit()
-        if not self.current_song:
+        if should_start_playback:
             QTimer.singleShot(0, lambda: self._play_next(start_playing=self.auto_resume))
-        else:
+        elif self.current_song:
             self._preload_next_song()
 
     def requeue_from_history(self, url: str, requester: str = None, platform: str = "kick") -> tuple[bool, str]:

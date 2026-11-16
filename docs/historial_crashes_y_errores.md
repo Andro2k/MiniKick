@@ -64,6 +64,7 @@
 >>>>>>> Stashed changes
 | **INC-050** | Ventana flotante del chat pierde posición y tamaño al volver a desacoplar o reiniciar | Reporte de usuario / `minikick.log` sin eventos asociados | v1.6.7 | `✅ Solventado` | `frontend/views/chat_view.py`, `frontend/main_window_views.py`, `resources/tests/test_chat_detached_window.py` | v1.6.7 (`WT-1.6.7_07`, `WT-1.6.7_08`) |
 | **INC-051** | `AttributeError: 'DashboardView' object has no attribute 'connect_requested'` al iniciar MiniKick | Log de usuario `minikick.log` (2026-11-08, línea 1349) | v1.6.7 | `✅ Solventado` | `frontend/views/dashboard_view.py`, `resources/tests/test_main_window_support.py` | v1.6.7 |
+| **INC-052** | Al agregar una playlist con el reproductor vacío, las canciones se reemplazan entre sí | Reporte de usuario / `minikick.log` (2026-11-15) | v1.6.8 | `✅ Solventado` | `backend/providers/music/youtube_music_provider.py`, `resources/tests/test_worker_and_core_lifecycle.py`, `docs/historial_crashes_y_errores.md` | v1.6.8 |
 
 ---
 
@@ -1262,3 +1263,23 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/historial_crashes_y_errores.md`
 * **Solución Implementada**: Se restauró el nombre `connect_requested` en la declaración de la señal y en la conexión del botón Kick, manteniendo el contrato ya utilizado por el controlador.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` incluye una prueba de integración que verifica la propagación de la señal hasta `DashboardController.request_connection`.
+
+---
+
+### INC-052: Las canciones de una playlist se pisan al agregarla con la cola vacía
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (al iniciar desde el estado vacío, no se conservaban todas las canciones de la playlist).
+* **Reportes Asociados**: Reporte de usuario y `minikick.log` del 2026-11-15; el log registra acciones de agregar playlist, sin una excepción asociada.
+* **Fecha y Versión del Fallo**: 2026-11-15 en MiniKick `v1.6.8`.
+* **Traza / Evidencia**:
+  ```text
+  Al agregar una playlist con el reproductor vacío, solo se conservaba una canción activa.
+  ```
+* **Causa Raíz**: `_enqueue_known_song` programaba un `QTimer.singleShot` para cada canción mientras `current_song` seguía vacío. Al ejecutarse, los callbacks sucesivos llamaban `_play_next` y reemplazaban la canción que acababan de iniciar.
+* **Archivos y Módulos Modificados**:
+  - `backend/providers/music/youtube_music_provider.py`
+  - `resources/tests/test_worker_and_core_lifecycle.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: Solo se programa el inicio cuando se agrega la primera canción a una cola vacía sin canción actual. Los elementos siguientes permanecen en cola y no reinician el proceso de reproducción.
+* **Pruebas y Verificación**: `resources/tests/test_worker_and_core_lifecycle.py`: 13 pruebas aprobadas; la prueba de regresión verifica que tres canciones agregadas con el reproductor inactivo conservan su orden y programan un único inicio.
