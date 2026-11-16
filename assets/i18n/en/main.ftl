@@ -638,8 +638,16 @@ log-empty-title = Console Paused
 log-header-subtitle = Monitor system events, debug errors, and load historical log files.
 log-header-title = Developer Logs
 log-misc-historical = HISTORICAL
-log-pagination-info = { $showing_from }-{ $showing_to } of { $total } row(s) shown.
-log-pagination-info_filtered = { $showing_from }-{ $showing_to } of { $total } row(s) shown (filtered from { $total_all })
+log-pagination-info =
+    { $showing_from }-{ $showing_to } of { $total } { $total ->
+        [one] row
+       *[other] rows
+    } shown.
+log-pagination-info_filtered =
+    { $showing_from }-{ $showing_to } of { $total } { $total ->
+        [one] row
+       *[other] rows
+    } shown (filtered from { $total_all })
 log-status-cleared_msg = Log view cleared successfully.
 log-status-cleared_title = Console Cleared
 log-status-historical_msg = Inspecting: { $file }
@@ -739,13 +747,21 @@ moderation-reasons-ban = Ban applied by MiniKick AutoMod
 moderation-reasons-timeout = Timeout applied by MiniKick AutoMod
 
 ## music
-music-chat-cooldown_active = ⏳ @{ $user }, please wait { $seconds } second(s) before requesting another song.
+music-chat-cooldown_active =
+    ⏳ @{ $user }, please wait { $seconds } { $seconds ->
+        [one] second
+       *[other] seconds
+    } before requesting another song.
 music-chat-no_queue_available = ❌ @{ $user }, playback queue is currently unavailable.
 music-chat-not_linked_youtube = ❌ Streamer has not enabled the YouTube player.
 music-chat-pause_failed = ❌ Could not pause music.
 music-chat-pause_success = ⏸️ Music paused successfully.
 music-chat-playlist_empty_for_user = ❌ @{ $user }, you currently have no songs in the queue.
-music-chat-playlist_invalid_pos = ❌ @{ $user }, position #{ $pos } is invalid. There are { $total } song(s) in queue.
+music-chat-playlist_invalid_pos =
+    ❌ @{ $user }, position #{ $pos } is invalid. There { $total ->
+        [one] is { $total } song
+       *[other] are { $total } songs
+    } in queue.
 music-chat-playlist_pos_info = 🎵 [Position #{ $pos }] │ "{ $title }"{ $artist } (requested by @{ $requester })
 music-chat-playlist_user_songs = 🎵 [My Songs] │ @{ $user } ({ $count } in queue): { $songs }
 music-chat-playlist_user_songs_more = 🎵 @{ $user } (remaining positions { $page }/{ $total_pages }): { $songs }
@@ -759,7 +775,11 @@ music-chat-song_now_playing = 🎵 [Now Playing] │ { $title } - { $artist }
 music-chat-song_paused_youtube = 🔇 YouTube is paused.
 music-chat-song_too_long = ❌ @{ $user }, that song exceeds the maximum allowed duration of { $max } minutes.
 music-chat-sr_usage = @{ $user } please enter a song name. (Ex: { $trigger } Chayanne Torero)
-music-chat-user_limit_reached = ❌ @{ $user }, you already have { $count } song(s) in queue (maximum allowed: { $max }).
+music-chat-user_limit_reached =
+    ❌ @{ $user }, you already have { $count } { $count ->
+        [one] song
+       *[other] songs
+    } in queue (maximum allowed: { $max }).
 music-chat-vol_current = 🔊 @{ $user }, the current music volume is { $volume }%.
 music-chat-vol_success = 🔊 @{ $user }, music volume changed to { $volume }%.
 music-chat-vol_usage = ❌ @{ $user }, please specify a volume level between 0 and 100. (Ex: { $trigger } 50)
@@ -1008,7 +1028,11 @@ rewards-table-filter_cost_asc = Lowest to highest cost
 rewards-table-filter_cost_desc = Highest to lowest cost
 rewards-table-filter_sort_asc = Sort A-Z
 rewards-table-filter_sort_desc = Sort Z-A
-rewards-table-missing_files_warning = file(s) not found
+rewards-table-missing_files_warning =
+    { $count ->
+        [one] { $count } file not found
+       *[other] { $count } files not found
+    }
 rewards-table-pos_random = Random
 rewards-table-pts_suffix = { $cost } pts
 rewards-table-search_placeholder = Search by name, file...
@@ -1422,7 +1446,11 @@ widgets-combo-title = Emote Combo (!combo)
 widgets-death-count_label = Current In-Game Deaths:
 widgets-death-desc = Keep an on-screen death counter controlled by chat commands or panel buttons.
 widgets-death-msg_add = 💀 @{ $user } added a death. Total deaths: { $count }!
-widgets-death-msg_check = 💀 @{ $user }, we are at { $count } death(s) on stream.
+widgets-death-msg_check =
+    💀 @{ $user }, we are at { $count } { $count ->
+        [one] death
+       *[other] deaths
+    } on stream.
 widgets-death-msg_reset = 🔄 @{ $user } reset the death counter to 0.
 widgets-death-msg_sub = 💀 @{ $user } subtracted a death. Remaining: { $count }.
 widgets-death-overlay_title = DEATHS

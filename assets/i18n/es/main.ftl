@@ -638,8 +638,16 @@ log-empty-title = Consola en pausa
 log-header-subtitle = Monitorea eventos del sistema, depura errores y carga registros históricos.
 log-header-title = Registros del Sistema
 log-misc-historical = HISTÓRICO
-log-pagination-info = { $showing_from }-{ $showing_to } de { $total } fila(s) mostradas.
-log-pagination-info_filtered = { $showing_from }-{ $showing_to } de { $total } fila(s) mostradas (filtradas de { $total_all })
+log-pagination-info =
+    { $showing_from }-{ $showing_to } de { $total } { $total ->
+        [one] fila mostrada
+       *[other] filas mostradas
+    }.
+log-pagination-info_filtered =
+    { $showing_from }-{ $showing_to } de { $total } { $total ->
+        [one] fila mostrada
+       *[other] filas mostradas
+    } (filtradas de { $total_all })
 log-status-cleared_msg = La vista de registros se ha limpiado correctamente.
 log-status-cleared_title = Consola Limpiada
 log-status-historical_msg = Inspeccionando: { $file }
@@ -739,13 +747,21 @@ moderation-reasons-ban = Ban aplicado por MiniKick AutoMod
 moderation-reasons-timeout = Timeout aplicado por MiniKick AutoMod
 
 ## music
-music-chat-cooldown_active = ⏳ @{ $user }, por favor espera { $seconds } segundo(s) antes de pedir otra canción.
+music-chat-cooldown_active =
+    ⏳ @{ $user }, por favor espera { $seconds } { $seconds ->
+        [one] segundo
+       *[other] segundos
+    } antes de pedir otra canción.
 music-chat-no_queue_available = ❌ @{ $user }, la cola de reproducción no está disponible en este momento.
 music-chat-not_linked_youtube = ❌ El streamer no ha activado el reproductor de YouTube.
 music-chat-pause_failed = ❌ No se pudo pausar la música.
 music-chat-pause_success = ⏸️ Música pausada con éxito.
 music-chat-playlist_empty_for_user = ❌ @{ $user }, no tienes canciones en la cola actualmente.
-music-chat-playlist_invalid_pos = ❌ @{ $user }, la posición #{ $pos } no es válida. Hay { $total } canción(es) en la cola.
+music-chat-playlist_invalid_pos =
+    ❌ @{ $user }, la posición #{ $pos } no es válida. Hay { $total ->
+        [one] { $total } canción
+       *[other] { $total } canciones
+    } en la cola.
 music-chat-playlist_pos_info = 🎵 [Puesto #{ $pos }] │ "{ $title }"{ $artist } (pedida por @{ $requester })
 music-chat-playlist_user_songs = 🎵 [Mis Canciones] │ @{ $user } ({ $count } en cola): { $songs }
 music-chat-playlist_user_songs_more = 🎵 @{ $user } (posiciones restantes { $page }/{ $total_pages }): { $songs }
@@ -759,7 +775,11 @@ music-chat-song_now_playing = 🎵 [En Reproducción] │ { $title } - { $artist
 music-chat-song_paused_youtube = 🔇 YouTube está en pausa.
 music-chat-song_too_long = ❌ @{ $user }, esa canción supera la duración máxima permitida de { $max } minutos.
 music-chat-sr_usage = @{ $user } por favor escribe el nombre de una canción. (Ej: { $trigger } Torero Chayanne)
-music-chat-user_limit_reached = ❌ @{ $user }, ya tienes { $count } canción(es) en la cola (máximo permitido: { $max }).
+music-chat-user_limit_reached =
+    ❌ @{ $user }, ya tienes { $count } { $count ->
+        [one] canción
+       *[other] canciones
+    } en la cola (máximo permitido: { $max }).
 music-chat-vol_current = 🔊 @{ $user }, el volumen actual de la música es { $volume }%.
 music-chat-vol_success = 🔊 @{ $user }, el volumen de la música se ha cambiado a { $volume }%.
 music-chat-vol_usage = ❌ @{ $user }, por favor especifica un nivel de volumen entre 0 y 100. (Ej: { $trigger } 50)
@@ -1008,7 +1028,11 @@ rewards-table-filter_cost_asc = Menor a mayor costo
 rewards-table-filter_cost_desc = Mayor a menor costo
 rewards-table-filter_sort_asc = Ordenar A-Z
 rewards-table-filter_sort_desc = Ordenar Z-A
-rewards-table-missing_files_warning = archivo(s) no encontrado(s)
+rewards-table-missing_files_warning =
+    { $count ->
+        [one] { $count } archivo no encontrado
+       *[other] { $count } archivos no encontrados
+    }
 rewards-table-pos_random = Aleatorio
 rewards-table-pts_suffix = { $cost } pts
 rewards-table-search_placeholder = Buscar por nombre, archivo...
@@ -1421,10 +1445,22 @@ widgets-combo-timeout_label = Tiempo Máximo de Combo (seg):
 widgets-combo-title = Combo de Emotes (!combo)
 widgets-death-count_label = Muertes Actuales en Juego:
 widgets-death-desc = Mantiene un contador de muertes en pantalla controlado mediante comandos de chat o botones del panel.
-widgets-death-msg_add = 💀 @{ $user } sumó una muerte. ¡Llevamos { $count } muerte(s)!
-widgets-death-msg_check = 💀 @{ $user }, llevamos { $count } muerte(s) en el stream.
+widgets-death-msg_add =
+    💀 @{ $user } sumó una muerte. ¡Llevamos { $count } { $count ->
+        [one] muerte
+       *[other] muertes
+    }!
+widgets-death-msg_check =
+    💀 @{ $user }, llevamos { $count } { $count ->
+        [one] muerte
+       *[other] muertes
+    } en el stream.
 widgets-death-msg_reset = 🔄 @{ $user } ha reiniciado el contador de muertes a 0.
-widgets-death-msg_sub = 💀 @{ $user } restó una muerte. Quedan { $count } muerte(s).
+widgets-death-msg_sub =
+    💀 @{ $user } restó una muerte. { $count ->
+        [one] Queda { $count } muerte
+       *[other] Quedan { $count } muertes
+    }.
 widgets-death-overlay_title = MUERTES
 widgets-death-reset_btn = Reiniciar a 0
 widgets-death-title = Contador de Muertes (!death)

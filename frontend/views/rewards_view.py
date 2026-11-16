@@ -480,8 +480,7 @@ class RewardsView(BaseView):
         title_base = self.i18n.get("rewards.table.title")
         extra_suffix = ""
         if missing_count > 0:
-            warning_label = self.i18n.get("rewards.table.missing_files_warning")
-            extra_suffix = f" • {missing_count} {warning_label}"
+            extra_suffix = f" • {self.i18n.get('rewards.table.missing_files_warning', count=missing_count)}"
 
         self.table_card.set_title_count(
             title_base,

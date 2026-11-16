@@ -513,20 +513,20 @@ class WidgetsController(QObject):
             msg = self.i18n.get("widgets.death.msg_reset").replace("{user}", user).replace("{count}", str(new_count))
         elif check_target in _DEATH_SUB_WORDS or action_word.endswith("-") or action_word.endswith("sub"):
             new_count = self.widget_service.update_death_count(delta=-1)
-            msg = self.i18n.get("widgets.death.msg_sub").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_sub", user=user, count=new_count)
         elif check_target in _DEATH_CHECK_WORDS or action_word in _DEATH_CHECK_WORDS:
             new_count = self.widget_service.get_death_count()
-            msg = self.i18n.get("widgets.death.msg_check").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_check", user=user, count=new_count)
         elif check_target in _DEATH_ADD_WORDS or action_word.endswith("+") or action_word.endswith("add"):
             new_count = self.widget_service.update_death_count(delta=1)
-            msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_add", user=user, count=new_count)
         else:
             try:
                 val = int(check_target)
                 new_count = self.widget_service.update_death_count(set_val=max(0, val))
             except ValueError:
                 new_count = self.widget_service.update_death_count(delta=1)
-            msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_add", user=user, count=new_count)
 
         self.death_count_updated.emit(new_count)
         if self.overlay_server:

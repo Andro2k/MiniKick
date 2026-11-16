@@ -109,3 +109,38 @@ def test_real_locales_resolve_every_key(lang):
 def test_commands_help_labels_are_not_raw_keys():
     svc = TranslationService(default_lang="es")
     assert svc.get("chat.commands_help.sec_chat") != "chat.commands_help.sec_chat"
+
+
+_USER = {"user": "ana"}
+PLURAL_CASES = [
+    ("es", "music.chat.user_limit_reached", {**_USER, "count": 1, "max": 3}, "1 canción en", "canciones"),
+    ("es", "music.chat.user_limit_reached", {**_USER, "count": 5, "max": 3}, "5 canciones en", "5 canción "),
+    ("es", "music.chat.playlist_invalid_pos", {**_USER, "pos": 9, "total": 1}, "Hay 1 canción en", "canciones"),
+    ("es", "music.chat.playlist_invalid_pos", {**_USER, "pos": 9, "total": 0}, "Hay 0 canciones en", "0 canción "),
+    ("es", "music.chat.cooldown_active", {**_USER, "seconds": 1}, "1 segundo antes", "segundos"),
+    ("es", "music.chat.cooldown_active", {**_USER, "seconds": 7}, "7 segundos antes", "7 segundo "),
+    ("es", "widgets.death.msg_sub", {**_USER, "count": 1}, "Queda 1 muerte.", "Quedan"),
+    ("es", "widgets.death.msg_sub", {**_USER, "count": 3}, "Quedan 3 muertes.", "Queda "),
+    ("es", "widgets.death.msg_add", {**_USER, "count": 1}, "Llevamos 1 muerte!", "muertes"),
+    ("es", "widgets.death.msg_check", {**_USER, "count": 2}, "2 muertes en", "2 muerte "),
+    ("es", "log.pagination.info", {"showing_from": 1, "showing_to": 1, "total": 1}, "de 1 fila mostrada.", "filas"),
+    ("es", "log.pagination.info", {"showing_from": 1, "showing_to": 25, "total": 1234}, "de 1234 filas mostradas.", "fila mostrada"),
+    ("es", "rewards.table.missing_files_warning", {"count": 1}, "1 archivo no encontrado", "archivos"),
+    ("es", "rewards.table.missing_files_warning", {"count": 4}, "4 archivos no encontrados", "4 archivo "),
+    ("en", "music.chat.user_limit_reached", {**_USER, "count": 1, "max": 3}, "1 song in", "songs"),
+    ("en", "music.chat.playlist_invalid_pos", {**_USER, "pos": 9, "total": 1}, "There is 1 song in", "are"),
+    ("en", "music.chat.playlist_invalid_pos", {**_USER, "pos": 9, "total": 4}, "There are 4 songs in", "is 4"),
+    ("en", "music.chat.cooldown_active", {**_USER, "seconds": 1}, "1 second before", "seconds"),
+    ("en", "widgets.death.msg_check", {**_USER, "count": 1}, "at 1 death on", "deaths"),
+    ("en", "log.pagination.info_filtered", {"showing_from": 1, "showing_to": 1, "total": 1, "total_all": 9}, "of 1 row shown (filtered from 9)", "rows"),
+    ("en", "rewards.table.missing_files_warning", {"count": 1}, "1 file not found", "files"),
+    ("en", "rewards.table.missing_files_warning", {"count": 2}, "2 files not found", "2 file "),
+]
+
+
+@pytest.mark.parametrize("lang,key,kwargs,expected,forbidden", PLURAL_CASES)
+def test_real_messages_pick_the_right_plural_form(lang, key, kwargs, expected, forbidden):
+    text = TranslationService(default_lang=lang).get(key, **kwargs)
+    assert expected in text, text
+    assert forbidden not in text, text
+    assert "(s)" not in text and "(es)" not in text
