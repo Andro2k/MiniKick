@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Set
 
 class DataLoader:
-    EXCLUDED_EXTS = {".html", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".py", ".json", ".db", ".css", ".js", ".ico", ".txt", ".log", ".md", ".com", ".tv", ".be", ".net", ".org"}
+    EXCLUDED_EXTS = {".html", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".py", ".json", ".ftl", ".db", ".css", ".js", ".ico", ".txt", ".log", ".md", ".com", ".tv", ".be", ".net", ".org"}
     IGNORED_DIRS = {".venv", "venv", "__pycache__", ".git", ".pytest_cache", ".agents", "build", "dist", "walkthroughs", "tools"}
 
     @staticmethod
