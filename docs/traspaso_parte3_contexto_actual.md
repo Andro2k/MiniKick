@@ -56,7 +56,7 @@
 
 ## Reglas del proyecto
 - Capas: la vista emite señales, el controlador decide, el backend no importa Qt de la vista.
-- Sin colores ni textos fijos: `Palette`/`BrandColors` e `i18n.get(...)`. Claves nuevas en `locales/es.json`, `locales/en.json` y `backend/config/locale_defaults.py` (la suite valida la paridad).
+- Sin colores ni textos fijos: `Palette`/`BrandColors` e `i18n.get(...)`. Claves nuevas en `assets/locales/es.json`, `assets/locales/en.json` y `backend/config/locale_defaults.py` (la suite valida la paridad).
 - Paleta única en música: neutros + `BrandColors.GREEN`.
 - Cambio mínimo; lo no pedido se menciona en una línea al final.
 - Leer con `grep -n` y rangos, no archivos completos.

@@ -230,7 +230,7 @@ def print_report(violations: List[HardcodedViolation]):
         print(f"    Texto:   {COLOR_RED}\"{v.raw_text}\"{COLOR_RESET}")
         print(f"    Código:  {COLOR_GRAY}{v.code_snippet}{COLOR_RESET}\n")
 
-    print(f"{COLOR_YELLOW}💡 Regla MiniKick: Centraliza estos textos en locales/en.json y locales/es.json{COLOR_RESET}")
+    print(f"{COLOR_YELLOW}💡 Regla MiniKick: Centraliza estos textos en assets/locales/en.json y assets/locales/es.json{COLOR_RESET}")
     print(f"{COLOR_YELLOW}   y accede a ellos exclusivamente vía self.i18n.get('clave').{COLOR_RESET}\n")
 
 

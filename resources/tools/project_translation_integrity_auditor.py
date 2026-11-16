@@ -178,14 +178,14 @@ class ConsoleReporter:
 def _resolve_project_root() -> Path:
     current = Path(__file__).resolve().parent
     for parent in [current] + list(current.parents):
-        if (parent / "locales").exists() and (parent / "frontend").exists():
+        if (parent / "assets" / "locales").exists() and (parent / "frontend").exists():
             return parent
     return Path(__file__).resolve().parents[3]
 
 def main():
     base_dir = _resolve_project_root()
-    en_path = base_dir / "locales" / "en.json"
-    es_path = base_dir / "locales" / "es.json"
+    en_path = base_dir / "assets" / "locales" / "en.json"
+    es_path = base_dir / "assets" / "locales" / "es.json"
 
     if not en_path.exists() or not es_path.exists():
         print("Error: No se encontraron los archivos (en.json / es.json).")

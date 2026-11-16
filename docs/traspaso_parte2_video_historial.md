@@ -16,7 +16,7 @@ Poder ver el video de una canción dentro de la app, como en la captura de refer
 3. Agregar en `history_panel.py` una acción "Ver video" por fila (nueva señal `preview_requested(url)`) y mostrar el panel en la pestaña Historial (por ejemplo, encima de la tabla, colapsable con `ExpandableCard`).
 4. Si el video no se puede incrustar (error 150/101 de YouTube), mostrar un mensaje y un botón para abrirlo en el navegador (`QDesktopServices.openUrl`).
 5. Liberar el `QWebEngineView` al ocultar la pestaña o cerrar la app (revisar `frontend/window/shutdown.py`) para no dejar reproduciendo ni consumir memoria.
-6. Claves i18n nuevas en `locales/es.json`, `locales/en.json` y `backend/config/locale_defaults.py` (mismo contenido en los tres; la suite valida la paridad).
+6. Claves i18n nuevas en `assets/locales/es.json`, `assets/locales/en.json` y `backend/config/locale_defaults.py` (mismo contenido en los tres; la suite valida la paridad).
 7. Revisar `MiniKick.spec`: confirmar que el empaquetado incluye los recursos de WebEngine y anotar el aumento de tamaño del instalador.
 
 ## Reglas del proyecto

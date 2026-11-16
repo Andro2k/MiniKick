@@ -180,7 +180,7 @@ Wiring occurs in `AppContainerCore` by connecting connection signals to `IEventS
    * Dedicated controller and view section for Webhook management.
    * Provides preset configuration for Discord and Custom HTTP endpoints.
    * "Send Test Ping" validation action displaying latency and HTTP status indicators.
-   * Strict i18n localization in `locales/es.json` and `locales/en.json` (zero hardcoded strings).
+   * Strict i18n localization in `assets/locales/es.json` and `assets/locales/en.json` (zero hardcoded strings).
 
 ### 4.4 Data Contracts & Envelopes
 
@@ -270,7 +270,7 @@ The implementation is broken down into sequential, testable engineering tasks.
 6. **Presentation & Controller Layer:**
    * Implement `WebhooksController` in `backend/controllers/webhooks_controller.py`.
    * Implement `WebhooksView` in `frontend/components/views/webhooks_view.py` with Discord/Generic presets, warning on plain HTTP, and "Send Test Ping".
-   * Add all UI strings to `locales/es.json` and `locales/en.json`.
+   * Add all UI strings to `assets/locales/es.json` and `assets/locales/en.json`.
 7. **Automated Verification:**
    * Unit tests for formatters, queue worker policies, dispatcher routing, signer, log scrubber, and config encryption.
 
@@ -292,8 +292,8 @@ The implementation is broken down into sequential, testable engineering tasks.
 | `backend/core/app_container_core.py` | Modify | Registers the store, transport, sender, `WebhookDeliveryWorker` and `WebhookDispatcherService` (`IEventSink`), wires connection signals into `IEventSink.post_event()` and adds the worker's `stop` and the transport's `close` to `shutdown()`. `worker_shutdown.py` is a QThread coordinator and is not used. |
 | `backend/controllers/webhooks_controller.py` | Create | Dedicated controller handling endpoint CRUD, test pings, and UI event dispatching. |
 | `frontend/components/views/webhooks_view.py` | Create | Dedicated view component for Webhook management with preset selection, HTTP warning, and test ping feedback. |
-| `locales/es.json` | Modify | Adds Spanish localization keys for webhook UI labels, tooltips, presets, event names, and test ping status messages. |
-| `locales/en.json` | Modify | Adds English localization keys matching `es.json` with zero hardcoded UI strings. |
+| `assets/locales/es.json` | Modify | Adds Spanish localization keys for webhook UI labels, tooltips, presets, event names, and test ping status messages. |
+| `assets/locales/en.json` | Modify | Adds English localization keys matching `es.json` with zero hardcoded UI strings. |
 | `resources/tests/test_webhook_formatters.py` | Create | Unit tests validating payload serialization and color mappings for `GenericJsonFormatter` and `DiscordEmbedFormatter`. |
 | `resources/tests/test_webhook_worker.py` | Create | Unit tests validating single queue admission policies, min-heap retries with `not_before`, per-destination cooldown on 429/timeout/5xx, and clean daemon shutdown. |
 | `resources/tests/test_webhook_dispatcher.py` | Create | Unit tests validating event subscription filtering, HMAC-SHA256 signature calculations with stable `event_id`, and `IEventSink` integration. |
