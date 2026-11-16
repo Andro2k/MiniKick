@@ -3,7 +3,7 @@
 
 from functools import lru_cache
 from PySide6.QtGui import QPalette, QColor
-from .icons import get_assets_path, get_qss_colored_icon
+from .icons import get_qss_colored_icon, resolve_icon_path
 
 class Palette:
     NEUTRAL_999 = "#000000"
@@ -239,9 +239,9 @@ PATH_SCROLL_DW          = get_qss_colored_icon("icons/chevron-down-outline.svg",
 PATH_SCROLL_LF          = get_qss_colored_icon("icons/chevron-left-outline.svg", Palette.NEUTRAL_400)
 PATH_SCROLL_RT          = get_qss_colored_icon("icons/chevron-right-outline.svg", Palette.NEUTRAL_400)
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-outline.svg")
-PATH_ICON_CHECK         = get_assets_path("icons/check-outline.svg")
-PATH_ICON_MINUS         = get_assets_path("icons/minus-outline.svg")
-PATH_ICON_RADIO_DOT     = get_assets_path("icons/radio-dot.svg")
+PATH_ICON_CHECK         = (resolve_icon_path("check-outline.svg") or "")
+PATH_ICON_MINUS         = (resolve_icon_path("minus-outline.svg") or "")
+PATH_ICON_RADIO_DOT     = (resolve_icon_path("radio-dot.svg") or "")
 
 
 def _build_reset_and_typography_qss(h1: int, h2: int, text1: int, text2: int) -> str:

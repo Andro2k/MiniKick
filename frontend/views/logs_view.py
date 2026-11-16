@@ -416,16 +416,14 @@ class LogView(BaseView):
                 self.table_card.set_no_results(False)
 
         if total_logs < total_all:
-            info_text = self.i18n.get("log.pagination.info_filtered")
-            info_text = info_text.replace("{showing_from}", str(showing_from))
-            info_text = info_text.replace("{showing_to}", str(showing_to))
-            info_text = info_text.replace("{total}", str(total_logs))
-            info_text = info_text.replace("{total_all}", str(total_all))
+            info_text = self.i18n.get(
+                "log.pagination.info_filtered",
+                showing_from=showing_from, showing_to=showing_to, total=total_logs, total_all=total_all,
+            )
         else:
-            info_text = self.i18n.get("log.pagination.info")
-            info_text = info_text.replace("{showing_from}", str(showing_from))
-            info_text = info_text.replace("{showing_to}", str(showing_to))
-            info_text = info_text.replace("{total}", str(total_logs))
+            info_text = self.i18n.get(
+                "log.pagination.info", showing_from=showing_from, showing_to=showing_to, total=total_logs
+            )
         self.lbl_page_info.setText(info_text)
 
         if hasattr(self, "segmented_pagination"):

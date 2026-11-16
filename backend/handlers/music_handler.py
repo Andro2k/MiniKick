@@ -77,12 +77,7 @@ class MusicCommandHandler:
                     self.send_chat_message(msg, platform=platform)
                     return
                 else:
-                    msg = (
-                        self.i18n.get("music.chat.playlist_invalid_pos")
-                        .replace("{user}", user)
-                        .replace("{pos}", str(pos))
-                        .replace("{total}", str(total))
-                    )
+                    msg = self.i18n.get("music.chat.playlist_invalid_pos", user=user, pos=pos, total=total)
                     self.send_chat_message(msg, platform=platform)
                     return
 
@@ -145,7 +140,7 @@ class MusicCommandHandler:
         elapsed = now - last_time
         if elapsed < self.ctx.user_cooldown:
             remaining = int(self.ctx.user_cooldown - elapsed) + 1
-            msg = self.i18n.get("music.chat.cooldown_active").replace("{user}", user).replace("{seconds}", str(remaining))
+            msg = self.i18n.get("music.chat.cooldown_active", user=user, seconds=remaining)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -155,11 +150,8 @@ class MusicCommandHandler:
             user_active_count += 1
 
         if user_active_count >= self.ctx.max_user_songs:
-            msg = (
-                self.i18n.get("music.chat.user_limit_reached")
-                .replace("{user}", user)
-                .replace("{count}", str(user_active_count))
-                .replace("{max}", str(self.ctx.max_user_songs))
+            msg = self.i18n.get(
+                "music.chat.user_limit_reached", user=user, count=user_active_count, max=self.ctx.max_user_songs
             )
             self.send_chat_message(msg, platform=platform)
             return

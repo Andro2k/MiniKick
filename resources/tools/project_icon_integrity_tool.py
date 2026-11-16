@@ -53,6 +53,7 @@ class SvgIntegrityIssue:
 @dataclass
 class IconAuditReport:
     existing_icons: Set[str] = field(default_factory=set)
+    icon_paths: Dict[str, List[str]] = field(default_factory=lambda: defaultdict(list))
     used_icons: Dict[str, List[IconOccurrence]] = field(default_factory=lambda: defaultdict(list))
     missing_icons: Dict[str, List[IconOccurrence]] = field(default_factory=lambda: defaultdict(list))
     unused_icons: Set[str] = field(default_factory=set)
@@ -170,16 +171,23 @@ def extract_icons_from_file(file_path: str, base_dir: str) -> List[IconOccurrenc
     return occurrences
 
 
+def collect_icon_files(icons_dir: str = ICONS_DIR) -> Dict[str, List[str]]:
+    """Nombre de archivo -> rutas, recorriendo los packs (outline/, common/, ...) y la raíz."""
+    found: Dict[str, List[str]] = defaultdict(list)
+    for root, subdirs, files in os.walk(icons_dir):
+        subdirs.sort()
+        for fname in sorted(files):
+            found[fname].append(os.path.join(root, fname))
+    return found
+
+
 def validate_icons_integrity(icons_dir: str = ICONS_DIR) -> List[SvgIntegrityIssue]:
     issues: List[SvgIntegrityIssue] = []
     if not os.path.exists(icons_dir):
         return issues
 
-    for fname in os.listdir(icons_dir):
-        fpath = os.path.join(icons_dir, fname)
-        if not os.path.isfile(fpath):
-            continue
-
+    for fpath in (path for paths in collect_icon_files(icons_dir).values() for path in paths):
+        fname = os.path.basename(fpath)
         try:
             size = os.path.getsize(fpath)
             if size == 0:
@@ -240,7 +248,8 @@ def scan_icons_in_project(
     report = IconAuditReport()
 
     if os.path.exists(icons_dir):
-        report.existing_icons = set(os.listdir(icons_dir))
+        report.icon_paths.update(collect_icon_files(icons_dir))
+        report.existing_icons = set(report.icon_paths)
 
     report.integrity_issues = validate_icons_integrity(icons_dir)
 
@@ -313,8 +322,7 @@ def audit_unused_icons(report: IconAuditReport) -> int:
         print("\n📋 Lista de Iconos Sin Uso (pueden ser eliminados si no se planea usarlos):")
         total_size = 0
         for icon in unused_list:
-            icon_path = os.path.join(ICONS_DIR, icon)
-            size_bytes = os.path.getsize(icon_path) if os.path.exists(icon_path) else 0
+            size_bytes = sum(os.path.getsize(path) for path in report.icon_paths.get(icon, []))
             total_size += size_bytes
             print(f"  [X] {icon:<30} ({size_bytes:>5} bytes)")
         print(f"\n💾 Espacio total recuperable: {total_size:,} bytes (~{total_size / 1024:.1f} KB)")
@@ -380,8 +388,7 @@ def clean_unused_icons(report: IconAuditReport, auto_confirm: bool = False):
     print(f"Se encontraron {len(unused_list)} iconos sin uso en assets/icons/:\n")
     total_size = 0
     for icon in unused_list:
-        icon_path = os.path.join(ICONS_DIR, icon)
-        size_bytes = os.path.getsize(icon_path) if os.path.exists(icon_path) else 0
+        size_bytes = sum(os.path.getsize(path) for path in report.icon_paths.get(icon, []))
         total_size += size_bytes
         print(f"  - {icon:<30} ({size_bytes:>5} bytes)")
 
@@ -395,14 +402,13 @@ def clean_unused_icons(report: IconAuditReport, auto_confirm: bool = False):
     if confirm in ('s', 'si', 'y', 'yes'):
         deleted = 0
         for icon in unused_list:
-            fpath = os.path.join(ICONS_DIR, icon)
-            try:
-                if os.path.exists(fpath):
+            for fpath in report.icon_paths.get(icon, []):
+                try:
                     os.remove(fpath)
                     deleted += 1
-                    print(f"  🗑️ Eliminado: {icon}")
-            except Exception as e:
-                print(f"  ⚠️ Error eliminando {icon}: {e}")
+                    print(f"  🗑️ Eliminado: {os.path.relpath(fpath, ICONS_DIR)}")
+                except Exception as e:
+                    print(f"  ⚠️ Error eliminando {icon}: {e}")
         print(f"\n✅ Operación completada: Se eliminaron {deleted} archivos de iconos.")
     else:
         print("❌ Operación cancelada. No se realizaron cambios en el disco.")

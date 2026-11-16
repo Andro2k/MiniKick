@@ -1,7 +1,6 @@
 # frontend\widgets\table_widget.py
 """Tabla moderna, su tarjeta y la celda de acciones."""
 
-import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget, QGridLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QEvent
 from .controls_widget import ModernButton, ModernSwitch, configure_icon_only_button
@@ -9,7 +8,7 @@ from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
-from frontend.common import get_pixmap_colored, get_assets_path, BrandColors, Size
+from frontend.common import get_pixmap_colored, resolve_icon_path, BrandColors, Size
 from .row_action_menu import RowActionMenu, RowMenuAction
 
 class ModernTable(QTableWidget):
@@ -120,7 +119,7 @@ class ModernTableCard(QFrame):
         self.no_results_layout.setSpacing(Size.SPACING_MD)
         self.no_results_layout.setContentsMargins(*Size.Margin.MRG_NON)
 
-        illustration_path = get_assets_path(os.path.join("icons", "illustration-empty-box.svg"))
+        illustration_path = resolve_icon_path("illustration-empty-box.svg") or ""
         self.lbl_no_results_illustration = ScalableIllustration(
             icon_path=illustration_path,
             aspect_ratio=1.0,
@@ -267,7 +266,7 @@ class ModernTableCard(QFrame):
         layout.setSpacing(Size.SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        illustration_path = get_assets_path(os.path.join("icons", icon_name))
+        illustration_path = resolve_icon_path(icon_name) or ""
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path,
             aspect_ratio=1.0,

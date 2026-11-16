@@ -2,7 +2,7 @@
 """Diálogo para conectar YouTube."""
 
 from .platform_dialog import PlatformConnectDialog
-from frontend.common import get_assets_path, BrandColors
+from frontend.common import BrandColors
 
 class YouTubeConnectDialog(PlatformConnectDialog):
     def __init__(self, i18n, initial_target: str = "", parent=None):
@@ -12,7 +12,7 @@ class YouTubeConnectDialog(PlatformConnectDialog):
             desc_key="dialogs.youtube_connect.desc",
             placeholder_key="dialogs.youtube_connect.placeholder",
             btn_connect_key="dialogs.youtube_connect.btn_connect",
-            icon_path=get_assets_path("icons/brand-youtube.svg"),
+            icon_path="brand-youtube.svg",
             icon_bg_color=BrandColors.YOUTUBE,
             btn_role="action_youtube",
             initial_target=initial_target,

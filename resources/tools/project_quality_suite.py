@@ -58,6 +58,16 @@ class AuditConfigProvider:
                 )
             ),
             AuditSpec(
+                name="Project Icon Grid",
+                command_desc="Centrado, área útil y lienzo de los iconos",
+                tool_filename="project_icon_grid_tool.py",
+                args=["--check"],
+                evaluator=lambda code, out: (
+                    code == 0 and "fuera de cuadrícula: 0" in out,
+                    "Iconos en cuadrícula" if code == 0 else "Iconos fuera de cuadrícula"
+                )
+            ),
+            AuditSpec(
                 name="Project Translation Keys",
                 command_desc="Paridad y uso de traducciones EN vs ES",
                 tool_filename="project_translation_integrity_auditor.py",

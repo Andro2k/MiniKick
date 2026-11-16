@@ -4,13 +4,13 @@
 from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, get_qcolor_with_alpha, BrandColors, Size
+from frontend.common import get_qcolor_with_alpha, BrandColors, Size
 
 class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         title_str = self.i18n.get("dialogs.already_running.title")
-        icon_path = get_assets_path("icons/alert-circle-outline.svg")
+        icon_path = "alert-circle-outline.svg"
         super().__init__(
             title=title_str,
             icon_path=icon_path,

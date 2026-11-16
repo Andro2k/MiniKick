@@ -14,6 +14,11 @@ from PySide6.QtSvg import QSvgRenderer
 from backend.utils import resource_path
 
 logger = logging.getLogger("minikick.icons")
+
+ICONS_DIR = "icons"
+ACTIVE_ICON_PACK = "outline"
+SHARED_ICON_PACK = "common"
+BASE_ICON_PACK = "outline"
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
 
@@ -24,19 +29,26 @@ def get_assets_path(subfolder: str = "") -> str:
     return os.path.normpath(path).replace("\\", "/")
 
 
+def _icon_search_dirs() -> tuple[str, ...]:
+    """Orden de búsqueda: pack activo -> common -> pack base -> raíz (archivos sueltos como icon.ico)."""
+    packs = dict.fromkeys((ACTIVE_ICON_PACK, SHARED_ICON_PACK, BASE_ICON_PACK))
+    return tuple(os.path.join(ICONS_DIR, pack) for pack in packs) + (ICONS_DIR,)
+
+
 def resolve_icon_path(name: str) -> str | None:
     if not name:
         return None
     if os.path.isabs(name) and os.path.exists(name):
         return name
     base_candidate = os.path.basename(name)
-    full_path = get_assets_path(os.path.join("icons", base_candidate))
-    if os.path.exists(full_path):
-        return full_path
+    for icons_dir in _icon_search_dirs():
+        full_path = get_assets_path(os.path.join(icons_dir, base_candidate))
+        if os.path.exists(full_path):
+            return full_path
     direct_path = get_assets_path(name)
     if os.path.exists(direct_path):
         return direct_path
-    logger.warning("Icon file not found: '%s' in %s", name, full_path)
+    logger.warning("Icon file not found: '%s' (searched: %s)", name, ", ".join(_icon_search_dirs()))
     return None
 
 

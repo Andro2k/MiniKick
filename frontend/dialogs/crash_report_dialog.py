@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Slot
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import get_assets_path, get_qcolor_with_alpha, BrandColors, Size
+from frontend.common import get_qcolor_with_alpha, BrandColors, Size
 
 _ACTIVE_CRASH_WORKERS = set()
 
@@ -41,7 +41,7 @@ class CrashReportDialog(ModernModal):
         self.err_no_webhook_text = self.i18n.get("crash.err_no_webhook")
         self.subtitle_text = self.i18n.get("crash.subtitle")
 
-        icon_path = get_assets_path("icons/bug-outline.svg")
+        icon_path = "bug-outline.svg"
         super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=BrandColors.RED, width=580, parent=parent)
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 80))
         self._setup_crash_form()

@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
-from frontend.common import get_assets_path, get_pixmap_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 
 class WhatsNewDialog(ModernModal):
     def __init__(
@@ -36,7 +36,7 @@ class WhatsNewDialog(ModernModal):
 
         super().__init__(
             title=dialog_title,
-            icon_path=get_assets_path("icons/star-outline.svg"),
+            icon_path="star-outline.svg",
             icon_bg_color=BrandColors.ORANGE,
             width=540,
             parent=parent

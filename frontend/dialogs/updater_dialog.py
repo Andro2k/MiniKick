@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
-from frontend.common import get_pixmap_colored, get_assets_path, get_qcolor_with_alpha, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, get_qcolor_with_alpha, Palette, BrandColors, Size
 
 class UpdateDialog(ModernModal):
     download_requested = Signal()
@@ -16,7 +16,7 @@ class UpdateDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         super().__init__(
-            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download-outline.svg"),
+            title=self.i18n.get("dialogs.update.title_default"), icon_path="cloud-download-outline.svg",
             icon_bg_color=BrandColors.GREEN, width=400, parent=parent
         )
         self.version = ""

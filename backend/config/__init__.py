@@ -5,7 +5,6 @@ import logging
 from dataclasses import dataclass
 
 from .version import APP_VERSION
-from .locale_defaults import DEFAULT_DICTIONARY
 from .toml_config_provider import CONFIG_FILE_NAME, TomlConfigProvider
 
 logger = logging.getLogger("minikick.config")
@@ -87,7 +86,6 @@ __all__ = [
     "GIPHY_API_KEY",
     "CONFIG_FILE_NAME",
     "TomlConfigProvider",
-    "DEFAULT_DICTIONARY",
     "PUSHER_WS_URL_TEMPLATE",
     "KICK_API_BASE",
     "KICK_API_URL",

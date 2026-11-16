@@ -223,7 +223,7 @@ sys.exit(Application().run())
 | [`backend/`](./backend/README.md) | Headless business logic, persistence, platform adapters, workers | Hay (Blueprint) |
 | [`frontend/`](./frontend/README.md) | PySide6 presentation: views, widgets, dialogs, navigation chrome | Hay (Blueprint) |
 | [`scripts/`](./scripts/README.md) | Installation automation (PowerShell, SHA-256 verified) | Peanut |
-| [`assets/`](./assets) | Static resources: fonts, icons, SVGs, overlays, i18n locale files (`assets/locales/`) | — |
+| [`assets/`](./assets) | Static resources: fonts, icons, SVGs, overlays, i18n locale files (`assets/i18n/<lang>/main.ftl`, Fluent) | — |
 | [`resources/`](./resources) | Test suite, build tools, quality auditors, installer assets | — |
 | [`docs/`](./docs) | Walkthroughs, design documents, crash history | — |
 

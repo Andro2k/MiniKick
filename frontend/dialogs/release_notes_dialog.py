@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
-from frontend.common import get_assets_path, get_qcolor_with_alpha, markdown_to_github_html, Palette, BrandColors, Size
+from frontend.common import get_qcolor_with_alpha, markdown_to_github_html, Palette, BrandColors, Size
 
 class ReleaseNotesDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, browser_service=None, parent=None):
@@ -15,7 +15,7 @@ class ReleaseNotesDialog(ModernModal):
         self.browser_service = browser_service
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
-            icon_path=get_assets_path("icons/file-text-outline.svg"),
+            icon_path="file-text-outline.svg",
             icon_bg_color=BrandColors.GREEN,
             width=900,
             parent=parent

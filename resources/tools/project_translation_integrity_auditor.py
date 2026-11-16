@@ -3,49 +3,68 @@
 
 import ast
 import contextlib
-import json
 import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Set
 
+from fluent.syntax import FluentParser, ast as fluent_ast
+
 class DataLoader:
-    EXCLUDED_EXTS = {".html", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".py", ".json", ".db", ".css", ".js", ".ico", ".txt", ".log", ".md", ".com", ".tv", ".be", ".net", ".org"}
+    EXCLUDED_EXTS = {".html", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".py", ".json", ".ftl", ".db", ".css", ".js", ".ico", ".txt", ".log", ".md", ".com", ".tv", ".be", ".net", ".org"}
     IGNORED_DIRS = {".venv", "venv", "__pycache__", ".git", ".pytest_cache", ".agents", "build", "dist", "walkthroughs", "tools"}
 
     @staticmethod
-    def load_json(path: Path) -> dict:
-        if not path.exists():
-            return {}
-        return json.loads(path.read_text(encoding="utf-8"))
+    def load_ftl(path: Path):
+        text = path.read_text(encoding="utf-8")
+        return text, FluentParser(with_spans=True).parse(text)
 
     @staticmethod
-    def save_json(path: Path, data: dict) -> None:
-        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    def flatten_ftl(resource) -> Dict[str, str]:
+        """id `a-b-c` -> clave `a.b.c`; el valor deja las variables como `{nombre}`."""
+        return {
+            entry.id.name.replace("-", "."): DataLoader._pattern_text(entry.value)
+            for entry in resource.body
+            if isinstance(entry, fluent_ast.Message) and entry.value is not None
+        }
 
     @staticmethod
-    def flatten_dict(data_dict: dict, prefix: str = "") -> Dict[str, Any]:
-        keys = {}
-        for k, v in data_dict.items():
-            full_key = f"{prefix}.{k}" if prefix else k
-            if isinstance(v, dict):
-                keys.update(DataLoader.flatten_dict(v, full_key))
+    def _pattern_text(pattern) -> str:
+        parts = []
+        for element in pattern.elements:
+            if isinstance(element, fluent_ast.TextElement):
+                parts.append(element.value)
             else:
-                keys[full_key] = v
-        return keys
+                parts.append(DataLoader._expression_text(element.expression))
+        return "".join(parts)
 
     @staticmethod
-    def delete_key_by_path(data_dict: dict, path_parts: List[str]) -> None:
-        if not path_parts or not isinstance(data_dict, dict):
-            return
-        head = path_parts[0]
-        if len(path_parts) == 1:
-            data_dict.pop(head, None)
-        else:
-            if head in data_dict and isinstance(data_dict[head], dict):
-                DataLoader.delete_key_by_path(data_dict[head], path_parts[1:])
-                if not data_dict[head]:
-                    del data_dict[head]
+    def _expression_text(expression) -> str:
+        if isinstance(expression, fluent_ast.VariableReference):
+            return "{%s}" % expression.id.name
+        if isinstance(expression, fluent_ast.StringLiteral):
+            return expression.parse()["value"]
+        if isinstance(expression, fluent_ast.SelectExpression):
+            default = next(variant for variant in expression.variants if variant.default)
+            return DataLoader._pattern_text(default.value)
+        if isinstance(expression, fluent_ast.Placeable):
+            return DataLoader._expression_text(expression.expression)
+        return ""
+
+    @staticmethod
+    def remove_ftl_keys(path: Path, text: str, resource, keys: Set[str]) -> None:
+        spans = sorted(
+            (
+                (entry.span.start, entry.span.end)
+                for entry in resource.body
+                if isinstance(entry, fluent_ast.Message) and entry.id.name.replace("-", ".") in keys
+            ),
+            reverse=True,
+        )
+        for start, end in spans:
+            end += 1 if text[end:end + 1] == "\n" else 0
+            text = text[:start] + text[end:]
+        path.write_text(text, encoding="utf-8", newline="\n")
 
     @staticmethod
     def get_python_files(base_dir: Path) -> List[Tuple[Path, str]]:
@@ -121,9 +140,9 @@ class AuditorService:
         return {k: locs for k, locs in static_keys.items() if k not in target_keys}
 
     @staticmethod
-    def find_unused_keys(json_keys: Set[str], code_keys: Set[str], dyn_patterns: List[Tuple[str, str, int]]) -> Set[str]:
+    def find_unused_keys(ftl_keys: Set[str], code_keys: Set[str], dyn_patterns: List[Tuple[str, str, int]]) -> Set[str]:
         regexes = [re.compile("^" + re.sub(r"\{[^\}]+\}", r"[a-zA-Z0-9_]+", pat) + "$") for pat, _, _ in set(dyn_patterns)]
-        unused = json_keys - code_keys
+        unused = ftl_keys - code_keys
         return {k for k in unused if not any(rx.match(k) for rx in regexes)}
 
     @staticmethod
@@ -158,7 +177,7 @@ class ConsoleReporter:
     def print_unused(unused: Set[str]):
         if not unused:
             return
-        print(f"\n🟡 Claves SIN USO en los archivos JSON ({len(unused)}):")
+        print(f"\n🟡 Claves SIN USO en los archivos .ftl ({len(unused)}):")
         for k in sorted(unused):
             print(f"  - '{k}'")
 
@@ -178,27 +197,27 @@ class ConsoleReporter:
 def _resolve_project_root() -> Path:
     current = Path(__file__).resolve().parent
     for parent in [current] + list(current.parents):
-        if (parent / "assets" / "locales").exists() and (parent / "frontend").exists():
+        if (parent / "assets" / "i18n").exists() and (parent / "frontend").exists():
             return parent
     return Path(__file__).resolve().parents[3]
 
 def main():
     base_dir = _resolve_project_root()
-    en_path = base_dir / "assets" / "locales" / "en.json"
-    es_path = base_dir / "assets" / "locales" / "es.json"
+    en_path = base_dir / "assets" / "i18n" / "en" / "main.ftl"
+    es_path = base_dir / "assets" / "i18n" / "es" / "main.ftl"
 
     if not en_path.exists() or not es_path.exists():
-        print("Error: No se encontraron los archivos (en.json / es.json).")
+        print("Error: No se encontraron los archivos (en/main.ftl / es/main.ftl).")
         sys.exit(1)
 
-    en_dict = DataLoader.load_json(en_path)
-    es_dict = DataLoader.load_json(es_path)
-    en_flat = DataLoader.flatten_dict(en_dict)
-    es_flat = DataLoader.flatten_dict(es_dict)
-    
+    en_text, en_resource = DataLoader.load_ftl(en_path)
+    es_text, es_resource = DataLoader.load_ftl(es_path)
+    en_flat = DataLoader.flatten_ftl(en_resource)
+    es_flat = DataLoader.flatten_ftl(es_resource)
+
     en_keys_set = set(en_flat.keys())
     es_keys_set = set(es_flat.keys())
-    root_namespaces = tuple(en_dict.keys())
+    root_namespaces = tuple(sorted({key.split(".", 1)[0] for key in en_flat}))
 
     py_files = DataLoader.get_python_files(base_dir)
 
@@ -211,26 +230,21 @@ def main():
     placeholders = AuditorService.find_placeholder_discrepancies(en_flat, es_flat)
 
     print("\n=== REPORTE DE AUDITORÍA I18N ===")
-    ConsoleReporter.print_missing(missing_in_en, "en.json")
-    ConsoleReporter.print_missing(missing_in_es, "es.json")
+    ConsoleReporter.print_missing(missing_in_en, "en/main.ftl")
+    ConsoleReporter.print_missing(missing_in_es, "es/main.ftl")
     ConsoleReporter.print_unused(unused_keys)
     ConsoleReporter.print_discrepancies(placeholders)
 
     if unused_keys:
         print("\n=== MENÚ DE ACCIONES ===")
         try:
-            opcion = input("¿Deseas eliminar las claves sobrantes (sin uso) de los archivos JSON? (s/n): ").strip().lower()
+            opcion = input("¿Deseas eliminar las claves sobrantes (sin uso) de los archivos .ftl? (s/n): ").strip().lower()
             if opcion in ['s', 'si', 'sí', 'y', 'yes']:
-                for k in unused_keys:
-                    parts = k.split('.')
-                    DataLoader.delete_key_by_path(en_dict, parts)
-                    DataLoader.delete_key_by_path(es_dict, parts)
-                
-                DataLoader.save_json(en_path, en_dict)
-                DataLoader.save_json(es_path, es_dict)
+                DataLoader.remove_ftl_keys(en_path, en_text, en_resource, unused_keys)
+                DataLoader.remove_ftl_keys(es_path, es_text, es_resource, unused_keys)
                 print("[OK] Claves sobrantes eliminadas y archivos actualizados correctamente.")
             else:
-                print("[INFO] No se realizaron cambios en los archivos JSON.")
+                print("[INFO] No se realizaron cambios en los archivos .ftl.")
         except KeyboardInterrupt:
             print("\n[INFO] Operación cancelada por el usuario.")
 
