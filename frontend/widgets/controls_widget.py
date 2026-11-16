@@ -17,7 +17,6 @@ def configure_icon_only_button(
     icon_size: int = Size.ICON_ACTION,
 ) -> None:
     button.setProperty("icon_only", True)
-    button.setIconSize(QSize(icon_size, icon_size))
     if isinstance(size, QSize):
         button.setFixedSize(size)
     else:
@@ -33,13 +32,11 @@ class ModernButton(QPushButton):
         self._icon_size = icon_size
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setIconSize(QSize(icon_size, icon_size))
         if icon_name:
             self.set_icon(icon_name, color=icon_color)
 
     def setIcon(self, icon: QIcon):
         super().setIcon(icon)
-        self.setIconSize(QSize(self._icon_size, self._icon_size))
         if icon.isNull() or self.text():
             self.setProperty("icon_only", False)
             return

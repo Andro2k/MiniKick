@@ -61,7 +61,7 @@ class DashboardView(BaseView):
         self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick", parent=self.banner_scopes_kick)
         self.btn_reauth_kick.clicked.connect(self._on_reauth_kick_clicked)
         lbl_kick_icon = QLabel(self.banner_scopes_kick)
-        lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", BrandColors.GREEN, 24))
+        lbl_kick_icon.setPixmap(get_pixmap_colored("block-kick.svg", BrandColors.GREEN, 24))
         lbl_kick_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_kick.addWidget(lbl_kick_icon, 0, Qt.AlignmentFlag.AlignTop)
         self.banner_layout_kick.addWidget(self.lbl_warn_text_kick, 1)
@@ -80,7 +80,7 @@ class DashboardView(BaseView):
         self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch", parent=self.banner_scopes_twitch)
         self.btn_reauth_twitch.clicked.connect(self._on_reauth_twitch_clicked)
         lbl_twitch_icon = QLabel(self.banner_scopes_twitch)
-        lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", BrandColors.TWITCH, 24))
+        lbl_twitch_icon.setPixmap(get_pixmap_colored("block-twitch.svg", BrandColors.TWITCH, 24))
         lbl_twitch_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_twitch.addWidget(lbl_twitch_icon, 0, Qt.AlignmentFlag.AlignTop)
         self.banner_layout_twitch.addWidget(self.lbl_warn_text_twitch, 1)
@@ -240,28 +240,28 @@ class DashboardView(BaseView):
 
         self.card_kick = PlatformStatusCard(
             self.i18n, "kick", self.i18n.get("dashboard.platforms.kick_title"),
-            "brand-kick.svg", "action_kick", parent=self
+            "block-kick.svg", "action_kick", parent=self
         )
         self.card_kick.btn_action.clicked.connect(self.connect_requested.emit)
         self.btn_connect = self.card_kick.btn_action
 
         self.card_twitch = PlatformStatusCard(
             self.i18n, "twitch", self.i18n.get("dashboard.platforms.twitch_title"),
-            "brand-twitch.svg", "action_twitch", parent=self
+            "block-twitch.svg", "action_twitch", parent=self
         )
         self.card_twitch.btn_action.clicked.connect(self.twitch_connect_requested.emit)
         self.btn_connect_twitch = self.card_twitch.btn_action
 
         self.card_youtube = PlatformStatusCard(
             self.i18n, "youtube", self.i18n.get("dashboard.platforms.youtube_title"),
-            "brand-youtube.svg", "action_youtube", parent=self
+            "block-youtube.svg", "action_youtube", parent=self
         )
         self.card_youtube.btn_action.clicked.connect(self.youtube_connect_requested.emit)
         self.btn_connect_youtube = self.card_youtube.btn_action
 
         self.card_tiktok = PlatformStatusCard(
             self.i18n, "tiktok", self.i18n.get("dashboard.platforms.tiktok_title"),
-            "brand-tiktok.svg", "action_tiktok", parent=self
+            "block-tiktok.svg", "action_tiktok", parent=self
         )
         self.card_tiktok.btn_action.clicked.connect(self.tiktok_connect_requested.emit)
         self.btn_connect_tiktok = self.card_tiktok.btn_action

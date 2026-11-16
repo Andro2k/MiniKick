@@ -12,7 +12,7 @@ class YouTubeConnectDialog(PlatformConnectDialog):
             desc_key="dialogs.youtube_connect.desc",
             placeholder_key="dialogs.youtube_connect.placeholder",
             btn_connect_key="dialogs.youtube_connect.btn_connect",
-            icon_path="brand-youtube.svg",
+            icon_path="block-youtube.svg",
             icon_bg_color=BrandColors.YOUTUBE,
             btn_role="action_youtube",
             initial_target=initial_target,

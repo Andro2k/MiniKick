@@ -8,8 +8,8 @@ from .controls_widget import ModernSwitch
 from .layout_utils import create_row_layout, create_switch_field
 
 _PLATFORM_BRANDS = {
-    "KICK": ("brand-kick.svg", BrandColors.GREEN),
-    "TWITCH": ("brand-twitch.svg", BrandColors.PURPLE),
+    "KICK": ("block-kick.svg", BrandColors.GREEN),
+    "TWITCH": ("block-twitch.svg", BrandColors.PURPLE),
 }
 
 

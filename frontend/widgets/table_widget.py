@@ -482,10 +482,10 @@ class PlatformBadgeCell(QWidget):
             return
 
         plat_configs = {
-            "kick": ("brand-kick.svg", BrandColors.GREEN, "Kick"),
-            "twitch": ("brand-twitch.svg", BrandColors.TWITCH, "Twitch"),
-            "youtube": ("brand-youtube.svg", BrandColors.YOUTUBE, "YouTube"),
-            "tiktok": ("brand-tiktok.svg", BrandColors.TIKTOK, "TikTok"),
+            "kick": ("block-kick.svg", BrandColors.GREEN, "Kick"),
+            "twitch": ("block-twitch.svg", BrandColors.TWITCH, "Twitch"),
+            "youtube": ("block-youtube.svg", BrandColors.YOUTUBE, "YouTube"),
+            "tiktok": ("block-tiktok.svg", BrandColors.TIKTOK, "TikTok"),
         }
 
         for p in platforms:

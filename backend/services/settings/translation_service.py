@@ -91,8 +91,6 @@ class TranslationService:
         message = bundle.get_message(message_id)
         if message.value is None:
             return None
-        # Las variables sin valor quedan como `{nombre}`: asi el codigo que aun hace
-        # get(clave).replace("{nombre}", ...) sigue funcionando igual que con str.format.
         names = _variable_names(self._path(lang_code), message_id, message)
         merged: Dict[str, Any] = {name: "{%s}" % name for name in names}
         if args:

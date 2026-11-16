@@ -56,7 +56,6 @@ class Sidebar(QFrame):
 
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg"))
-        self.logo_btn.setIconSize(QSize(Size.ICON_BASIC, Size.ICON_BASIC))
         configure_icon_only_button(self.logo_btn)
         self.logo_btn.setProperty("role", "btn_ghost")
 
@@ -334,7 +333,6 @@ class Sidebar(QFrame):
         btn.setProperty("icon_name", icon_name)
 
         btn.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, Size.ICON_SMALL))
-        btn.setIconSize(QSize(Size.ICON_NAV, Size.ICON_NAV))
         btn.setFixedHeight(Size.NAV_BUTTON_HEIGHT)
         btn.setToolTip("" if self.is_expanded else display_name)
 
