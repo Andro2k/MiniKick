@@ -74,7 +74,7 @@ class MusicStatsPanel(QWidget):
         service_header = QHBoxLayout()
         service_header.setSpacing(Size.SPACING_MD)
         icon_cmd = QLabel()
-        icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-outline.svg"))
+        icon_cmd.setPixmap(get_pixmap_colored("command-outline.svg"))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "text_h2")
         self.sw_music_service = ModernSwitch(parent=self)

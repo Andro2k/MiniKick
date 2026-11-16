@@ -41,7 +41,7 @@ class MainWindowCore(QMainWindow):
 
         ("Chat", "dialog-outline.svg", "stream"),
         ("Stream Info", "calendar-days-outline.svg", "stream"),
-        ("Comandos", "chat-square-code-outline.svg", "stream"),
+        ("Comandos", "command-outline.svg", "stream"),
         ("Timers", "alarm-outline.svg", "stream"),
 
         ("Music", "music-notes-outline.svg", "tools"),
@@ -50,7 +50,7 @@ class MainWindowCore(QMainWindow):
         ("Alerts", "megaphone-outline.svg", "tools"),
         ("Webhooks", "webhooks-outline.svg", "tools"),
 
-        ("Developer", "file-text-outline.svg", "system"),
+        ("Developer", "browser-code-outline.svg", "system"),
         ("Report Bug", "bug-outline.svg", "system"),
         ("Settings", "gear-outline.svg", "profile"),
     )

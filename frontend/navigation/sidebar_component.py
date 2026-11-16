@@ -334,6 +334,7 @@ class Sidebar(QFrame):
         btn.setProperty("icon_name", icon_name)
 
         btn.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_050, Size.ICON_SMALL))
+        btn.setIconSize(QSize(Size.ICON_NAV, Size.ICON_NAV))
         btn.setFixedHeight(Size.NAV_BUTTON_HEIGHT)
         btn.setToolTip("" if self.is_expanded else display_name)
 

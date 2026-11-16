@@ -132,13 +132,19 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setContentsMargins(*Size.Margin.MRG_NON)
         controls_layout.setSpacing(Size.SPACING_SM)
 
-        self.btn_play_pause = ModernButton("", role="action_outlined", icon_name="play-outline.svg", parent=self)
+        self.btn_play_pause = ModernButton(
+            "", role="action_outlined", icon_name="play-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+        )
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
 
-        self.btn_skip = ModernButton("", role="action_outlined", icon_name="skip-next-outline.svg", parent=self)
+        self.btn_skip = ModernButton(
+            "", role="action_outlined", icon_name="skip-next-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+        )
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
-        self.btn_add_playlist = ModernButton("", role="action_outlined", icon_name="music-notes-outline.svg", parent=self)
+        self.btn_add_playlist = ModernButton(
+            "", role="action_outlined", icon_name="music-notes-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+        )
         self.btn_add_playlist.setToolTip(self.i18n.get("music.playlists.add_tooltip"))
         self.btn_add_playlist.setEnabled(False)
         self.btn_add_playlist.clicked.connect(self.add_to_playlist_requested.emit)
@@ -395,7 +401,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_requester.setText(req_text)
 
         icon_name = "pause-outline.svg" if is_playing else "play-outline.svg"
-        self.btn_play_pause.setIcon(get_icon_colored(icon_name))
+        self.btn_play_pause.set_icon(icon_name)
 
         self._duration_ms = duration
         self._current_progress_ms = progress

@@ -171,6 +171,9 @@ class Size:
     SLIDER_HANDLE = 14
     ICON_BASIC = 32
     ICON_SMALL = 24
+    ICON_ACTION = 16
+    ICON_NAV = 18
+    ICON_FEATURE = 20
     BADGE_MIN  = 18
     BADGE_MAX  = 22
     BADGE_DOT  = 12
