@@ -15,7 +15,6 @@ kick_api_config*.json
 # Archivos del sistema operativo
 *.exe
 *.log
-*.iss
 *.spec
 !MiniKick.spec
 *.txt
