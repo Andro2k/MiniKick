@@ -33,6 +33,7 @@ python resources/tools/project_quality_suite.py --verbose
 | `project_unused_parameter_auditor.py` | Backend and frontend; selectable | Unused parameters, base-class hooks, and Qt callback parameters |
 | `project_translation_integrity_auditor.py` | Project translations and Python sources | Locale key parity, missing or unused keys, and placeholder parity |
 | `project_icon_integrity_tool.py` | Backend, frontend, and app entry point | Missing, unused, and malformed icon assets; also supports explicit cleanup |
+| `project_icon_grid_tool.py` | Icon packs under `assets/icons` (`common/` excluded) | Glyph centering, live-area overflow, and the standard 24u canvas; `--fix` rewrites the SVGs |
 | `project_performance_profiler.py` | Backend and frontend | Runtime performance budgets and profiling scenarios |
 | `frontend_hardcoded_text_auditor.py` | Frontend | UI strings that bypass the translation service |
 | `frontend_design_token_auditor.py` | Frontend | Raw colors and style values that bypass theme tokens |
