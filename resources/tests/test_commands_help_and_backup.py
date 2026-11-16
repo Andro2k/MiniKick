@@ -9,7 +9,7 @@ import pytest
 from backend.handlers.command_help_formatter import CommandHelpFormatter
 from backend.services.app.backup_service import BackupService
 
-LOCALES = os.path.join(os.path.dirname(__file__), "..", "..", "locales")
+LOCALES = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "locales")
 
 
 class _I18n:

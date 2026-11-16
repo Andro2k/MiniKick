@@ -153,7 +153,7 @@ class DashboardView(BaseView):
         self.btn_switch_channel = ModernButton(
             "",
             role="action_outlined",
-            icon_name="repeat-outline.svg",
+            icon_name="refresh-outline.svg",
             parent=self.avatar_container,
         )
         self.btn_switch_channel.setFixedSize(30, 30)

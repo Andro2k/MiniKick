@@ -16,7 +16,6 @@ analysis = Analysis(
     binaries=[],
     datas=[
         (str(ROOT / "assets"), "assets"),
-        (str(ROOT / "locales"), "locales"),
     ],
     hiddenimports=hidden_imports,
     hookspath=[],

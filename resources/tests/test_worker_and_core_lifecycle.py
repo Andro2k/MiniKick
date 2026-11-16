@@ -166,6 +166,42 @@ def test_music_search_result_is_processed_in_provider_thread(qapp, monkeypatch):
         provider.shutdown()
 
 
+def test_adding_multiple_known_songs_while_idle_schedules_one_playback_start(qapp, monkeypatch):
+    import backend.providers.music.youtube_music_provider as music_module
+
+    storage = mock.Mock()
+    storage.load_pending_songs.return_value = []
+    storage.find_history_entry.side_effect = lambda _provider, url: {
+        "title": url,
+        "artist": "test artist",
+        "url": url,
+    }
+    scheduled_starts = []
+    monkeypatch.setattr(
+        music_module,
+        "QTimer",
+        types.SimpleNamespace(singleShot=lambda _delay, callback: scheduled_starts.append(callback)),
+    )
+    with (
+        mock.patch.object(music_module, "QMediaPlayer"),
+        mock.patch.object(music_module, "QAudioOutput"),
+        mock.patch("PySide6.QtMultimedia.QMediaDevices"),
+        mock.patch("backend.database.MusicCacheManager"),
+    ):
+        provider = music_module.YouTubeMusicProvider(i18n=mock.Mock(), music_storage=storage)
+        provider.find_cached_media = mock.Mock(return_value=None)
+        provider._play_next = mock.Mock()
+
+        for url in ("song-1", "song-2", "song-3"):
+            assert provider.requeue_from_history(url)[0]
+
+        assert [song["url"] for song in provider.queue] == ["song-1", "song-2", "song-3"]
+        assert len(scheduled_starts) == 1
+        scheduled_starts[0]()
+        provider._play_next.assert_called_once_with(start_playing=True)
+        provider.shutdown()
+
+
 def test_container_shutdown_attempts_each_component_once_even_if_one_fails(caplog):
     from backend.core.app_container_core import AppContainerCore
 

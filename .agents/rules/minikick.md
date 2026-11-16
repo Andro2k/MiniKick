@@ -142,4 +142,4 @@ Al consolidar todos los Walkthroughs de una versión en el archivo maestro de Re
 * NEVER hardcode user-facing strings or UI text directly in code (e.g., labels, placeholders, tooltips, dialog messages, logs shown to users).
 * NEVER use fallback default strings or inline fallbacks using `or` / default values (e.g., `self.i18n.get("key") or "Hardcoded Text"` is STRICTLY PROHIBITED).
 * ALWAYS fetch UI strings exclusively through the translation service (`self.i18n.get("key")`, `self.i18n.t("key")`, or equivalent).
-* All new translation keys must be properly structured in the appropriate locale JSON files (`locales/en.json`, `locales/es.json`).
+* All new translation keys must be properly structured in the appropriate locale JSON files (`assets/locales/en.json`, `assets/locales/es.json`).

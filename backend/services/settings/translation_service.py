@@ -10,7 +10,7 @@ from backend.config import DEFAULT_DICTIONARY
 logger = logging.getLogger("minikick.services.system.i18n")
 
 class TranslationService:    
-    def __init__(self, locales_dir: str = "locales", default_lang: str = "en"):
+    def __init__(self, locales_dir: str = os.path.join("assets", "locales"), default_lang: str = "en"):
         if getattr(sys, 'frozen', False):
             base_dir = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
         else:

@@ -11,8 +11,13 @@ from .style_utils import repolish
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
-def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICON_BASIC) -> None:
+def configure_icon_only_button(
+    button: QPushButton,
+    size: int | QSize = Size.ICON_BASIC,
+    icon_size: int = Size.ICON_ACTION,
+) -> None:
     button.setProperty("icon_only", True)
+    button.setIconSize(QSize(icon_size, icon_size))
     if isinstance(size, QSize):
         button.setFixedSize(size)
     else:
@@ -22,20 +27,23 @@ def configure_icon_only_button(button: QPushButton, size: int | QSize = Size.ICO
 
 class ModernButton(QPushButton):
     def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "",
-                 icon_color: str | None = None, parent=None):
+                 icon_color: str | None = None, parent=None, icon_size: int = Size.ICON_ACTION):
         super().__init__(text, parent)
         self._role = role
+        self._icon_size = icon_size
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setIconSize(QSize(icon_size, icon_size))
         if icon_name:
             self.set_icon(icon_name, color=icon_color)
 
     def setIcon(self, icon: QIcon):
         super().setIcon(icon)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
         if icon.isNull() or self.text():
             self.setProperty("icon_only", False)
             return
-        configure_icon_only_button(self)
+        configure_icon_only_button(self, icon_size=self._icon_size)
 
     @staticmethod
     def _resolve_role_color(role: str) -> str:
@@ -65,7 +73,7 @@ class ModernButton(QPushButton):
             current_role = self.property("role") or self._role
             color = self._resolve_role_color(current_role)
             
-        self.setIcon(get_icon_colored(icon_name, color_str=color))
+        self.setIcon(get_icon_colored(icon_name, color_str=color, size=self._icon_size))
 
 
 class ModernSwitch(QAbstractButton):

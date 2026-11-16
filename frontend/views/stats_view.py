@@ -62,7 +62,7 @@ class StatsView(BaseView):
         vs_text = self.i18n.get("stats.kpi.vs_previous")
         specs = (
             ("messages", "stats.kpi.messages", "dialog-outline.svg", True),
-            ("commands", "stats.kpi.commands", "chat-square-code-outline.svg", True),
+            ("commands", "stats.kpi.commands", "command-outline.svg", True),
             ("redemptions", "stats.kpi.redemptions", "treasure-chest-outline.svg", True),
             ("spam", "stats.kpi.spam", "shield-outline.svg", False),
         )

@@ -65,7 +65,7 @@ Si alguna herramienta reporta `❌ FAIL`, ejecuta la herramienta específica dir
 * **Protocolo de Corrección:**
   - **PROHIBIDO:** Usar cadenas de texto literales en widgets (`setText("Hola")`, `QLabel("Guardar")`).
   - **PROHIBIDO:** Usar fallbacks inline (`self.i18n.get("key") or "Fallback"`).
-  - **SOLUCIÓN:** Agregar la clave correspondiente en `locales/es.json` y `locales/en.json` manteniendo paridad exacta. Usar `self.i18n.get("clave")` o `self.i18n.t("clave")`.
+  - **SOLUCIÓN:** Agregar la clave correspondiente en `assets/locales/es.json` y `assets/locales/en.json` manteniendo paridad exacta. Usar `self.i18n.get("clave")` o `self.i18n.t("clave")`.
 
 ### B. Fallos en Fronteras de Arquitectura (`project_architecture_boundary_auditor.py`)
 * **Comando:**

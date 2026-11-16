@@ -2,8 +2,10 @@
 """Pruebas de la vista de reporte de errores y su controlador."""
 
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QBoxLayout
 
 from backend.controllers.bug_report_controller import BugReportController
+from backend.services.logs.logs_service import LogService
 from frontend.views.bug_report_view import BugReportView
 
 
@@ -35,11 +37,20 @@ class FakeToast:
         self.shown.append(kind)
 
 
+class FakeLogService:
+    log_dir = "."
+
+    def read_app_log_preview(self):
+        return {"path": "x", "exists": True, "size": 2048, "total_lines": 2, "shown_lines": 2,
+                "text": "[2026-11-15 12:00:00] [INFO] arranque\n[2026-11-15 12:00:01] [ERROR] fallo"}
+
+
 def _setup(qapp):
     FakeWorker.instances.clear()
     view = BugReportView(KeyTranslations())
     toast = FakeToast()
-    controller = BugReportController(None, worker_class=FakeWorker, toast_manager=toast, i18n=KeyTranslations())
+    controller = BugReportController(None, worker_class=FakeWorker, log_service=FakeLogService(),
+                                     toast_manager=toast, i18n=KeyTranslations())
     controller.attach_view(view)
     view._controller = controller
     return view, controller, toast
@@ -78,3 +89,38 @@ def test_success_resets_form_and_failure_keeps_it(qapp):
     view.btn_send.click()
     FakeWorker.instances[1].report_completed.emit(True, "ok")
     assert view.txt_desc.toPlainText() == "" and toast.shown == ["success"]
+
+
+def test_rows_stack_when_the_window_is_narrow(qapp):
+    view, _, _ = _setup(qapp)
+    view.resize(1200, 800)
+    view.show()
+    qapp.processEvents()
+    assert all(r.direction() == QBoxLayout.Direction.LeftToRight for r in view._flex_rows)
+    view.resize(700, 800)
+    qapp.processEvents()
+    assert all(r.direction() == QBoxLayout.Direction.TopToBottom for r in view._flex_rows)
+    view.resize(1200, 800)
+    qapp.processEvents()
+    assert all(r.direction() == QBoxLayout.Direction.LeftToRight for r in view._flex_rows)
+
+
+def test_log_preview_is_shown_and_follows_the_include_logs_checkbox(qapp):
+    view, _, _ = _setup(qapp)
+    assert "[ERROR] fallo" in view.log_panel.viewer.toPlainText()
+    assert view.log_panel.viewer.isEnabled()
+    view.chk_logs.setChecked(False)
+    assert not view.log_panel.viewer.isEnabled()
+    view.chk_logs.setChecked(True)
+    assert view.log_panel.viewer.isEnabled()
+
+
+def test_log_service_preview_returns_only_the_tail(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    service = LogService()
+    assert service.read_app_log_preview()["exists"] is False
+    with open(service.get_app_log_path(), "w", encoding="utf-8") as f:
+        f.write("".join(f"[2026-11-15 12:00:00] [INFO] linea {i}\n" for i in range(500)))
+    preview = service.read_app_log_preview(max_lines=50)
+    assert preview["exists"] and preview["total_lines"] == 500 and preview["shown_lines"] == 50
+    assert preview["text"].splitlines()[-1].endswith("linea 499")

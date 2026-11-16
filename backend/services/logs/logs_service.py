@@ -85,6 +85,29 @@ class LogService:
                         filtered.append((lvl, t_str, txt))
         return filtered
 
+    def get_app_log_path(self) -> str:
+        return os.path.join(self.log_dir, "minikick.log")
+
+    def read_app_log_preview(self, max_lines: int = 200, tail_bytes: int = 131072) -> dict:
+        path = self.get_app_log_path()
+        empty = {"path": path, "exists": False, "size": 0, "total_lines": 0, "shown_lines": 0, "text": ""}
+        try:
+            size = os.path.getsize(path)
+            total_lines = 0
+            with open(path, "rb") as handle:
+                while chunk := handle.read(1 << 20):
+                    total_lines += chunk.count(b"\n")
+                handle.seek(max(0, size - tail_bytes))
+                data = handle.read()
+        except OSError:
+            return empty
+        lines = data.decode("utf-8", errors="replace").splitlines()
+        if size > tail_bytes and lines:
+            lines = lines[1:]
+        lines = lines[-max_lines:]
+        return {"path": path, "exists": True, "size": size, "total_lines": total_lines,
+                "shown_lines": len(lines), "text": "\n".join(lines)}
+
     def get_crash_log_path(self) -> str:
         return os.path.join(self.log_dir, "minikick_crash.log")
 

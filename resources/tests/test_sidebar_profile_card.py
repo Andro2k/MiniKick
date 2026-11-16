@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QLabel
 
 from frontend.common import Size
 from frontend.navigation import Sidebar
-from frontend.widgets import ClickableFrame
+from frontend.widgets import ClickableFrame, ModernButton
 
 
 class _I18n:
@@ -94,6 +94,16 @@ def test_sidebar_sizes_come_from_the_theme(qapp):
     assert sidebar.collapsed_width == Size.SIDEBAR_COLLAPSED == 60
     assert sidebar.profile_avatar.width() == Size.AVATAR_SM
     assert all(btn.height() == Size.NAV_BUTTON_HEIGHT for btn in sidebar.nav_buttons)
+
+
+def test_sidebar_and_icon_only_buttons_use_explicit_icon_sizes(qapp):
+    sidebar = _sidebar()
+    compact = ModernButton("", icon_name="gear-outline.svg")
+    prominent = ModernButton("", icon_name="play-outline.svg", icon_size=Size.ICON_FEATURE)
+
+    assert _dashboard_button(sidebar).iconSize().width() == Size.ICON_NAV
+    assert compact.iconSize().width() == Size.ICON_ACTION
+    assert prominent.iconSize().width() == Size.ICON_FEATURE
 
 
 def test_sidebar_version_label_is_not_shown_as_a_top_level_window(qapp):

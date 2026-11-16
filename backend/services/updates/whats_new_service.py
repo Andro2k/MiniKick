@@ -14,7 +14,7 @@ _SECTION_DEFAULT_ICONS: Dict[str, str] = {
     "Dashboard": "element-outline.svg",
     "Chat": "dialog-outline.svg",
     "Stream Info": "calendar-days-outline.svg",
-    "Comandos": "chat-square-code-outline.svg",
+    "Comandos": "command-outline.svg",
     "Timers": "alarm-outline.svg",
     "Music": "music-notes-outline.svg",
     "Widgets": "widget-add-outline.svg",
