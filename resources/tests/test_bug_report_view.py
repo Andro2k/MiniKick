@@ -1,8 +1,9 @@
 # resources\tests\test_bug_report_view.py
 """Pruebas de la vista de reporte de errores y su controlador."""
 
-from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QBoxLayout
+import pytest
+from PySide6.QtCore import QEvent, QObject, Signal
+from PySide6.QtWidgets import QApplication, QBoxLayout
 
 from backend.controllers.bug_report_controller import BugReportController
 from backend.services.logs.logs_service import LogService
@@ -45,9 +46,23 @@ class FakeLogService:
                 "text": "[2026-11-15 12:00:00] [INFO] arranque\n[2026-11-15 12:00:01] [ERROR] fallo"}
 
 
+_VIEWS = []
+
+
+@pytest.fixture(autouse=True)
+def _dispose_views(qapp):
+    """Destruye las vistas al terminar cada prueba, con sus eventos pendientes ya procesados."""
+    yield
+    for view in _VIEWS:
+        view.deleteLater()
+    _VIEWS.clear()
+    QApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
 def _setup(qapp):
     FakeWorker.instances.clear()
     view = BugReportView(KeyTranslations())
+    _VIEWS.append(view)
     toast = FakeToast()
     controller = BugReportController(None, worker_class=FakeWorker, log_service=FakeLogService(),
                                      toast_manager=toast, i18n=KeyTranslations())
