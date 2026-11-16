@@ -23,6 +23,8 @@ if hasattr(sys.stdout, "reconfigure"):
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ICONS_DIR = PROJECT_ROOT / "assets" / "icons"
 SHARED_PACK_DIR = "common"
+# Glifos cuyo centro óptico no coincide con el de su caja (el triángulo de play va desplazado a propósito).
+OPTICAL_CENTER_EXEMPT = frozenset({"play-outline"})
 
 GRID = 24
 CANVAS_SIZE = "24"
@@ -115,15 +117,20 @@ def measure(svg_xml: str) -> Optional[Bounds]:
     return Bounds(left / RENDER_SCALE, right / RENDER_SCALE, rows[0] / RENDER_SCALE, (rows[-1] + 1) / RENDER_SCALE)
 
 
-def plan_adjustment(bounds: Bounds) -> Optional[Adjustment]:
-    """Traslación y escala que dejan el glifo centrado y dentro del área útil; None si ya cumple."""
+def plan_adjustment(bounds: Bounds, keep_center: bool = False) -> Optional[Adjustment]:
+    """Traslación y escala que dejan el glifo centrado y dentro del área útil; None si ya cumple.
+
+    Con keep_center el glifo conserva su centro óptico y solo se reescala si excede el área útil.
+    """
     scale = min(1.0, LIVE_AREA / max(bounds.width, bounds.height))
-    off_center = max(abs(bounds.center_x - GRID / 2), abs(bounds.center_y - GRID / 2)) > TOLERANCE
+    target_x = bounds.center_x if keep_center else GRID / 2
+    target_y = bounds.center_y if keep_center else GRID / 2
+    off_center = max(abs(bounds.center_x - target_x), abs(bounds.center_y - target_y)) > TOLERANCE
     if scale == 1.0 and not off_center:
         return None
     return Adjustment(
-        dx=round(GRID / 2 - scale * bounds.center_x, 4),
-        dy=round(GRID / 2 - scale * bounds.center_y, 4),
+        dx=round(target_x - scale * bounds.center_x, 4),
+        dy=round(target_y - scale * bounds.center_y, 4),
         scale=round(scale, 4),
     )
 
@@ -184,7 +191,8 @@ def iter_pack_icons(icons_dir: Path = ICONS_DIR) -> Iterator[Path]:
 def analyze(path: Path) -> IconGridReport:
     svg_xml = _read(path)
     bounds = measure(svg_xml)
-    adjustment = plan_adjustment(bounds) if bounds else None
+    keep_center = path.stem in OPTICAL_CENTER_EXEMPT
+    adjustment = plan_adjustment(bounds, keep_center) if bounds else None
     canvas_ok = canvas_is_standard(svg_xml)
     report = IconGridReport(path.parent.name, path.stem, path, bounds, adjustment, canvas_ok)
     if bounds is None:
@@ -192,7 +200,7 @@ def analyze(path: Path) -> IconGridReport:
         return report
     if adjustment and adjustment.scale < 1.0:
         report.issues.append("EXCEDE ÁREA ÚTIL")
-    if adjustment and (abs(bounds.center_x - GRID / 2) > TOLERANCE or abs(bounds.center_y - GRID / 2) > TOLERANCE):
+    if adjustment and not keep_center and (abs(bounds.center_x - GRID / 2) > TOLERANCE or abs(bounds.center_y - GRID / 2) > TOLERANCE):
         report.issues.append("DESCENTRADO")
     if not canvas_ok:
         report.issues.append("LIENZO")
@@ -206,7 +214,7 @@ def fix_icon(report: IconGridReport) -> bool:
     if not canvas_is_standard(svg_xml):
         svg_xml = normalize_canvas(svg_xml)
     bounds = measure(svg_xml)
-    adjustment = plan_adjustment(bounds) if bounds else None
+    adjustment = plan_adjustment(bounds, report.path.stem in OPTICAL_CENTER_EXEMPT) if bounds else None
     if adjustment:
         svg_xml = apply_adjustment(svg_xml, adjustment)
     if svg_xml == original:

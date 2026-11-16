@@ -78,3 +78,16 @@ def test_iter_pack_icons_skips_shared_pack(tmp_path):
         (tmp_path / pack).mkdir()
         (tmp_path / pack / "a.svg").write_text(CENTERED, encoding="utf-8")
     assert [p.parent.name for p in grid.iter_pack_icons(tmp_path)] == ["outline"]
+
+
+def test_optical_center_exempt_icon_keeps_its_offset_but_still_shrinks_when_oversize(tmp_path):
+    pack = tmp_path / "outline"
+    pack.mkdir()
+    icon = pack / "play-outline.svg"
+    icon.write_text(OFF_CENTER, encoding="utf-8")
+    assert "DESCENTRADO" not in grid.analyze(icon).issues
+    assert grid.plan_adjustment(grid.measure(OFF_CENTER), keep_center=True) is None
+
+    shrunk = grid.plan_adjustment(grid.measure(OVERSIZE), keep_center=True)
+    assert shrunk.scale < 1.0
+    assert shrunk.dx == pytest.approx(12 * (1 - shrunk.scale), abs=0.01)
