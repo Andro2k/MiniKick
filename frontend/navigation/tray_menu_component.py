@@ -25,8 +25,7 @@ class SystemTrayManager(QSystemTrayIcon):
     def _setup_ui(self):
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         self.setIcon(QIcon(icon_path))
-        tooltip_template = self.i18n.get("main.tray.tooltip")
-        self.setToolTip(tooltip_template.replace("{version}", "1.6.0") if "{version}" in tooltip_template else tooltip_template)
+        self.setToolTip(self.i18n.get("main.tray.tooltip", version="1.6.0"))
 
         self.menu = QMenu(self.parent())
 

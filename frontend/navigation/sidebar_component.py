@@ -65,7 +65,7 @@ class Sidebar(QFrame):
         plain_version = self.app_version.lstrip("vV")
         self.lbl_version = QLabel(f"v{plain_version}", self.header_container)
         self.lbl_version.setProperty("role", "badge_kick")
-        self.lbl_version.setToolTip(self.i18n.get("main.sidebar.version").replace("{version}", plain_version))
+        self.lbl_version.setToolTip(self.i18n.get("main.sidebar.version", version=plain_version))
         self.lbl_version.setVisible(self._has_version)
 
         self.expanded_spacer = QWidget()
@@ -172,7 +172,7 @@ class Sidebar(QFrame):
 
         card_layout.addLayout(top_row)
 
-        self.lbl_update_desc = QLabel(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", ""))
+        self.lbl_update_desc = QLabel(self.i18n.get("main.sidebar.update_card.desc", version=""))
         self.lbl_update_desc.setProperty("role", "text_caption")
         self.lbl_update_desc.setWordWrap(True)
         card_layout.addWidget(self.lbl_update_desc)
@@ -282,8 +282,8 @@ class Sidebar(QFrame):
     def set_update_available(self, available: bool = True, version: str = ""):
         self.has_update = available
         if version:
-            self.lbl_update_desc.setText(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", version))
-            collapsed_tooltip = self.i18n.get("main.sidebar.update_card.tooltip_collapsed").replace("{version}", version)
+            self.lbl_update_desc.setText(self.i18n.get("main.sidebar.update_card.desc", version=version))
+            collapsed_tooltip = self.i18n.get("main.sidebar.update_card.tooltip_collapsed", version=version)
             self.btn_collapsed_update.setToolTip(collapsed_tooltip)
         self._update_notification_visibility()
 

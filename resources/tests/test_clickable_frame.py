@@ -10,7 +10,7 @@ from frontend.widgets import ClickableFrame
 
 
 class _I18n:
-    def get(self, key: str, default: str = "") -> str:
+    def get(self, key: str, default: str = "", **kwargs) -> str:
         return default or key
 
 

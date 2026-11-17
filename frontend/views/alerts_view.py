@@ -119,7 +119,7 @@ class AlertsView(BaseView):
         notice_text_col.addWidget(self.lbl_notice_msg)
 
         self.btn_notice_connect = ModernButton(
-            text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
+            text=self.i18n.get("alerts.notice.connect_btn", platform="Twitch"),
             role="action_outlined",
             icon_name="block-twitch.svg",
             parent=self
@@ -311,10 +311,8 @@ class AlertsView(BaseView):
         is_connected = bool(self.connected_platforms.get("twitch", False))
 
         if not is_connected:
-            msg_template = self.i18n.get("alerts.notice.disconnected_msg")
-            self.lbl_notice_msg.setText(msg_template.replace("{platform}", "Twitch"))
-            btn_template = self.i18n.get("alerts.notice.connect_btn")
-            self.btn_notice_connect.setText(btn_template.replace("{platform}", "Twitch"))
+            self.lbl_notice_msg.setText(self.i18n.get("alerts.notice.disconnected_msg", platform="Twitch"))
+            self.btn_notice_connect.setText(self.i18n.get("alerts.notice.connect_btn", platform="Twitch"))
             self.notice_banner.setVisible(True)
         else:
             self.notice_banner.setVisible(False)

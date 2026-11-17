@@ -63,8 +63,7 @@ class PlatformStatusCard(QFrame):
 
         self.lbl_status = self.lbl_channel
 
-        initial_msg_text = self.i18n.get("dashboard.platforms.messages_share")
-        initial_msg_text = initial_msg_text.replace("{count}", "0").replace("{percentage}", "0")
+        initial_msg_text = self.i18n.get("dashboard.platforms.messages_share", count=0, percentage=0)
         self.lbl_msgs = QLabel(initial_msg_text, self)
         self.lbl_msgs.setProperty("role", "text_caption")
         self.lbl_msgs.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -128,7 +127,4 @@ class PlatformStatusCard(QFrame):
     def update_message_share(self, count: int, total: int):
         count = max(0, int(count))
         percentage = round(count * 100 / total) if total > 0 else 0
-        template = self.i18n.get("dashboard.platforms.messages_share")
-        self.lbl_msgs.setText(
-            template.replace("{count}", str(count)).replace("{percentage}", str(percentage))
-        )
+        self.lbl_msgs.setText(self.i18n.get("dashboard.platforms.messages_share", count=count, percentage=percentage))

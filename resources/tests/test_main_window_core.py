@@ -138,7 +138,7 @@ def test_dashboard_kick_connect_signal_matches_controller_contract(qapp):
 
     class TestTranslations:
         @staticmethod
-        def get(key):
+        def get(key, **kwargs):
             return key
 
     view = DashboardView(TestTranslations())

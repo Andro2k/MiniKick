@@ -282,8 +282,8 @@ class SettingsView(BaseView):
 
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "", tiktok_connected: bool = False, tiktok_channel: str = "") -> None:
         if kick_connected and kick_channel:
-            text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick").replace("{channel}", kick_channel)
-            desc_kick = self.i18n.get("settings.integrations.kick_desc_connected").replace("{channel}", kick_channel)
+            text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick", channel=kick_channel)
+            desc_kick = self.i18n.get("settings.integrations.kick_desc_connected", channel=kick_channel)
             self.btn_kick_integration.setText(text_kick)
             self.btn_kick_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_kick_integration') and self.row_kick_integration:
@@ -300,8 +300,8 @@ class SettingsView(BaseView):
         self.btn_kick_integration.style().polish(self.btn_kick_integration)
 
         if twitch_connected and twitch_channel:
-            text = self.i18n.get("settings.integrations.btn_disconnect_twitch").replace("{channel}", twitch_channel)
-            desc = self.i18n.get("settings.integrations.twitch_desc_connected").replace("{channel}", twitch_channel)
+            text = self.i18n.get("settings.integrations.btn_disconnect_twitch", channel=twitch_channel)
+            desc = self.i18n.get("settings.integrations.twitch_desc_connected", channel=twitch_channel)
             self.btn_twitch_integration.setText(text)
             self.btn_twitch_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_twitch_integration') and self.row_twitch_integration:
@@ -319,8 +319,8 @@ class SettingsView(BaseView):
 
         if youtube_connected and youtube_channel:
             short_channel = self._format_target_for_button(youtube_channel)
-            text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube").replace("{channel}", short_channel)
-            desc_yt = self.i18n.get("settings.integrations.youtube_desc_connected").replace("{channel}", youtube_channel)
+            text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube", channel=short_channel)
+            desc_yt = self.i18n.get("settings.integrations.youtube_desc_connected", channel=youtube_channel)
             self.btn_youtube_integration.setText(text_yt)
             self.btn_youtube_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_youtube_integration') and self.row_youtube_integration:
@@ -338,8 +338,8 @@ class SettingsView(BaseView):
 
         if tiktok_connected and tiktok_channel:
             short_tk = tiktok_channel.lstrip("@")
-            text_tk = self.i18n.get("settings.integrations.btn_disconnect_tiktok").replace("{channel}", short_tk)
-            desc_tk = self.i18n.get("settings.integrations.tiktok_desc_connected").replace("{channel}", short_tk)
+            text_tk = self.i18n.get("settings.integrations.btn_disconnect_tiktok", channel=short_tk)
+            desc_tk = self.i18n.get("settings.integrations.tiktok_desc_connected", channel=short_tk)
             self.btn_tiktok_integration.setText(text_tk)
             self.btn_tiktok_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_tiktok_integration') and self.row_tiktok_integration:
@@ -463,7 +463,7 @@ class SettingsView(BaseView):
                 norm_current = os.path.normpath(current_path).lower()
                 if norm_current not in self._installed_browser_paths:
                     base_name = os.path.basename(current_path)
-                    custom_label = self.i18n.get("settings.system.browser_custom").replace("{name}", base_name)
+                    custom_label = self.i18n.get("settings.system.browser_custom", name=base_name)
                     self.combo_browser.addItem(custom_label, current_path)
 
             browse_text = self.i18n.get("settings.system.browser_browse")
@@ -518,7 +518,7 @@ class SettingsView(BaseView):
                 self.combo_browser.setCurrentIndex(idx)
             else:
                 base_name = os.path.basename(norm_chosen)
-                custom_label = self.i18n.get("settings.system.browser_custom").replace("{name}", base_name)
+                custom_label = self.i18n.get("settings.system.browser_custom", name=base_name)
                 insert_idx = max(0, self.combo_browser.count() - 1)
                 self.combo_browser.insertItem(insert_idx, custom_label, norm_chosen)
                 self.combo_browser.setCurrentIndex(insert_idx)

@@ -125,7 +125,7 @@ class WebhooksView(BaseView):
             self.i18n,
             parent=self,
             title_text=self.i18n.get("webhooks.confirm_delete.title"),
-            body_text=self.i18n.get("webhooks.confirm_delete.desc").replace("{name}", name),
+            body_text=self.i18n.get("webhooks.confirm_delete.desc", name=name),
         )
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.delete_requested.emit(endpoint_id)

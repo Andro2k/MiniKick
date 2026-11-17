@@ -10,7 +10,7 @@ from frontend.views.dashboard_view import DashboardView
 
 class KeyTranslations:
     @staticmethod
-    def get(key, default=""):
+    def get(key, default="", **kwargs):
         return default or key
 
 

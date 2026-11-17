@@ -100,7 +100,7 @@ class MusicPlaylistsPanel(QWidget):
         self.selected.emit(self._selected_id)
 
     def _confirm_delete(self, playlist: dict):
-        body = self.i18n.get("music.playlists.delete_confirm_body").replace("{name}", playlist["name"])
+        body = self.i18n.get("music.playlists.delete_confirm_body", name=playlist["name"])
         dialog = ModernConfirmDialog(
             self.i18n, parent=self, title_text=self.i18n.get("music.playlists.delete_confirm_title"), body_text=body
         )

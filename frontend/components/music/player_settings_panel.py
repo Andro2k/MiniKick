@@ -274,7 +274,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.mockup_widget.set_configuration(layout)
         dim = self._RECOMMENDED_DIMENSIONS.get(layout, "580 × 180")
         self.lbl_recommended_dim.setText(
-            self.i18n.get("music.overlay.recommended_dim").replace("{dim}", dim)
+            self.i18n.get("music.overlay.recommended_dim", dim=dim)
         )
 
     def _copy_music_overlay_url(self):
@@ -395,7 +395,7 @@ class MusicPlayerSettingsPanel(QWidget):
                 color_hex = BrandColors.KICK
             safe_requester = html.escape(requester)
             user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
-            req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
+            req_text = self.i18n.get("music.player.requested_by", user=user_styled)
         else:
             req_text = self.i18n.get("music.player.requested_by_streamer")
         self.lbl_song_requester.setText(req_text)

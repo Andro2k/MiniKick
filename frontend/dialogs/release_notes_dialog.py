@@ -126,12 +126,12 @@ class ReleaseNotesDialog(ModernModal):
             self.title_lbl.setText(release_name)
 
         if published_date:
-            pub_text = self.i18n.get("dialogs.release_notes.lbl_published").replace("{date}", published_date)
+            pub_text = self.i18n.get("dialogs.release_notes.lbl_published", date=published_date)
             self.lbl_published.setText(pub_text)
             self.lbl_published.show()
 
         if author:
-            auth_text = self.i18n.get("dialogs.release_notes.lbl_author").replace("{author}", author)
+            auth_text = self.i18n.get("dialogs.release_notes.lbl_author", author=author)
             self.lbl_author.setText(auth_text)
             self.lbl_author.show()
 

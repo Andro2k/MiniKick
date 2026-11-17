@@ -12,7 +12,7 @@ from frontend.views.bug_report_view import BugReportView
 
 class KeyTranslations:
     @staticmethod
-    def get(key, default=""):
+    def get(key, default="", **kwargs):
         return default or key
 
 

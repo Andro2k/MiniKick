@@ -75,7 +75,7 @@ class MainWindowCore(QMainWindow):
         self._init_live_chat_connections()
         self._init_twitch_connection()
         self.composition = MainWindowComposition(self)
-        self.setWindowTitle(self.i18n.get("main.window.title").replace("{version}", app_version))
+        self.setWindowTitle(self.i18n.get("main.window.title", version=app_version))
 
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
         self.toast = ToastManager(self)
