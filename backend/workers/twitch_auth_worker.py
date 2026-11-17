@@ -20,7 +20,7 @@ class TwitchAuthWorker(QThread):
     def run(self):
         logger.info("[TwitchAuthWorker] Starting Twitch OAuth flow (force=%s)...", self.force)
         try:
-            tokens = self.auth_manager.login(force=self.force)
+            tokens = self.auth_manager.login(force=self.force, should_cancel=self.isInterruptionRequested)
             logger.info("[TwitchAuthWorker] Twitch OAuth authentication successful.")
             self.auth_success.emit(tokens)
         except Exception as e:
