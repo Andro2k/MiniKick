@@ -323,7 +323,7 @@ class CommandView(BaseView):
 
     def _confirm_delete_command(self, trigger_name: str) -> None:
         from frontend.dialogs import ModernConfirmDialog
-        desc = self.i18n.get("command.confirm_delete.desc").replace("{trigger}", trigger_name)
+        desc = self.i18n.get("command.confirm_delete.desc", trigger=trigger_name)
         dialog = ModernConfirmDialog(
             self.i18n,
             parent=self,

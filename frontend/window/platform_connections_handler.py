@@ -68,7 +68,7 @@ class PlatformConnectionHandlers:
         if not w._consume_startup_silent_connection("kick"):
             w.toast.show_toast(
                 title=w.i18n.get("main.toast.kick_connected_title"),
-                message=w.i18n.get("main.toast.kick_connected_msg").replace("{username}", username),
+                message=w.i18n.get("main.toast.kick_connected_msg", username=username),
                 state="success",
             )
         self.fetch_api_rewards()
@@ -155,7 +155,7 @@ class PlatformConnectionHandlers:
         if not w._consume_startup_silent_connection("twitch"):
             w.toast.show_toast(
                 title=w.container.i18n.get("main.toast.twitch_connected_title"),
-                message=w.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username),
+                message=w.container.i18n.get("main.toast.twitch_connected_msg", username=username),
                 state="success",
             )
 
@@ -234,7 +234,7 @@ class PlatformConnectionHandlers:
         title_key, message_key, _, _ = self._LIVE_CHAT_TOASTS[chat.platform_id]
         w.toast.show_toast(
             title=w.i18n.get(title_key),
-            message=w.i18n.get(message_key).replace("{target}", display_name),
+            message=w.i18n.get(message_key, target=display_name),
             state="success",
         )
 

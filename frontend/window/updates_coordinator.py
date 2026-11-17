@@ -66,7 +66,7 @@ class AutoUpdateCoordinator(QObject):
             self._i18n,
             parent=self._parent_window,
             title_text=self._i18n.get("settings.system.auto_update_ready_title"),
-            body_text=self._i18n.get("settings.system.auto_update_ready_desc").replace("{version}", version),
+            body_text=self._i18n.get("settings.system.auto_update_ready_desc", version=version),
         )
         if dialog.exec() == dialog.DialogCode.Accepted:
             self._updater.install_update()
@@ -75,7 +75,7 @@ class AutoUpdateCoordinator(QObject):
 
         self._show_toast(
             self._i18n.get("settings.system.auto_update_download_complete_title"),
-            self._i18n.get("settings.system.auto_update_download_complete_desc").replace("{version}", version),
+            self._i18n.get("settings.system.auto_update_download_complete_desc", version=version),
             "success",
         )
 

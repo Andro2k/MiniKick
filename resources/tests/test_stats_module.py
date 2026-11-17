@@ -15,7 +15,7 @@ TODAY = date(2026, 11, 15)
 
 class KeyTranslations:
     @staticmethod
-    def get(key):
+    def get(key, **kwargs):
         return key
 
 

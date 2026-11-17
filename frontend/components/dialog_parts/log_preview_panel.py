@@ -110,9 +110,7 @@ class LogPreviewPanel(QFrame):
         self.viewer.setPlainText(preview["text"])
         scroll = self.viewer.verticalScrollBar()
         scroll.setValue(scroll.maximum())
-        meta = (self.i18n.get("dialogs.bug_report.log_meta")
-                .replace("{lines}", str(preview["total_lines"]))
-                .replace("{size}", _format_size(preview["size"])))
+        meta = (self.i18n.get("dialogs.bug_report.log_meta", lines=preview["total_lines"], size=_format_size(preview["size"])))
         self.lbl_meta.setText(meta)
         self._shown = preview["shown_lines"]
         self.set_attached(self._attached)
@@ -121,5 +119,5 @@ class LogPreviewPanel(QFrame):
         self._attached = attached
         self.viewer.setEnabled(attached)
         key = "dialogs.bug_report.log_attached_note" if attached else "dialogs.bug_report.log_excluded_note"
-        note = self.i18n.get(key).replace("{count}", str(self._shown))
+        note = self.i18n.get(key, count=self._shown)
         self.lbl_notice.setText(note)

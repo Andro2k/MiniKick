@@ -188,7 +188,7 @@ class TimersView(BaseView):
 
     def _confirm_delete_timer(self, timer_id: int, timer_name: str) -> None:
         from frontend.dialogs import ModernConfirmDialog
-        desc = self.i18n.get("timer.confirm_delete.desc").replace("{name}", timer_name)
+        desc = self.i18n.get("timer.confirm_delete.desc", name=timer_name)
         dialog = ModernConfirmDialog(
             self.i18n,
             parent=self,

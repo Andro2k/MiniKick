@@ -28,9 +28,8 @@ class WhatsNewDialog(ModernModal):
             self._subtitle_text = self.i18n.get("whats_new.dialog.subtitle_welcome")
             self._btn_text = self.i18n.get("whats_new.dialog.btn_start")
         else:
-            title_tpl = self.i18n.get("whats_new.dialog.title_update")
             clean_ver = self.app_version.lstrip("vV") if self.app_version else ""
-            dialog_title = title_tpl.replace("{version}", clean_ver)
+            dialog_title = self.i18n.get("whats_new.dialog.title_update", version=clean_ver)
             self._subtitle_text = self.i18n.get("whats_new.dialog.subtitle_update")
             self._btn_text = self.i18n.get("common.buttons.understood")
 

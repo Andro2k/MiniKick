@@ -108,7 +108,7 @@ class UpdateDialog(ModernModal):
         self.version = version
         self._set_header_icon("cloud-download.svg")
 
-        self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
+        self.title_lbl.setText(self.i18n.get("dialogs.update.top_available", version=version))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
         self.progress_container.hide()
 

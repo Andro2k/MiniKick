@@ -673,8 +673,9 @@ class ModernWizardPanel(ModernFramelessShell):
 
     def _update_step_ui(self):
         try:
-            step_tmpl = self.i18n.get("dialogs.wizard.step_indicator")
-            self.lbl_step_num.setText(step_tmpl.replace("{current}", str(self.current_step + 1)).replace("{total}", str(self.total_steps)))
+            self.lbl_step_num.setText(
+                self.i18n.get("dialogs.wizard.step_indicator", current=self.current_step + 1, total=self.total_steps)
+            )
             self.progress_bar.setValue(self.current_step + 1)
 
             if 0 <= self.current_step < len(self.title_steps):

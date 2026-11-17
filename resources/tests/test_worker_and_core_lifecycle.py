@@ -26,7 +26,7 @@ def test_search_worker_stops_after_an_in_flight_request_is_cancelled(qapp, monke
     from backend.workers.music_worker import YouTubeSearchWorker
 
     class I18n:
-        def get(self, key):
+        def get(self, key, **kwargs):
             return key
 
     request_started = threading.Event()

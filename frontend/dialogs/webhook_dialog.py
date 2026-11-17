@@ -191,10 +191,10 @@ class WebhookEndpointDialog(ModernModal):
 
     def set_ping_result(self, result):
         if result.ok:
-            text = self.i18n.get("webhooks.dialog.ping_ok").replace("{status}", str(result.status_code)).replace("{ms}", str(result.latency_ms))
+            text = self.i18n.get("webhooks.dialog.ping_ok", status=result.status_code, ms=result.latency_ms)
             state = "success"
         else:
-            text = self.i18n.get("webhooks.dialog.ping_fail").replace("{error}", result.error or "-")
+            text = self.i18n.get("webhooks.dialog.ping_fail", error=result.error or "-")
             state = "error"
         self.lbl_ping.setText(text)
         self.lbl_ping.setProperty("state", state)

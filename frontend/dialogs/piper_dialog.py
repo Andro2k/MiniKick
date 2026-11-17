@@ -283,8 +283,7 @@ class PiperVoicesDialog(ModernFramelessShell):
             return
         installed_list = self.manager.get_installed_voices()
         catalog_list = self.manager.get_catalog()
-        template = self.i18n.get("piper_dialog.installed_count")
-        text = template.replace("{installed}", str(len(installed_list))).replace("{total}", str(len(catalog_list)))
+        text = self.i18n.get("piper_dialog.installed_count", installed=len(installed_list), total=len(catalog_list))
         self.lbl_installed_count.setText(text)
 
     def _load_synthesis_params(self):
@@ -467,7 +466,7 @@ class PiperVoicesDialog(ModernFramelessShell):
             voice_name = item.voice_meta.get("name", voice_id)
 
         from frontend.dialogs import ModernConfirmDialog
-        desc = self.i18n.get("piper_dialog.confirm_delete.desc").replace("{voice_name}", voice_name)
+        desc = self.i18n.get("piper_dialog.confirm_delete.desc", voice_name=voice_name)
         dialog = ModernConfirmDialog(
             self.i18n,
             parent=self,

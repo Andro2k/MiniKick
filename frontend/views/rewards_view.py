@@ -391,13 +391,13 @@ class RewardsView(BaseView):
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
                 item_plat.setIcon(get_icon_colored(icon_name))
                 item_plat.setForeground(QColor(Palette.NEUTRAL_050))
-                item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
+                item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip", platform=plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
                 item_plat.setIcon(get_icon_colored("triangle-exclamation-point.svg", BrandColors.AMBER))
                 item_plat.setForeground(QColor(BrandColors.AMBER))
-                item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
+                item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip", platform=plat_name))
             else:
                 item_plat = QTableWidgetItem(plat_name)
                 item_plat.setIcon(get_icon_colored(icon_name, plat_color))
@@ -411,7 +411,7 @@ class RewardsView(BaseView):
                 cost_num = int(cost_val)
             except (ValueError, TypeError):
                 cost_num = 0
-            cost_str = self.i18n.get("rewards.table.pts_suffix").replace("{cost}", f"{cost_num:,}")
+            cost_str = self.i18n.get("rewards.table.pts_suffix", cost=f"{cost_num:,}")
             item_cost = QTableWidgetItem(cost_str)
             item_cost.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             item_cost.setFlags(item_cost.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -501,7 +501,7 @@ class RewardsView(BaseView):
 
     def _confirm_delete_reward(self, key: str, reward_title: str) -> None:
         from frontend.dialogs import ModernConfirmDialog
-        desc = self.i18n.get("rewards.confirm_delete.desc").replace("{title}", reward_title)
+        desc = self.i18n.get("rewards.confirm_delete.desc", title=reward_title)
         dialog = ModernConfirmDialog(
             self.i18n,
             parent=self,

@@ -113,19 +113,17 @@ class RewardRedemptionPresenter:
         if redemption is None:
             return
 
-        toast_template = w.i18n.get("main.toasts.reward_msg")
         w.toast.show_toast(
             title=w.i18n.get("main.toasts.reward_title"),
-            message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name),
+            message=w.i18n.get("main.toasts.reward_msg", user=user, reward_name=reward_name),
             state="success",
         )
 
         current_time = datetime.now().strftime("%H:%M")
         safe_reward_name = html.escape(reward_name)
-        reward_template = w.i18n.get("main.chat.reward_redeemed")
         system_message = (
             f'<span style="color: {BrandColors.GREEN};">'
-            f'{reward_template.replace("{reward_name}", safe_reward_name)}</span>'
+            f'{w.i18n.get("main.chat.reward_redeemed", reward_name=safe_reward_name)}</span>'
         )
         tag = w.i18n.get("main.chat.points_tag")
         if w.view_chat is not None:

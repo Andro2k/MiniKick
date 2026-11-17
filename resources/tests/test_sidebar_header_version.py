@@ -9,8 +9,11 @@ from frontend.navigation import Sidebar
 class _I18n:
     _TEXTS = {"main.sidebar.version": "Versión {version}"}
 
-    def get(self, key: str, default: str = "") -> str:
-        return self._TEXTS.get(key, default or key)
+    def get(self, key: str, default: str = "", **kwargs) -> str:
+        text = self._TEXTS.get(key, default or key)
+        for name, value in kwargs.items():
+            text = text.replace("{%s}" % name, str(value))
+        return text
 
 
 def _wait_for_width(qapp, sidebar: Sidebar, width: int, timeout: float = 2.0) -> None:
