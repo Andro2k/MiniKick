@@ -90,6 +90,7 @@ class UpdateDialog(ModernModal):
             frame = self.frameGeometry()
             frame.moveCenter(center)
             self.move(frame.topLeft())
+        self.container.update()
         self.update()
 
     def _set_header_icon(self, icon_name: str, color: str = Palette.NEUTRAL_050) -> None:

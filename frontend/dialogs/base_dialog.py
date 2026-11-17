@@ -4,7 +4,7 @@
 import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect, QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication
 from PySide6.QtCore import Qt, QSettings, QEvent, Signal
-from PySide6.QtGui import QColor, QMouseEvent, QKeyEvent, QPainter
+from PySide6.QtGui import QColor, QMouseEvent, QKeyEvent, QPainter, QPen
 from frontend.common import PATH_ICON_HELP, get_qcolor_with_alpha, get_icon_colored, get_pixmap_colored, Palette, BrandColors, Size
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
@@ -86,6 +86,7 @@ class ModernFramelessShell(QDialog):
             self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
 
         self.glow = None
+        self._glow_color: QColor | None = None
 
         self.main_layout.addWidget(self.container)
 
@@ -166,16 +167,26 @@ class ModernFramelessShell(QDialog):
         self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
-        if glow_color is not None and glow_color.alpha() > 0:
-            if self.glow is None:
-                self.glow = QGraphicsDropShadowEffect(self)
-                self.glow.setBlurRadius(30)
-                self.glow.setOffset(0, 0)
-                self.container.setGraphicsEffect(self.glow)
-            self.glow.setColor(glow_color)
-        elif self.glow is not None:
-            self.container.setGraphicsEffect(None)
-            self.glow = None
+        self._glow_color = QColor(glow_color) if glow_color is not None and glow_color.alpha() > 0 else None
+        self.update()
+
+    def paintEvent(self, event):
+        """Pinta el resplandor alrededor del contenedor sin QGraphicsEffect, que dejaba a los hijos sin repintar."""
+        super().paintEvent(event)
+        if self._glow_color is None:
+            return
+        steps = self.main_layout.contentsMargins().left()
+        radius = Size.Radius.RAD_XLG
+        base_alpha = self._glow_color.alphaF()
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        for i in range(steps, 0, -1):
+            color = QColor(self._glow_color)
+            color.setAlphaF(base_alpha * 0.5 * (1 - i / (steps + 1)) ** 2)
+            painter.setPen(QPen(color, 1.5))
+            painter.drawRoundedRect(self.container.geometry().adjusted(-i, -i, i, i), radius + i, radius + i)
+        painter.end()
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
