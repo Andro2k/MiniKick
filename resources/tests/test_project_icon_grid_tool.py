@@ -61,9 +61,9 @@ def test_normalize_canvas_sets_standard_width_and_height():
 
 
 def test_fix_icon_normalizes_file_once_and_keeps_it_stable(tmp_path):
-    pack = tmp_path / "outline"
+    pack = tmp_path / "lucide"
     pack.mkdir()
-    icon = pack / "box-outline.svg"
+    icon = pack / "box.svg"
     icon.write_text(_svg('x="4" y="1" width="16" height="16"', size="64"), encoding="utf-8")
 
     report = grid.analyze(icon)
@@ -74,16 +74,16 @@ def test_fix_icon_normalizes_file_once_and_keeps_it_stable(tmp_path):
 
 
 def test_iter_pack_icons_skips_shared_pack(tmp_path):
-    for pack in ("outline", grid.SHARED_PACK_DIR):
+    for pack in ("lucide", grid.SHARED_PACK_DIR):
         (tmp_path / pack).mkdir()
         (tmp_path / pack / "a.svg").write_text(CENTERED, encoding="utf-8")
-    assert [p.parent.name for p in grid.iter_pack_icons(tmp_path)] == ["outline"]
+    assert [p.parent.name for p in grid.iter_pack_icons(tmp_path)] == ["lucide"]
 
 
 def test_optical_center_exempt_icon_keeps_its_offset_but_still_shrinks_when_oversize(tmp_path):
-    pack = tmp_path / "outline"
+    pack = tmp_path / "lucide"
     pack.mkdir()
-    icon = pack / "play-outline.svg"
+    icon = pack / "play.svg"
     icon.write_text(OFF_CENTER, encoding="utf-8")
     assert "DESCENTRADO" not in grid.analyze(icon).issues
     assert grid.plan_adjustment(grid.measure(OFF_CENTER), keep_center=True) is None

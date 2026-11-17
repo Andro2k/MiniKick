@@ -16,9 +16,9 @@ from backend.utils import resource_path
 logger = logging.getLogger("minikick.icons")
 
 ICONS_DIR = "icons"
-ACTIVE_ICON_PACK = "outline"
+ACTIVE_ICON_PACK = "lucide"
 SHARED_ICON_PACK = "common"
-BASE_ICON_PACK = "outline"
+BASE_ICON_PACK = "lucide"
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
 

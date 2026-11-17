@@ -188,7 +188,7 @@ class YouTubeMusicProvider(QObject):
                         parts = [int(p) for p in dur_str.split(":")]
                         dur_sec = parts[0] * 60 + parts[1] if len(parts) == 2 else (parts[0] * 3600 + parts[1] * 60 + parts[2] if len(parts) == 3 else 0)
                         if dur_sec > max_duration_min * 60:
-                            msg = self.i18n.get("music.chat.song_too_long").replace("{user}", requester or "").replace("{max}", str(max_duration_min))
+                            msg = self.i18n.get("music.chat.song_too_long", user=requester or "", max=max_duration_min)
                             return False, msg
                     except Exception:
                         pass
@@ -203,11 +203,11 @@ class YouTubeMusicProvider(QObject):
                     "platform": platform,
                     "duration": dur_str
                 })
-                success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
+                success_msg = self.i18n.get("music.queue.success", track=f"{cached['title']} - {cached['artist']}")
                 return True, success_msg
 
             search_query = f"ytsearch1:{query}"
-            immediate_msg = self.i18n.get("music.queue.searching").replace("{query}", query)
+            immediate_msg = self.i18n.get("music.queue.searching", query=query)
         else:
             search_query = query
             immediate_msg = self.i18n.get("music.queue.processing_link")
@@ -271,7 +271,7 @@ class YouTubeMusicProvider(QObject):
             "requester": requester,
             "platform": platform,
         })
-        return True, self.i18n.get("music.queue.success").replace("{track}", f"{known['title']} - {known['artist']}")
+        return True, self.i18n.get("music.queue.success", track=f"{known['title']} - {known['artist']}")
 
     @Slot(bool, str)
     def _on_search_worker_completed(self, success: bool, message: str) -> None:

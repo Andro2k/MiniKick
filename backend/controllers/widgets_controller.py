@@ -353,7 +353,7 @@ class WidgetsController(QObject):
             w_name = self.i18n.get(title_k) if title_k else widget_id
             
             title = self.i18n.get(title_key)
-            message = self.i18n.get(msg_key).replace("{widget_name}", w_name)
+            message = self.i18n.get(msg_key, widget_name=w_name)
             state = "success" if is_active else "info"
 
             if self.toast:
@@ -424,33 +424,33 @@ class WidgetsController(QObject):
 
         if arg_clean in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
             wins, losses = self.widget_service.update_score(reset=True)
-            msg = self.i18n.get("widgets.score.msg_reset").replace("{user}", user)
+            msg = self.i18n.get("widgets.score.msg_reset", user=user)
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if action_word in _SCORE_WIN_WORDS or (action_word == "score" and arg_clean in _SCORE_WIN_WORDS):
             delta = -1 if arg_clean in _DELTA_DECREMENT else 1
             wins, losses = self.widget_service.update_score(delta_wins=delta)
-            msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
+            msg = self.i18n.get("widgets.score.msg_win", user=user, wins=wins, losses=losses)
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if action_word in _SCORE_LOSS_WORDS or (action_word == "score" and arg_clean in _SCORE_LOSS_WORDS):
             delta = -1 if arg_clean in _DELTA_DECREMENT else 1
             wins, losses = self.widget_service.update_score(delta_losses=delta)
-            msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
+            msg = self.i18n.get("widgets.score.msg_loss", user=user, wins=wins, losses=losses)
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if arg_clean in _SCORE_PLUS_WORDS or action_word.endswith("+"):
             wins, losses = self.widget_service.update_score(delta_wins=1)
-            msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
+            msg = self.i18n.get("widgets.score.msg_win", user=user, wins=wins, losses=losses)
         elif arg_clean in _SCORE_MINUS_WORDS or action_word.endswith("-"):
             wins, losses = self.widget_service.update_score(delta_losses=1)
-            msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
+            msg = self.i18n.get("widgets.score.msg_loss", user=user, wins=wins, losses=losses)
         else:
             wins, losses = self.widget_service.get_score()
-            msg = self.i18n.get("widgets.score.msg_check").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
+            msg = self.i18n.get("widgets.score.msg_check", user=user, wins=wins, losses=losses)
 
         self._notify_score_change(wins, losses, msg, platform=platform)
 
@@ -482,7 +482,7 @@ class WidgetsController(QObject):
     def _process_shoutout(self, user: str, args: str, prefix: str, platform: str = "kick"):
         arg_words = args.strip().split() if args else []
         if not arg_words:
-            err_msg = self.i18n.get("widgets.so.usage_error").replace("{user}", user).replace("{trigger}", prefix)
+            err_msg = self.i18n.get("widgets.so.usage_error", user=user, trigger=prefix)
             self.command_service.send_response(err_msg, platform=platform)
             return
 
@@ -510,7 +510,7 @@ class WidgetsController(QObject):
 
         if check_target in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
             new_count = self.widget_service.update_death_count(set_val=0)
-            msg = self.i18n.get("widgets.death.msg_reset").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_reset", user=user)
         elif check_target in _DEATH_SUB_WORDS or action_word.endswith("-") or action_word.endswith("sub"):
             new_count = self.widget_service.update_death_count(delta=-1)
             msg = self.i18n.get("widgets.death.msg_sub", user=user, count=new_count)
@@ -621,7 +621,7 @@ class WidgetsController(QObject):
                 "emotes": sample_emotes,
                 "count": 25
             })
-            msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user)
+            msg = self.i18n.get("widgets.explosion.msg_explosion", user=user)
             self.command_service.send_response(msg, platform=platform)
 
     def _process_combo_command(self, _user: str, args: str, platform: str = "kick"):
@@ -634,7 +634,7 @@ class WidgetsController(QObject):
                 "count": 5,
                 "timeout_sec": 5.0
             })
-            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
+            msg = self.i18n.get("widgets.combo.msg_combo", count="5", emote=emote)
             self.command_service.send_response(msg, platform=platform)
 
     def _publish_clock(self, event: str, snapshot: dict) -> None:
@@ -767,7 +767,7 @@ class WidgetsController(QObject):
     def _process_topchatters_command(self, user: str, args: str, platform: str = "kick"):
         if args and args.strip().lower() in _RESET_COMMANDS:
             self.reset_chatters_counts()
-            msg = self.i18n.get("widgets.chatters.msg_reset").replace("{user}", user)
+            msg = self.i18n.get("widgets.chatters.msg_reset", user=user)
             self.command_service.send_response(msg, platform=platform)
             return
 
@@ -778,7 +778,7 @@ class WidgetsController(QObject):
             msg = self.i18n.get("widgets.chatters.msg_empty")
         else:
             items_str = " | ".join(f"{idx+1}. @{item['user']} ({item['count']})" for idx, item in enumerate(top_5))
-            msg = self.i18n.get("widgets.chatters.msg_leaderboard").replace("{list}", items_str)
+            msg = self.i18n.get("widgets.chatters.msg_leaderboard", list=items_str)
         self.command_service.send_response(msg, platform=platform)
 
     def reset_chatters_counts(self):

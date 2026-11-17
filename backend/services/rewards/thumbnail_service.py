@@ -12,6 +12,7 @@ logger = logging.getLogger("minikick.rewards.thumbnail")
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"}
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".mkv", ".avi", ".mov", ".flv"}
+_VIDEO_FRAME_TIMEOUT_MS = 3000
 
 def generate_media_thumbnail(filepath: str, max_size: int = 128) -> bytes | None:
     if not filepath or not os.path.isfile(filepath):
@@ -47,17 +48,27 @@ def generate_media_thumbnail(filepath: str, max_size: int = 128) -> bytes | None
                 if not captured[0] and frame.isValid():
                     captured[0] = frame.toImage()
                     loop.quit()
+
+            def on_status_changed(status):
+                if status == QMediaPlayer.MediaStatus.LoadedMedia:
+                    player.setPosition(500)
+                    player.play()
+                elif status == QMediaPlayer.MediaStatus.InvalidMedia:
+                    loop.quit()
                     
             sink.videoFrameChanged.connect(on_frame_changed)
+            player.mediaStatusChanged.connect(on_status_changed)
+            player.errorOccurred.connect(lambda *_: loop.quit())
             player.setSource(QUrl.fromLocalFile(filepath))
-            player.setPosition(500)
-            player.play()
             
-            QTimer.singleShot(1500, loop.quit)
+            QTimer.singleShot(_VIDEO_FRAME_TIMEOUT_MS, loop.quit)
             loop.exec()
             player.stop()
+            player.setVideoSink(None)
             
-            if captured[0] and not captured[0].isNull():
+            if not captured[0] or captured[0].isNull():
+                logger.warning("No video frame captured for thumbnail: %s", filepath)
+            else:
                 scaled = captured[0].scaled(max_size, max_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
                 buffer = QBuffer()
                 buffer.open(QIODevice.OpenModeFlag.WriteOnly)

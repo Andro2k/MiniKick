@@ -51,7 +51,7 @@ class MusicPlaylistsPanel(QWidget):
         self.txt_name = QLineEdit(self)
         self.txt_name.setPlaceholderText(self.i18n.get("music.playlists.name_placeholder"))
         self.txt_name.returnPressed.connect(self._on_create_clicked)
-        self.btn_create = ModernButton(self.i18n.get("music.playlists.create_btn"), role="action_outlined", icon_name="plus-outline.svg", parent=self)
+        self.btn_create = ModernButton(self.i18n.get("music.playlists.create_btn"), role="action_outlined", icon_name="plus.svg", parent=self)
         self.btn_create.setEnabled(False)
         self.btn_create.clicked.connect(self._on_create_clicked)
         self.txt_name.textChanged.connect(lambda text: self.btn_create.setEnabled(bool(text.strip())))
@@ -109,11 +109,11 @@ class MusicPlaylistsPanel(QWidget):
 
     def _create_delete_cell(self, playlist: dict) -> QWidget:
         btn_enqueue = build_icon_button(
-            "play-outline.svg", BrandColors.GREEN, self.i18n.get("music.playlists.enqueue_tooltip"), lambda: self.enqueue_requested.emit(playlist["id"])
+            "play.svg", BrandColors.GREEN, self.i18n.get("music.playlists.enqueue_tooltip"), lambda: self.enqueue_requested.emit(playlist["id"])
         )
         btn_enqueue.setEnabled(playlist["song_count"] > 0)
         btn_delete = build_icon_button(
-            "trash-outline.svg", BrandColors.RED, self.i18n.get("music.playlists.delete_tooltip"), lambda: self._confirm_delete(playlist)
+            "trash.svg", BrandColors.RED, self.i18n.get("music.playlists.delete_tooltip"), lambda: self._confirm_delete(playlist)
         )
         return build_action_cell(btn_enqueue, btn_delete)
 

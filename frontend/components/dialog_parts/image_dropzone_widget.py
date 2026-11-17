@@ -34,7 +34,7 @@ class ImageDropzone(QFrame):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.icon_lbl = QLabel()
-        self.icon_lbl.setPixmap(get_icon_colored("cloud-download-outline.svg", Palette.NEUTRAL_400, size=32).pixmap(QSize(32, 32)))
+        self.icon_lbl.setPixmap(get_icon_colored("cloud-download.svg", Palette.NEUTRAL_400, size=32).pixmap(QSize(32, 32)))
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))
@@ -65,7 +65,7 @@ class ImageDropzone(QFrame):
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x-outline.svg"))
+        self.btn_remove.setIcon(get_icon_colored("x.svg"))
         configure_icon_only_button(self.btn_remove)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_remove.setProperty("role", "action_danger_solid")

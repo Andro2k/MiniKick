@@ -225,7 +225,7 @@ class SettingsController(QObject):
         if self.toast:
             i18n = self._get_i18n()
             title = i18n.get("settings.status.font_size_changed")
-            msg = i18n.get("settings.status.font_size_changed_msg").replace("{size}", str(size))
+            msg = i18n.get("settings.status.font_size_changed_msg", size=size)
             self.toast.show_toast(title, msg, "success")
 
     @Slot(str)
@@ -252,7 +252,7 @@ class SettingsController(QObject):
                 friendly_name = os.path.basename(browser_path)
             self.toast.show_toast(
                 title=i18n.get("settings.status.browser_changed"),
-                message=i18n.get("settings.status.browser_changed_msg").replace("{name}", friendly_name),
+                message=i18n.get("settings.status.browser_changed_msg", name=friendly_name),
                 state="success",
                 tag="browser_change",
             )

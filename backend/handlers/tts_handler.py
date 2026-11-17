@@ -133,7 +133,7 @@ class TTSVoiceHandler(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.i18n.get("chat.status.tts_error_title"),
-                message=self.i18n.get("chat.status.tts_error_offline").replace("{error}", error_msg),
+                message=self.i18n.get("chat.status.tts_error_offline", error=error_msg),
                 state="warning"
             )
 
@@ -208,7 +208,7 @@ class TTSVoiceHandler(QObject):
 
             self.toast.show_toast(
                 title=self.view.i18n.get("chat.status.provider_title"),
-                message=self.i18n.get("chat.status.provider_active").replace("{mode}", mode_name),
+                message=self.i18n.get("chat.status.provider_active", mode=mode_name),
                 state=state_color
             )
 

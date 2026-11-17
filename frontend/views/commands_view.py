@@ -56,7 +56,7 @@ class CommandView(BaseView):
             headers=headers,
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
-            add_button_icon="plus-outline.svg",
+            add_button_icon="plus.svg",
             i18n=self.i18n
         )
         self.table_card.setup_empty_state(
@@ -219,7 +219,7 @@ class CommandView(BaseView):
 
         if not is_complete_valid_trigger(trigger_val):
             warn_icon = QLabel()
-            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-outline.svg", BrandColors.AMBER))
+            warn_icon.setPixmap(get_pixmap_colored("triangle-exclamation-point.svg", BrandColors.AMBER))
             warn_icon.setToolTip(self.i18n.get("command.table.warning_legacy_format"))
             layout.addWidget(warn_icon)
 
@@ -306,12 +306,12 @@ class CommandView(BaseView):
             [
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.edit"),
-                    icon_name="edit-outline.svg",
+                    icon_name="square-pen.svg",
                     callback=lambda t=trigger_name: self.edit_requested.emit(t),
                 ),
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.delete"),
-                    icon_name="trash-outline.svg",
+                    icon_name="trash.svg",
                     callback=lambda t=trigger_name: self._confirm_delete_command(t),
                     role="row_action_danger"
                 ),

@@ -7,12 +7,12 @@ from frontend.widgets import ExpandableSettingCard, SectionHeader
 from frontend.common import Size
 
 _SPAM_FILTER_SPECS: tuple[tuple[str, str, str, str, bool], ...] = (
-    ("caps_protection", "spam.filters.caps.title", "spam.filters.caps.desc", "text-outline.svg", True),
-    ("link_protection", "spam.filters.link.title", "spam.filters.link.desc", "link-outline.svg", False),
-    ("emote_protection", "spam.filters.emote.title", "spam.filters.emote.desc", "star-outline.svg", True),
-    ("paragraph_protection", "spam.filters.paragraph.title", "spam.filters.paragraph.desc", "file-text-outline.svg", True),
-    ("symbol_protection", "spam.filters.symbol.title", "spam.filters.symbol.desc", "hashtag-outline.svg", True),
-    ("repetition_protection", "spam.filters.repetition.title", "spam.filters.repetition.desc", "refresh-outline.svg", True),
+    ("caps_protection", "spam.filters.caps.title", "spam.filters.caps.desc", "type.svg", True),
+    ("link_protection", "spam.filters.link.title", "spam.filters.link.desc", "link.svg", False),
+    ("emote_protection", "spam.filters.emote.title", "spam.filters.emote.desc", "star.svg", True),
+    ("paragraph_protection", "spam.filters.paragraph.title", "spam.filters.paragraph.desc", "file-text.svg", True),
+    ("symbol_protection", "spam.filters.symbol.title", "spam.filters.symbol.desc", "hash.svg", True),
+    ("repetition_protection", "spam.filters.repetition.title", "spam.filters.repetition.desc", "refresh-cw.svg", True),
 )
 
 class ChatSpamPanel(QWidget):

@@ -1,5 +1,5 @@
 # resources\tools\project_icon_fetch_tool.py
-"""Herramienta de packs de iconos: genera assets/icons/<pack>/ desde Iconify con una tabla de equivalencias."""
+"""Herramienta de iconos: descarga iconos de Lucide desde Iconify a assets/icons/lucide/ usando sus nombres."""
 
 import argparse
 import contextlib
@@ -7,7 +7,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Optional, Protocol, Set
+from typing import Dict, Iterator, List, Optional, Protocol, Set, Tuple
 from urllib.error import URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -18,7 +18,8 @@ if hasattr(sys.stdout, "reconfigure"):
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ICONS_DIR = PROJECT_ROOT / "assets" / "icons"
-BASE_PACK_DIR = "outline"
+PACK_DIR = "lucide"
+ICONIFY_PREFIX = "lucide"
 
 ICONIFY_API = "https://api.iconify.design"
 BATCH_SIZE = 40
@@ -29,65 +30,6 @@ SVG_TEMPLATE = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">{body}</svg>'
 )
 _ALLOWED_ICON_KEYS = {"body", "width", "height", "hidden"}
-
-
-@dataclass(frozen=True)
-class PackSource:
-    """Equivalencias de un pack: nombre local (sin .svg) -> icono del set de Iconify."""
-    prefix: str
-    overrides: Dict[str, str] = field(default_factory=dict)
-    skip: FrozenSet[str] = frozenset()
-
-    def iconify_name(self, stem: str) -> Optional[str]:
-        """Nombre en Iconify; por defecto el nombre local sin el sufijo -outline. None si el set no lo cubre."""
-        if stem in self.skip:
-            return None
-        return self.overrides.get(stem) or (stem[:-len("-outline")] if stem.endswith("-outline") else stem)
-
-
-PACKS: Dict[str, PackSource] = {
-    "lucide": PackSource(
-        prefix="lucide",
-        overrides={
-            "alarm-outline": "alarm-clock",
-            "album-outline": "disc-album",
-            "align-left-outline": "text-align-start",
-            "angles-left-outline": "chevrons-left",
-            "angles-right-outline": "chevrons-right",
-            "bolt-circle-outline": "zap",
-            "browser-code-outline": "app-window",
-            "carousel-h-outline": "gallery-horizontal",
-            "carousel-v-outline": "gallery-vertical",
-            "circle-info-outline": "info",
-            "crosshairs-outline": "crosshair",
-            "dialog-outline": "messages-square",
-            "dots-horizontal-outline": "ellipsis",
-            "element-outline": "layout-dashboard",
-            "emoji-circle-outline": "smile",
-            "filter-outline": "funnel",
-            "gear-outline": "settings",
-            "hashtag-outline": "hash",
-            "music-notes-outline": "music",
-            "prism-outline": "gem",
-            "refresh-outline": "refresh-cw",
-            "restart-outline": "rotate-cw",
-            "skip-next-outline": "skip-forward",
-            "squares-outline": "squares-unite",
-            "text-outline": "type",
-            "textalign-center-outline": "text-align-center",
-            "textalign-justifycenter-outline": "text-align-justify",
-            "textalign-left-outline": "text-align-start",
-            "textalign-right-outline": "text-align-end",
-            "transfer-v-outline": "arrow-up-down",
-            "treasure-chest-outline": "package-open",
-            "volume-up-outline": "volume-2",
-            "webhooks-outline": "webhook",
-            "widget-add-outline": "blocks",
-        },
-        # Punto relleno del indicador de QSS: Lucide no tiene equivalente, lo cubre el pack base.
-        skip=frozenset({"radio-dot"}),
-    ),
-}
 
 
 class IconifyClient(Protocol):
@@ -108,12 +50,12 @@ class IconifyApiClient:
 @dataclass
 class FetchReport:
     written: List[str] = field(default_factory=list)
-    covered_by_fallback: List[str] = field(default_factory=list)
-    unusable: Dict[str, str] = field(default_factory=dict)
+    renamed: Dict[str, str] = field(default_factory=dict)
+    unusable: List[str] = field(default_factory=list)
 
 
-def resolve_body(payload: dict, name: str) -> Optional[str]:
-    """Cuerpo SVG de un icono siguiendo alias; None si falta, trae transformaciones o no usa la cuadrícula de 24."""
+def resolve_icon(payload: dict, name: str) -> Optional[Tuple[str, str]]:
+    """(nombre canónico, cuerpo SVG) siguiendo alias; None si falta, trae transformaciones o no usa la cuadrícula de 24."""
     aliases = payload.get("aliases", {})
     seen: Set[str] = set()
     while name in aliases and name not in seen:
@@ -126,21 +68,17 @@ def resolve_body(payload: dict, name: str) -> Optional[str]:
     if icon is None or set(icon) - _ALLOWED_ICON_KEYS:
         return None
     size = (icon.get("width", payload.get("width", GRID)), icon.get("height", payload.get("height", GRID)))
-    return icon["body"] if size == (GRID, GRID) else None
+    return (name, icon["body"]) if size == (GRID, GRID) else None
 
 
-def list_base_icons(icons_dir: Path = ICONS_DIR) -> List[str]:
-    return sorted(path.stem for path in (icons_dir / BASE_PACK_DIR).glob("*.svg"))
+def normalize_names(raw_names: List[str]) -> List[str]:
+    """Acepta 'check', 'check.svg' o 'icons/check.svg'; devuelve nombres de Lucide sin duplicados."""
+    names = (Path(raw.strip()).name.removesuffix(".svg") for raw in raw_names if raw.strip())
+    return list(dict.fromkeys(names))
 
 
-def plan_pack(pack: str, icons_dir: Path = ICONS_DIR, only: Optional[Set[str]] = None) -> Dict[str, Optional[str]]:
-    """Nombre local -> icono de Iconify (None si el pack no lo cubre), para los iconos del pack base."""
-    source = PACKS[pack]
-    return {
-        stem: source.iconify_name(stem)
-        for stem in list_base_icons(icons_dir)
-        if not only or stem in only
-    }
+def list_pack_icons(icons_dir: Path = ICONS_DIR) -> List[str]:
+    return sorted(path.stem for path in (icons_dir / PACK_DIR).glob("*.svg"))
 
 
 def _chunks(items: List[str], size: int) -> Iterator[List[str]]:
@@ -148,66 +86,56 @@ def _chunks(items: List[str], size: int) -> Iterator[List[str]]:
         yield items[start:start + size]
 
 
-def fetch_pack(pack: str, client: IconifyClient, icons_dir: Path = ICONS_DIR, only: Optional[Set[str]] = None) -> FetchReport:
-    plan = plan_pack(pack, icons_dir, only)
-    report = FetchReport(covered_by_fallback=[stem for stem, name in plan.items() if name is None])
-
-    names = sorted({name for name in plan.values() if name})
-    bodies: Dict[str, Optional[str]] = {}
+def fetch_icons(names: List[str], client: IconifyClient, icons_dir: Path = ICONS_DIR) -> FetchReport:
+    """Escribe cada icono como assets/icons/lucide/<nombre canónico>.svg con la plantilla única."""
+    report = FetchReport()
+    resolved: Dict[str, Optional[Tuple[str, str]]] = {}
     for batch in _chunks(names, BATCH_SIZE):
-        payload = client.fetch(PACKS[pack].prefix, batch)
-        bodies.update({name: resolve_body(payload, name) for name in batch})
+        payload = client.fetch(ICONIFY_PREFIX, batch)
+        resolved.update({name: resolve_icon(payload, name) for name in batch})
 
-    target_dir = icons_dir / pack
-    for stem, name in plan.items():
-        if name is None:
+    target_dir = icons_dir / PACK_DIR
+    for name in names:
+        icon = resolved.get(name)
+        if icon is None:
+            report.unusable.append(name)
             continue
-        body = bodies.get(name)
-        if body is None:
-            report.unusable[stem] = name
-            continue
+        canonical, body = icon
         target_dir.mkdir(parents=True, exist_ok=True)
-        with open(target_dir / f"{stem}.svg", "w", encoding="utf-8", newline="") as handle:
+        with open(target_dir / f"{canonical}.svg", "w", encoding="utf-8", newline="") as handle:
             handle.write(SVG_TEMPLATE.format(body=body))
-        report.written.append(stem)
+        report.written.append(canonical)
+        if canonical != name:
+            report.renamed[name] = canonical
     return report
 
 
-def _print_plan(pack: str, plan: Dict[str, Optional[str]]) -> None:
-    print(f"📋 Plan para el pack '{pack}' ({PACKS[pack].prefix}): {len(plan)} iconos")
-    for stem, name in plan.items():
-        print(f"  {stem:<34} -> {name or '(respaldo: pack base)'}")
-
-
-def _print_report(pack: str, report: FetchReport) -> None:
-    print(f"✅ Iconos generados en assets/icons/{pack}/: {len(report.written)}")
-    print(f"🟡 Cubiertos por el pack base: {len(report.covered_by_fallback)}")
+def _print_report(report: FetchReport) -> None:
+    print(f"✅ Iconos escritos en assets/icons/{PACK_DIR}/: {len(report.written)}")
+    for requested, canonical in sorted(report.renamed.items()):
+        print(f"  ↪ '{requested}' es un alias; se guardó como '{canonical}.svg'")
     print(f"🔴 Sin equivalente utilizable: {len(report.unusable)}")
-    for stem, name in sorted(report.unusable.items()):
-        print(f"  ❌ {stem}  (Iconify: '{name}' no existe, trae transformaciones o no usa la cuadrícula de {GRID})")
-    if report.unusable:
-        print("   Corrige la tabla PACKS de project_icon_fetch_tool.py y vuelve a ejecutarlo; mientras tanto los cubre el pack base.")
+    for name in report.unusable:
+        print(f"  ❌ {name}  (no existe en Lucide, trae transformaciones o no usa la cuadrícula de {GRID})")
     print("➡️  Siguiente paso: python resources/tools/project_icon_grid_tool.py --check")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Genera un pack de iconos en assets/icons/<pack>/ desde Iconify.")
-    parser.add_argument("pack", choices=sorted(PACKS), help="Pack a generar")
-    parser.add_argument("--only", help="Lista de nombres locales separados por coma (sin .svg)")
-    parser.add_argument("--dry-run", action="store_true", help="Muestra la tabla de equivalencias sin consultar la red")
+    parser = argparse.ArgumentParser(description="Descarga iconos de Lucide a assets/icons/lucide/ por su nombre.")
+    parser.add_argument("names", nargs="*", help="Nombres de Lucide (ej. check chevron-down); sin nombres, actualiza todo el pack")
     parser.add_argument("--api", default=ICONIFY_API, help="URL base de la API de Iconify (espejo o proxy)")
     args = parser.parse_args()
 
-    only = {item.strip() for item in args.only.split(",") if item.strip()} if args.only else None
-    if args.dry_run:
-        _print_plan(args.pack, plan_pack(args.pack, only=only))
-        return 0
+    names = normalize_names(args.names) or list_pack_icons()
+    if not names:
+        print(f"⚠️  assets/icons/{PACK_DIR}/ está vacío: indica los nombres de los iconos a descargar.")
+        return 2
     try:
-        report = fetch_pack(args.pack, IconifyApiClient(args.api), only=only)
+        report = fetch_icons(names, IconifyApiClient(args.api))
     except (URLError, OSError, ValueError) as exc:
         print(f"❌ No se pudo consultar Iconify: {exc}")
         return 2
-    _print_report(args.pack, report)
+    _print_report(report)
     return 1 if report.unusable else 0
 
 

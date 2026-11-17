@@ -46,3 +46,16 @@ def test_container_is_tall_enough_for_its_content_after_each_state_change():
         apply_state()
         root = dialog.container.layout()
         assert dialog.container.height() >= root.sizeHint().height()
+
+
+def test_dialog_glow_does_not_use_graphics_effect():
+    from frontend.dialogs.updater_dialog import UpdateDialog
+
+    _app()
+    parent = QWidget()
+    dialog = UpdateDialog(_FakeI18n(), parent=parent)
+    dialog.show()
+    dialog.show_update_available("v9.9.9")
+    dialog.show_complete()
+
+    assert dialog.container.graphicsEffect() is None

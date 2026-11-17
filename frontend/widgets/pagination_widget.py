@@ -20,11 +20,11 @@ class SegmentedPagination(QFrame):
         layout.setContentsMargins(*Size.Margin.MRG_NON)
         layout.setSpacing(Size.SPACING_NN)
 
-        self.btn_first = ModernButton(icon_name="angles-left-outline.svg", role="", parent=self)
+        self.btn_first = ModernButton(icon_name="chevrons-left.svg", role="", parent=self)
         self.btn_first.setObjectName("btn_first")
         self.btn_first.clicked.connect(self.first_requested.emit)
 
-        self.btn_prev = ModernButton(icon_name="chevron-left-outline.svg", role="", parent=self)
+        self.btn_prev = ModernButton(icon_name="chevron-left.svg", role="", parent=self)
         self.btn_prev.setObjectName("btn_prev")
         self.btn_prev.clicked.connect(self.prev_requested.emit)
 
@@ -32,11 +32,11 @@ class SegmentedPagination(QFrame):
         self.lbl_page_status.setObjectName("lbl_page_status")
         self.lbl_page_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.btn_next = ModernButton(icon_name="chevron-right-outline.svg", role="", parent=self)
+        self.btn_next = ModernButton(icon_name="chevron-right.svg", role="", parent=self)
         self.btn_next.setObjectName("btn_next")
         self.btn_next.clicked.connect(self.next_requested.emit)
 
-        self.btn_last = ModernButton(icon_name="angles-right-outline.svg", role="", parent=self)
+        self.btn_last = ModernButton(icon_name="chevrons-right.svg", role="", parent=self)
         self.btn_last.setObjectName("btn_last")
         self.btn_last.clicked.connect(self.last_requested.emit)
 

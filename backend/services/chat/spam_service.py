@@ -206,7 +206,7 @@ class SpamService:
                 elif penalty_type == "warn_delete":
                     self.api_client.delete_chat_message(msg_id)
                     if self.i18n:
-                        warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
+                        warn_msg = self.i18n.get("spam.status.warn_msg", user=user)
                         self.api_client.post_chat_message(warn_msg, msg_type="bot")
             except Exception as e:
                 logger.error("[SpamService] Error attempting to penalize Kick user %s: %s", user, e)
@@ -237,7 +237,7 @@ class SpamService:
                     elif self.twitch_worker:
                         self.twitch_worker.send_bot_message(f"/delete {msg_id}")
                     if self.i18n and self.twitch_worker:
-                        warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
+                        warn_msg = self.i18n.get("spam.status.warn_msg", user=user)
                         self.twitch_worker.send_bot_message(warn_msg)
             except Exception as e:
                 logger.error("[SpamService] Error attempting to penalize Twitch user %s: %s", user, e)

@@ -359,11 +359,11 @@ class ChatController(QObject):
             new_state = False
         elif not arg_clean or arg_clean == "status":
             state_str = self.i18n.get("chat.status.enabled_upper") if self._tts_enabled else self.i18n.get("chat.status.disabled_upper")
-            status_msg = self.i18n.get("chat.status.systts_status").replace("{user}", user).replace("{state}", state_str)
+            status_msg = self.i18n.get("chat.status.systts_status", user=user, state=state_str)
             self.command_service.send_response(status_msg, platform=platform)
             return
         else:
-            usage_msg = self.i18n.get("chat.status.systts_usage").replace("{user}", user)
+            usage_msg = self.i18n.get("chat.status.systts_usage", user=user)
             self.command_service.send_response(usage_msg, platform=platform)
             return
 
@@ -377,14 +377,13 @@ class ChatController(QObject):
             self.view.tts_enabled = new_state
             self.view.blockSignals(False)
 
-        resp_template = self.i18n.get("chat.status.systts_on") if new_state else self.i18n.get("chat.status.systts_off")
-        resp_msg = resp_template.replace("{user}", user)
+        resp_msg = self.i18n.get("chat.status.systts_on" if new_state else "chat.status.systts_off", user=user)
         self.command_service.send_response(resp_msg, platform=platform)
 
     def _handle_plugin_ttsmute(self, dto: ChatMessageDTO, prefix: str) -> None:
         platform = getattr(dto, "platform", "kick")
         if not self._mod_mute_command_enabled:
-            msg = self.i18n.get("chat.mod_commands.mute_disabled_msg").replace("{user}", dto.user)
+            msg = self.i18n.get("chat.mod_commands.mute_disabled_msg", user=dto.user)
             self.command_service.send_response(msg, platform=platform)
             return
 
@@ -392,7 +391,7 @@ class ChatController(QObject):
 
         if not target:
             usage_key = "chat.commands.ttsunmute_usage" if is_remove else "chat.commands.ttsmute_usage"
-            msg = self.i18n.get(usage_key).replace("{user}", dto.user)
+            msg = self.i18n.get(usage_key, user=dto.user)
             self.command_service.send_response(msg, platform=platform)
             return
 
@@ -400,23 +399,23 @@ class ChatController(QObject):
 
         if is_remove:
             if target_lower not in self.filter_handler.muted_bots:
-                msg = self.i18n.get("chat.commands.ttsunmute_not_found").replace("{user}", dto.user).replace("{target}", target)
+                msg = self.i18n.get("chat.commands.ttsunmute_not_found", user=dto.user, target=target)
                 self.command_service.send_response(msg, platform=platform)
                 return
 
             self.filter_handler.remove_bot(target)
             if self.view is not None:
                 self.view.remove_bot_tag(target)
-            msg = self.i18n.get("chat.commands.ttsunmute_success").replace("{user}", dto.user).replace("{target}", target)
+            msg = self.i18n.get("chat.commands.ttsunmute_success", user=dto.user, target=target)
             self.command_service.send_response(msg, platform=platform)
         else:
             if target_lower in self.filter_handler.muted_bots:
-                msg = self.i18n.get("chat.commands.ttsmute_already").replace("{user}", dto.user).replace("{target}", target)
+                msg = self.i18n.get("chat.commands.ttsmute_already", user=dto.user, target=target)
                 self.command_service.send_response(msg, platform=platform)
                 return
 
             self.filter_handler.add_bot(target, self.view)
-            msg = self.i18n.get("chat.commands.ttsmute_success").replace("{user}", dto.user).replace("{target}", target)
+            msg = self.i18n.get("chat.commands.ttsmute_success", user=dto.user, target=target)
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunmute(self, dto: ChatMessageDTO, prefix: str = "!ttsunmute") -> None:
@@ -425,7 +424,7 @@ class ChatController(QObject):
     def _handle_plugin_ttsblock(self, dto: ChatMessageDTO, prefix: str) -> None:
         platform = getattr(dto, "platform", "kick")
         if not self._mod_block_command_enabled:
-            msg = self.i18n.get("chat.mod_commands.block_disabled_msg").replace("{user}", dto.user)
+            msg = self.i18n.get("chat.mod_commands.block_disabled_msg", user=dto.user)
             self.command_service.send_response(msg, platform=platform)
             return
 
@@ -433,29 +432,29 @@ class ChatController(QObject):
 
         if not word:
             usage_key = "chat.commands.ttsunblock_usage" if is_remove else "chat.commands.ttsblock_usage"
-            msg = self.i18n.get(usage_key).replace("{user}", dto.user)
+            msg = self.i18n.get(usage_key, user=dto.user)
             self.command_service.send_response(msg, platform=platform)
             return
 
         if is_remove:
             if word not in self.filter_handler.banned_words:
-                msg = self.i18n.get("chat.commands.ttsunblock_not_found").replace("{user}", dto.user).replace("{word}", word)
+                msg = self.i18n.get("chat.commands.ttsunblock_not_found", user=dto.user, word=word)
                 self.command_service.send_response(msg, platform=platform)
                 return
 
             self.filter_handler.remove_word(word)
             if self.view is not None:
                 self.view.remove_word_tag(word)
-            msg = self.i18n.get("chat.commands.ttsunblock_success").replace("{user}", dto.user).replace("{word}", word)
+            msg = self.i18n.get("chat.commands.ttsunblock_success", user=dto.user, word=word)
             self.command_service.send_response(msg, platform=platform)
         else:
             if word in self.filter_handler.banned_words:
-                msg = self.i18n.get("chat.commands.ttsblock_already").replace("{user}", dto.user).replace("{word}", word)
+                msg = self.i18n.get("chat.commands.ttsblock_already", user=dto.user, word=word)
                 self.command_service.send_response(msg, platform=platform)
                 return
 
             self.filter_handler.add_word(word, self.view)
-            msg = self.i18n.get("chat.commands.ttsblock_success").replace("{user}", dto.user).replace("{word}", word)
+            msg = self.i18n.get("chat.commands.ttsblock_success", user=dto.user, word=word)
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunblock(self, dto: ChatMessageDTO, prefix: str = "!ttsunblock") -> None:
@@ -465,7 +464,7 @@ class ChatController(QObject):
         platform = getattr(dto, "platform", "kick")
         self.service.stop_tts()
         logger.info("[ChatController] TTS stopped/skipped by moderator @%s on %s", dto.user, platform)
-        msg = self.i18n.get("chat.commands.skiptts_success").replace("{user}", dto.user)
+        msg = self.i18n.get("chat.commands.skiptts_success", user=dto.user)
         self.command_service.send_response(msg, platform=platform)
         if self.toast:
             self.toast.show_toast(
@@ -489,7 +488,7 @@ class ChatController(QObject):
         if raw_arg.startswith(("http://", "https://")):
             return
         if not self.giphy_service.has_active_key(giphy_key):
-            warn_msg = self.i18n.get("chat.status.giphy_key_required").replace("{user}", dto.user)
+            warn_msg = self.i18n.get("chat.status.giphy_key_required", user=dto.user)
             self.command_service.send_response(warn_msg, platform=platform)
             return
         self._resolve_gif_in_background(dto, platform, raw_arg, giphy_key)

@@ -36,7 +36,7 @@ class WhatsNewDialog(ModernModal):
 
         super().__init__(
             title=dialog_title,
-            icon_path="star-outline.svg",
+            icon_path="star.svg",
             icon_bg_color=BrandColors.ORANGE,
             width=540,
             parent=parent
@@ -73,7 +73,7 @@ class WhatsNewDialog(ModernModal):
         btn_action = ModernButton(
             self._btn_text,
             role="action_accent_solid",
-            icon_name="check-outline.svg",
+            icon_name="check.svg",
             icon_color=Palette.NEUTRAL_050,
             parent=self.container
         )
@@ -84,7 +84,7 @@ class WhatsNewDialog(ModernModal):
         card = ModernCard(parent=parent, margin=Size.Margin.MRG_MED, spacing=Size.SPACING_SM, orientation="horizontal")
         card.setProperty("role", "whats_new_card")
 
-        icon_name = item.get("icon", "star-outline.svg")
+        icon_name = item.get("icon", "star.svg")
         lbl_icon = QLabel(parent=card)
         lbl_icon.setPixmap(get_pixmap_colored(icon_name, BrandColors.ORANGE, size=24))
         lbl_icon.setFixedSize(28, 28)

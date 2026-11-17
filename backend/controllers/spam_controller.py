@@ -64,7 +64,7 @@ class SpamController(BaseController):
             title_key = "spam.status.activated" if is_active else "spam.status.deactivated"
             msg_key = "spam.status.activated_msg" if is_active else "spam.status.deactivated_msg"
             title = i18n.get(title_key)
-            message = i18n.get(msg_key).replace("{filter_name}", filter_name)
+            message = i18n.get(msg_key, filter_name=filter_name)
             state = "success" if is_active else "info"
 
             if self.toast:

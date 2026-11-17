@@ -35,7 +35,7 @@ class AlertsOverlayCard(ModernCard):
         self.btn_open_browser = ModernButton(
             text=self.i18n.get("alerts.overlay_card.open_btn"),
             role="action_outlined",
-            icon_name="eye-outline.svg",
+            icon_name="eye.svg",
             parent=self
         )
         self.btn_open_browser.hide()

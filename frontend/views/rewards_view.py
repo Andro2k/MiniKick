@@ -46,7 +46,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(BrandColors.RED))
         painter.drawPath(path)
 
-        icon_pixmap = get_pixmap_colored("alert-triangle-outline.svg", BrandColors.RED)
+        icon_pixmap = get_pixmap_colored("triangle-exclamation-point.svg", BrandColors.RED)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -65,7 +65,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(rect, 6, 6)
         painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
 
-        icon_pixmap = get_pixmap_colored("volume-up-outline.svg", BrandColors.GREEN)
+        icon_pixmap = get_pixmap_colored("volume-2.svg", BrandColors.GREEN)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -105,7 +105,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
         painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
 
-        icon_pixmap = get_pixmap_colored("album-outline.svg")
+        icon_pixmap = get_pixmap_colored("disc-album.svg")
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -128,6 +128,7 @@ class RewardsView(BaseView):
     delete_requested = Signal(str)
     preview_requested = Signal(str)
     refresh_rewards_requested = Signal()
+    reload_media_requested = Signal()
 
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay", parent=None):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
@@ -170,7 +171,7 @@ class RewardsView(BaseView):
             headers=headers,
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
-            add_button_icon="plus-outline.svg",
+            add_button_icon="plus.svg",
             i18n=self.i18n
         )
         self.table_card.setup_empty_state(
@@ -190,6 +191,7 @@ class RewardsView(BaseView):
         self.txt_search = self.table_card.txt_search
         if self.txt_search:
             self.txt_search.textChanged.connect(self._apply_filters)
+            self._add_reload_button()
 
         self.filter_header = self.table_card.enable_filter_header()
         sort_asc_text = self.i18n.get("rewards.table.filter_sort_asc")
@@ -245,6 +247,14 @@ class RewardsView(BaseView):
         self.table_rewards.setColumnWidth(6, 80)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
+
+    def _add_reload_button(self):
+        self.btn_reload_media = ModernButton("", role="action_outlined", parent=self.table_card.header_top_widget)
+        self.btn_reload_media.setIcon(get_icon_colored("refresh-cw.svg"))
+        self.btn_reload_media.setToolTip(self.i18n.get("rewards.table.btn_reload"))
+        self.btn_reload_media.clicked.connect(self.reload_media_requested.emit)
+        layout = self.table_card.header_controls_layout
+        layout.insertWidget(layout.indexOf(self.txt_search) + 1, self.btn_reload_media)
 
     def _on_sort_requested(self, col_idx: int, order: str):
         self._current_sort = (col_idx, order)
@@ -385,7 +395,7 @@ class RewardsView(BaseView):
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle-outline.svg", BrandColors.AMBER))
+                item_plat.setIcon(get_icon_colored("triangle-exclamation-point.svg", BrandColors.AMBER))
                 item_plat.setForeground(QColor(BrandColors.AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
@@ -410,7 +420,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle-outline.svg", BrandColors.RED))
+                item_file.setIcon(get_icon_colored("triangle-exclamation-point.svg", BrandColors.RED))
                 item_file.setForeground(QColor(BrandColors.RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:
@@ -441,24 +451,24 @@ class RewardsView(BaseView):
                 [
                     RowMenuAction(
                         text=self.i18n.get("common.row_menu.play"),
-                        icon_name="play-outline.svg",
+                        icon_name="play.svg",
                         callback=lambda k=key: self.preview_requested.emit(k),
                         enabled=is_valid_file,
                         tooltip="" if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
                     ),
                     RowMenuAction(
                         text=self.i18n.get("common.row_menu.edit"),
-                        icon_name="edit-outline.svg",
+                        icon_name="square-pen.svg",
                         callback=lambda k=key: self.edit_requested.emit(k),
                     ),
                     RowMenuAction(
                         text=self.i18n.get("common.row_menu.duplicate"),
-                        icon_name="copy-outline.svg",
+                        icon_name="copy.svg",
                         callback=lambda k=key: self.duplicate_requested.emit(k)
                     ),
                     RowMenuAction(
                         text=self.i18n.get("common.row_menu.delete"),
-                        icon_name="trash-outline.svg",
+                        icon_name="trash.svg",
                         callback=lambda k=key, t=reward_name: self._confirm_delete_reward(k, t),
                         role="row_action_danger"
                     ),

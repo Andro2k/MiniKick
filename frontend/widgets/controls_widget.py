@@ -14,7 +14,6 @@ _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 def configure_icon_only_button(
     button: QPushButton,
     size: int | QSize = Size.ICON_BASIC,
-    icon_size: int = Size.ICON_ACTION,
 ) -> None:
     button.setProperty("icon_only", True)
     if isinstance(size, QSize):
@@ -40,7 +39,7 @@ class ModernButton(QPushButton):
         if icon.isNull() or self.text():
             self.setProperty("icon_only", False)
             return
-        configure_icon_only_button(self, icon_size=self._icon_size)
+        configure_icon_only_button(self)
 
     @staticmethod
     def _resolve_role_color(role: str) -> str:

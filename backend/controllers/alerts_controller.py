@@ -68,11 +68,11 @@ class AlertsController(BaseController):
                 event_name = self.i18n.get(f"alerts.events.{config.alert_type}")
                 if config.enabled:
                     title = self.i18n.get("alerts.status.enabled_title")
-                    msg = self.i18n.get("alerts.status.enabled_msg").replace("{event}", event_name)
+                    msg = self.i18n.get("alerts.status.enabled_msg", event=event_name)
                     state = "success"
                 else:
                     title = self.i18n.get("alerts.status.disabled_title")
-                    msg = self.i18n.get("alerts.status.disabled_msg").replace("{event}", event_name)
+                    msg = self.i18n.get("alerts.status.disabled_msg", event=event_name)
                     state = "warning"
                 self.toast.show_toast(
                     title=title,

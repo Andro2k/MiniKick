@@ -149,7 +149,7 @@ class MusicPlaylistController(QObject):
             return
         logger.info("[User Action] Playlist added to queue")
         if self.toast:
-            message = self.i18n.get("music.toast.playlist_enqueued").replace("{count}", str(queued))
+            message = self.i18n.get("music.toast.playlist_enqueued", count=queued)
             self.toast.show_toast(self.i18n.get("music.header.title"), message, "success")
 
     @Slot(int)

@@ -11,7 +11,7 @@ class DuplicateAlertModal(ModernModal):
         title = i18n.get("alerts.dialogs.duplicate.title")
         super().__init__(
             title=title,
-            icon_path="copy-outline.svg",
+            icon_path="copy.svg",
             icon_role="accent_icon",
             width=480,
             resizable=False,
@@ -80,7 +80,7 @@ class DuplicateAlertModal(ModernModal):
         _, self.btn_cancel, self.btn_confirm = self.create_action_row(
             cancel_text=self.i18n.get("alerts.dialogs.duplicate.btn_cancel"),
             confirm_text=self.i18n.get("alerts.dialogs.duplicate.btn_confirm"),
-            confirm_icon="copy-outline.svg"
+            confirm_icon="copy.svg"
         )
 
     def get_selection(self) -> tuple[list[str], bool, bool]:

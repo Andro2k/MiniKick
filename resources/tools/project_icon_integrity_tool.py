@@ -171,13 +171,17 @@ def extract_icons_from_file(file_path: str, base_dir: str) -> List[IconOccurrenc
     return occurrences
 
 
+ICON_EXTENSIONS = {".svg", ".ico"}
+
+
 def collect_icon_files(icons_dir: str = ICONS_DIR) -> Dict[str, List[str]]:
-    """Nombre de archivo -> rutas, recorriendo los packs (outline/, common/, ...) y la raíz."""
+    """Nombre de archivo -> rutas, recorriendo los packs (lucide/, common/, ...) y la raíz."""
     found: Dict[str, List[str]] = defaultdict(list)
     for root, subdirs, files in os.walk(icons_dir):
         subdirs.sort()
         for fname in sorted(files):
-            found[fname].append(os.path.join(root, fname))
+            if os.path.splitext(fname)[1].lower() in ICON_EXTENSIONS:
+                found[fname].append(os.path.join(root, fname))
     return found
 
 

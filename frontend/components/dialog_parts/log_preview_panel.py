@@ -76,9 +76,9 @@ class LogPreviewPanel(QFrame):
         titles.addWidget(self.lbl_title)
         titles.addWidget(self.lbl_meta)
 
-        self.btn_refresh = ModernButton(self.i18n.get("dialogs.bug_report.log_btn_refresh"), role="action_outlined", icon_name="refresh-outline.svg")
+        self.btn_refresh = ModernButton(self.i18n.get("dialogs.bug_report.log_btn_refresh"), role="action_outlined", icon_name="refresh-cw.svg")
         self.btn_refresh.clicked.connect(self.refresh_requested.emit)
-        self.btn_folder = ModernButton(self.i18n.get("dialogs.bug_report.log_btn_open"), role="action_outlined", icon_name="folder-open-outline.svg")
+        self.btn_folder = ModernButton(self.i18n.get("dialogs.bug_report.log_btn_open"), role="action_outlined", icon_name="folder-open.svg")
         self.btn_folder.clicked.connect(self.open_folder_requested.emit)
 
         header.addLayout(titles, 1)

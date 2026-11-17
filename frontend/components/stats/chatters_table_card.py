@@ -87,7 +87,7 @@ class StatsChattersTable(ModernCard):
         banner_layout.setSpacing(Size.SPACING_SM)
 
         lbl_banner_icon = QLabel(self.banner_inactive)
-        lbl_banner_icon.setPixmap(get_pixmap_colored("alert-triangle-outline.svg", BrandColors.AMBER))
+        lbl_banner_icon.setPixmap(get_pixmap_colored("triangle-exclamation-point.svg", BrandColors.AMBER))
         lbl_banner_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_banner_msg = QLabel(self.i18n.get("dashboard.chatters.inactive_suggestion"), self.banner_inactive)
@@ -148,7 +148,7 @@ class StatsChattersTable(ModernCard):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_empty_icon = QLabel(self.empty_widget)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users-outline.svg", Palette.NEUTRAL_500))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users.svg", Palette.NEUTRAL_500))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_empty_title = QLabel(self.i18n.get("dashboard.chatters.empty_title"), self.empty_widget)

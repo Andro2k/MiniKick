@@ -52,7 +52,7 @@ class ImportBackupModal(ModernModal):
         title = self.i18n.get("settings.dialogs.import_modal.title")
         super().__init__(
             title=title,
-            icon_path="restart-outline.svg",
+            icon_path="rotate-cw.svg",
             icon_role="accent_icon",
             width=640,
             resizable=False,
@@ -107,13 +107,13 @@ class ImportBackupModal(ModernModal):
         self.btn_select_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
             role="action_outlined",
-            icon_name="check-outline.svg",
+            icon_name="check.svg",
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
             role="action_outlined",
-            icon_name="x-outline.svg",
+            icon_name="x.svg",
             parent=self
         )
         self.btn_select_all.clicked.connect(self._select_all)
@@ -200,7 +200,7 @@ class ImportBackupModal(ModernModal):
         _, self.btn_cancel, self.btn_confirm = self.create_action_row(
             cancel_text=self.i18n.get("settings.dialogs.import_modal.btn_cancel"),
             confirm_text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
-            confirm_icon="restart-outline.svg"
+            confirm_icon="rotate-cw.svg"
         )
 
         self._update_confirm_state()
