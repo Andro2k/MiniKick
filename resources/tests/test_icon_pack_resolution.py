@@ -23,7 +23,7 @@ def _touch(root, *parts):
 
 def test_real_assets_resolve_from_their_packs():
     assert icons.resolve_icon_path("check-outline.svg").endswith("assets/icons/outline/check-outline.svg")
-    assert icons.resolve_icon_path("brand-kick.svg").endswith("assets/icons/common/brand-kick.svg")
+    assert icons.resolve_icon_path("block-kick.svg").endswith("assets/icons/common/block-kick.svg")
     assert icons.resolve_icon_path("icons/chevron-down-outline.svg").endswith("outline/chevron-down-outline.svg")
     assert icons.resolve_icon_path("icon.ico").endswith("assets/icons/icon.ico")
 

@@ -213,7 +213,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_show_platform = ModernSwitch(self)
         self.sw_show_platform.setChecked(True)
 
-        item_plat = CompactToggleItem("brand-kick.svg", self.i18n.get("chat.overlay.show_platform_title"), self.sw_show_platform, self.i18n.get("chat.overlay.show_platform_desc"), self)
+        item_plat = CompactToggleItem("block-kick.svg", self.i18n.get("chat.overlay.show_platform_title"), self.sw_show_platform, self.i18n.get("chat.overlay.show_platform_desc"), self)
         item_badges = CompactToggleItem("shield-user-outline.svg", self.i18n.get("chat.overlay.show_badges_title"), self.sw_show_badges, self.i18n.get("chat.overlay.show_badges_desc"), self)
         item_time = CompactToggleItem("clock-outline.svg", self.i18n.get("chat.overlay.show_time_title"), self.sw_overlay_show_time, self.i18n.get("chat.overlay.show_time_desc"), self)
         item_emotes = CompactToggleItem("emoji-circle-outline.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)

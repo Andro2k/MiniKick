@@ -34,6 +34,7 @@ python resources/tools/project_quality_suite.py --verbose
 | `project_translation_integrity_auditor.py` | Project translations and Python sources | Locale key parity, missing or unused keys, and placeholder parity |
 | `project_icon_integrity_tool.py` | Backend, frontend, and app entry point | Missing, unused, and malformed icon assets; also supports explicit cleanup |
 | `project_icon_grid_tool.py` | Icon packs under `assets/icons` (`common/` excluded) | Glyph centering, live-area overflow, and the standard 24u canvas; `--fix` rewrites the SVGs |
+| `project_icon_fetch_tool.py` | Icon packs under `assets/icons` | Generates `assets/icons/<pack>/` from Iconify using the local-name → Iconify-name table in `PACKS`; icons a pack does not cover fall back to the base pack |
 | `project_performance_profiler.py` | Backend and frontend | Runtime performance budgets and profiling scenarios |
 | `frontend_hardcoded_text_auditor.py` | Frontend | UI strings that bypass the translation service |
 | `frontend_design_token_auditor.py` | Frontend | Raw colors and style values that bypass theme tokens |

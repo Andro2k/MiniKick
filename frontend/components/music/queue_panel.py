@@ -10,13 +10,13 @@ from frontend.widgets import ModernTable, ModernTableCard, configure_icon_only_b
 def requester_style(platform: str, requester: str):
     platform = (platform or "kick").lower()
     if platform == "twitch":
-        return QColor(BrandColors.TWITCH_LIGHT), get_icon_colored("brand-twitch.svg", BrandColors.TWITCH_LIGHT)
+        return QColor(BrandColors.TWITCH_LIGHT), get_icon_colored("block-twitch.svg", BrandColors.TWITCH_LIGHT)
     if platform == "youtube":
-        return QColor(BrandColors.RED), get_icon_colored("brand-youtube.svg", BrandColors.RED)
+        return QColor(BrandColors.RED), get_icon_colored("block-youtube.svg", BrandColors.RED)
     if platform == "tiktok":
-        return QColor(BrandColors.TIKTOK), get_icon_colored("brand-tiktok.svg", BrandColors.TIKTOK)
+        return QColor(BrandColors.TIKTOK), get_icon_colored("block-tiktok.svg", BrandColors.TIKTOK)
     if requester:
-        return QColor(BrandColors.KICK), get_icon_colored("brand-kick.svg", BrandColors.KICK)
+        return QColor(BrandColors.KICK), get_icon_colored("block-kick.svg", BrandColors.KICK)
     return None, None
 
 

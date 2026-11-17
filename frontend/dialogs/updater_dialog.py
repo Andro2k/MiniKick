@@ -41,6 +41,7 @@ class UpdateDialog(ModernModal):
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(8)
         self.progress_bar.setProperty("role", "update_progress")
         progress_layout.addWidget(self.progress_bar)
 
@@ -72,19 +73,24 @@ class UpdateDialog(ModernModal):
         self._primary_connection = None
 
     def _refresh_presentation(self) -> None:
-        self.footer_layout.invalidate()
-        self.footer_layout.activate()
-        self.content_layout.invalidate()
-        self.content_layout.activate()
-        self.body.setMinimumHeight(0)
-        self.body.setMinimumHeight(self.body.sizeHint().height())
-        self.container.layout().activate()
-        self.container.adjustSize()
-        self.adjustSize()
-        self.container.repaint()
-        self.footer.repaint()
-        self.btn_secondary.repaint()
-        self.btn_primary.repaint()
+        """Recalcula el alto del contenedor al cambiar de estado y redimensiona la ventana de forma explícita."""
+        center = self.frameGeometry().center() if self.isVisible() else None
+        for layout in (self.footer_layout, self.content_layout):
+            layout.invalidate()
+            layout.activate()
+        root = self.container.layout()
+        root.invalidate()
+        root.activate()
+        width = self.container.width()
+        needed = root.sizeHint().height()
+        if root.hasHeightForWidth():
+            needed = max(needed, root.totalHeightForWidth(width))
+        self.set_dialog_dimensions(width, needed)
+        if center is not None:
+            frame = self.frameGeometry()
+            frame.moveCenter(center)
+            self.move(frame.topLeft())
+        self.update()
 
     def _set_header_icon(self, icon_name: str, color: str = Palette.NEUTRAL_050) -> None:
         if self.header_icon:

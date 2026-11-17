@@ -12,7 +12,7 @@ class TikTokConnectDialog(PlatformConnectDialog):
             desc_key="dialogs.tiktok_connect.desc",
             placeholder_key="dialogs.tiktok_connect.placeholder",
             btn_connect_key="dialogs.tiktok_connect.btn_connect",
-            icon_path="brand-tiktok.svg",
+            icon_path="block-tiktok.svg",
             icon_bg_color=BrandColors.TIKTOK,
             btn_role="action_tiktok",
             initial_target=initial_target,

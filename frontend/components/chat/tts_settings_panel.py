@@ -137,22 +137,22 @@ class ChatTtsSettingsPanel(QWidget):
         self.sw_plat_tiktok.setChecked(True)
 
         item_plat_kick = PlatformToggleItem(
-            "brand-kick.svg", self.i18n.get("chat.platforms.kick_title"),
+            "block-kick.svg", self.i18n.get("chat.platforms.kick_title"),
             self.sw_plat_kick, icon_color=BrandColors.KICK,
             tooltip=self.i18n.get("chat.platforms.kick_desc"), parent=self
         )
         item_plat_twitch = PlatformToggleItem(
-            "brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"),
+            "block-twitch.svg", self.i18n.get("chat.platforms.twitch_title"),
             self.sw_plat_twitch, icon_color=BrandColors.TWITCH,
             tooltip=self.i18n.get("chat.platforms.twitch_desc"), parent=self
         )
         item_plat_youtube = PlatformToggleItem(
-            "brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"),
+            "block-youtube.svg", self.i18n.get("chat.platforms.youtube_title"),
             self.sw_plat_youtube, icon_color=BrandColors.YOUTUBE,
             tooltip=self.i18n.get("chat.platforms.youtube_desc"), parent=self
         )
         item_plat_tiktok = PlatformToggleItem(
-            "brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"),
+            "block-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"),
             self.sw_plat_tiktok, icon_color=BrandColors.TIKTOK,
             tooltip=self.i18n.get("chat.platforms.tiktok_desc"), parent=self
         )

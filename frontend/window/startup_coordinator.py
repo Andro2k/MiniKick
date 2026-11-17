@@ -16,7 +16,7 @@ from backend.connections import LiveChatConnection
 
 class StartupSequencer:
     WHATS_NEW_DELAY_MS = 750
-    PREWARM_DELAY_MS = 300
+    PREWARM_DELAY_MS = 8_000
     DATABASE_MAINTENANCE_DELAY_MS = 10_000
     INITIAL_HYDRATION_DELAY_MS = 50
     NEXT_HYDRATION_DELAY_MS = 16
@@ -37,10 +37,20 @@ class StartupSequencer:
         self._start_database_maintenance = start_database_maintenance
         self._schedule = schedule
         self._steps: deque[tuple[str, Callable[[], None]]] = deque()
+        self._followups_deferred = False
+        self._followups_pending = False
 
     def start(self, steps: Iterable[tuple[str, Callable[[], None]]]) -> None:
         self._steps = deque(steps)
+        self._followups_pending = False
         self._schedule(self.INITIAL_HYDRATION_DELAY_MS, self._run_next)
+
+    def defer_followups(self) -> None:
+        self._followups_deferred = True
+
+    def resume_followups(self) -> None:
+        self._followups_deferred = False
+        self._schedule_followups_if_ready()
 
     def _run_next(self) -> None:
         if not self._is_active() or not self._steps:
@@ -62,7 +72,14 @@ class StartupSequencer:
         if self._steps:
             self._schedule(self.NEXT_HYDRATION_DELAY_MS, self._run_next)
         else:
-            self._schedule_followups()
+            self._followups_pending = True
+            self._schedule_followups_if_ready()
+
+    def _schedule_followups_if_ready(self) -> None:
+        if not self._followups_pending or self._followups_deferred:
+            return
+        self._followups_pending = False
+        self._schedule_followups()
 
     def _schedule_followups(self) -> None:
         self._schedule(self.WHATS_NEW_DELAY_MS, self._whats_new_check)
@@ -74,15 +91,30 @@ class StartupSequencer:
 
 
 class MainWindowStartup:
-    def __init__(self, window, view_prewarmer) -> None:
+    def __init__(
+        self,
+        window,
+        view_prewarmer,
+        on_connections_dispatched: Callable[[], None] | None = None,
+        schedule: Callable[[int, Callable[[], None]], None] = QTimer.singleShot,
+    ) -> None:
         self._window = window
+        self._schedule = schedule
+        self._on_connections_dispatched = on_connections_dispatched or (lambda: None)
         self._sequencer = StartupSequencer(
             logger=window.logger,
             is_active=lambda: not window._is_shutting_down,
             whats_new_check=window.whats_new.check_dialog,
             prewarm_views=view_prewarmer.start,
             start_database_maintenance=self.start_database_maintenance,
+            schedule=schedule,
         )
+
+    def defer_followups(self) -> None:
+        self._sequencer.defer_followups()
+
+    def resume_followups(self) -> None:
+        self._sequencer.resume_followups()
 
     def load_settings_into_ui(self, *, refresh_chat_backend: bool = False) -> None:
         w = self._window
@@ -132,10 +164,36 @@ class MainWindowStartup:
         w.platform_connections.update_integrations_status_ui()
         w.platform_connections.refresh_sidebar_profile()
         w.platform_connections.evaluate_all_scopes()
-        self._autostart_authenticated_platforms()
-        self._schedule_live_chat_autostarts()
+        pending = 0
+        scheduling = True
 
-    def _autostart_authenticated_platforms(self) -> None:
+        def finish_if_ready() -> None:
+            if not scheduling and pending == 0:
+                self._on_connections_dispatched()
+
+        def schedule_start(delay_ms: int, callback: Callable[[], None]) -> None:
+            nonlocal pending
+            pending += 1
+
+            def dispatch() -> None:
+                nonlocal pending
+                try:
+                    callback()
+                finally:
+                    pending -= 1
+                    finish_if_ready()
+
+            self._schedule(delay_ms, dispatch)
+
+        self._autostart_authenticated_platforms(schedule_start)
+        self._schedule_live_chat_autostarts(schedule_start)
+        scheduling = False
+        finish_if_ready()
+
+    def _autostart_authenticated_platforms(
+        self,
+        schedule_start: Callable[[int, Callable[[], None]], None],
+    ) -> None:
         w = self._window
         if w.kick_auth_manager.is_authenticated():
             try:
@@ -146,17 +204,24 @@ class MainWindowStartup:
 
         twitch_tokens = w.container.twitch_token_storage.load()
         if twitch_tokens and twitch_tokens.get("access_token"):
-            QTimer.singleShot(1200, self._autostart_twitch)
+            schedule_start(1200, self._autostart_twitch)
 
-    def _schedule_live_chat_autostarts(self) -> None:
+    def _schedule_live_chat_autostarts(
+        self,
+        schedule_start: Callable[[int, Callable[[], None]], None],
+    ) -> None:
         w = self._window
         for chat, delay_ms in ((w.youtube, 2400), (w.tiktok, 3600)):
             target = chat.saved_target()
-            if target:
-                QTimer.singleShot(
-                    delay_ms,
-                    lambda c=chat, t=target: self._autostart_live_chat(c, t),
-                )
+            if not target:
+                continue
+            if chat.is_offline_saved():
+                self._autostart_live_chat(chat, target)
+                continue
+            schedule_start(
+                delay_ms,
+                lambda c=chat, t=target: self._autostart_live_chat(c, t),
+            )
 
     def _autostart_twitch(self) -> None:
         w = self._window

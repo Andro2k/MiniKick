@@ -353,7 +353,7 @@ class RewardsView(BaseView):
             is_twitch = plat.lower() == "twitch"
             plat_name = "Twitch" if is_twitch else "Kick"
             plat_color = BrandColors.TWITCH if is_twitch else BrandColors.GREEN
-            icon_name = "brand-twitch.svg" if is_twitch else "brand-kick.svg"
+            icon_name = "block-twitch.svg" if is_twitch else "block-kick.svg"
 
             is_plat_connected = self.connected_platforms.get(plat.lower(), False)
             is_remote_loaded = self.remote_loaded.get(plat.lower(), False)

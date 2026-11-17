@@ -30,6 +30,7 @@ logger = logging.getLogger("minikick.core")
 
 class MainWindowCore(QMainWindow):
     shutdown_finished = Signal()
+    startup_connections_dispatched = Signal()
 
     SETTING_AUTOSTART = "dashboard_autostart"
     SETTING_WINDOW_MAXIMIZED = WindowStateManager.SETTING_WINDOW_MAXIMIZED
@@ -182,7 +183,11 @@ class MainWindowCore(QMainWindow):
         QTimer.singleShot(0, self._update_dashboard_metrics)
         self._init_whats_new()
         self.whats_new.init_badges()
-        self.startup = MainWindowStartup(self, self._view_prewarmer)
+        self.startup = MainWindowStartup(
+            self,
+            self._view_prewarmer,
+            on_connections_dispatched=self.startup_connections_dispatched.emit,
+        )
         self.tray_presenter = TrayPresenter(self)
 
     def _build_layout_shell(self):

@@ -18,7 +18,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 VERSION_PY_PATH = os.path.join(BASE_DIR, "backend", "config", "version.py")
 VERSION_INFO_PATH = os.path.join(BASE_DIR, "version_info.txt")
 PYPROJECT_PATH = os.path.join(BASE_DIR, "pyproject.toml")
-INNO_SETUP_PATH = os.path.join(BASE_DIR, "instalador.iss")
+INNO_SETUP_PATH = os.path.join(BASE_DIR, "scripts", "installer", "instalador.iss")
 SPEC_PATH = os.path.join(BASE_DIR, "MiniKick.spec")
 
 def get_current_app_version() -> str:
@@ -179,7 +179,7 @@ def compile_installer():
         print("[ERROR] No se encontró ISCC.exe. Instala Inno Setup 6/7 o agrega ISCC.exe a PATH.")
         return False
 
-    installer_script = os.path.join(BASE_DIR, "instalador.iss")
+    installer_script = INNO_SETUP_PATH
     executable = os.path.join(BASE_DIR, "dist", "MiniKick", "MiniKick.exe")
     if not os.path.isfile(installer_script):
         print(f"[ERROR] No se encontró el script Inno Setup: {installer_script}")
