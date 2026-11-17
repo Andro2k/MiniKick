@@ -36,11 +36,11 @@ class WhatsNewDialog(ModernModal):
         super().__init__(
             title=dialog_title,
             icon_path="star.svg",
-            icon_bg_color=BrandColors.ORANGE,
+            icon_bg_color=BrandColors.GREEN,
             width=540,
             parent=parent
         )
-        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.ORANGE, 54))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 54))
         self._setup_content()
 
     def _setup_content(self):
@@ -85,7 +85,7 @@ class WhatsNewDialog(ModernModal):
 
         icon_name = item.get("icon", "star.svg")
         lbl_icon = QLabel(parent=card)
-        lbl_icon.setPixmap(get_pixmap_colored(icon_name, BrandColors.ORANGE, size=24))
+        lbl_icon.setPixmap(get_pixmap_colored(icon_name, BrandColors.GREEN, size=24))
         lbl_icon.setFixedSize(28, 28)
         lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card.addWidget(lbl_icon)

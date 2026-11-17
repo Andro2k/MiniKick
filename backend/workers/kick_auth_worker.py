@@ -21,7 +21,7 @@ class KickAuthWorker(QThread):
     def run(self):
         logger.info("[KickAuthWorker] Starting Kick OAuth flow (force=%s)...", self.force)
         try:
-            tokens = self.auth_manager.login(force=self.force)
+            tokens = self.auth_manager.login(force=self.force, should_cancel=self.isInterruptionRequested)
             if tokens:
                 logger.info("[KickAuthWorker] Kick OAuth authentication successful.")
                 self.auth_success.emit(tokens)

@@ -2,6 +2,7 @@
 """Controlador de recompensas."""
 
 import logging
+import time
 from PySide6.QtCore import QObject, Slot
 from backend.providers.chat import KickAPIClient, TwitchAPIClient
 from backend.config import TWITCH_CLIENT_ID
@@ -158,6 +159,16 @@ class RewardsController(QObject):
         self.update_reward_worker.finished.connect(self.update_reward_worker.deleteLater)
         self.update_reward_worker.start()
 
+    def _refresh_table(self, mappings: dict) -> None:
+        started = time.perf_counter()
+        self.view.populate_table(
+            mappings,
+            remote_rewards_map=self.rewards_details_map,
+            connected_platforms=self._get_connected_platforms(),
+            remote_loaded=self.remote_loaded
+        )
+        logger.info("[Perf/Rewards] Table refreshed (%d rewards) in %.2f ms", len(mappings), (time.perf_counter() - started) * 1000)
+
     def clear_platform_rewards(self, platform: str):
         self.remote_loaded[platform] = False
         self._purge_platform_details(platform)
@@ -165,12 +176,7 @@ class RewardsController(QObject):
         if self.view:
             self.view.update_active_dialog_rewards(self._get_available_rewards(), self.rewards_details_map)
             mappings = self.service.get_mappings()
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
 
     def load_initial_data(self):
         if self.view is not None:
@@ -186,12 +192,7 @@ class RewardsController(QObject):
                         self.rewards_details_map[f"id:{conf['id']}"] = conf
                     if title not in self.rewards_details_map:
                         self.rewards_details_map[title] = conf
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
 
     @Slot(object)
     @Slot(object, object)
@@ -250,12 +251,7 @@ class RewardsController(QObject):
 
             self.view.update_active_dialog_rewards(self._get_available_rewards(), self.rewards_details_map)
             mappings = self.service.get_mappings()
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
 
     def _get_available_rewards(self, ignore_reward=None):
         placeholder_strings = self._get_placeholder_strings()
@@ -382,12 +378,7 @@ class RewardsController(QObject):
             self.rewards_details_map[reward_name] = config
 
         if self.view:
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
             if self.toast and not config.get("is_new_reward"):
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.created"),
@@ -568,12 +559,7 @@ class RewardsController(QObject):
         self.rewards_details_map[new_reward] = details
 
         if self.view:
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
             if self.toast and show_toast and not updated_config.get("id"):
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.updated"),
@@ -595,12 +581,7 @@ class RewardsController(QObject):
             r_name = mappings[target_key].get("name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
             del mappings[target_key]
             self.service.save_mappings(mappings)
-            self.view.populate_table(
-                mappings,
-                remote_rewards_map=self.rewards_details_map,
-                connected_platforms=self._get_connected_platforms(),
-                remote_loaded=self.remote_loaded
-            )
+            self._refresh_table(mappings)
             if self.toast:
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.deleted"),

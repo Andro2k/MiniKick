@@ -9,6 +9,7 @@ import logging
 import os
 import secrets
 import time
+from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
@@ -102,6 +103,7 @@ class OAuthCallbackServer:
         provider: str = "kick",
         browser_service=None,
         expected_state: str | None = None,
+        should_cancel: Callable[[], bool] | None = None,
     ) -> str | None:
         try:
             httpd = HTTPServer(("127.0.0.1", port), _OAuthCallbackHandler)
@@ -124,6 +126,9 @@ class OAuthCallbackServer:
         
         while httpd.auth_code is None:
             if time.time() - start_time > timeout_seconds:
+                break
+            if should_cancel is not None and should_cancel():
+                logger.info("[OAuthCallbackServer] %s auth cancelled before completion.", provider)
                 break
             httpd.handle_request()
             
@@ -204,12 +209,12 @@ class KickAuthManager(BaseOAuthManager):
         "moderation:chat_message:manage": "dashboard.banner.scope.kick_moderation_chat",
     }
 
-    def login(self, force: bool = False) -> dict:
+    def login(self, force: bool = False, should_cancel: Callable[[], bool] | None = None) -> dict:
         if not force:
             tokens = self.get_tokens(force=False)
             if tokens and tokens.get("access_token"):
                 return tokens
-        return self._new_login()
+        return self._new_login(should_cancel)
 
     def refresh_token(self) -> dict:
         tokens = self.storage.load()
@@ -241,7 +246,7 @@ class KickAuthManager(BaseOAuthManager):
             logger.warning("[KickAuth] Transient error refreshing token; keeping session: %s", e)
             raise TransientAuthError(str(e)) from e
 
-    def _new_login(self) -> dict:
+    def _new_login(self, should_cancel: Callable[[], bool] | None = None) -> dict:
         verifier, challenge = self._pkce_pair()
         state = secrets.token_urlsafe(32)
         auth_url = self._build_auth_url(challenge, state)
@@ -249,7 +254,8 @@ class KickAuthManager(BaseOAuthManager):
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(
             auth_url, port, self.success_html_path, provider="kick",
-            browser_service=self.browser_service, expected_state=state
+            browser_service=self.browser_service, expected_state=state,
+            should_cancel=should_cancel
         )
 
         if not auth_code:
@@ -312,12 +318,12 @@ class TwitchAuthManager(BaseOAuthManager):
     }
     REQUIRED_TWITCH_SCOPES = REQUIRED_SCOPES
 
-    def login(self, force: bool = False) -> dict:
+    def login(self, force: bool = False, should_cancel: Callable[[], bool] | None = None) -> dict:
         if not force:
             tokens = self.get_tokens(force=False)
             if tokens and tokens.get("access_token"):
                 return tokens
-        return self._new_login(force=force)
+        return self._new_login(force=force, should_cancel=should_cancel)
 
     def refresh_token(self) -> dict:
         tokens = self.storage.load()
@@ -354,7 +360,7 @@ class TwitchAuthManager(BaseOAuthManager):
             logger.warning("[TwitchAuth] Transient error refreshing token; keeping session: %s", e)
             raise TransientAuthError(str(e)) from e
 
-    def _new_login(self, force: bool = False) -> dict:
+    def _new_login(self, force: bool = False, should_cancel: Callable[[], bool] | None = None) -> dict:
         scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers channel:read:subscriptions bits:read"
         force_param = "&force_verify=true" if force else ""
         state = secrets.token_urlsafe(32)
@@ -369,7 +375,8 @@ class TwitchAuthManager(BaseOAuthManager):
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(
             auth_url, port, self.success_html_path, provider="twitch",
-            browser_service=self.browser_service, expected_state=state
+            browser_service=self.browser_service, expected_state=state,
+            should_cancel=should_cancel
         )
 
         if not auth_code:

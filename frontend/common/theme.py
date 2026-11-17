@@ -60,7 +60,6 @@ class BrandColors:
     BLUE_DARK      = "#2563EB"
     PURPLE         = "#A855F7"
     PURPLE_DARK    = "#9333EA"
-    ORANGE         = "#FF6B35"
     ORANGE_DARK    = "#E0481D"
     KICK_BORDER    = "#1A7A42"
     TIKTOK_ACCENT  = "#FF0050"
@@ -581,7 +580,7 @@ QLabel[role="status_pill"]                      {{ border-radius: {Size.Radius.R
 QLabel[role="status_pill"][state="online"]      {{ background-color: {Semantic.GREEN_GLOW}; color: {BrandColors.GREEN}; border: {Borders.BRD_FOCS}; }}
 QLabel[role="status_pill"][state="connecting"]  {{ background-color: {Semantic.AMBER_GLOW}; color: {BrandColors.AMBER}; border: {get_border(BrandColors.AMBER)}; }}
 QLabel[role="status_pill"][state="offline"]     {{ background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_400}; border: {Borders.BRD_SOFT}; }}
-QLabel[role="badge_new"] {{ background-color: {BrandColors.ORANGE}; color: {Palette.NEUTRAL_000}; font-weight: 700; border-radius: {Size.Radius.RAD_MED}px; min-width: {Size.BADGE_MIN}px; max-width: {Size.BADGE_MIN}px; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MIN}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
+QLabel[role="badge_new"] {{ background-color: {BrandColors.GREEN}; color: {Palette.NEUTRAL_000}; font-weight: 700; border-radius: {Size.Radius.RAD_MED}px; min-width: {Size.BADGE_MIN}px; max-width: {Size.BADGE_MIN}px; min-height: {Size.BADGE_MIN}px; max-height: {Size.BADGE_MIN}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
 QLabel[role="badge_new"][state="collapsed"] {{ border-radius: {Size.Radius.RAD_MED}px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
 QFrame[role="whats_new_card"] {{ background-color: {Palette.NEUTRAL_900}; border: {Borders.BRD_SOFT}; border-radius: {Size.Radius.RAD_LRG}px; }}
 QFrame[role="whats_new_card"]:hover {{ background-color: {Palette.NEUTRAL_750}; border-color: {Palette.NEUTRAL_750}; }}

@@ -16,7 +16,6 @@ logger = logging.getLogger("minikick.services.system.i18n")
 _FTL_FILENAME = "main.ftl"
 _FALLBACK_LANG = "en"
 
-# Un bundle por archivo, compartido entre instancias: parsear un idioma cuesta ~130 ms.
 _BUNDLES: Dict[str, Optional[FluentBundle]] = {}
 _BUNDLES_LOCK = threading.Lock()
 _WARNED: Set[Tuple[str, str]] = set()
