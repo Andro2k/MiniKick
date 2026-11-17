@@ -49,6 +49,17 @@ class RewardsController(QObject):
         self.view.duplicate_requested.connect(self._handle_duplicate)
         self.view.delete_requested.connect(self._handle_delete)
         self.view.preview_requested.connect(self._handle_preview)
+        self.view.reload_media_requested.connect(self._handle_reload_media)
+
+    def _handle_reload_media(self):
+        regenerated = self.service.reload_thumbnails()
+        self.load_initial_data()
+        if self.toast and self.view:
+            self.toast.show_toast(
+                title=self.view.i18n.get("rewards.status.media_reloaded"),
+                message=self.view.i18n.get("rewards.status.media_reloaded_msg").replace("{count}", str(regenerated)),
+                state="info"
+            )
 
     def _get_placeholder_strings(self) -> set[str]:
         if not self.view:

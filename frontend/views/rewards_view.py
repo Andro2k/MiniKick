@@ -128,6 +128,7 @@ class RewardsView(BaseView):
     delete_requested = Signal(str)
     preview_requested = Signal(str)
     refresh_rewards_requested = Signal()
+    reload_media_requested = Signal()
 
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay", parent=None):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
@@ -190,6 +191,7 @@ class RewardsView(BaseView):
         self.txt_search = self.table_card.txt_search
         if self.txt_search:
             self.txt_search.textChanged.connect(self._apply_filters)
+            self._add_reload_button()
 
         self.filter_header = self.table_card.enable_filter_header()
         sort_asc_text = self.i18n.get("rewards.table.filter_sort_asc")
@@ -245,6 +247,14 @@ class RewardsView(BaseView):
         self.table_rewards.setColumnWidth(6, 80)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
+
+    def _add_reload_button(self):
+        self.btn_reload_media = ModernButton("", role="action_outlined", parent=self.table_card.header_top_widget)
+        self.btn_reload_media.setIcon(get_icon_colored("refresh-cw.svg"))
+        self.btn_reload_media.setToolTip(self.i18n.get("rewards.table.btn_reload"))
+        self.btn_reload_media.clicked.connect(self.reload_media_requested.emit)
+        layout = self.table_card.header_controls_layout
+        layout.insertWidget(layout.indexOf(self.txt_search) + 1, self.btn_reload_media)
 
     def _on_sort_requested(self, col_idx: int, order: str):
         self._current_sort = (col_idx, order)
