@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ICONS_DIR = PROJECT_ROOT / "assets" / "icons"
 SHARED_PACK_DIR = "common"
 # Glifos cuyo centro óptico no coincide con el de su caja (el triángulo de play va desplazado a propósito).
-OPTICAL_CENTER_EXEMPT = frozenset({"play-outline"})
+OPTICAL_CENTER_EXEMPT = frozenset({"play", "play-outline"})
 
 GRID = 24
 CANVAS_SIZE = "24"
