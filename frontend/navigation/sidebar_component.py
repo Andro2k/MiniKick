@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QBoxLayout, QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, Size
 from frontend.widgets import configure_icon_only_button
 
 _BADGE_INSET = 2
@@ -156,20 +156,10 @@ class Sidebar(QFrame):
         top_row.setContentsMargins(*Size.Margin.MRG_NON)
         top_row.setSpacing(Size.SPACING_SM)
 
-        icon_box = QFrame()
-        icon_box.setProperty("role", "update_icon_box")
-        icon_box.setFixedSize(Size.UPDATE_ICON_BOX, Size.UPDATE_ICON_BOX)
-        icon_box_layout = QHBoxLayout(icon_box)
-        icon_box_layout.setContentsMargins(*Size.Margin.MRG_NON)
-        icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        lbl_card_icon = QLabel()
-        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download.svg", BrandColors.GREEN))
-        lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_box_layout.addWidget(lbl_card_icon)
-
-        top_row.addWidget(icon_box)
-        top_row.addStretch()
+        self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
+        self.lbl_update_title.setProperty("role", "text_h2")
+        self.lbl_update_title.setWordWrap(True)
+        top_row.addWidget(self.lbl_update_title, stretch=1, alignment=Qt.AlignmentFlag.AlignTop)
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
@@ -178,14 +168,9 @@ class Sidebar(QFrame):
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
         self.btn_dismiss_update.clicked.connect(self._dismiss_update_card)
-        top_row.addWidget(self.btn_dismiss_update)
+        top_row.addWidget(self.btn_dismiss_update, alignment=Qt.AlignmentFlag.AlignTop)
 
         card_layout.addLayout(top_row)
-
-        self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
-        self.lbl_update_title.setProperty("role", "text_h2")
-        self.lbl_update_title.setWordWrap(True)
-        card_layout.addWidget(self.lbl_update_title)
 
         self.lbl_update_desc = QLabel(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", ""))
         self.lbl_update_desc.setProperty("role", "text_caption")
