@@ -19,8 +19,9 @@ AppCopyright={#MyAppCopyright}
 
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
+OutputDir=..\..\Output
 OutputBaseFilename=MiniKick_Installer_v{#MyAppVersion}
-SetupIconFile=assets\icons\icon.ico
+SetupIconFile=..\..\assets\icons\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 
@@ -34,10 +35,10 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
-LicenseFile=license.txt
+LicenseFile=..\..\license.txt
 CloseApplications=force
-WizardImageFile=resources\installer\install_bg.png
-WizardSmallImageFile=resources\installer\install_small.png
+WizardImageFile=install_bg.png
+WizardSmallImageFile=install_small.png
 
 VersionInfoVersion={#MyAppVersion}.0
 VersionInfoCompany={#MyAppPublisher}
@@ -57,7 +58,7 @@ Type: filesandordirs; Name: "{app}\_internal\docs"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\MiniKick\*"; DestDir: "{app}"; Excludes: "\docs\*,\_internal\docs\*"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\dist\MiniKick\*"; DestDir: "{app}"; Excludes: "\docs\*,\_internal\docs\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
