@@ -143,7 +143,7 @@ class TimersController(BaseController):
 
         i18n = self._get_i18n()
         status_text = i18n.get("timer.status.enabled") if is_active else i18n.get("timer.status.disabled")
-        msg = i18n.get("timer.status.toggled_msg").replace("{name}", existing['name']).replace("{status}", status_text.lower())
+        msg = i18n.get("timer.status.toggled_msg", name=existing['name'], status=status_text.lower())
         if self.toast:
             self.toast.show_toast(
                 title=i18n.get("timer.status.updated"),
@@ -171,6 +171,6 @@ class TimersController(BaseController):
             i18n = self._get_i18n()
             self.toast.show_toast(
                 title=i18n.get(title_key),
-                message=(i18n.get(msg_key)).replace("{name}", val),
+                message=i18n.get(msg_key, name=val),
                 state=state
             )

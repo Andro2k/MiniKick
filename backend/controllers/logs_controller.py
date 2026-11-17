@@ -215,12 +215,12 @@ class LogsController(QObject):
             if self.toast:
                 self.toast.show_toast(
                     title=self.view.i18n.get("log.status.historical_title"),
-                    message=self.view.i18n.get("log.status.historical_msg").replace("{file}", file_name),
+                    message=self.view.i18n.get("log.status.historical_msg", file=file_name),
                     state="warning",
                 )
         except Exception as e:
             error_title = self.view.i18n.get("main.controllers.log.error_title")
-            error_msg = self.view.i18n.get("main.controllers.log.read_error").replace("{error}", str(e))
+            error_msg = self.view.i18n.get("main.controllers.log.read_error", error=e)
             self.view.show_message("error", error_title, error_msg)
 
     @Slot(str, str)
@@ -256,5 +256,5 @@ class LogsController(QObject):
             QDesktopServices.openUrl(folder_url)
         except Exception as e:
             error_title = self.view.i18n.get("main.controllers.log.error_title")
-            error_msg = self.view.i18n.get("main.controllers.log.folder_error").replace("{error}", str(e))
+            error_msg = self.view.i18n.get("main.controllers.log.folder_error", error=e)
             self.view.show_message("error", error_title, error_msg)

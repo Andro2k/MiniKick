@@ -339,14 +339,14 @@ class YouTubeSearchWorker(QThread):
             if self.isInterruptionRequested():
                 return
             if not info:
-                msg = self.i18n.get("music.queue.not_found").replace("{query}", self.query_raw)
+                msg = self.i18n.get("music.queue.not_found", query=self.query_raw)
                 self.search_completed.emit(False, msg)
                 return
 
             if 'entries' in info:
                 entries = [e for e in info['entries'] if e]
                 if not entries:
-                    msg = self.i18n.get("music.queue.not_found").replace("{query}", self.query_raw)
+                    msg = self.i18n.get("music.queue.not_found", query=self.query_raw)
                     self.search_completed.emit(False, msg)
                     return
                 item = entries[0]
@@ -384,11 +384,7 @@ class YouTubeSearchWorker(QThread):
             duration_sec = item.get('duration')
             if duration_sec and self.max_duration_min > 0:
                 if int(duration_sec) > self.max_duration_min * 60:
-                    msg = (
-                        self.i18n.get("music.chat.song_too_long")
-                        .replace("{user}", self.requester)
-                        .replace("{max}", str(self.max_duration_min))
-                    )
+                    msg = self.i18n.get("music.chat.song_too_long", user=self.requester, max=self.max_duration_min)
                     self.search_completed.emit(False, msg)
                     return
 
@@ -413,12 +409,12 @@ class YouTubeSearchWorker(QThread):
                 "thumbnail": item.get('thumbnail') or info.get('thumbnail') or ""
             }
 
-            msg = self.i18n.get("music.queue.success").replace("{track}", f"{title} - {author}")
+            msg = self.i18n.get("music.queue.success", track=f"{title} - {author}")
             if not self.isInterruptionRequested():
                 self.search_completed.emit(True, msg)
 
         except Exception as e:
             if self.isInterruptionRequested():
                 return
-            msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
+            msg = self.i18n.get("music.queue.error", error=e)
             self.search_completed.emit(False, msg)

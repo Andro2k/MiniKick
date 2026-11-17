@@ -117,6 +117,6 @@ class WebhooksController(BaseController):
         if self.toast:
             self.toast.show_toast(
                 title=self.i18n.get(title_key),
-                message=self.i18n.get(msg_key).replace("{name}", name),
+                message=self.i18n.get(msg_key, name=name),
                 state=state,
             )

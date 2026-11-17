@@ -106,7 +106,7 @@ class CommandHelpFormatter:
     def _category_messages(self, buckets: dict[str, list[str]], label: str) -> list[str]:
         active, inactive = buckets["active"], buckets["inactive"]
         if not active and not inactive:
-            return [self.i18n.get("chat.commands_help.empty_category").replace("{category}", label)]
+            return [self.i18n.get("chat.commands_help.empty_category", category=label)]
 
         parts = []
         if active:

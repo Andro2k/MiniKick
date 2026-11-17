@@ -118,7 +118,7 @@ class CommandsController(BaseController):
             state_color = "success" if is_active else "info"
             self.toast.show_toast(
                 title=i18n.get(title_key),
-                message=i18n.get("command.status.toggled_msg").replace("{trigger}", trigger),
+                message=i18n.get("command.status.toggled_msg", trigger=trigger),
                 state=state_color,
                 tag=f"cmd_toggle_{trigger}"
             )
@@ -146,6 +146,6 @@ class CommandsController(BaseController):
             i18n = self._get_i18n()
             self.toast.show_toast(
                 title=i18n.get(title_key),
-                message=i18n.get(msg_key).replace("{trigger}", val),
+                message=i18n.get(msg_key, trigger=val),
                 state=state
             )

@@ -82,7 +82,7 @@ class YouTubeChatProvider:
 
         video_id = self.resolve_live_video_id(target)
         if not video_id:
-            err_msg = self.i18n.get("logs.youtube.video_not_found").replace("{target}", target)
+            err_msg = self.i18n.get("logs.youtube.video_not_found", target=target)
             logger.warning("[YouTubeChatProvider] No active live stream found for: %s", target)
             if on_error:
                 on_error(err_msg)

@@ -366,7 +366,7 @@ class MusicController(QObject):
         self.command_service.save_command_from(base, response=tag, is_active=is_active)
 
         status_text = self.i18n.get("music.status.enabled") if is_active else self.i18n.get("music.status.disabled")
-        status_msg = (self.i18n.get("music.toast.command_toggled")).replace("{trigger}", trigger).replace("{status}", status_text.lower())
+        status_msg = self.i18n.get("music.toast.command_toggled", trigger=trigger, status=status_text.lower())
         status_title = self.i18n.get("music.status.updated")
         state_color = "success" if is_active else "info"
 
@@ -387,16 +387,16 @@ class MusicController(QObject):
                 break
 
         title_toast = self.i18n.get("music.youtube.error_title")
-        msg_toast = self.i18n.get("music.toast.error_playing").replace("{title}", title).replace("{error}", clean_msg)
+        msg_toast = self.i18n.get("music.toast.error_playing", title=title, error=clean_msg)
 
         if self.toast:
             self.toast.show_toast(title_toast, msg_toast, "danger")
 
         if self.command_service:
             if requester:
-                chat_text = self.i18n.get("music.toast.chat_error_playing").replace("{user}", requester).replace("{title}", title).replace("{error}", clean_msg)
+                chat_text = self.i18n.get("music.toast.chat_error_playing", user=requester, title=title, error=clean_msg)
             else:
-                chat_text = self.i18n.get("music.toast.chat_error_playing_no_user").replace("{title}", title).replace("{error}", clean_msg)
+                chat_text = self.i18n.get("music.toast.chat_error_playing_no_user", title=title, error=clean_msg)
             self.command_service.send_response(chat_text, platform=platform)
 
     @Slot()

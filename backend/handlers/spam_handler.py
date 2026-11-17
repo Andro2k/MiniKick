@@ -136,7 +136,7 @@ class ChatFilterHandler:
         if not read_name:
             return message
         spoken_user = speakable_username(user) or user
-        return self.i18n.get("chat.status.user_says").replace("{user}", spoken_user).replace("{message}", message)
+        return self.i18n.get("chat.status.user_says", user=spoken_user, message=message)
 
     def add_bot(self, bot_name: str, view) -> bool:
         clean_name = bot_name.strip().lower()

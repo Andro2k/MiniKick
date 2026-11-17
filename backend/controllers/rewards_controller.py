@@ -57,7 +57,7 @@ class RewardsController(QObject):
         if self.toast and self.view:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.media_reloaded"),
-                message=self.view.i18n.get("rewards.status.media_reloaded_msg").replace("{count}", str(regenerated)),
+                message=self.view.i18n.get("rewards.status.media_reloaded_msg", count=regenerated),
                 state="info"
             )
 
@@ -112,7 +112,7 @@ class RewardsController(QObject):
         if self.toast and self.view:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.created"),
-                message=self.view.i18n.get("rewards.status.creating_api").replace("{platform}", plat_label),
+                message=self.view.i18n.get("rewards.status.creating_api", platform=plat_label),
                 state="info"
             )
 
@@ -136,7 +136,7 @@ class RewardsController(QObject):
         if self.toast and self.view:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.updated"),
-                message=self.view.i18n.get("rewards.status.updating_api").replace("{platform}", plat_label),
+                message=self.view.i18n.get("rewards.status.updating_api", platform=plat_label),
                 state="info"
             )
 
@@ -349,7 +349,7 @@ class RewardsController(QObject):
             plat_label = self._get_platform_label(platform)
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.created"),
-                message=self.view.i18n.get("rewards.status.created_api_success").replace("{reward}", created_title).replace("{platform}", plat_label),
+                message=self.view.i18n.get("rewards.status.created_api_success", reward=created_title, platform=plat_label),
                 state="success"
             )
 
@@ -361,7 +361,7 @@ class RewardsController(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("common.status.error"),
-                message=self.view.i18n.get("rewards.status.created_api_error").replace("{error}", err_msg).replace("{platform}", "API"),
+                message=self.view.i18n.get("rewards.status.created_api_error", error=err_msg, platform="API"),
                 state="danger"
             )
 
@@ -391,7 +391,7 @@ class RewardsController(QObject):
             if self.toast and not config.get("is_new_reward"):
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.created"),
-                    message=(self.view.i18n.get("rewards.status.created_msg")).replace("{reward}", reward_name),
+                    message=self.view.i18n.get("rewards.status.created_msg", reward=reward_name),
                     state="success"
                 )
 
@@ -495,7 +495,7 @@ class RewardsController(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.updated"),
-                message=self.view.i18n.get("rewards.status.updated_api_success").replace("{reward}", updated_title).replace("{platform}", plat_label),
+                message=self.view.i18n.get("rewards.status.updated_api_success", reward=updated_title, platform=plat_label),
                 state="success"
             )
 
@@ -516,7 +516,7 @@ class RewardsController(QObject):
             if is_404:
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.updated"),
-                    message=self.view.i18n.get("rewards.status.reward_not_found_on_platform").replace("{reward}", new_reward or old_reward).replace("{platform}", plat_label),
+                    message=self.view.i18n.get("rewards.status.reward_not_found_on_platform", reward=new_reward or old_reward, platform=plat_label),
                     state="warning"
                 )
             else:
@@ -530,7 +530,7 @@ class RewardsController(QObject):
                 else:
                     self.toast.show_toast(
                         title=self.view.i18n.get("rewards.status.updated"),
-                        message=self.view.i18n.get("rewards.status.updated_local_saved_api_failed").replace("{error}", err_msg).replace("{platform}", plat_label),
+                        message=self.view.i18n.get("rewards.status.updated_local_saved_api_failed", error=err_msg),
                         state="warning"
                     )
 
@@ -577,7 +577,7 @@ class RewardsController(QObject):
             if self.toast and show_toast and not updated_config.get("id"):
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.updated"),
-                    message=(self.view.i18n.get("rewards.status.updated_msg")).replace("{reward}", new_reward),
+                    message=self.view.i18n.get("rewards.status.updated_msg", reward=new_reward),
                     state="success"
                 )
 
@@ -604,7 +604,7 @@ class RewardsController(QObject):
             if self.toast:
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.deleted"),
-                    message=(self.view.i18n.get("rewards.status.deleted_msg")).replace("{reward}", r_name),
+                    message=self.view.i18n.get("rewards.status.deleted_msg", reward=r_name),
                     state="warning"
                 )
 

@@ -342,7 +342,7 @@ class TikTokChatProvider:
                     self._drain_client_loop(self._client)
 
             except UserNotFoundError:
-                err = self.i18n.get("logs.tiktok.user_not_found").replace("{unique_id}", clean_user)
+                err = self.i18n.get("logs.tiktok.user_not_found", unique_id=clean_user)
                 logger.warning(
                     "[TikTokChatProvider] User @%s does not exist or does not have Live enabled on TikTok.",
                     clean_user,
@@ -352,14 +352,14 @@ class TikTokChatProvider:
                 break
 
             except UserOfflineError:
-                err = self.i18n.get("logs.tiktok.stream_offline").replace("{unique_id}", clean_user)
+                err = self.i18n.get("logs.tiktok.stream_offline", unique_id=clean_user)
                 logger.warning("[TikTokChatProvider] @%s is not currently live on TikTok.", clean_user)
                 if on_error:
                     on_error(err)
                 break
 
             except AgeRestrictedError:
-                err = self.i18n.get("logs.tiktok.age_restricted").replace("{unique_id}", clean_user)
+                err = self.i18n.get("logs.tiktok.age_restricted", unique_id=clean_user)
                 logger.warning(
                     "[TikTokChatProvider] The live stream for @%s has an age restriction (+18).",
                     clean_user,

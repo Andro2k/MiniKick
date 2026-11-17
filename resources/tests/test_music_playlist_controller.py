@@ -41,7 +41,7 @@ class FakeToast:
 
 
 class FakeI18n:
-    def get(self, key):
+    def get(self, key, **kwargs):
         return key
 
 

@@ -108,6 +108,6 @@ class BugReportWorker(QThread):
             if resp.status_code in (200, 204):
                 self.report_completed.emit(True, self.i18n.get("dialogs.bug_report.success_send"))
             else:
-                self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_discord").replace("{code}", str(resp.status_code)))
+                self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_discord", code=resp.status_code))
         except Exception as e:
-            self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_send").replace("{error}", str(e)))
+            self.report_completed.emit(False, self.i18n.get("dialogs.bug_report.err_send", error=e))
