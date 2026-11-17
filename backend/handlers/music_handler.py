@@ -28,7 +28,7 @@ class MusicCommandHandler:
 
     def handle_command(self, tag: str, user: str, message: str, prefix_used: str, platform: str = "kick"):
         if not self.ctx.music_service_enabled:
-            msg = self.i18n.get("music.stats.service_disabled_chat").replace("{user}", user)
+            msg = self.i18n.get("music.stats.service_disabled_chat", user=user)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -49,7 +49,7 @@ class MusicCommandHandler:
 
     def _handle_plugin_playlist(self, provider, user, message, prefix_used, platform: str = "kick"):
         if not provider or not hasattr(provider, "get_queue"):
-            msg = self.i18n.get("music.chat.no_queue_available").replace("{user}", user)
+            msg = self.i18n.get("music.chat.no_queue_available", user=user)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -67,12 +67,9 @@ class MusicCommandHandler:
                     artist = song.get("artist", "")
                     artist_str = f" - {artist}" if artist else ""
                     requester = song.get("requester", "Streamer")
-                    msg = (
-                        self.i18n.get("music.chat.playlist_pos_info")
-                        .replace("{pos}", str(pos))
-                        .replace("{title}", title)
-                        .replace("{artist}", artist_str)
-                        .replace("{requester}", requester)
+                    msg = self.i18n.get(
+                        "music.chat.playlist_pos_info",
+                        pos=pos, title=title, artist=artist_str, requester=requester,
                     )
                     self.send_chat_message(msg, platform=platform)
                     return
@@ -89,7 +86,7 @@ class MusicCommandHandler:
                 user_positions.append(f"#{idx + 1}")
 
         if not user_positions:
-            msg = self.i18n.get("music.chat.playlist_empty_for_user").replace("{user}", user)
+            msg = self.i18n.get("music.chat.playlist_empty_for_user", user=user)
             self.send_chat_message(msg, platform=platform)
         else:
             MAX_PER_MSG = 8
@@ -97,30 +94,22 @@ class MusicCommandHandler:
             chunks = [user_positions[i:i + MAX_PER_MSG] for i in range(0, count, MAX_PER_MSG)]
 
             first_chunk_str = ", ".join(chunks[0])
-            first_msg = (
-                self.i18n.get("music.chat.playlist_user_songs")
-                .replace("{user}", user)
-                .replace("{count}", str(count))
-                .replace("{songs}", first_chunk_str)
-            )
+            first_msg = self.i18n.get("music.chat.playlist_user_songs", user=user, count=count, songs=first_chunk_str)
             self.send_chat_message(first_msg, platform=platform)
 
             total_pages = len(chunks)
             for page_idx, chunk in enumerate(chunks[1:], start=2):
                 remaining_str = ", ".join(chunk)
-                extra_msg = (
-                    self.i18n.get("music.chat.playlist_user_songs_more")
-                    .replace("{user}", user)
-                    .replace("{page}", str(page_idx))
-                    .replace("{total_pages}", str(total_pages))
-                    .replace("{songs}", remaining_str)
+                extra_msg = self.i18n.get(
+                    "music.chat.playlist_user_songs_more",
+                    user=user, page=page_idx, total_pages=total_pages, songs=remaining_str,
                 )
                 self.send_chat_message(extra_msg, platform=platform)
 
     def _handle_plugin_sr(self, provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
-            msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            msg = self.i18n.get("music.chat.sr_usage", user=user, trigger=prefix_used)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -132,7 +121,7 @@ class MusicCommandHandler:
 
         queue_items = provider.get_queue()
         if len(queue_items) >= self.ctx.max_queue_size:
-            msg = self.i18n.get("music.chat.queue_full").replace("{user}", user).replace("{max}", str(self.ctx.max_queue_size))
+            msg = self.i18n.get("music.chat.queue_full", user=user, max=self.ctx.max_queue_size)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -186,7 +175,7 @@ class MusicCommandHandler:
             if song:
                 is_playing = song.get("is_playing", False)
                 if is_playing:
-                    msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
+                    msg = self.i18n.get("music.chat.song_now_playing", title=song["title"], artist=song["artist"])
                     self.send_chat_message(msg, platform=platform)
                 else:
                     msg = self.i18n.get("music.chat.song_paused_youtube")
@@ -214,11 +203,7 @@ class MusicCommandHandler:
     def _handle_plugin_volume(self, _provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
-            msg = (
-                self.i18n.get("music.chat.vol_current")
-                .replace("{user}", user)
-                .replace("{volume}", str(self.ctx.current_volume))
-            )
+            msg = self.i18n.get("music.chat.vol_current", user=user, volume=self.ctx.current_volume)
             self.send_chat_message(msg, platform=platform)
             return
 
@@ -227,11 +212,11 @@ class MusicCommandHandler:
             if not (0 <= vol_val <= 100):
                 raise ValueError("Volume out of range")
         except ValueError:
-            msg = self.i18n.get("music.chat.vol_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            msg = self.i18n.get("music.chat.vol_usage", user=user, trigger=prefix_used)
             self.send_chat_message(msg, platform=platform)
             return
 
         self.ctx.apply_chat_volume(vol_val)
 
-        msg = self.i18n.get("music.chat.vol_success").replace("{user}", user).replace("{volume}", str(vol_val)).replace("{vol}", str(vol_val))
+        msg = self.i18n.get("music.chat.vol_success", user=user, volume=vol_val)
         self.send_chat_message(msg, platform=platform)
