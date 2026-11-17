@@ -52,8 +52,6 @@
 | **INC-040** | Advertencia al cerrar la app porque `Worker_Whats_New` ya había sido eliminado | Log de usuario `minikick.log` (2026-10-23) | v1.6.4 | `✅ Solventado` | `frontend/main_window.py`, `frontend/worker_shutdown.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
 | **INC-041** | Avatar y badges no escalaban con el tamaño de fuente del overlay; la previsualización ignoraba el tamaño configurado | Reporte de usuario sobre el chat OBS | v1.6.5 | `✅ Solventado` | `assets/overlays/chat/`, `frontend/components/chat/chat_mockup.py`, `frontend/components/chat/overlay_settings.py`, `resources/tests/test_chat_overlay_controls.py` | v1.6.5 |
 | **INC-042** | `NameError: name 'ChatView' is not defined` al navegar a Chat después de diferir las importaciones de vistas | Log de usuario `minikick.log` (2026-10-23, líneas 1396-1408) | v1.6.5 | `✅ Solventado` | `frontend/main_window_views.py`, `resources/tests/test_main_window_support.py` | v1.6.5 |
-<<<<<<< Updated upstream
-=======
 | **INC-043** | `AttributeError: 'KickChatWorker' object has no attribute '_retiring_poll_workers'` al eliminar una encuesta, seguido de destrucción de `KickPollSyncWorker` activo | Log de usuario `minikick.log` (2026-10-27, líneas 68-70) | v1.6.6 | `✅ Solventado` | `backend/workers/kick_chat_worker.py`, `resources/tests/test_kick_ws_key_rotation.py` | v1.6.6 |
 | **INC-044** | Contenido del modal de actualización recortado al completar la descarga | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/updater_dialog.py`, `resources/tests/test_updater_dialog.py` | v1.6.6 |
 | **INC-045** | Documentación `docs\walkthroughs` incluida en el instalador exportado | Inspección de `AppData\Local\Programs\MiniKick\_internal\docs\walkthroughs` | v1.6.6 | `✅ Solventado` | `MiniKick.spec`, `instalador.iss`, `resources/tools/build_manager.py`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `frontend/window/whats_new.py` | v1.6.6 |
@@ -61,10 +59,10 @@
 | **INC-047** | El generador de capturas llama a un handler de navegación eliminado y termina con un worker activo | Reporte del usuario al ejecutar `resources/tools/generate_screenshots.py` | v1.6.6 | `✅ Solventado` | `resources/tools/generate_screenshots.py`, `resources/tests/test_screenshot_generator.py` | v1.6.6 (`WT-1.6.6_12`) |
 | **INC-048** | Bordes dentados en los badges circulares de diálogos e icono de actualización recortado | Capturas compartidas por el usuario | v1.6.6 | `✅ Solventado` | `frontend/dialogs/base_dialog.py`, `frontend/dialogs/updater_dialog.py`, `frontend/common/icons.py` | v1.6.6 |
 | **INC-049** | Diagnóstico insuficiente de episodios de latencia de chat Kick con WebSocket activo | Reporte de usuario / resumen de telemetría (15 arranques, ~9.5 h; adjunto `minikick.log` vacío) | v1.6.7 | `✅ Solventado` | `backend/providers/chat/kick_ws_provider.py`, `backend/utils/latency_monitor.py`, `backend/utils/json_utils.py` | v1.6.7 (`WT-1.6.7_06`) |
->>>>>>> Stashed changes
 | **INC-050** | Ventana flotante del chat pierde posición y tamaño al volver a desacoplar o reiniciar | Reporte de usuario / `minikick.log` sin eventos asociados | v1.6.7 | `✅ Solventado` | `frontend/views/chat_view.py`, `frontend/main_window_views.py`, `resources/tests/test_chat_detached_window.py` | v1.6.7 (`WT-1.6.7_07`, `WT-1.6.7_08`) |
 | **INC-051** | `AttributeError: 'DashboardView' object has no attribute 'connect_requested'` al iniciar MiniKick | Log de usuario `minikick.log` (2026-11-08, línea 1349) | v1.6.7 | `✅ Solventado` | `frontend/views/dashboard_view.py`, `resources/tests/test_main_window_support.py` | v1.6.7 |
 | **INC-052** | Al agregar una playlist con el reproductor vacío, las canciones se reemplazan entre sí | Reporte de usuario / `minikick.log` (2026-11-15) | v1.6.8 | `✅ Solventado` | `backend/providers/music/youtube_music_provider.py`, `resources/tests/test_worker_and_core_lifecycle.py`, `docs/historial_crashes_y_errores.md` | v1.6.8 |
+| **INC-053** | Pausas de la interfaz al auto-conectar por precarga de vistas en el hilo principal | `minikick.log` (2026-11-16) | v1.6.8 | `✅ Solventado` | `bootstrap/application.py`, `frontend/window/startup_coordinator.py`, `frontend/window/main_window_core.py`, `resources/tests/test_startup_coordinator.py` | v1.6.8 (corrección local) |
 
 ---
 
@@ -1054,8 +1052,6 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - [`resources/tests/test_main_window_support.py`](../resources/tests/test_main_window_support.py)
 * **Solución Implementada**: Se agregó un resolvedor explícito de clases `_load_view_class`, que importa y cachea la vista solicitada. El factory llama a este resolvedor al construir cada vista, conservando las importaciones diferidas sin depender de una resolución implícita de nombres. El mensaje de destrucción de `QThread` aparece tras el fallo y cierre abrupto; el registro no permite atribuirle una causa independiente.
 * **Pruebas y Verificación**: `resources/tests/test_main_window_support.py` verifica que la vista Chat se cargue de forma diferida, se instancie y se conecte al controlador solo una vez. Validación automatizada y suite de calidad ejecutadas tras el arreglo.
-<<<<<<< Updated upstream
-=======
 
 ---
 
@@ -1170,7 +1166,6 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/historial_crashes_y_errores.md`
 * **Solución Implementada**: El generador delega la navegación a `window.navigation.handle_navigation`. El flujo de capturas queda protegido con `finally` y solicita el apagado coordinado de la ventana incluso si una captura falla, esperando hasta 15 segundos a que finalice la secuencia.
 * **Pruebas y Verificación**: `resources/tests/test_screenshot_generator.py` pasó (2 pruebas); `python resources/tools/project_quality_suite.py --quick` pasó (12/12 auditorías); `git diff --check` pasó.
->>>>>>> Stashed changes
 
 ---
 
@@ -1283,3 +1278,27 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
   - `docs/historial_crashes_y_errores.md`
 * **Solución Implementada**: Solo se programa el inicio cuando se agrega la primera canción a una cola vacía sin canción actual. Los elementos siguientes permanecen en cola y no reinician el proceso de reproducción.
 * **Pruebas y Verificación**: `resources/tests/test_worker_and_core_lifecycle.py`: 13 pruebas aprobadas; la prueba de regresión verifica que tres canciones agregadas con el reproductor inactivo conservan su orden y programan un único inicio.
+
+---
+
+### INC-053: Pausas de la interfaz durante el auto-inicio de plataformas
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (la interfaz podía quedar bloqueada cientos de milisegundos durante la conexión inicial).
+* **Reportes Asociados**: `minikick.log`, 2026-11-16, MiniKick `v1.6.8`.
+* **Fecha y Versión del Fallo**: 2026-11-16 en MiniKick `v1.6.8`.
+* **Traza / Evidencia**:
+  ```text
+  [MainThread] View 'Chat' prewarmed in 783.47 ms
+  [MainThread] Starting Twitch integration...
+  [MainThread] 11 views prewarmed in 2360.51 ms total
+  ```
+* **Causa Raíz**: La hidratación agendaba auto-inicios escalonados mientras el precalentador creaba vistas Qt sincrónicamente en el hilo principal. La construcción de `Chat` coincidía con el callback de conexión de Twitch y bloqueaba el event loop de la interfaz.
+* **Archivos y Módulos Modificados**:
+  - `bootstrap/application.py`
+  - `frontend/window/startup_coordinator.py`
+  - `frontend/window/main_window_core.py`
+  - `resources/tests/test_startup_coordinator.py`
+  - `docs/historial_crashes_y_errores.md`
+* **Solución Implementada**: El event loop mantiene el splash visible mientras se ejecutan la hidratación y el lanzamiento escalonado de los auto-inicios, sin esperar la conexión de red. Los follow-ups se difieren hasta mostrar la ventana y la precarga de vistas se retrasa para que no compita con el inicio de plataformas; se conserva el descarte de destinos guardados como offline.
+* **Pruebas y Verificación**: `resources/tests/test_startup_coordinator.py`: 4 pruebas aprobadas; `py_compile` y `git diff --check` correctos. La suite rápida tuvo 13/15 auditores aprobados; los dos hallazgos restantes son preexistentes y están en archivos no modificados.

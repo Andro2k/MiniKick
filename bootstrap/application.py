@@ -5,6 +5,8 @@ import logging
 import sys
 import time
 
+from PySide6.QtCore import QEventLoop, QTimer
+
 from backend.config import APP_VERSION
 from backend.utils import elapsed_ms, perf_phase
 from bootstrap.environment_setup import PROCESS_STARTED, set_windows_app_id
@@ -18,6 +20,8 @@ _BANNER = "=" * 66
 
 
 class Application:
+    STARTUP_AUTOSTART_TIMEOUT_MS = 5_000
+
     def __init__(self, services: StartupServices | None = None, logging_setup=None):
         self._services = services or StartupServices()
         self._logging_setup = logging_setup or self._default_logging_setup
@@ -43,7 +47,10 @@ class Application:
         try:
             qt_app.setQuitOnLastWindowClosed(False)
             window = self._build_window(splash, i18n, db_manager, q_log_handler)
+            window.startup.defer_followups()
+            self._wait_for_startup_connections(window)
             self._show_window(window, splash, i18n, t_start)
+            window.startup.resume_followups()
             logger.info("[Bootstrap] Entering Qt application event loop.")
             return qt_app.exec()
         finally:
@@ -105,3 +112,38 @@ class Application:
         window.restore_window_state()
         splash.finish(window)
         logger.info("[Perf/Bootstrap] Window displayed (Total bootstrap: %.2f ms)", elapsed_ms(t_start))
+
+    def _wait_for_startup_connections(self, window) -> None:
+        wait_started = time.perf_counter()
+        event_loop = QEventLoop()
+        completed = False
+
+        def on_connections_dispatched() -> None:
+            nonlocal completed
+            completed = True
+            event_loop.quit()
+
+        window.startup_connections_dispatched.connect(on_connections_dispatched)
+
+        def on_timeout() -> None:
+            logger.warning(
+                "[Bootstrap] Timed out waiting for startup connection requests; displaying the main window."
+            )
+            event_loop.quit()
+
+        timeout = QTimer(event_loop)
+        timeout.setSingleShot(True)
+        timeout.timeout.connect(on_timeout)
+        timeout.start(self.STARTUP_AUTOSTART_TIMEOUT_MS)
+
+        try:
+            if not completed:
+                event_loop.exec()
+        finally:
+            timeout.stop()
+            window.startup_connections_dispatched.disconnect(on_connections_dispatched)
+        if completed:
+            logger.info(
+                "[Perf/Startup] Startup connection requests dispatched in %.2f ms",
+                (time.perf_counter() - wait_started) * 1000,
+            )
