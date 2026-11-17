@@ -16,7 +16,7 @@ class UpdateDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         super().__init__(
-            title=self.i18n.get("dialogs.update.title_default"), icon_path="cloud-download-outline.svg",
+            title=self.i18n.get("dialogs.update.title_default"), icon_path="cloud-download.svg",
             icon_bg_color=BrandColors.GREEN, width=400, parent=parent
         )
         self.version = ""
@@ -105,7 +105,7 @@ class UpdateDialog(ModernModal):
 
     def show_update_available(self, version: str):
         self.version = version
-        self._set_header_icon("cloud-download-outline.svg")
+        self._set_header_icon("cloud-download.svg")
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
@@ -143,7 +143,7 @@ class UpdateDialog(ModernModal):
 
     def show_complete(self):
         self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
-        self._set_header_icon("cloud-check-outline.svg")
+        self._set_header_icon("cloud-check.svg")
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
@@ -165,7 +165,7 @@ class UpdateDialog(ModernModal):
 
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(Qt.GlobalColor.transparent))
-        self._set_header_icon("cloud-check-outline.svg")
+        self._set_header_icon("cloud-check.svg")
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_up_to_date"))
@@ -178,7 +178,7 @@ class UpdateDialog(ModernModal):
 
     def show_error(self, message: str):
         self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 60))
-        self._set_header_icon("alert-triangle-outline.svg", BrandColors.RED)
+        self._set_header_icon("triangle-exclamation-point.svg", BrandColors.RED)
 
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_error"))
         self.lbl_subtitle.setText(message)

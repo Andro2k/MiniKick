@@ -34,7 +34,7 @@ class WebhooksView(BaseView):
             ],
             search_placeholder=self.i18n.get("webhooks.table.search_placeholder"),
             add_button_text=self.i18n.get("webhooks.table.btn_new"),
-            add_button_icon="plus-outline.svg",
+            add_button_icon="plus.svg",
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("webhooks.empty.title"),
@@ -105,12 +105,12 @@ class WebhooksView(BaseView):
             [
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.edit"),
-                    icon_name="edit-outline.svg",
+                    icon_name="square-pen.svg",
                     callback=lambda eid=endpoint_id: self.edit_requested.emit(eid),
                 ),
                 RowMenuAction(
                     text=self.i18n.get("common.row_menu.delete"),
-                    icon_name="trash-outline.svg",
+                    icon_name="trash.svg",
                     callback=lambda eid=endpoint_id, name=endpoint.name: self._confirm_delete(eid, name),
                     role="row_action_danger",
                 ),

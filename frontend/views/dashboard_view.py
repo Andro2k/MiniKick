@@ -25,10 +25,10 @@ class DashboardView(BaseView):
     _PLATFORM_CARDS_ATTR = "_platform_cols"
     _QUICK_ACCESS_ATTR = "_quick_cols"
     _QUICK_ACCESS_ITEMS = (
-        ("Stats", "chart-bar-outline.svg", "stats"),
-        ("Alerts", "megaphone-outline.svg", "alerts"),
-        ("Webhooks", "webhooks-outline.svg", "webhooks"),
-        ("Music", "music-notes-outline.svg", "music"),
+        ("Stats", "chart-bar.svg", "stats"),
+        ("Alerts", "megaphone.svg", "alerts"),
+        ("Webhooks", "webhook.svg", "webhooks"),
+        ("Music", "music.svg", "music"),
     )
     _CHANNEL_BADGES_ATTR = "_channel_badge_cols"
 
@@ -153,7 +153,7 @@ class DashboardView(BaseView):
         self.btn_switch_channel = ModernButton(
             "",
             role="action_outlined",
-            icon_name="refresh-outline.svg",
+            icon_name="refresh-cw.svg",
             parent=self.avatar_container,
         )
         self.btn_switch_channel.setFixedSize(30, 30)
@@ -182,7 +182,7 @@ class DashboardView(BaseView):
         self.btn_open_channel = ModernButton(
             "",
             role="btn_ghost",
-            icon_name="link-outline.svg",
+            icon_name="link.svg",
             parent=self.distribution_panel,
         )
         self.btn_open_channel.setToolTip(self.i18n.get("dashboard.profile.open_channel"))
@@ -207,10 +207,10 @@ class DashboardView(BaseView):
         self.channel_badges_grid.setSpacing(Size.SPACING_MD)
         self.channel_badges = {}
         badge_specs = (
-            ("followers", "dashboard.stats.followers", "users-outline.svg"),
-            ("created", "dashboard.stats.created_at", "calendar-days-outline.svg"),
-            ("category", "dashboard.stats.category", "globe-outline.svg"),
-            ("identifier", "dashboard.stats.room_id", "hashtag-outline.svg"),
+            ("followers", "dashboard.stats.followers", "users.svg"),
+            ("created", "dashboard.stats.created_at", "calendar-days.svg"),
+            ("category", "dashboard.stats.category", "globe.svg"),
+            ("identifier", "dashboard.stats.room_id", "hash.svg"),
         )
         for badge_key, title_key, icon_name in badge_specs:
             badge = StatCard(self.i18n.get(title_key), icon_name, "-", self.channel_badges_container)

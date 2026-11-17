@@ -37,23 +37,23 @@ class MainWindowCore(QMainWindow):
     SETTING_WINDOW_GEOMETRY = WindowStateManager.SETTING_WINDOW_GEOMETRY
 
     _NAV_CONFIG = (
-        ("Dashboard", "element-outline.svg", "main"),
-        ("Stats", "chart-bar-outline.svg", "main"),
+        ("Dashboard", "layout-dashboard.svg", "main"),
+        ("Stats", "chart-bar.svg", "main"),
 
-        ("Chat", "dialog-outline.svg", "stream"),
-        ("Stream Info", "calendar-days-outline.svg", "stream"),
-        ("Comandos", "command-outline.svg", "stream"),
-        ("Timers", "alarm-outline.svg", "stream"),
+        ("Chat", "messages-square.svg", "stream"),
+        ("Stream Info", "calendar-days.svg", "stream"),
+        ("Comandos", "command.svg", "stream"),
+        ("Timers", "alarm-clock.svg", "stream"),
 
-        ("Music", "music-notes-outline.svg", "tools"),
-        ("Widgets", "widget-add-outline.svg", "tools"),
-        ("Triggers", "treasure-chest-outline.svg", "tools"),
-        ("Alerts", "megaphone-outline.svg", "tools"),
-        ("Webhooks", "webhooks-outline.svg", "tools"),
+        ("Music", "music.svg", "tools"),
+        ("Widgets", "blocks.svg", "tools"),
+        ("Triggers", "package-open.svg", "tools"),
+        ("Alerts", "megaphone.svg", "tools"),
+        ("Webhooks", "webhook.svg", "tools"),
 
-        ("Developer", "browser-code-outline.svg", "system"),
-        ("Report Bug", "bug-outline.svg", "system"),
-        ("Settings", "gear-outline.svg", "profile"),
+        ("Developer", "app-window.svg", "system"),
+        ("Report Bug", "bug.svg", "system"),
+        ("Settings", "settings.svg", "profile"),
     )
     _PREWARM_EXCLUDED_VIEWS = ("Dashboard", "Developer", "Report Bug")
 

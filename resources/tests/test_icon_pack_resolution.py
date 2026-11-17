@@ -22,9 +22,10 @@ def _touch(root, *parts):
 
 
 def test_real_assets_resolve_from_their_packs():
-    assert icons.resolve_icon_path("check-outline.svg").endswith("assets/icons/outline/check-outline.svg")
+    assert icons.resolve_icon_path("check.svg").endswith("assets/icons/lucide/check.svg")
     assert icons.resolve_icon_path("block-kick.svg").endswith("assets/icons/common/block-kick.svg")
-    assert icons.resolve_icon_path("icons/chevron-down-outline.svg").endswith("outline/chevron-down-outline.svg")
+    assert icons.resolve_icon_path("icons/chevron-down.svg").endswith("lucide/chevron-down.svg")
+    assert icons.resolve_icon_path("radio-dot.svg").endswith("assets/icons/common/radio-dot.svg")
     assert icons.resolve_icon_path("icon.ico").endswith("assets/icons/icon.ico")
 
 
@@ -35,7 +36,7 @@ def test_missing_icon_returns_none():
 
 def test_active_pack_wins_over_common_and_base(icons_root, monkeypatch):
     monkeypatch.setattr(icons, "ACTIVE_ICON_PACK", "alt")
-    _touch(icons_root, "icons", "outline", "a.svg")
+    _touch(icons_root, "icons", "lucide", "a.svg")
     _touch(icons_root, "icons", "common", "a.svg")
     alt = _touch(icons_root, "icons", "alt", "a.svg")
     assert os.path.normpath(icons.resolve_icon_path("a.svg")) == os.path.normpath(alt)
@@ -43,12 +44,12 @@ def test_active_pack_wins_over_common_and_base(icons_root, monkeypatch):
 
 def test_common_comes_before_base_when_active_pack_lacks_the_icon(icons_root, monkeypatch):
     monkeypatch.setattr(icons, "ACTIVE_ICON_PACK", "alt")
-    _touch(icons_root, "icons", "outline", "a.svg")
+    _touch(icons_root, "icons", "lucide", "a.svg")
     common = _touch(icons_root, "icons", "common", "a.svg")
     assert os.path.normpath(icons.resolve_icon_path("a.svg")) == os.path.normpath(common)
 
 
 def test_base_pack_is_the_last_pack_fallback(icons_root, monkeypatch):
     monkeypatch.setattr(icons, "ACTIVE_ICON_PACK", "alt")
-    base = _touch(icons_root, "icons", "outline", "a.svg")
+    base = _touch(icons_root, "icons", "lucide", "a.svg")
     assert os.path.normpath(icons.resolve_icon_path("a.svg")) == os.path.normpath(base)

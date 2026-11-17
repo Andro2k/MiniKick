@@ -11,31 +11,31 @@ from backend.utils import fast_dumps, fast_loads
 logger = logging.getLogger("minikick.system.whats_new")
 
 _SECTION_DEFAULT_ICONS: Dict[str, str] = {
-    "Dashboard": "element-outline.svg",
-    "Chat": "dialog-outline.svg",
-    "Stream Info": "calendar-days-outline.svg",
-    "Comandos": "command-outline.svg",
-    "Timers": "alarm-outline.svg",
-    "Music": "music-notes-outline.svg",
-    "Widgets": "widget-add-outline.svg",
-    "Triggers": "treasure-chest-outline.svg",
-    "Alerts": "megaphone-outline.svg",
-    "Settings": "gear-outline.svg",
-    "Developer": "file-text-outline.svg",
+    "Dashboard": "layout-dashboard.svg",
+    "Chat": "messages-square.svg",
+    "Stream Info": "calendar-days.svg",
+    "Comandos": "command.svg",
+    "Timers": "alarm-clock.svg",
+    "Music": "music.svg",
+    "Widgets": "blocks.svg",
+    "Triggers": "package-open.svg",
+    "Alerts": "megaphone.svg",
+    "Settings": "settings.svg",
+    "Developer": "file-text.svg",
 }
 
 
 def _resolve_feature_icon(section: str, feature: str) -> str:
     feat_lower = feature.lower()
     if "spam" in feat_lower or "seguridad" in feat_lower:
-        return "shield-outline.svg"
+        return "shield.svg"
     if "overlay" in feat_lower or "obs" in feat_lower or "red" in feat_lower:
-        return "globe-outline.svg"
+        return "globe.svg"
     if "log" in feat_lower or "registro" in feat_lower or "conexión" in feat_lower:
-        return "file-text-outline.svg"
+        return "file-text.svg"
     if "bienvenida" in feat_lower or "insignia" in feat_lower:
-        return "star-outline.svg"
-    return _SECTION_DEFAULT_ICONS.get(section, "star-outline.svg")
+        return "star.svg"
+    return _SECTION_DEFAULT_ICONS.get(section, "star.svg")
 
 
 def parse_release_notes_content(content: str) -> List[Dict[str, str]]:

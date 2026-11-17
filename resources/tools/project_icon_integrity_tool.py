@@ -175,7 +175,7 @@ ICON_EXTENSIONS = {".svg", ".ico"}
 
 
 def collect_icon_files(icons_dir: str = ICONS_DIR) -> Dict[str, List[str]]:
-    """Nombre de archivo -> rutas, recorriendo los packs (outline/, common/, ...) y la raíz."""
+    """Nombre de archivo -> rutas, recorriendo los packs (lucide/, common/, ...) y la raíz."""
     found: Dict[str, List[str]] = defaultdict(list)
     for root, subdirs, files in os.walk(icons_dir):
         subdirs.sort()

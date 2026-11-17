@@ -133,17 +133,17 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setSpacing(Size.SPACING_SM)
 
         self.btn_play_pause = ModernButton(
-            "", role="action_outlined", icon_name="play-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+            "", role="action_outlined", icon_name="play.svg", parent=self, icon_size=Size.ICON_FEATURE
         )
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
 
         self.btn_skip = ModernButton(
-            "", role="action_outlined", icon_name="skip-next-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+            "", role="action_outlined", icon_name="skip-forward.svg", parent=self, icon_size=Size.ICON_FEATURE
         )
         self.btn_skip.clicked.connect(self.skip_requested.emit)
 
         self.btn_add_playlist = ModernButton(
-            "", role="action_outlined", icon_name="music-notes-outline.svg", parent=self, icon_size=Size.ICON_FEATURE
+            "", role="action_outlined", icon_name="music.svg", parent=self, icon_size=Size.ICON_FEATURE
         )
         self.btn_add_playlist.setToolTip(self.i18n.get("music.playlists.add_tooltip"))
         self.btn_add_playlist.setEnabled(False)
@@ -365,7 +365,7 @@ class MusicPlayerSettingsPanel(QWidget):
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")
-            self.btn_play_pause.setIcon(get_icon_colored("play-outline.svg"))
+            self.btn_play_pause.setIcon(get_icon_colored("play.svg"))
             self._is_playing = False
             self._duration_ms = 0
             self._current_progress_ms = 0
@@ -400,7 +400,7 @@ class MusicPlayerSettingsPanel(QWidget):
             req_text = self.i18n.get("music.player.requested_by_streamer")
         self.lbl_song_requester.setText(req_text)
 
-        icon_name = "pause-outline.svg" if is_playing else "play-outline.svg"
+        icon_name = "pause.svg" if is_playing else "play.svg"
         self.btn_play_pause.set_icon(icon_name)
 
         self._duration_ms = duration

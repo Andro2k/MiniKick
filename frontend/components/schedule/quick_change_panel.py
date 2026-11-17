@@ -43,7 +43,7 @@ class ScheduleQuickChangePanel(QWidget):
 
         self.btn_refresh = QPushButton()
         self.btn_refresh.setProperty("role", "action_outlined")
-        self.btn_refresh.setIcon(get_icon_colored("refresh-outline.svg"))
+        self.btn_refresh.setIcon(get_icon_colored("refresh-cw.svg"))
         configure_icon_only_button(self.btn_refresh)
         self.btn_refresh.setToolTip(self.i18n.get("stream_info.status.refresh_tooltip"))
         self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)

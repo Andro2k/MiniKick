@@ -52,7 +52,7 @@ class BugReportView(BaseView):
         header = QHBoxLayout()
         header.setSpacing(Size.SPACING_MD)
         icon = QLabel()
-        icon.setPixmap(get_pixmap_colored("bug-outline.svg", Palette.NEUTRAL_400, 24))
+        icon.setPixmap(get_pixmap_colored("bug.svg", Palette.NEUTRAL_400, 24))
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         titles = QVBoxLayout()
         titles.setSpacing(Size.SPACING_NN)

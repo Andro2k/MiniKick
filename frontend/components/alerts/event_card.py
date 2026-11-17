@@ -110,7 +110,7 @@ class AlertEventCard(QWidget):
         self.btn_discard = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="x-outline.svg",
+            icon_name="x.svg",
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -120,7 +120,7 @@ class AlertEventCard(QWidget):
         self.btn_duplicate = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="copy-outline.svg",
+            icon_name="copy.svg",
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -129,7 +129,7 @@ class AlertEventCard(QWidget):
         self.btn_test = ModernButton(
             text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
-            icon_name="play-outline.svg",
+            icon_name="play.svg",
             parent=self
         )
         self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
@@ -138,7 +138,7 @@ class AlertEventCard(QWidget):
         self.btn_save = ModernButton(
             text=self.i18n.get("common.buttons.save"),
             role=btn_role,
-            icon_name="check-outline.svg",
+            icon_name="check.svg",
             parent=self
         )
         self.btn_save.setEnabled(False)
@@ -169,7 +169,7 @@ class AlertEventCard(QWidget):
         self.card_general = ExpandableCard(
             title=self.i18n.get("alerts.sections.general"),
             description=self.i18n.get("alerts.sections.general_desc"),
-            icon_name="clock-outline.svg",
+            icon_name="clock.svg",
             switch_enabled=False,
             parent=self
         )
@@ -265,18 +265,18 @@ class AlertEventCard(QWidget):
         self.card_design = ExpandableCard(
             title=self.i18n.get("alerts.sections.appearance"),
             description=self.i18n.get("alerts.sections.appearance_desc"),
-            icon_name="palette-outline.svg",
+            icon_name="palette.svg",
             switch_enabled=False,
             parent=self
         )
         self.card_design.set_expanded(False)
 
         self.seg_layout = ModernSegmentedControl(self)
-        self.seg_layout.add_option("above", "arrow-up-outline.svg", self.i18n.get("alerts.layout.above"))
-        self.seg_layout.add_option("side", "arrow-left-outline.svg", self.i18n.get("alerts.layout.side"))
-        self.seg_layout.add_option("side_right", "arrow-right-outline.svg", self.i18n.get("alerts.layout.side_right"))
-        self.seg_layout.add_option("below", "arrow-down-outline.svg", self.i18n.get("alerts.layout.below"))
-        self.seg_layout.add_option("overlay", "squares-outline.svg", self.i18n.get("alerts.layout.overlay"))
+        self.seg_layout.add_option("above", "arrow-up.svg", self.i18n.get("alerts.layout.above"))
+        self.seg_layout.add_option("side", "arrow-left.svg", self.i18n.get("alerts.layout.side"))
+        self.seg_layout.add_option("side_right", "arrow-right.svg", self.i18n.get("alerts.layout.side_right"))
+        self.seg_layout.add_option("below", "arrow-down.svg", self.i18n.get("alerts.layout.below"))
+        self.seg_layout.add_option("overlay", "squares-unite.svg", self.i18n.get("alerts.layout.overlay"))
         self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
 
         self.card_design.add_widget(InspectorPropertyRow(
@@ -383,7 +383,7 @@ class AlertEventCard(QWidget):
         self.card_typography = ExpandableCard(
             title=self.i18n.get("alerts.sections.text_speech"),
             description=self.i18n.get("alerts.sections.text_speech_desc"),
-            icon_name="file-text-outline.svg",
+            icon_name="file-text.svg",
             switch_enabled=False,
             parent=self
         )
@@ -430,10 +430,10 @@ class AlertEventCard(QWidget):
         ))
 
         self.seg_align = ModernSegmentedControl(self)
-        self.seg_align.add_option("left", "textalign-left-outline.svg", self.i18n.get("alerts.align.left"))
-        self.seg_align.add_option("center", "textalign-center-outline.svg", self.i18n.get("alerts.align.center"))
-        self.seg_align.add_option("right", "textalign-right-outline.svg", self.i18n.get("alerts.align.right"))
-        self.seg_align.add_option("justify", "textalign-justifycenter-outline.svg", self.i18n.get("alerts.align.justify"))
+        self.seg_align.add_option("left", "text-align-start.svg", self.i18n.get("alerts.align.left"))
+        self.seg_align.add_option("center", "text-align-center.svg", self.i18n.get("alerts.align.center"))
+        self.seg_align.add_option("right", "text-align-end.svg", self.i18n.get("alerts.align.right"))
+        self.seg_align.add_option("justify", "text-align-justify.svg", self.i18n.get("alerts.align.justify"))
         self.seg_align.value_changed.connect(lambda _: self._on_field_changed())
 
         self.card_typography.add_widget(InspectorPropertyRow(
@@ -513,7 +513,7 @@ class AlertEventCard(QWidget):
         self.card_media = ExpandableCard(
             title=self.i18n.get("alerts.sections.media_sound"),
             description=self.i18n.get("alerts.sections.media_sound_desc"),
-            icon_name="album-outline.svg",
+            icon_name="disc-album.svg",
             switch_enabled=False,
             parent=self
         )
@@ -530,7 +530,7 @@ class AlertEventCard(QWidget):
         btn_browse_media = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="folder-open-outline.svg",
+            icon_name="folder-open.svg",
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -557,7 +557,7 @@ class AlertEventCard(QWidget):
         btn_browse_sound = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="folder-open-outline.svg",
+            icon_name="folder-open.svg",
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -606,7 +606,7 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*Size.Margin.MRG_MED)
         sec_prev_header.setSpacing(Size.SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-outline.svg"))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye.svg"))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "text_h2")
         sec_prev_header.addWidget(lbl_sec_prev_icon)

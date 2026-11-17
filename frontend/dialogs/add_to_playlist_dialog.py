@@ -9,7 +9,7 @@ class AddToPlaylistModal(ModernModal):
     def __init__(self, playlists: list[dict], i18n, parent=None):
         super().__init__(
             title=i18n.get("music.playlists.dialog.title"),
-            icon_path="music-notes-outline.svg",
+            icon_path="music.svg",
             icon_role="accent_icon",
             width=440,
             resizable=False,
@@ -42,7 +42,7 @@ class AddToPlaylistModal(ModernModal):
         _, self.btn_cancel, self.btn_confirm = self.create_action_row(
             cancel_text=self.i18n.get("common.buttons.cancel"),
             confirm_text=self.i18n.get("music.playlists.dialog.confirm"),
-            confirm_icon="plus-outline.svg",
+            confirm_icon="plus.svg",
         )
         self.rb_new.toggled.connect(self._sync_state)
         self.txt_name.textChanged.connect(self._sync_state)

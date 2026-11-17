@@ -269,7 +269,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             row1.addWidget(self.combo_rewards, stretch=1)
 
             self.btn_refresh = ModernButton("", role="action_outlined")
-            self.btn_refresh.setIcon(get_icon_colored("refresh-outline.svg"))
+            self.btn_refresh.setIcon(get_icon_colored("refresh-cw.svg"))
             self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
             self.btn_refresh.clicked.connect(self._request_refresh)
             row1.addWidget(self.btn_refresh)
@@ -368,7 +368,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         v_layout.addLayout(row_rnd)
 
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
-        self.btn_visual.setIcon(get_icon_colored("crosshairs-outline.svg"))
+        self.btn_visual.setIcon(get_icon_colored("crosshair.svg"))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         v_layout.addWidget(self.btn_visual)
 

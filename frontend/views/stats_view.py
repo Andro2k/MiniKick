@@ -61,10 +61,10 @@ class StatsView(BaseView):
     def _setup_kpis(self):
         vs_text = self.i18n.get("stats.kpi.vs_previous")
         specs = (
-            ("messages", "stats.kpi.messages", "dialog-outline.svg", True),
-            ("commands", "stats.kpi.commands", "command-outline.svg", True),
-            ("redemptions", "stats.kpi.redemptions", "treasure-chest-outline.svg", True),
-            ("spam", "stats.kpi.spam", "shield-outline.svg", False),
+            ("messages", "stats.kpi.messages", "messages-square.svg", True),
+            ("commands", "stats.kpi.commands", "command.svg", True),
+            ("redemptions", "stats.kpi.redemptions", "package-open.svg", True),
+            ("spam", "stats.kpi.spam", "shield.svg", False),
         )
         self.kpi_cards = {key: KpiCard(self.i18n.get(title), icon, vs_text, better, self)
                           for key, title, icon, better in specs}

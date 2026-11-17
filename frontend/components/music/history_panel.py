@@ -73,8 +73,8 @@ class MusicHistoryPanel(QWidget):
         requeue_args = (url, song.get("requester") or "", song.get("platform") or "kick")
         playlist_song = {"title": song.get("title") or "", "artist": song.get("artist") or "", "url": url, "duration": song.get("duration") or "-"}
         return build_action_cell(
-            build_icon_button("plus-outline.svg", BrandColors.GREEN, self.i18n.get("music.queue.requeue_tooltip"), lambda: self.requeue_requested.emit(*requeue_args)),
-            build_icon_button("music-notes-outline.svg", BrandColors.GREEN, self.i18n.get("music.playlists.add_tooltip"), lambda: self.add_to_playlist_requested.emit(playlist_song)),
+            build_icon_button("plus.svg", BrandColors.GREEN, self.i18n.get("music.queue.requeue_tooltip"), lambda: self.requeue_requested.emit(*requeue_args)),
+            build_icon_button("music.svg", BrandColors.GREEN, self.i18n.get("music.playlists.add_tooltip"), lambda: self.add_to_playlist_requested.emit(playlist_song)),
         )
 
     def update_history(self, items: list[dict]):

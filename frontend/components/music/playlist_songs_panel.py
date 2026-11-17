@@ -65,7 +65,7 @@ class MusicPlaylistSongsPanel(QWidget):
 
     def _create_remove_cell(self, item_id: int) -> QWidget:
         return build_action_cell(build_icon_button(
-            "trash-outline.svg", BrandColors.RED, self.i18n.get("music.playlists.remove_tooltip"), lambda: self.song_remove_requested.emit(item_id)
+            "trash.svg", BrandColors.RED, self.i18n.get("music.playlists.remove_tooltip"), lambda: self.song_remove_requested.emit(item_id)
         ))
 
     def set_songs(self, playlist_name: str | None, songs: list[dict]):
