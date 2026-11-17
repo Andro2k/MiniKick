@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSi
 from PySide6.QtCore import Qt, Signal
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernScrollArea, create_col_layout, create_box_layout
-from frontend.common import Size
+from frontend.common import Size, Room
 from frontend.components.schedule import ScheduleQuickChangePanel, ScheduleFormPanel, ScheduleTablePanel
 
 class ScheduleView(BaseView):
@@ -26,7 +26,8 @@ class ScheduleView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-        direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+        room = Room.of(width)
+        direction = QBoxLayout.Direction.TopToBottom if room.below(Room.VAST) else QBoxLayout.Direction.LeftToRight
         if direction != self._last_direction:
             self._last_direction = direction
             if hasattr(self, "columns_layout"):

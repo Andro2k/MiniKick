@@ -3,7 +3,7 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
-from frontend.common import get_pixmap_colored, Size
+from frontend.common import get_pixmap_colored, Size, Room
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -100,7 +100,8 @@ class MusicStatsPanel(QWidget):
         self.relayout(1200)
 
     def relayout(self, width: int):
-        cols = 1 if width < 650 else (2 if width < 950 else 3)
+        room = Room.of(width)
+        cols = 1 if room.below(Room.ROOMY) else (2 if room.below(Room.WIDE) else 3)
         if cols != self._current_cols:
             self._current_cols = cols
             cards = [self.card_stat_queue, self.card_stat_duration, self.card_stat_service]

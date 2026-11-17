@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size, Room
 from frontend.components.alerts import ResponsiveStackedWidget, AlertVariantsTabBar, AlertVariantTabPill, AlertEventCard, AlertsOverlayCard
 from frontend.dialogs import DuplicateAlertModal
 
@@ -337,13 +337,14 @@ class AlertsView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
+        room = Room.of(width)
 
         if hasattr(self, 'overlay_card'):
-            url_dir = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+            url_dir = QBoxLayout.Direction.TopToBottom if room.below(Room.VAST) else QBoxLayout.Direction.LeftToRight
             self.overlay_card.set_responsive_direction(url_dir)
 
         if hasattr(self, 'notice_layout'):
-            notice_dir = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+            notice_dir = QBoxLayout.Direction.TopToBottom if room.below(Room.VAST) else QBoxLayout.Direction.LeftToRight
             if notice_dir != self.notice_layout.direction():
                 self.notice_layout.setDirection(notice_dir)
                 if hasattr(self, 'notice_banner'):
@@ -353,7 +354,7 @@ class AlertsView(BaseView):
                     self.content_column.layout().invalidate()
                     self.content_column.updateGeometry()
 
-        target_direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+        target_direction = QBoxLayout.Direction.TopToBottom if room.below(Room.VAST) else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:
             self._last_direction = target_direction
             is_horizontal = (target_direction == QBoxLayout.Direction.LeftToRight)

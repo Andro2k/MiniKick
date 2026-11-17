@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernCard, ModernButton, CategorySearchComboBox, create_platform_switches, create_row_layout, create_col_layout, create_text_label, sync_dual_platform_switches, configure_icon_only_button
-from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size
+from frontend.common import get_icon_colored, get_pixmap_colored, BrandColors, Size, Room
 
 class ScheduleQuickChangePanel(QWidget):
     refresh_info_requested = Signal()
@@ -159,7 +159,8 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _update_grid_layout(self, width: int = None):
         w = width if width is not None else self.width()
-        cols = 1 if w < 680 else 2
+        room = Room.of(w)
+        cols = 1 if room.below(Room.ROOMY) else 2
 
         if cols == self._current_cols:
             return

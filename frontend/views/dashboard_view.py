@@ -4,7 +4,7 @@
 import logging
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QUrl
-from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import create_circular_pixmap, get_pixmap_colored, Palette, BrandColors, Size, Room
 from frontend.views.base_view import BaseView
 from frontend.widgets import StatCard, ModernButton
 from frontend.components.dashboard import PlatformDistributionRing, PlatformStatusCard, QuickAccessCard
@@ -487,17 +487,18 @@ class DashboardView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
+        room = Room.of(width)
 
         if hasattr(self, "welcome_content_layout"):
             welcome_direction = (
-                QBoxLayout.Direction.TopToBottom if width < 900
+                QBoxLayout.Direction.TopToBottom if room.below(Room.WIDE)
                 else QBoxLayout.Direction.LeftToRight
             )
             if self.welcome_content_layout.direction() != welcome_direction:
                 self.welcome_content_layout.setDirection(welcome_direction)
 
-        banner_dir = QBoxLayout.Direction.TopToBottom if width < 480 else QBoxLayout.Direction.LeftToRight
-        align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if width < 480 else Qt.AlignmentFlag.AlignVCenter
+        banner_dir = QBoxLayout.Direction.TopToBottom if room.below(Room.SNUG) else QBoxLayout.Direction.LeftToRight
+        align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if room.below(Room.SNUG) else Qt.AlignmentFlag.AlignVCenter
 
         if hasattr(self, 'banner_layout_kick'):
             if self.banner_layout_kick.direction() != banner_dir:
@@ -512,15 +513,15 @@ class DashboardView(BaseView):
                 self.lbl_warn_text_twitch.setAlignment(align)
 
         if hasattr(self, 'platforms_grid') and hasattr(self, 'platform_cards'):
-            plat_cols = 1 if width < 620 else 2
+            plat_cols = 1 if room.below(Room.ROOMY) else 2
             self._relayout_grid(self.platforms_grid, self.platform_cards, plat_cols, self._PLATFORM_CARDS_ATTR)
 
         if hasattr(self, "quick_access_grid"):
-            quick_cols = 1 if width < 650 else (2 if width < 950 else 4)
+            quick_cols = 1 if room.below(Room.ROOMY) else (2 if room.below(Room.WIDE) else 4)
             self._relayout_grid(self.quick_access_grid, self.quick_access_cards, quick_cols, self._QUICK_ACCESS_ATTR)
 
         if hasattr(self, "channel_badges_grid") and hasattr(self, "channel_badge_cards"):
-            badge_cols = 1 if width < 650 else (2 if width < 950 else 4)
+            badge_cols = 1 if room.below(Room.ROOMY) else (2 if room.below(Room.WIDE) else 4)
             self._relayout_grid(
                 self.channel_badges_grid,
                 self.channel_badge_cards,
