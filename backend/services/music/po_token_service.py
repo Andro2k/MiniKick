@@ -16,9 +16,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Optional
 
-# Tiempo que se entrega un token generado; el token de integridad de Google dura 12 horas.
 KEEP_SECONDS = 6 * 60 * 60
-# Espera tras un fallo y su tope: se duplica con cada fallo seguido.
 SOONEST_SECONDS = 5.0
 SLOWEST_SECONDS = 5 * 60.0
 _MAX_DOUBLINGS = 16
