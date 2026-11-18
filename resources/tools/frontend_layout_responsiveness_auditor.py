@@ -28,11 +28,14 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QResizeEvent
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QMainWindow, QWidget
 from backend.services.settings.translation_service import TranslationService
-from frontend.common import get_global_qss
+from frontend.common import Size, get_global_qss
 
 DEFAULT_WIDTHS = [1400, 1200, 1000, 850, 750, 700, 680, 600, 550]
+
+# Menor ancho de contenido soportado: ventana mínima con el sidebar expandido a mano.
+MIN_SUPPORTED_WIDTH = Size.WINDOW_MIN_WIDTH - Size.SIDEBAR_EXPANDED
 
 VIEW_REGISTRY: Dict[str, Tuple[str, str, Dict[str, Any]]] = {
     "dashboard": ("frontend.views.dashboard_view", "DashboardView", {}),
@@ -68,6 +71,17 @@ class ViewFixtureFactory:
             return None
 
 
+def find_inner_horizontal_scroll(view: QWidget) -> List[str]:
+    """Nombres de las tablas o listas internas con scroll horizontal visible (columnas cortadas)."""
+    return [
+        type(item_view).__name__
+        for item_view in view.findChildren(QAbstractItemView)
+        if item_view.isVisible()
+        and item_view.horizontalScrollBar().isVisible()
+        and item_view.horizontalScrollBar().maximum() > 0
+    ]
+
+
 def inspect_view_responsiveness(
     view_key: str,
     view: QWidget,
@@ -97,13 +111,14 @@ def inspect_view_responsiveness(
         sc_w = view.scroll_content.width() if hasattr(view, "scroll_content") else w
         min_w = view.scroll_content.minimumSizeHint().width() if hasattr(view, "scroll_content") else view.minimumSizeHint().width()
 
-        clipped = sc_w > vp_w or (not hasattr(view, "scroll_area") and min_w > w)
+        inner_scroll = find_inner_horizontal_scroll(view) if w >= MIN_SUPPORTED_WIDTH else []
+        clipped = sc_w > vp_w or (not hasattr(view, "scroll_area") and min_w > w) or bool(inner_scroll)
         if clipped:
             all_passed = False
 
         results.append({
             "width": w, "viewport_w": vp_w, "content_w": sc_w,
-            "min_hint_w": min_w, "clipped": clipped, "status": "FAIL" if clipped else "PASS"
+            "min_hint_w": min_w, "inner_scroll": inner_scroll, "clipped": clipped, "status": "FAIL" if clipped else "PASS"
         })
 
     win.close()
