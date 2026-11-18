@@ -15,14 +15,10 @@ from backend.utils import fast_dumps, fast_loads
 
 logger = logging.getLogger(__name__)
 
-# El reproductor incrustado del primer video de YouTube: una página mínima que carga el cliente de BotGuard.
 _PAGE_URL = "https://www.youtube.com/embed/jNQXAC9IVRw"
 _RESULT_KEY = "__mkPoToken"
 _ASK_FUNCTION = "mkPoToken"
 
-# Corre al crear cada documento, en el mundo principal, para ver los objetos que define la propia página.
-# Busca el cliente que la página de YouTube trae para atestiguar y le pide un token por ``binding``.
-# La página reescribe su URL y navega mientras carga, así que el binding pendiente se guarda en sessionStorage.
 _SCRIPT = r"""
 (function () {
   "use strict";

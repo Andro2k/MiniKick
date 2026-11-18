@@ -26,11 +26,9 @@ from yt_dlp.extractor.youtube.pot.utils import WEBPO_CLIENTS, get_webpo_content_
 
 from backend.interfaces import IPoTokenSource
 
-# Cuánto espera una petición a un navegador que ya atestiguó y a uno que acaba de arrancar.
 WARM_WAIT_SECONDS = 2.0
 COLD_WAIT_SECONDS = 15.0
 POLL_SECONDS = 0.1
-# Vigencia que se declara a yt-dlp; el relevo guarda el token mucho más, pero cada binding se usa una vez.
 TOKEN_TTL_SECONDS = 3600
 
 

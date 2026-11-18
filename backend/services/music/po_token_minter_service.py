@@ -15,13 +15,9 @@ from backend.interfaces import IPoTokenMintQueue, IPoTokenPage
 
 logger = logging.getLogger(__name__)
 
-# Tiempo que se da a una página recién abierta para atestiguar y generar su primer token.
 PATIENCE_SECONDS = 45.0
-# Tiempo que se da a una página ya atestiguada para responder una petición más.
 ANSWER_SECONDS = 10.0
-# Tiempo que una página queda abierta tras su última respuesta, para saltos de pista seguidos.
 LINGER_SECONDS = 20.0
-# Cada cuánto conviene volver a llamar a ``tick()`` sin página abierta y con ella.
 IDLE_TICK_SECONDS = 0.5
 BUSY_TICK_SECONDS = 0.1
 

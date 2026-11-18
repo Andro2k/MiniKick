@@ -154,7 +154,6 @@ class ThumbnailBatchGenerator(QObject):
         if self._player is not None:
             return
         self._player = QMediaPlayer(self)
-        # Sin QAudioOutput a propósito: un fotograma no necesita audio y evita depender del dispositivo de sonido.
         self._sink = QVideoSink(self)
         self._player.setVideoSink(self._sink)
         self._sink.videoFrameChanged.connect(self._on_frame)
