@@ -14,6 +14,16 @@ class PoTokenAnswer:
     error: Optional[str] = None
 
 
+class IPoTokenSource(Protocol):
+    """Lo que necesita quien consume tokens: el proveedor de yt-dlp."""
+
+    def token(self, binding: str) -> Optional[str]: ...
+
+    def minted(self, binding: str) -> Optional[str]: ...
+
+    def warm(self) -> bool: ...
+
+
 class IPoTokenMintQueue(Protocol):
     """Lo que el generador necesita del relevo: qué se pide y dónde dejar el resultado."""
 

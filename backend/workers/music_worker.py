@@ -42,9 +42,10 @@ class YouTubeResolveWorker(QThread):
     resolved = Signal(str, str)
     error = Signal(str)
 
-    def __init__(self, query_or_url: str, expected_title: str = "", i18n=None, music_storage=None):
+    def __init__(self, query_or_url: str, expected_title: str = "", i18n=None, music_storage=None, ytdlp_setup=None):
         super().__init__()
         self.setObjectName("Worker_YouTube_Resolve")
+        self._ytdlp_setup = ytdlp_setup
         self.query_or_url = query_or_url
         self.expected_title = expected_title
         self.loudness: float | None = None
@@ -57,7 +58,9 @@ class YouTubeResolveWorker(QThread):
             return
         try:
             import yt_dlp
-            
+            if self._ytdlp_setup is not None:
+                self._ytdlp_setup()
+
             app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
             cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
             os.makedirs(cache_dir, exist_ok=True)

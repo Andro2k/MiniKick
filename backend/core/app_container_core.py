@@ -54,7 +54,7 @@ class AppContainerCore:
             from backend.providers.music import YouTubeMusicProvider
             self._music_provider = YouTubeMusicProvider(
                 self.i18n, music_storage=self.music_storage, db_manager=self.db_manager,
-                settings_storage=self.settings_storage,
+                settings_storage=self.settings_storage, po_token_source=self.po_token_service,
             )
         return self._music_provider
 
