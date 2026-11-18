@@ -2,6 +2,7 @@
 """Búsqueda de versiones en GitHub, instalador de Windows y administrador de actualizaciones."""
 
 import os
+import re
 import tempfile
 import logging
 import subprocess
@@ -132,6 +133,12 @@ class WindowsInstaller:
         )
 
 
+def _version_key(version: str) -> tuple[int, ...]:
+    """Convierte 'v1.6.10' en (1, 6, 10, 0) para comparar versiones numéricamente."""
+    parts = tuple(int(p) for p in re.findall(r"\d+", version or ""))
+    return parts + (0,) * (4 - len(parts))
+
+
 class UpdateManager:
     def __init__(
         self, 
@@ -147,7 +154,7 @@ class UpdateManager:
 
     def check_for_updates(self) -> dict | None:
         info = self.checker.get_latest_version_info()
-        if info and info["version"] > self.current_version:
+        if info and _version_key(info["version"]) > _version_key(self.current_version):
             logger.info("[UpdateManager] Found newer version: %s (current: %s)", info["version"], self.current_version)
             return info
         return None
