@@ -39,6 +39,7 @@ from frontend.window.integrations_protocols import IntegrationsStatusPresenter
 from frontend.window.media_keys_handler import MediaKeysHandler
 from frontend.window.messages_router import ChatMessageRouter
 from frontend.window.platform_connections_handler import PlatformConnectionHandlers
+from frontend.window.po_token_coordinator import PoTokenCoordinator
 from frontend.window.overlay_events_presenter import OverlayEventPresenter
 from frontend.window.rewards_handler import RewardRedemptionHandler, RewardRedemptionPresenter
 from frontend.window.schedule_presenter import SchedulePresenter
@@ -75,6 +76,8 @@ class MainWindowComposition:
         w._schedule_slot = WorkerSlot("Worker_Stream_Schedule", w._worker_shutdown_coordinator)
         w.log_service = LogService(log_storage=w.container.system_log_storage)
         w.schedule_service = w.container.schedule_service
+        w.po_token_coordinator = PoTokenCoordinator(w.container.po_token_service, parent=w)
+        w.po_token_coordinator.start()
 
     def create_controllers(self) -> None:
         w = self._window
