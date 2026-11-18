@@ -3,7 +3,7 @@
 
 import os
 import logging
-from .thumbnail_service import generate_media_thumbnail, AUDIO_EXTENSIONS
+from .thumbnail_service import generate_media_thumbnail, ThumbnailBatchGenerator, AUDIO_EXTENSIONS
 from backend.utils.db_background_utils import submit_db_write
 
 logger = logging.getLogger("minikick.services.rewards")
@@ -35,17 +35,43 @@ class RewardsService:
         """Solo lectura: nunca genera miniaturas (se llama desde el hilo de la UI y en cada canje)."""
         return self.storage.load_all()
 
-    def reload_thumbnails(self) -> int:
-        """Regenera todas las miniaturas desde los archivos actuales. Devuelve cuántas se generaron."""
-        mappings = self.storage.load_all()
-        regenerated = sum(
-            1 for config in mappings.values()
-            if isinstance(config, dict) and self._fill_thumbnail(config, force=True)
-        )
-        if regenerated:
-            self.storage.save_all(mappings)
-        logger.info("[RewardsService] Thumbnails regenerated: %d/%d", regenerated, len(mappings))
-        return regenerated
+    def reload_thumbnails(self, on_done) -> bool:
+        """Regenera las miniaturas sin bloquear la UI; on_done(regenerated) se llama al terminar. False si ya hay una en curso."""
+        if getattr(self, "_thumb_batch", None) is not None:
+            return False
+        paths = [
+            c.get("filepath", "") for c in self.storage.load_all().values()
+            if isinstance(c, dict) and self._is_thumbnail_candidate(c.get("filepath", ""))
+        ]
+        batch = ThumbnailBatchGenerator(paths)
+        self._thumb_batch = batch
+        batch.finished.connect(lambda results: self._apply_reloaded(results, on_done))
+        batch.start()
+        return True
+
+    def _apply_reloaded(self, results: dict, on_done) -> None:
+        batch, self._thumb_batch = self._thumb_batch, None
+        regenerated = 0
+        try:
+            mappings = self.storage.load_all()
+            for config in mappings.values():
+                if not isinstance(config, dict) or config.get("filepath", "") not in results:
+                    continue
+                thumb = results[config["filepath"]]
+                if thumb:
+                    config["thumbnail_bytes"] = thumb
+                    regenerated += 1
+                elif "thumbnail_bytes" not in config:
+                    config["thumbnail_bytes"] = None
+            if regenerated:
+                self.storage.save_all(mappings)
+            logger.info("[RewardsService] Thumbnails regenerated: %d/%d", regenerated, len(results))
+        except Exception:
+            logger.exception("[RewardsService] Failed to apply regenerated thumbnails")
+        finally:
+            if batch is not None:
+                batch.deleteLater()
+            on_done(regenerated)
 
     def save_mappings(self, mappings: dict):
         for config in mappings.values():
