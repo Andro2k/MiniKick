@@ -6,7 +6,7 @@ import logging
 from collections import deque
 from PySide6.QtCore import QBuffer, QIODevice, QObject, Qt, QUrl, QEventLoop, QTimer, Signal
 from PySide6.QtGui import QImage
-from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer, QVideoSink
+from PySide6.QtMultimedia import QMediaPlayer, QVideoSink
 
 logger = logging.getLogger("minikick.rewards.thumbnail")
 
@@ -58,9 +58,6 @@ def _encode_png(img: QImage, max_size: int) -> bytes:
 def _capture_video_frame(filepath: str) -> QImage | None:
     """Captura un fotograma con un reproductor silenciado; registra estado y error de Qt si falla."""
     player = QMediaPlayer()
-    audio = QAudioOutput()
-    audio.setVolume(0.0)
-    player.setAudioOutput(audio)
     sink = QVideoSink()
     player.setVideoSink(sink)
 
@@ -101,7 +98,6 @@ def _capture_video_frame(filepath: str) -> QImage | None:
     status_name = player.mediaStatus().name
     player.stop()
     player.setVideoSink(None)
-    player.setAudioOutput(None)
 
     if not captured:
         logger.warning("No video frame captured for thumbnail: %s (status=%s, error=%s)",
