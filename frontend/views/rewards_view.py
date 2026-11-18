@@ -3,7 +3,7 @@
 
 import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
-from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
+from PySide6.QtCore import QEvent, QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.views.base_view import BaseView
 from frontend.widgets import SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton, RowMenuAction
@@ -130,6 +130,9 @@ class RewardsView(BaseView):
     refresh_rewards_requested = Signal()
     reload_media_requested = Signal()
 
+    _COLUMN_WIDTHS = {0: 180, 1: 115, 2: 95, 4: 115, 5: 85, 6: 80}
+    _POSITION_COLUMN = 4
+
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay", parent=None):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
         self.overlay_url = overlay_url
@@ -239,14 +242,22 @@ class RewardsView(BaseView):
         self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
 
-        self.table_rewards.setColumnWidth(0, 180)
-        self.table_rewards.setColumnWidth(1, 115)
-        self.table_rewards.setColumnWidth(2, 95)
-        self.table_rewards.setColumnWidth(4, 115)
-        self.table_rewards.setColumnWidth(5, 85)
-        self.table_rewards.setColumnWidth(6, 80)
+        for column, width in self._COLUMN_WIDTHS.items():
+            self.table_rewards.setColumnWidth(column, width)
+        self.table_rewards.viewport().installEventFilter(self)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
+
+    def eventFilter(self, watched, event):
+        if watched is self.table_rewards.viewport() and event.type() == QEvent.Type.Resize:
+            self._fit_columns_to_width()
+        return super().eventFilter(watched, event)
+
+    def _fit_columns_to_width(self):
+        """Oculta 'Posición' cuando la tabla no cabe completa, para evitar el scroll horizontal."""
+        needed = sum(self._COLUMN_WIDTHS.values()) + self.filter_header.minimumSectionSize()
+        fits = self.table_rewards.viewport().width() >= needed
+        self.table_rewards.setColumnHidden(self._POSITION_COLUMN, not fits)
 
     def _add_reload_button(self):
         self.btn_reload_media = ModernButton("", role="action_outlined", parent=self.table_card.header_top_widget)
