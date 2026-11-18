@@ -92,14 +92,6 @@ VSVersionInfo(
             f.write(pyproject_text)
         print(f"[OK] pyproject.toml sincronizado a version {v_short}")
 
-    if os.path.exists(INNO_SETUP_PATH):
-        with open(INNO_SETUP_PATH, "r", encoding="utf-8") as f:
-            inno_text = f.read()
-        inno_text = re.sub(r'#define MyAppVersion\s+"[^"]+"', f'#define MyAppVersion "{v_short}"', inno_text, count=1)
-        with open(INNO_SETUP_PATH, "w", encoding="utf-8") as f:
-            f.write(inno_text)
-        print(f"[OK] instalador.iss sincronizado a MyAppVersion {v_short}")
-
     return v_str
 
 def run_cmd(cmd_list: list[str], desc: str) -> bool:
@@ -191,7 +183,8 @@ def compile_installer():
     if included_docs:
         print(f"[ERROR] El paquete contiene documentación que no debe instalarse: {included_docs}")
         return False
-    if not run_cmd([iscc_path, installer_script], "Compilando instalador MiniKick"):
+    version_define = f"/DMyAppVersion={get_current_app_version()}"
+    if not run_cmd([iscc_path, version_define, installer_script], "Compilando instalador MiniKick"):
         return False
 
     output_name = f"MiniKick_Installer_v{get_current_app_version()}.exe"
