@@ -40,3 +40,12 @@ def test_inno_output_dir_matches_build_manager_expectation():
     assert match
     output_dir = _resolve(script_dir, match.group(1))
     assert output_dir == os.path.join(build_manager.BASE_DIR, "Output")
+
+
+def test_inno_version_can_be_injected_and_relaunch_is_opt_in():
+    with open(build_manager.INNO_SETUP_PATH, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    assert "#ifndef MyAppVersion" in content
+    assert "Check: RelaunchRequested" in content
+    assert re.search(r"postinstall skipifsilent", content)

@@ -1,7 +1,10 @@
 ; Script de Inno Setup profesional para MiniKick
 
 #define MyAppName "MiniKick"
-#define MyAppVersion "1.6.8"
+; build_manager.py la inyecta con /DMyAppVersion=<version>; este valor solo aplica al compilar a mano.
+#ifndef MyAppVersion
+  #define MyAppVersion "1.6.8"
+#endif
 #define MyAppPublisher "Andro2k"
 #define MyAppURL "https://github.com/Andro2k/MiniKick"
 #define MyAppExeName "MiniKick.exe"
@@ -62,15 +65,29 @@ Source: "..\..\dist\MiniKick\*"; DestDir: "{app}"; Excludes: "\docs\*,\_internal
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Check: not SilentUpgrade
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait runasoriginaluser; Check: RelaunchRequested
 
 [UninstallDelete]
 Type: files; Name: "{app}\.install_lang"
 
 [Code]
+// El actualizador de la app pasa /relaunch=1 para reabrir MiniKick tras la instalacion silenciosa.
+function RelaunchRequested: Boolean;
+begin
+  Result := ExpandConstant('{param:relaunch|0}') = '1';
+end;
+
+// Una instalacion silenciosa sobre una existente es una actualizacion: no recrea el acceso
+// directo del escritorio si el usuario lo borro.
+function SilentUpgrade: Boolean;
+begin
+  Result := WizardSilent and (WizardForm.PrevAppDir <> '');
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   LangCode: String;
