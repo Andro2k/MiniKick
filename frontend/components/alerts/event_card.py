@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLa
 from PySide6.QtCore import Qt, Signal, QSize
 
 from frontend.widgets import ModernCard, ModernButton, ModernSwitch, ExpandableCard, NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox, ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker, InspectorPropertyRow
-from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size, Room
 from .alert_mockup import AlertOverlayMockupWidget
 
 @dataclass
@@ -1028,8 +1028,9 @@ class AlertEventCard(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = event.size().width() if event else self.width()
+        room = Room.of(width)
 
-        target_dir = QBoxLayout.Direction.TopToBottom if width < 1280 else QBoxLayout.Direction.LeftToRight
+        target_dir = QBoxLayout.Direction.TopToBottom if room.below(Room.HUGE) else QBoxLayout.Direction.LeftToRight
         if hasattr(self, "body_box") and self.body_box.direction() != target_dir:
             self.body_box.setDirection(target_dir)
 

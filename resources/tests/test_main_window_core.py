@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 
 from PySide6.QtCore import QEventLoop, QObject, QThread, QTimer
 
+from frontend.common import Room, Size
 from frontend.window.main_window_core import MainWindowCore
 from frontend.window.view_factory import MainWindowViewFactory
 from frontend.window.recent_redemptions_cache import RecentRedemptionCache
@@ -49,6 +50,18 @@ def test_startup_connection_toast_suppression_is_consumed_once():
     assert MainWindowCore._consume_startup_silent_connection(window, "kick") is True
     assert MainWindowCore._consume_startup_silent_connection(window, "kick") is False
     assert MainWindowCore._consume_startup_silent_connection(window, "twitch") is True
+
+
+def test_window_geometry_sets_a_minimum_that_keeps_content_roomy():
+    window = MagicMock()
+
+    MainWindowCore._init_geometry(window)
+
+    window.setMinimumSize.assert_called_once_with(Size.WINDOW_MIN_WIDTH, Size.WINDOW_MIN_HEIGHT)
+    window.resize.assert_called_once_with(1200, 800)
+    content = Size.WINDOW_MIN_WIDTH - Size.SIDEBAR_EXPANDED
+    assert Room.of(content).fits(Room.ROOMY)
+    assert content >= Size.CONTENT_MIN_WIDTH
 
 
 def test_window_runtime_flags_are_initialized_in_one_place():

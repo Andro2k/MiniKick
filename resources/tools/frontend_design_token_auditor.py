@@ -1,6 +1,7 @@
 # resources\tools\frontend_design_token_auditor.py
 """Auditor de tokens de diseño del frontend."""
 
+import ast
 import os
 import re
 import sys
@@ -28,6 +29,10 @@ COLOR_MAGENTA= "\033[95m"
 COLOR_GRAY   = "\033[90m"
 
 HEX_COLOR_REGEX = re.compile(r"#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b")
+
+# Una comparación de ancho contra un entero de este valor o mayor es un breakpoint.
+BREAKPOINT_MIN_PX = 300
+BREAKPOINT_SUGGESTION = "Room.of(width).fits(Room.<escalón>) (frontend.common.Room)"
 
 EXCLUDED_FILES = {
     "theme.py",
@@ -70,6 +75,28 @@ class DesignTokenViolation:
     code_snippet: str
 
 
+def find_breakpoint_literals(source: str) -> List[tuple]:
+    """Devuelve (línea, literal, código) de cada comparación de ancho contra un entero suelto."""
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    found = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Compare):
+            continue
+        operands = [node.left, *node.comparators]
+        literals = [
+            op for op in operands
+            if isinstance(op, ast.Constant) and type(op.value) is int and op.value >= BREAKPOINT_MIN_PX
+        ]
+        others = [ast.unparse(op).lower() for op in operands if op not in literals]
+        if literals and any("width" in text or text == "w" for text in others):
+            found.append((node.lineno, str(literals[0].value), ast.unparse(node)))
+    return found
+
+
 def audit_design_tokens(target_dir: str = FRONTEND_DIR) -> List[DesignTokenViolation]:
     violations: List[DesignTokenViolation] = []
 
@@ -86,6 +113,16 @@ def audit_design_tokens(target_dir: str = FRONTEND_DIR) -> List[DesignTokenViola
                     lines = f.readlines()
             except Exception:
                 continue
+
+            for lineno, literal, snippet in find_breakpoint_literals("".join(lines)):
+                violations.append(DesignTokenViolation(
+                    file_path=rel_path,
+                    line=lineno,
+                    violation_type="HARDCODED_BREAKPOINT",
+                    detected_value=literal,
+                    suggested_token=BREAKPOINT_SUGGESTION,
+                    code_snippet=snippet
+                ))
 
             for idx, line in enumerate(lines, 1):
                 clean_line = line.strip()
@@ -125,11 +162,11 @@ def print_report(violations: List[DesignTokenViolation]):
     print(f"{COLOR_BOLD}{COLOR_CYAN}======================================================================{COLOR_RESET}\n")
 
     if not violations:
-        print(f"{COLOR_GREEN}{COLOR_BOLD}✅ ¡EXCELENTE! Cero colores hardcodeados ni estilos inline detectados.{COLOR_RESET}")
+        print(f"{COLOR_GREEN}{COLOR_BOLD}✅ ¡EXCELENTE! Cero colores hardcodeados, estilos inline ni breakpoints sueltos detectados.{COLOR_RESET}")
         print(f"{COLOR_GRAY}Todo el frontend utiliza exclusivamente los tokens centralizados en theme.py.{COLOR_RESET}\n")
         return
 
-    print(f"{COLOR_BOLD}{COLOR_YELLOW}⚠️ Se detectaron {len(violations)} colores hardcodeados o estilos inline fuera de theme.py:{COLOR_RESET}\n")
+    print(f"{COLOR_BOLD}{COLOR_YELLOW}⚠️ Se detectaron {len(violations)} violaciones (colores hardcodeados, estilos inline o breakpoints sueltos) fuera de theme.py:{COLOR_RESET}\n")
     for v in violations:
         sugg_text = f" -> Sugerencia: {COLOR_GREEN}{v.suggested_token}{COLOR_RESET}" if v.suggested_token else ""
         print(f"  • {COLOR_BOLD}{v.file_path}:{v.line}{COLOR_RESET} [{COLOR_CYAN}{v.violation_type}{COLOR_RESET}]")
@@ -137,7 +174,8 @@ def print_report(violations: List[DesignTokenViolation]):
         print(f"    Código:  {COLOR_GRAY}{v.code_snippet}{COLOR_RESET}\n")
 
     print(f"{COLOR_YELLOW}💡 Regla MiniKick: Importa las constantes COLOR_* desde frontend.common.theme{COLOR_RESET}")
-    print(f"{COLOR_YELLOW}   para garantizar coherencia visual con el diseño de Antigravity.{COLOR_RESET}\n")
+    print(f"{COLOR_YELLOW}   para garantizar coherencia visual con el diseño de Antigravity.{COLOR_RESET}")
+    print(f"{COLOR_YELLOW}   Los anchos se clasifican con Room (frontend.common), nunca con números sueltos.{COLOR_RESET}\n")
 
 
 def main():

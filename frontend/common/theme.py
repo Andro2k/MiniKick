@@ -185,6 +185,8 @@ class Size:
     CONTENT_MIN_WIDTH = 520
     CONTENT_WIDE_MAX_WIDTH = 1440
     CONTENT_DASHBOARD_MAX_WIDTH = 1180
+    WINDOW_MIN_WIDTH = 900
+    WINDOW_MIN_HEIGHT = 600
 
 
 def get_border(color: str, width: float = 1.2, style: str = "solid") -> str:

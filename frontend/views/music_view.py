@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSiz
 from PySide6.QtCore import Qt, Signal
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import Size
+from frontend.common import Size, Room
 from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel, MusicHistoryPanel, MusicSettingsPanel, MusicPlaylistsPanel, MusicPlaylistSongsPanel
 from frontend.dialogs import AddToPlaylistModal
 
@@ -243,10 +243,11 @@ class MusicView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
+        room = Room.of(width)
         if hasattr(self, 'stats_panel'):
             self.stats_panel.relayout(width)
 
-        direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+        direction = QBoxLayout.Direction.TopToBottom if room.below(Room.VAST) else QBoxLayout.Direction.LeftToRight
         if direction != self._last_direction:
             self._last_direction = direction
             if hasattr(self, 'columns_layout'):

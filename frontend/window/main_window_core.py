@@ -60,7 +60,7 @@ class MainWindowCore(QMainWindow):
     def __init__(self, container, q_log_handler, updater_manager, app_version: str):
         super().__init__()
         self.setUpdatesEnabled(False)
-        self.resize(1200, 800)
+        self._init_geometry()
 
         self.logger = logger
         self.container = container
@@ -90,6 +90,17 @@ class MainWindowCore(QMainWindow):
 
         self.setUpdatesEnabled(True)
         self.logger.info("[MainWindow] Main window initialization complete.")
+
+    def _init_geometry(self):
+        """Fija el tamaño mínimo de la ventana y su tamaño inicial."""
+        self.setMinimumSize(Size.WINDOW_MIN_WIDTH, Size.WINDOW_MIN_HEIGHT)
+        self.resize(1200, 800)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        sidebar = getattr(self, "sidebar", None)
+        if sidebar is not None:
+            sidebar.fit_to_window(event.size().width())
 
     def _init_flags(self):
         self._is_shutting_down = False

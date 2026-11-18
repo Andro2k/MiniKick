@@ -2,6 +2,7 @@
 """Búsqueda de versiones en GitHub, instalador de Windows y administrador de actualizaciones."""
 
 import os
+import re
 import tempfile
 import logging
 import subprocess
@@ -117,15 +118,25 @@ class GithubUpdateProvider:
 class WindowsInstaller:
     def install_and_restart(self, installer_path: str) -> None:
         CREATE_NO_WINDOW = 0x08000000        
-        cmd = 'ping 127.0.0.1 -n 2 > nul && start "" "%MINIKICK_INSTALLER%" /SILENT'
+        setup_log = os.path.join(tempfile.gettempdir(), "minikick_setup.log")
+        cmd = (
+            'ping 127.0.0.1 -n 2 > nul && start "" "%MINIKICK_INSTALLER%" '
+            '/SILENT /SUPPRESSMSGBOXES /NORESTART /LOG="%MINIKICK_SETUP_LOG%" /relaunch=1'
+        )
         logger.info("[WindowsInstaller] Launching installer: %s", installer_path)
         subprocess.Popen(
             cmd,
             shell=True,
-            env={**os.environ, "MINIKICK_INSTALLER": installer_path},
+            env={**os.environ, "MINIKICK_INSTALLER": installer_path, "MINIKICK_SETUP_LOG": setup_log},
             creationflags=CREATE_NO_WINDOW,
             close_fds=True 
         )
+
+
+def _version_key(version: str) -> tuple[int, ...]:
+    """Convierte 'v1.6.10' en (1, 6, 10, 0) para comparar versiones numéricamente."""
+    parts = tuple(int(p) for p in re.findall(r"\d+", version or ""))
+    return parts + (0,) * (4 - len(parts))
 
 
 class UpdateManager:
@@ -143,7 +154,7 @@ class UpdateManager:
 
     def check_for_updates(self) -> dict | None:
         info = self.checker.get_latest_version_info()
-        if info and info["version"] > self.current_version:
+        if info and _version_key(info["version"]) > _version_key(self.current_version):
             logger.info("[UpdateManager] Found newer version: %s (current: %s)", info["version"], self.current_version)
             return info
         return None

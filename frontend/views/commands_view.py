@@ -116,9 +116,9 @@ class CommandView(BaseView):
         self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
 
-        self.table.setColumnWidth(0, 190)
-        self.table.setColumnWidth(1, 140)
-        self.table.setColumnWidth(2, 140)
+        self.table.setColumnWidth(0, 150)
+        self.table.setColumnWidth(1, 100)
+        self.table.setColumnWidth(2, 105)
         self.table.setColumnWidth(5, 96)
 
         self.main_layout.addWidget(self.table_card, stretch=1)

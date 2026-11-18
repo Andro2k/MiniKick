@@ -4,7 +4,7 @@
 import datetime
 from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget, QTableWidget, QHeaderView, QProgressBar, QSizePolicy, QBoxLayout
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import get_pixmap_colored, Palette, BrandColors, Size
+from frontend.common import get_pixmap_colored, Palette, BrandColors, Size, Room
 from frontend.widgets import ModernCard, ModernButton, NoWheelComboBox, create_col_layout
 
 class StatsChattersTable(ModernCard):
@@ -27,7 +27,8 @@ class StatsChattersTable(ModernCard):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-        direction = QBoxLayout.Direction.TopToBottom if width < 480 else QBoxLayout.Direction.LeftToRight
+        room = Room.of(width)
+        direction = QBoxLayout.Direction.TopToBottom if room.below(Room.SNUG) else QBoxLayout.Direction.LeftToRight
         if hasattr(self, "header_layout") and self.header_layout.direction() != direction:
             self.header_layout.setDirection(direction)
 

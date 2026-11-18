@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QBoxLayout, QGridLayout, QHBoxLayout, QLabel, QProgressBar, QSizePolicy, QVBoxLayout, QWidget,
 )
-from frontend.common import BrandColors, Palette, Size
+from frontend.common import BrandColors, Palette, Size, Room
 from frontend.components.stats import ComparisonBarChart, KpiCard, PeakHoursChart, StatsChattersTable
 from frontend.views.base_view import BaseView
 from frontend.widgets import ModernCard, NoWheelComboBox
@@ -269,8 +269,9 @@ class StatsView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-        self._relayout_kpis(1 if width < 650 else (2 if width < 950 else 4))
-        direction = QBoxLayout.Direction.TopToBottom if width < 1000 else QBoxLayout.Direction.LeftToRight
+        room = Room.of(width)
+        self._relayout_kpis(1 if room.below(Room.ROOMY) else (2 if room.below(Room.WIDE) else 4))
+        direction = QBoxLayout.Direction.TopToBottom if room.below(Room.WIDE) else QBoxLayout.Direction.LeftToRight
         for layout in (self.charts_layout, self.details_layout):
             if layout.direction() != direction:
                 layout.setDirection(direction)
