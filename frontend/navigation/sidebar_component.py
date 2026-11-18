@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QBoxLayout, QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, Size
+from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored, Palette, Room, Size
 from frontend.widgets import configure_icon_only_button
 
 _BADGE_INSET = 2
@@ -13,6 +13,7 @@ _LAYOUT_PENDING_SIZE = 10
 
 class Sidebar(QFrame):
     _SECTIONS = ("main", "stream", "tools", "system")
+    _AUTO_COLLAPSE_BELOW = Room.VAST
     view_selected = Signal(str)
     section_viewed = Signal(str)
     update_requested = Signal()
@@ -30,6 +31,8 @@ class Sidebar(QFrame):
         self._has_version = bool(app_version)
         self.setProperty("role", "sidebar")
         self.is_expanded = True
+        self._preferred_expanded = True
+        self._window_narrow = False
         self.expanded_width = Size.SIDEBAR_EXPANDED
         self.collapsed_width = Size.SIDEBAR_COLLAPSED
         self.setFixedWidth(self.expanded_width)
@@ -419,7 +422,28 @@ class Sidebar(QFrame):
     sidebar_width = Property(int, _get_sidebar_width, _set_sidebar_width)
 
     def toggle_sidebar(self):
-        self.is_expanded = not self.is_expanded
+        """Alterna el sidebar por pedido del usuario y recuerda su elección."""
+        self._preferred_expanded = not self.is_expanded
+        self._set_expanded(self._preferred_expanded)
+
+    def fit_to_window(self, window_width: int):
+        """Colapsa solo al estrechar la ventana y restaura la elección del usuario.
+
+        Solo actúa al cruzar el umbral `_AUTO_COLLAPSE_BELOW`, de modo que un
+        cambio manual dentro de una ventana estrecha se respeta hasta el
+        siguiente cruce. Decide por el ancho de la ventana, no del contenido,
+        para no entrar en bucle con los cambios de ancho del propio sidebar.
+        """
+        narrow = Room.of(window_width).below(self._AUTO_COLLAPSE_BELOW)
+        if narrow == self._window_narrow:
+            return
+        self._window_narrow = narrow
+        self._set_expanded(self._preferred_expanded and not narrow, animate=self.isVisible())
+
+    def _set_expanded(self, expanded: bool, animate: bool = True):
+        if expanded == self.is_expanded:
+            return
+        self.is_expanded = expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
 
         icon = self._icon_collapse if self.is_expanded else self._icon_expand
@@ -429,7 +453,7 @@ class Sidebar(QFrame):
             self.anim.stop()
 
         self.anim = QPropertyAnimation(self, b"sidebar_width")
-        self.anim.setDuration(220)
+        self.anim.setDuration(220 if animate else 0)
         self.anim.setStartValue(self.width())
         self.anim.setEndValue(target_width)
         self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)

@@ -96,6 +96,12 @@ class MainWindowCore(QMainWindow):
         self.setMinimumSize(Size.WINDOW_MIN_WIDTH, Size.WINDOW_MIN_HEIGHT)
         self.resize(1200, 800)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        sidebar = getattr(self, "sidebar", None)
+        if sidebar is not None:
+            sidebar.fit_to_window(event.size().width())
+
     def _init_flags(self):
         self._is_shutting_down = False
         self._cleanup_complete = False
