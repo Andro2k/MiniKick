@@ -22,6 +22,7 @@ class RewardsController(QObject):
         self.twitch_broadcaster_id = twitch_broadcaster_id
         self.create_reward_worker = None
         self.update_reward_worker = None
+        self._reloading_media = False
         self.rewards_details_map = {}
         self.remote_loaded = {"kick": False, "twitch": False}
         self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")] if self.view else ["No Rewards"]
@@ -53,14 +54,39 @@ class RewardsController(QObject):
         self.view.reload_media_requested.connect(self._handle_reload_media)
 
     def _handle_reload_media(self):
-        regenerated = self.service.reload_thumbnails()
-        self.load_initial_data()
-        if self.toast and self.view:
-            self.toast.show_toast(
-                title=self.view.i18n.get("rewards.status.media_reloaded"),
-                message=self.view.i18n.get("rewards.status.media_reloaded_msg", count=regenerated),
-                state="info"
-            )
+        if self._reloading_media:
+            return
+        self._reloading_media = True
+        self._set_reload_busy(True)
+        try:
+            started = self.service.reload_thumbnails(self._on_reload_media_done)
+        except Exception:
+            logger.exception("[Rewards] Could not start thumbnail reload")
+            started = False
+        if not started:
+            self._reloading_media = False
+            self._set_reload_busy(False)
+
+    def _set_reload_busy(self, busy: bool):
+        btn = getattr(self.view, "btn_reload_media", None) if self.view else None
+        if btn is not None:
+            btn.setEnabled(not busy)
+
+    def _on_reload_media_done(self, regenerated: int):
+        self._reloading_media = False
+        self._set_reload_busy(False)
+        if not self.view:
+            return
+        try:
+            self.load_initial_data()
+            if self.toast:
+                self.toast.show_toast(
+                    title=self.view.i18n.get("rewards.status.media_reloaded"),
+                    message=self.view.i18n.get("rewards.status.media_reloaded_msg", count=regenerated),
+                    state="info"
+                )
+        except Exception:
+            logger.exception("[Rewards] Failed to refresh after thumbnail reload")
 
     def _get_placeholder_strings(self) -> set[str]:
         if not self.view:

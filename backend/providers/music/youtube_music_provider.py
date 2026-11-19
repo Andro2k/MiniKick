@@ -25,7 +25,7 @@ def _release_search_worker(worker_ref: weakref.ReferenceType) -> None:
 _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database import SQLiteMusicStorage
-from backend.interfaces import IConfigProvider
+from backend.interfaces import IConfigProvider, IPoTokenSource
 from backend.utils.youtube_url_utils import KIND_SEARCH, KIND_YOUTUBE_VIDEO, classify_music_query
 
 class YouTubeMusicProvider(QObject):
@@ -33,8 +33,10 @@ class YouTubeMusicProvider(QObject):
     queue_updated = Signal()
 
     def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None,
-                 settings_storage: IConfigProvider | None = None):
+                 settings_storage: IConfigProvider | None = None,
+                 po_token_source: IPoTokenSource | None = None):
         super().__init__()
+        self._po_token_source = po_token_source
         self.i18n = i18n
         self._audio_device_id = "default"
         self.db_manager = db_manager
@@ -456,6 +458,16 @@ class YouTubeMusicProvider(QObject):
             setattr(self, worker_attr, None)
             self._retire_worker(worker)
 
+    def _register_po_token_provider(self) -> None:
+        """Corre en el hilo del worker, tras importar yt-dlp: sin token la resolución sigue con los demás clientes."""
+        if self._po_token_source is None:
+            return
+        try:
+            from .youtube_po_token_provider import register_po_token_provider
+            register_po_token_provider(self._po_token_source)
+        except Exception:
+            logger.exception("[YouTubeProvider] Could not register the PO token provider in yt-dlp")
+
     def shutdown(self):
         if self._is_shutting_down:
             return
@@ -489,7 +501,8 @@ class YouTubeMusicProvider(QObject):
             next_song["url"],
             expected_title=next_song.get("title", ""),
             i18n=self.i18n,
-            music_storage=self.music_storage
+            music_storage=self.music_storage,
+            ytdlp_setup=self._register_po_token_provider,
         )
 
         def on_preload_resolved(_title, path_or_url):
@@ -570,7 +583,8 @@ class YouTubeMusicProvider(QObject):
                 self.current_song["url"],
                 expected_title=self.current_song.get("title", ""),
                 i18n=self.i18n,
-                music_storage=self.music_storage
+                music_storage=self.music_storage,
+                ytdlp_setup=self._register_po_token_provider,
             )
             self.resolve_worker.resolved.connect(self._on_song_resolved)
 

@@ -59,6 +59,7 @@ class MainWindowShutdown:
             stop_workers=self.stop_all_workers,
             release_steps=(
                 ("release the music video preview", lambda: window.view_music and window.view_music.release_video_preview()),
+                ("stop the po token minter", lambda: window.po_token_coordinator.shutdown()),
                 ("clean up music_controller", lambda: window.music_controller.shutdown()),
                 ("clean up widgets_controller", lambda: window.widgets_controller.cleanup()),
                 ("stop the chat service", lambda: window.chat_service.shutdown()),

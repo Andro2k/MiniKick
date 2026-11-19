@@ -7,6 +7,7 @@ from .config_provider_interface import ConfigValue, IConfigProvider
 from .tts_interface import ITTSProvider
 from .updater_interface import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .music_provider_interface import IMusicProvider
+from .po_token_interface import IPoTokenMintQueue, IPoTokenPage, IPoTokenSource, PoTokenAnswer
 from .music_chat_context_interface import IMusicChatContext
 from .music_playlist_interface import IMusicPlaylistStorage
 from .alerts_interface import AlertStorageProtocol
@@ -36,6 +37,10 @@ __all__ = [
     "IUpdateDownloader",
     "IUpdateInstaller",
     "IMusicProvider",
+    "IPoTokenMintQueue",
+    "IPoTokenPage",
+    "IPoTokenSource",
+    "PoTokenAnswer",
     "IMusicChatContext",
     "IMusicPlaylistStorage",
     "AlertStorageProtocol",

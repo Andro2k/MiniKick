@@ -13,6 +13,7 @@ from backend.database import DatabaseManager, SQLiteCommandsStorage, SQLiteToken
 from backend.interfaces import IConfigProvider
 from backend.services.security import create_secret_cipher
 from backend.services.app import DatabaseMaintenance
+from backend.services.music import PoTokenService
 from backend.services.stats import StatsService
 from backend.services import BackupService, TranslationService, KickAuthManager, TwitchAuthManager, SettingsService, AvatarService, WidgetService, ScheduleService, TTSManager, OverlayServerManager, AlertService, BrowserService
 from backend.services.webhooks import (
@@ -53,7 +54,7 @@ class AppContainerCore:
             from backend.providers.music import YouTubeMusicProvider
             self._music_provider = YouTubeMusicProvider(
                 self.i18n, music_storage=self.music_storage, db_manager=self.db_manager,
-                settings_storage=self.settings_storage,
+                settings_storage=self.settings_storage, po_token_source=self.po_token_service,
             )
         return self._music_provider
 
@@ -130,6 +131,7 @@ class AppContainerCore:
         self.avatar_service = AvatarService(avatar_storage=self.avatar_storage, db_manager=self.db_manager)
         self.widget_service = WidgetService(self.widgets_storage)
         self.schedule_service = ScheduleService(self.schedule_storage)
+        self.po_token_service = PoTokenService()
 
     def _init_auth(self):
         logger.debug("[AppContainer] Initializing Kick and Twitch OAuth managers...")
