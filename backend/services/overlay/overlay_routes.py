@@ -17,6 +17,7 @@ from .overlay_ws_client import WebSocketClient
 logger = logging.getLogger("minikick.services.overlay.routes")
 
 _SSE_QUEUE_MAX = 1000
+MAX_CLIENT_LOGS_PER_CONNECTION = 100
 
 def _is_within(base: str, target: str) -> bool:
     try:
@@ -281,6 +282,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 if chat_config:
                     ws_client.send_json({"event": "chat_config", "config": chat_config})
 
+            client_logs = 0
             while not ws_client.closed:
                 msg = ws_client.read_frame()
                 if msg is None and ws_client.closed:
@@ -290,6 +292,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                         data = fast_loads(msg)
                         if data.get("type") == "ping":
                             ws_client.send_json({"type": "pong"})
+                        elif data.get("type") == "client_log":
+                            if client_logs < MAX_CLIENT_LOGS_PER_CONNECTION:
+                                client_logs += 1
+                                self._log_client_message(topic, data)
                         elif data.get("type") == "alert_finished":
                             cb = getattr(self.server.manager, "on_alert_finished", None)
                             if cb:
@@ -300,6 +306,12 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.server.manager.unregister_ws_client(ws_client)
             remaining_count = self.server.manager.get_ws_clients_count(topic)
             logger.info('WS "%s" closed (topic: %s, remaining: %d)', client_ip, topic, remaining_count)
+
+    @staticmethod
+    def _log_client_message(topic: str, data: dict) -> None:
+        message = str(data.get("message", ""))[:300].replace("\r", " ").replace("\n", " ")
+        level = logging.WARNING if data.get("level") in ("warn", "error") else logging.INFO
+        logger.log(level, "[Overlay/Client] topic=%s: %s", topic, message)
 
     def _serve_file(self, filepath: str):
         file_size = os.path.getsize(filepath)
@@ -333,6 +345,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             status_code = 200
 
         content_length = (end - start + 1) if file_size > 0 else 0
+        sent = 0
+        aborted = False
 
         try:
             self.send_response(status_code)
@@ -356,15 +370,17 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                         if not chunk:
                             break
                         self.wfile.write(chunk)
+                        sent += len(chunk)
                         remaining -= len(chunk)
 
         except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
-            pass
+            aborted = True
         except Exception as e:
             try:
                 self.send_error(500, f"Internal error: {e}")
             except Exception:
                 pass
+        return status_code, range_header or "-", sent, content_length, aborted
 
     def _token_ok(self, token: str | None) -> bool:
         expected_token = getattr(self.server.manager, "session_token", None)
@@ -380,14 +396,21 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             return
 
         filepath = os.path.normpath(query["path"][0])
+        name = os.path.basename(filepath)
         if not os.path.isfile(filepath):
+            logger.warning("[Overlay] Media request refused (404, file not found): %s", name)
             self.send_error(404, "Media file not found")
             return
         if not _is_allowed_media_file(self.server.manager, filepath):
+            logger.warning("[Overlay] Media request refused (403, file not registered): %s", name)
             self.send_error(403, "Forbidden: media file is not registered")
             return
 
-        self._serve_file(filepath)
+        status, range_header, sent, total, aborted = self._serve_file(filepath)
+        logger.info(
+            "[Overlay] Media %s: %s status=%s range=%s sent=%d/%d",
+            "aborted by client" if aborted else "served", name, status, range_header, sent, total,
+        )
 
     def _handle_user_media_request(self, path: str):
         parts = path.split("/", 4)
