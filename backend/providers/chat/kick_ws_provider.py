@@ -361,7 +361,13 @@ class KickWebSocketManager(BaseChatSocketProvider):
         reward_title = inner.get("reward_title", "") or inner.get("reward", {}).get("title", "")
         username = inner.get("username", "") or inner.get("user", {}).get("username", "")
         user_input = inner.get("user_input", "") or inner.get("message", "") or ""
-        if reward_title and username and self._on_reward:
+        if not (reward_title and username):
+            logger.warning(
+                "[KickWebSocket] Reward event dropped (missing title or username). Payload keys: %s",
+                sorted(inner.keys()) if isinstance(inner, dict) else type(inner).__name__,
+            )
+            return
+        if self._on_reward:
             logger.info("[KickWebSocket] Real-time reward redeemed: '%s' by %s (input: '%s')", reward_title, username, user_input)
             self._on_reward(username, reward_title, user_input)
 

@@ -53,7 +53,7 @@ class RewardRedemptionHandler:
             f"{int(self._clock() / 8)}"
         )
         if self._recent_redemptions.contains_or_add(dedup_key):
-            self._logger.debug("[Reward] Ignoring duplicate redemption: %s", dedup_key)
+            self._logger.info("[Reward] Ignoring duplicate redemption: %s", dedup_key)
             return None
 
         self._logger.info(
@@ -151,7 +151,11 @@ class RewardRedemptionPresenter:
                 state="danger",
             )
         elif not outcome.configured:
-            w.logger.debug("[Reward] Reward '%s' has no reward configured.", reward_name)
+            w.logger.info(
+                "[Reward] No configuration matches reward title %r (platform=%s); nothing was triggered.",
+                reward_name,
+                platform,
+            )
 
         settings = w.chat_service.get_settings()
         if settings.get("enabled", False) and message:
