@@ -408,3 +408,23 @@ def test_set_tts_option_persists_one_setting_and_reloads(qapp, mock_dependencies
     assert saved["provider"] == "web"
     assert saved["enabled"] is True
     controller.load_initial_data.assert_called_once_with()
+
+
+def test_settings_save_keeps_keys_the_view_does_not_own(qapp, mock_dependencies):
+    d = mock_dependencies
+    controller = ChatController(
+        view=d["view"],
+        service=d["service"],
+        command_service=d["command_service"],
+        spam_service=d["spam_service"],
+        i18n=d["i18n"],
+        toast_manager=d["toast"],
+        giphy_service=d["giphy_service"],
+    )
+    controller._tts_settings_cache["giphy_api_key"] = "mi-clave"
+    controller._tts_settings_cache["piper_length_scale"] = 1.2
+
+    controller._handle_settings_save()
+
+    assert controller._tts_settings_cache["giphy_api_key"] == "mi-clave"
+    assert controller._tts_settings_cache["piper_length_scale"] == 1.2
