@@ -2,6 +2,7 @@
 """Caché y búsqueda de comandos del chat."""
 
 import logging
+import random
 import re
 import time
 from contextlib import contextmanager
@@ -19,6 +20,9 @@ class CommandService(QObject):
         "everyone": 0, "subscriber": 1,
         "vip": 2, "moderator": 3, "broadcaster": 4
     }
+    _PLACEHOLDER_REGEX = re.compile(r"\{(user|touser|random)\}")
+    _CHAT_PREFIX_CHARS = "/.!"
+    _MAX_PLACEHOLDER_LENGTH = 40
     _DEFAULT_BOT_NAMES = frozenset({
         "minikick", "botrix", "nightbot", "streamelements", "moobot", "streamlabs",
         "wizebot", "fossabot", "kofi", "streamerbot", "sery_bot", "blerp", "soundalerts", "songlistbot"
@@ -288,6 +292,24 @@ class CommandService(QObject):
 
         return False, "", {}, ""
 
+    @classmethod
+    def _safe_placeholder(cls, value: str) -> str:
+        cleaned = "".join(ch for ch in str(value or "") if ch.isprintable())
+        return cleaned.strip().lstrip(cls._CHAT_PREFIX_CHARS)[:cls._MAX_PLACEHOLDER_LENGTH]
+
+    @classmethod
+    def _render_response(cls, template: str, user: str, touser: str) -> str:
+        values = {
+            "user": cls._safe_placeholder(user),
+            "touser": cls._safe_placeholder(touser) or cls._safe_placeholder(user),
+        }
+
+        def _sub(match: re.Match) -> str:
+            name = match.group(1)
+            return str(random.randint(1, 100)) if name == "random" else values[name]
+
+        return cls._PLACEHOLDER_REGEX.sub(_sub, template)
+
     def _try_execute(self, cmd: dict, user: str, touser: str, badges: list, matched_prefix: str, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if platform == "kick" and not cmd.get("apply_kick", True):
             return False, "", {}, ""
@@ -310,8 +332,7 @@ class CommandService(QObject):
 
         self.cooldown_timers[trigger] = now
         
-        import random
-        final_response = cmd["response"].replace("{user}", user).replace("{touser}", touser).replace("{random}", str(random.randint(1, 100)))
+        final_response = self._render_response(cmd["response"], user, touser)
 
         logger.info(
             "[CommandService] Command executed — trigger='%s', user='%s', platform='%s'",
