@@ -17,6 +17,7 @@ class SpamService:
     _KICK_EMOTE_REGEX = re.compile(r'\[emote:\d+:[^\]]+\]', re.IGNORECASE)
     _YT_EMOTE_REGEX = re.compile(r':[a-zA-Z0-9_\-]+:')
     _TIKTOK_EMOTE_REGEX = re.compile(r'\[[a-zA-Z0-9_\-]+\]')
+    _DEFAULT_MAX_AMOUNT = 10
     _ALLOWED_LATIN_PATTERN = re.compile(r'[a-zA-Z0-9\s\u00C0-\u024F\.\,\!\?\-\_\:\;\(\)\[\]\'\"\/\\\@\#\$\%\&\*\+\=\<\>]')
 
     def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
@@ -102,7 +103,9 @@ class SpamService:
             if exclude_group == "subscriber" and (is_sub or is_mod):
                 continue
             
-            max_amount = config.get("max_amount", 0)
+            max_amount = config.get("max_amount") or 0
+            if max_amount <= 0 and f_id in ("caps_protection", "emote_protection", "repetition_protection"):
+                max_amount = self._DEFAULT_MAX_AMOUNT
             is_violation = False
 
             if f_id == "caps_protection":
