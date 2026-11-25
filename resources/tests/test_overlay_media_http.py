@@ -50,3 +50,26 @@ def test_user_media_serves_web_assets_but_not_other_files_in_the_folder(manager,
     assert _get(manager, _user_media_url(manager, tmp_path, "pic.png"))[0] == 200
     assert _get(manager, _user_media_url(manager, tmp_path, "secret.env"))[0] == 403
     assert _get(manager, _user_media_url(manager, tmp_path, "notes.txt"))[0] == 403
+
+
+def test_media_suffix_range_returns_the_last_bytes_of_the_file(manager, tmp_path):
+    clip = tmp_path / "clip.mp4"
+    clip.write_bytes(bytes(range(256)) * 4)
+    manager.register_media_file(str(clip))
+    url = f"/media?path={clip}&token={manager.session_token}"
+
+    status, body, headers = _get(manager, url, {"Range": "bytes=-100"})
+
+    assert status == 206
+    assert headers["Content-Range"] == "bytes 924-1023/1024"
+    assert body == clip.read_bytes()[-100:]
+
+
+def test_media_open_and_closed_ranges_keep_working(manager, tmp_path):
+    clip = tmp_path / "clip.mp4"
+    clip.write_bytes(bytes(range(256)) * 4)
+    manager.register_media_file(str(clip))
+    url = f"/media?path={clip}&token={manager.session_token}"
+
+    assert _get(manager, url, {"Range": "bytes=10-19"})[1] == clip.read_bytes()[10:20]
+    assert _get(manager, url, {"Range": "bytes=1000-"})[1] == clip.read_bytes()[1000:]

@@ -345,8 +345,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             try:
                 if parts[0]:
                     start = int(parts[0])
-                if len(parts) > 1 and parts[1]:
-                    end = int(parts[1])
+                    if len(parts) > 1 and parts[1]:
+                        end = int(parts[1])
+                elif len(parts) > 1 and parts[1]:
+                    start = max(0, file_size - int(parts[1]))
             except ValueError:
                 pass
             start = max(0, min(start, file_size - 1)) if file_size > 0 else 0
