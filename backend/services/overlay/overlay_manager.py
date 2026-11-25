@@ -300,10 +300,10 @@ class OverlayServerManager:
     def trigger_widget_event(self, event_type: str, data: dict):
         if event_type == "death_update":
             self._last_death_count = data.get("count", 0)
-            self._last_death_data.update(data)
+            self._last_death_data = {**self._last_death_data, **data}
         elif event_type == "score":
             self._last_score = {"wins": data.get("wins", 0), "losses": data.get("losses", 0)}
-            self._last_score_data.update(data)
+            self._last_score_data = {**self._last_score_data, **data}
         elif event_type == "poll_update":
             self._last_poll_data = data.get("poll") or data
             self._last_poll_timestamp = time.time()
@@ -322,9 +322,9 @@ class OverlayServerManager:
             w_id = data.get("widget_id")
             self._widget_active[w_id] = data.get("is_active", True)
             if w_id == "death":
-                self._last_death_data["is_active"] = data.get("is_active", True)
+                self._last_death_data = {**self._last_death_data, "is_active": data.get("is_active", True)}
             elif w_id == "score":
-                self._last_score_data["is_active"] = data.get("is_active", True)
+                self._last_score_data = {**self._last_score_data, "is_active": data.get("is_active", True)}
 
         payload = {"event": event_type, **data}
         self._broadcast("widget_clients", "widgets", payload)
