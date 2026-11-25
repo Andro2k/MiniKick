@@ -227,9 +227,16 @@
 
             const fireIconEl = document.getElementById('fire-icon');
             if (emoteType === 'image' && emoteSrc) {
-                fireIconEl.innerHTML = `<img src="${emoteSrc}" class="emote-img-display" alt="${emoteName}">`;
+                const emoteImg = document.createElement('img');
+                emoteImg.className = 'emote-img-display';
+                emoteImg.alt = String(emoteName);
+                emoteImg.src = emoteSrc;
+                fireIconEl.replaceChildren(emoteImg);
             } else if (emoteType === 'text' && emoteSrc && emoteSrc !== emoteName) {
-                fireIconEl.innerHTML = `<span class="emoji-display">${emoteSrc}</span>`;
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'emoji-display';
+                emojiSpan.textContent = emoteSrc;
+                fireIconEl.replaceChildren(emojiSpan);
             } else {
                 fireIconEl.innerHTML = DEFAULT_FLAME_SVG;
             }
