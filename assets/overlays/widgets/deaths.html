@@ -123,7 +123,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
-        const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
 
         const deathBadge = document.getElementById('death-badge');
         const deathTitle = document.getElementById('death-title');

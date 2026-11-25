@@ -162,7 +162,6 @@
         const winCount = document.getElementById('winCount');
         const lossCount = document.getElementById('lossCount');
 
-        const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
 
         function setWidgetActive(isActive) {
             const badge = document.getElementById('scoreBadge');
