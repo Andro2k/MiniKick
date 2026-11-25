@@ -17,6 +17,13 @@ from .overlay_ws_client import WebSocketClient
 logger = logging.getLogger("minikick.services.overlay.routes")
 
 _SSE_QUEUE_MAX = 1000
+_USER_MEDIA_ALLOWED_EXTENSIONS = frozenset({
+    ".html", ".htm", ".css", ".js", ".mjs", ".json", ".svg",
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".apng", ".bmp", ".ico",
+    ".mp3", ".wav", ".ogg", ".oga", ".m4a", ".aac", ".flac",
+    ".mp4", ".webm", ".mov", ".ogv",
+    ".woff", ".woff2", ".ttf", ".otf",
+})
 MAX_CLIENT_LOGS_PER_CONNECTION = 100
 
 def _is_within(base: str, target: str) -> bool:
@@ -451,6 +458,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
         if not os.path.isfile(abs_target):
             self.send_error(404, "File not found")
+            return
+
+        if os.path.splitext(abs_target)[1].lower() not in _USER_MEDIA_ALLOWED_EXTENSIONS:
+            self.send_error(403, "Forbidden: file type is not served as overlay media")
             return
 
         self._serve_file(abs_target)
