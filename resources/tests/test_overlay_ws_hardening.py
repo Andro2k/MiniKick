@@ -1,10 +1,12 @@
 # resources\tests\test_overlay_ws_hardening.py
-"""Pruebas de los limites del WebSocket de overlays: tamano de frame."""
+"""Pruebas de los limites del WebSocket de overlays: tamano de frame y topics."""
 
 import io
 import struct
 from unittest.mock import MagicMock
 
+from backend.services.overlay.overlay_manager import OverlayServerManager
+from backend.services.overlay.overlay_routes import OverlayRequestHandler
 from backend.services.overlay.overlay_ws_client import WebSocketClient
 
 
@@ -30,3 +32,26 @@ def test_read_frame_still_reads_small_masked_text_frame():
 
     assert client.read_frame() == '{"type":"ping"}'
     assert client.closed is False
+
+
+def test_manager_knows_only_its_own_topics():
+    manager = OverlayServerManager(port=0)
+
+    assert manager.has_ws_topic("alerts") is True
+    assert manager.has_ws_topic("nope") is False
+
+
+def test_upgrade_with_unknown_topic_is_refused_before_switching_protocols():
+    handler = OverlayRequestHandler.__new__(OverlayRequestHandler)
+    handler.server = MagicMock()
+    handler.server.manager.has_ws_topic.return_value = False
+    handler.headers = {"Sec-WebSocket-Key": "abc"}
+    handler.send_error = MagicMock()
+    handler.send_response = MagicMock()
+
+    handler._handle_websocket_upgrade({"topic": ["nope"]}, "tok")
+
+    handler.send_error.assert_called_once()
+    assert handler.send_error.call_args.args[0] == 400
+    handler.send_response.assert_not_called()
+    handler.server.manager.register_ws_client.assert_not_called()

@@ -228,6 +228,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             return
 
         topic = query.get("topic", [query.get("type", ["rewards"])[0]])[0]
+        if not self.server.manager.has_ws_topic(topic):
+            logger.warning("WS request refused (unknown topic: %r)", topic[:40])
+            self.send_error(400, "Bad Request: Unknown WebSocket topic")
+            return
         client_ip = self.client_address[0] if getattr(self, "client_address", None) else "127.0.0.1"
         logger.info('WS "%s" request (topic: %s)', client_ip, topic)
 

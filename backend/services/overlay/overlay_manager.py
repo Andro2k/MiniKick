@@ -153,6 +153,9 @@ class OverlayServerManager:
     def get_alerts_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/alerts?token={self.session_token}"
 
+    def has_ws_topic(self, topic: str) -> bool:
+        return topic in self.ws_clients
+
     def get_ws_clients_count(self, topic: str) -> int:
         with self.ws_lock:
             return len(self.ws_clients.get(topic, set()))
