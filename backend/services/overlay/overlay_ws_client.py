@@ -11,6 +11,7 @@ import threading
 logger = logging.getLogger("minikick.services.overlay.websocket")
 
 _MAX_PENDING_FRAMES = 500
+_MAX_INCOMING_FRAME_BYTES = 1024 * 1024
 
 class WebSocketClient:
     def __init__(self, handler, topic: str, token: str):
@@ -144,6 +145,14 @@ class WebSocketClient:
                     self.closed = True
                     return None
                 payload_len = struct.unpack(">Q", len_bytes)[0]
+
+            if payload_len > _MAX_INCOMING_FRAME_BYTES:
+                logger.warning(
+                    '[WebSocketClient] Client on topic "%s" sent an oversized frame (%d bytes); dropping it.',
+                    self.topic, payload_len,
+                )
+                self._abort()
+                return None
 
             mask_key = b""
             if masked:
