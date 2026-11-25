@@ -190,13 +190,13 @@ class TwitchEventSubProvider(BaseChatSocketProvider):
             try:
                 resp = requests.post(TWITCH_EVENTSUB_API_URL, headers=headers, json=body, timeout=6)
                 if resp.status_code in (200, 202):
-                    logger.debug("[TwitchEventSub] Subscribed to %s (status=%s)", sub_type, resp.status_code)
+                    logger.info("[TwitchEventSub] Subscribed to %s (status=%s)", sub_type, resp.status_code)
                 elif resp.status_code == 409:
-                    logger.debug("[TwitchEventSub] Subscription %s already active (409 Conflict)", sub_type)
+                    logger.info("[TwitchEventSub] Subscription %s already active (409 Conflict)", sub_type)
                 else:
                     logger.warning("[TwitchEventSub] Subscription %s returned status %s: %s", sub_type, resp.status_code, resp.text[:200])
             except Exception as sub_err:
-                logger.debug("[TwitchEventSub] Error subscribing to EventSub %s: %s", sub_type, sub_err)
+                logger.warning("[TwitchEventSub] Error subscribing to EventSub %s: %s", sub_type, sub_err)
 
     def _handle_notification(self, metadata: dict, payload: dict) -> None:
         sub_type = metadata.get("subscription_type", "")

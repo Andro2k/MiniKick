@@ -234,8 +234,24 @@
         if (window.location.protocol !== 'file:') {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
-            try {
-                const ws = new WebSocket(wsUrl);
+            let reconnectTimer = null;
+
+            function scheduleReconnect() {
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                reconnectTimer = setTimeout(() => {
+                    reconnectTimer = null;
+                    connectWS();
+                }, 3000);
+            }
+
+            function connectWS() {
+                let ws;
+                try {
+                    ws = new WebSocket(wsUrl);
+                } catch (err) {
+                    scheduleReconnect();
+                    return;
+                }
                 ws.onmessage = function (e) {
                     try {
                         const data = JSON.parse(e.data);
@@ -249,7 +265,10 @@
                         }
                     } catch (err) {}
                 };
-            } catch (err) {}
+                ws.onclose = scheduleReconnect;
+            }
+
+            connectWS();
         }
     </script>
 </body>

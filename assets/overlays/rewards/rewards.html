@@ -121,6 +121,29 @@
                 playAlert(currentAlert);
             }
 
+            function reportClient(level, message) {
+                try {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'client_log', level: level, message: String(message).slice(0, 300) }));
+                    }
+                } catch (e) { }
+            }
+
+            function describeMediaError(el) {
+                const err = el && el.error;
+                const state = el ? `networkState=${el.networkState} readyState=${el.readyState}` : '';
+                return err ? `code=${err.code} message=${err.message || ''} ${state}` : `no MediaError ${state}`;
+            }
+
+            function trackPlayback(el, label) {
+                el.addEventListener('playing', () => reportClient('info', `playing: ${label} (volume=${el.volume}, muted=${el.muted})`));
+                el.addEventListener('ended', () => {
+                    const total = isFinite(el.duration) ? el.duration.toFixed(2) : '?';
+                    reportClient('info', `ended: ${label} at ${el.currentTime.toFixed(2)}s of ${total}s`);
+                });
+                el.addEventListener('error', () => reportClient('error', `media error: ${label} ${describeMediaError(el)}`));
+            }
+
             function playAlert(data) {
                 const ext = (data.file_ext || '').toLowerCase();
                 const mediaType = getMediaType(ext);
@@ -169,6 +192,7 @@
                 const maxWatchdogMs = Math.max(durationSec + 3, 15) * 1000;
                 watchdogTimer = setTimeout(() => {
                     console.warn('[Rewards Overlay] Watchdog activado para alerta:', data.reward || ext);
+                    reportClient('warn', `watchdog fired: ${data.reward || ext}`);
                     finishPlayback();
                 }, maxWatchdogMs);
 
@@ -188,6 +212,7 @@
 
                     mediaEl.onerror = (e) => {
                         console.error('[Rewards Overlay] Error cargando imagen:', e);
+                        reportClient('error', `image load failed: ${data.reward || ext}`);
                         finishPlayback();
                     };
 
@@ -196,6 +221,7 @@
 
                 } else if (mediaType === 'audio') {
                     mediaEl = document.createElement('audio');
+                    trackPlayback(mediaEl, data.reward || ext);
                     mediaEl.src = data.file_url;
                     mediaEl.volume = Math.min(Math.max(data.volume !== undefined ? data.volume : 1.0, 0.0), 1.0);
 
@@ -207,11 +233,13 @@
 
                     mediaEl.play().catch((e) => {
                         console.warn('[Rewards Overlay] Autoplay de audio bloqueado:', e);
+                        reportClient('warn', `audio play() rejected: ${data.reward || ext} ${e && e.name}: ${e && e.message}`);
                         finishPlayback();
                     });
 
                 } else {
                     mediaEl = document.createElement('video');
+                    trackPlayback(mediaEl, data.reward || ext);
                     mediaEl.className = 'media-layer';
                     mediaEl.autoplay = true;
                     mediaEl.playsInline = true;
@@ -237,6 +265,7 @@
 
                     mediaEl.play().catch((e) => {
                         console.warn('[Rewards Overlay] Autoplay de video bloqueado:', e);
+                        reportClient('warn', `video play() rejected: ${data.reward || ext} ${e && e.name}: ${e && e.message}`);
                         finishPlayback();
                     });
                 }

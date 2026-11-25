@@ -1,6 +1,7 @@
 # backend\services\alerts\alerts_service.py
 """Servicio que administra la configuración y los eventos de alertas."""
 
+import html
 import logging
 import uuid
 import time
@@ -35,14 +36,18 @@ class AlertService:
             return False
 
         display_name = event.display_name or event.username
-        formatted_text = self._format_template(config.text_template, {
+        values = {
             "user": display_name,
             "username": display_name,
             "platform": event.platform.capitalize(),
             "amount": event.amount,
             "tier": event.tier,
             "message": event.message
-        })
+        }
+        formatted_text = self._format_template(config.text_template, values)
+
+        safe_values = {key: html.escape(value, quote=True) if isinstance(value, str) else value for key, value in values.items()}
+        formatted_html = self._format_template(config.text_template, safe_values)
 
         payload = {
             "id": event.event_id,
@@ -50,6 +55,7 @@ class AlertService:
             "alert_type": type_str,
             "username": display_name,
             "formatted_text": formatted_text,
+            "formatted_html": formatted_html,
             "message": event.message,
             "amount": event.amount,
             "tier": event.tier,

@@ -697,7 +697,7 @@ class ChatController(QObject):
             "chat_overlay_show_platform": getattr(self.view, "overlay_show_platform", True)
         })
 
-        self._tts_settings_cache = dict(settings)
+        self._tts_settings_cache = {**self._tts_settings_cache, **settings}
         self._mod_mute_command_enabled = settings["mod_mute_command_enabled"]
         self._mod_block_command_enabled = settings["mod_block_command_enabled"]
         self.tts_state_changed.emit(settings["enabled"])

@@ -4,6 +4,7 @@
 import logging
 import re
 from collections import deque
+from urllib.parse import urlparse
 
 from backend.utils.io_background_utils import submit_network_io
 from backend.utils.youtube_url_utils import is_youtube_link
@@ -16,6 +17,7 @@ class SpamService:
     _KICK_EMOTE_REGEX = re.compile(r'\[emote:\d+:[^\]]+\]', re.IGNORECASE)
     _YT_EMOTE_REGEX = re.compile(r':[a-zA-Z0-9_\-]+:')
     _TIKTOK_EMOTE_REGEX = re.compile(r'\[[a-zA-Z0-9_\-]+\]')
+    _DEFAULT_MAX_AMOUNT = 10
     _ALLOWED_LATIN_PATTERN = re.compile(r'[a-zA-Z0-9\s\u00C0-\u024F\.\,\!\?\-\_\:\;\(\)\[\]\'\"\/\\\@\#\$\%\&\*\+\=\<\>]')
 
     def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
@@ -38,6 +40,21 @@ class SpamService:
     def save_filter(self, filter_id: str, config: dict):
         self.storage.save_filter(filter_id, config)
         self.reload_filters()
+
+    @staticmethod
+    def _normalize_allowed_domain(raw: str) -> str:
+        domain = raw.strip().lower().split("://", 1)[-1].split("/", 1)[0]
+        return domain[4:] if domain.startswith("www.") else domain
+
+    @staticmethod
+    def _is_allowed_link(url: str, allowed_domains: list[str]) -> bool:
+        try:
+            host = (urlparse(url).hostname or "").lower().rstrip(".")
+        except ValueError:
+            return False
+        if host.startswith("www."):
+            host = host[4:]
+        return any(host == d or host.endswith("." + d) for d in allowed_domains)
 
     def _get_clean_text(self, message: str, emotes_tag: str = "", strip_urls: bool = False) -> str:
         clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
@@ -86,7 +103,9 @@ class SpamService:
             if exclude_group == "subscriber" and (is_sub or is_mod):
                 continue
             
-            max_amount = config.get("max_amount", 0)
+            max_amount = config.get("max_amount") or 0
+            if max_amount <= 0 and f_id in ("caps_protection", "emote_protection", "repetition_protection"):
+                max_amount = self._DEFAULT_MAX_AMOUNT
             is_violation = False
 
             if f_id == "caps_protection":
@@ -121,14 +140,14 @@ class SpamService:
                 found_links = self._LINK_REGEX.findall(message)
                 if found_links:
                     allowlist_str = config.get("allowlist", "")
-                    allowed_domains = [d.strip().lower() for d in allowlist_str.split(",") if d.strip()]
+                    allowed_domains = [d for d in (self._normalize_allowed_domain(x) for x in allowlist_str.split(",")) if d]
                     
                     is_violation = False
                     for link in found_links:
-                        link_lower = link.lower()
-                        if youtube_links_allowed and is_youtube_link(link if "://" in link else f"https://{link}"):
+                        link_url = link if "://" in link else f"https://{link}"
+                        if youtube_links_allowed and is_youtube_link(link_url):
                             continue
-                        if not any(domain in link_lower for domain in allowed_domains):
+                        if not self._is_allowed_link(link_url, allowed_domains):
                             is_violation = True
                             break
 

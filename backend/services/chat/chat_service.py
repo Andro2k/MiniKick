@@ -27,6 +27,12 @@ class ChatService:
         except Exception as e:
             logger.debug("[ChatService] Notice initializing TTS params: %s", e)
 
+    def _load_int(self, key: str, default: int) -> int:
+        try:
+            return int(self.storage.load_string(key, str(default)))
+        except (TypeError, ValueError):
+            return default
+
     def get_settings(self) -> dict:
         provider = self.storage.load_string("tts_provider", "piper")
         try:
@@ -81,8 +87,8 @@ class ChatService:
             "piper_noise_scale": ns,
             "piper_noise_w_scale": nws,
             "ignored_users": self.storage.load_string("tts_ignored_users", ""),
-            "volume": int(self.storage.load_string("tts_volume", "100")),
-            "speed": int(self.storage.load_string("tts_speed", "100")),
+            "volume": self._load_int("tts_volume", 100),
+            "speed": self._load_int("tts_speed", 100),
             "banned_words": self.storage.load_string("tts_banned_words", ""),
             "role_voice_broadcaster": self.storage.load_string(f"tts_voice_{provider}_broadcaster", ""),
             "role_voice_moderator": self.storage.load_string(f"tts_voice_{provider}_moderator", ""),

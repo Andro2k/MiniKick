@@ -408,3 +408,47 @@ def test_set_tts_option_persists_one_setting_and_reloads(qapp, mock_dependencies
     assert saved["provider"] == "web"
     assert saved["enabled"] is True
     controller.load_initial_data.assert_called_once_with()
+
+
+def test_settings_save_keeps_keys_the_view_does_not_own(qapp, mock_dependencies):
+    d = mock_dependencies
+    controller = ChatController(
+        view=d["view"],
+        service=d["service"],
+        command_service=d["command_service"],
+        spam_service=d["spam_service"],
+        i18n=d["i18n"],
+        toast_manager=d["toast"],
+        giphy_service=d["giphy_service"],
+    )
+    controller._tts_settings_cache["giphy_api_key"] = "mi-clave"
+    controller._tts_settings_cache["piper_length_scale"] = 1.2
+
+    controller._handle_settings_save()
+
+    assert controller._tts_settings_cache["giphy_api_key"] == "mi-clave"
+    assert controller._tts_settings_cache["piper_length_scale"] == 1.2
+
+
+class _DictStorage:
+    def __init__(self, values):
+        self.values = values
+
+    def load_string(self, key, default=""):
+        return self.values.get(key, default)
+
+    def load_bool(self, _key, default=False):
+        return default
+
+
+@pytest.mark.parametrize("raw", ["", "abc", "10.5"])
+def test_get_settings_survives_corrupt_volume_and_speed(raw):
+    from backend.services.chat.chat_service import ChatService
+
+    storage = _DictStorage({"tts_volume": raw, "tts_speed": raw})
+    service = ChatService(MagicMock(), storage, lambda fn, _ms: fn)
+
+    settings = service.get_settings()
+
+    assert settings["volume"] == 100
+    assert settings["speed"] == 100

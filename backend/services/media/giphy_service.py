@@ -13,6 +13,24 @@ from backend.config import GIPHY_API_KEY as DEFAULT_GIPHY_API_KEY
 
 logger = logging.getLogger("minikick.services.chat.giphy")
 
+_ALLOWED_GIF_HOSTS = (
+    "giphy.com", "tenor.com", "7tv.app", "betterttv.net", "frankerfacez.com",
+    "kick.com", "jtvnw.net", "discordapp.com", "discordapp.net",
+)
+
+
+def is_allowed_gif_url(url: str) -> bool:
+    """Acepta solo https hacia hosts conocidos de GIF/emotes (el overlay carga la URL tal cual)."""
+    try:
+        parsed = urllib.parse.urlparse((url or "").strip())
+    except ValueError:
+        return False
+    if parsed.scheme.lower() != "https":
+        return False
+    host = (parsed.hostname or "").lower()
+    return any(host == d or host.endswith("." + d) for d in _ALLOWED_GIF_HOSTS)
+
+
 class GiphyService:
     _URL_FINDER_REGEX = re.compile(r"https?://\S+", re.IGNORECASE)
     _DIRECT_GIF_REGEX = re.compile(r"^https?://\S+\.(?:gif|webp)(?:\?\S*)?$", re.IGNORECASE)
@@ -51,13 +69,13 @@ class GiphyService:
             gif_id = media_match.group(1)
             return f"https://media.giphy.com/media/{gif_id}/giphy.gif"
 
-        if self._DIRECT_GIF_REGEX.match(raw):
+        if self._DIRECT_GIF_REGEX.match(raw) and is_allowed_gif_url(raw):
             return raw
 
         for match in self._URL_FINDER_REGEX.finditer(raw):
             url = match.group(0).rstrip(".,!?:;)'\"")
             if ".gif" in url.lower() or ".webp" in url.lower():
-                if self._DIRECT_GIF_REGEX.match(url):
+                if self._DIRECT_GIF_REGEX.match(url) and is_allowed_gif_url(url):
                     return url
 
         return None
