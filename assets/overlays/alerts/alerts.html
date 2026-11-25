@@ -682,6 +682,12 @@
             showAlert(alertData);
         }
 
+        function escapeHtml(text) {
+            return String(text == null ? '' : text).replace(/[&<>"']/g, (c) => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+
         function hexToRgba(hex, opacityPct) {
             if (!hex) return 'transparent';
             hex = hex.replace('#', '');
@@ -785,9 +791,9 @@
             platformBadge.textContent = platform.toUpperCase();
             platformBadge.className = `platform-badge ${platform}`;
 
-            let titleHtml = data.formatted_text || `¡${data.username || 'Alguien'} te sigue!`;
+            let titleHtml = data.formatted_html || escapeHtml(data.formatted_text || `¡${data.username || 'Alguien'} te sigue!`);
             if (!titleHtml.includes('<span class="highlight">') && data.username) {
-                const regex = new RegExp(`(${data.username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                const regex = new RegExp(`(${escapeHtml(data.username).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                 titleHtml = titleHtml.replace(regex, '<span class="highlight">$1</span>');
             }
             alertTitle.innerHTML = titleHtml;
