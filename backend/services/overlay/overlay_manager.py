@@ -20,6 +20,7 @@ class OverlayServerManager:
         self.port = port
         self.server = None
         self.thread = None
+        self.start_error: str | None = None
 
         self.clients = []
         self.chat_clients = []
@@ -156,7 +157,12 @@ class OverlayServerManager:
         with self.ws_lock:
             return len(self.ws_clients.get(topic, set()))
 
-    def start(self):
+    @property
+    def is_running(self) -> bool:
+        return self.server is not None
+
+    def start(self) -> bool:
+        self.start_error = None
         try:
             self.server = ThreadingHTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
             self.server.manager = self
@@ -164,8 +170,13 @@ class OverlayServerManager:
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
             logger.info("Overlay server active on http://127.0.0.1:%s (session token secured)", self.port)
+            return True
         except OSError as e:
+            self.server = None
+            self.thread = None
+            self.start_error = str(e)
             logger.error("[OverlayServer] Could not start Overlay server on port %s: %s", self.port, e)
+            return False
 
     def _broadcast(self, sse_clients_attr: str, ws_topic: str, payload: dict):
         clients_list = getattr(self, sse_clients_attr)

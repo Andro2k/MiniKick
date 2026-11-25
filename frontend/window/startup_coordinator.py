@@ -158,8 +158,21 @@ class MainWindowStartup:
             w.chat_controller.get_active_overlay_config()
         )
 
+    def _warn_if_overlay_server_down(self) -> None:
+        w = self._window
+        if w.overlay_server.is_running:
+            return
+        i18n = w.container.i18n
+        w.toast.show_toast(
+            title=i18n.get("main.toast.overlay_server_down_title"),
+            message=i18n.get("main.toast.overlay_server_down_msg", port=str(w.overlay_server.port)),
+            state="error",
+            duration=8000,
+        )
+
     def _finish_settings_hydration(self) -> None:
         w = self._window
+        self._warn_if_overlay_server_down()
         w._apply_dynamic_theme(w.settings_service.get_font_size())
         w.platform_connections.update_integrations_status_ui()
         w.platform_connections.refresh_sidebar_profile()
